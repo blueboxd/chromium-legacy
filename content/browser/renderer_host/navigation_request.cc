@@ -1302,7 +1302,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           /*navigation_delivery_type=*/
           network::mojom::NavigationDeliveryType::kDefault,
           /*view_transition_state=*/absl::nullopt,
-          /*soft_navigation_heuristic_task_id=*/absl::nullopt,
+          /*soft_navigation_heuristics_task_id=*/absl::nullopt,
           /*modified_runtime_features=*/
           base::flat_map<::blink::mojom::RuntimeFeatureState, bool>(),
           /*fenced_frame_properties=*/absl::nullopt,
@@ -1445,7 +1445,7 @@ NavigationRequest::CreateForSynchronousRendererCommit(
           /*navigation_delivery_type=*/
           network::mojom::NavigationDeliveryType::kDefault,
           /*view_transition_state=*/absl::nullopt,
-          /*soft_navigation_heuristic_task_id=*/absl::nullopt,
+          /*soft_navigation_heuristics_task_id=*/absl::nullopt,
           /*modified_runtime_features=*/
           base::flat_map<::blink::mojom::RuntimeFeatureState, bool>(),
           /*fenced_frame_properties=*/absl::nullopt,
@@ -2476,7 +2476,7 @@ void NavigationRequest::BeginNavigationImpl() {
 
       if (auto result =
               frame_tree_node_->render_manager()->GetFrameHostForNavigation(
-                  this);
+                  this, &browsing_context_group_swap_);
           result.has_value()) {
         render_frame_host_ = result.value();
       } else {
@@ -2746,7 +2746,7 @@ void NavigationRequest::ResetForCrossDocumentRestart() {
   navigation_handle_timing_ = NavigationHandleTiming();
 
   policy_container_builder_->ResetForCrossDocumentRestart();
-  commit_params_->soft_navigation_heuristic_task_id = absl::nullopt;
+  commit_params_->soft_navigation_heuristics_task_id = absl::nullopt;
 }
 
 void NavigationRequest::ResetStateForSiteInstanceChange() {
@@ -3077,7 +3077,7 @@ void NavigationRequest::OnRequestRedirected(
   // before the navigation is ready to commit.
   scoped_refptr<SiteInstance> site_instance =
       frame_tree_node_->render_manager()->GetSiteInstanceForNavigationRequest(
-          this);
+          this, &browsing_context_group_swap_);
   speculative_site_instance_ =
       site_instance->HasProcess() ? site_instance : nullptr;
 
@@ -3942,7 +3942,8 @@ void NavigationRequest::OnResponseStarted(
     // cancelled and RFH is destroyed while NavigationRequest is alive.
   } else if (response_should_be_rendered_) {
     if (auto result =
-            frame_tree_node_->render_manager()->GetFrameHostForNavigation(this);
+            frame_tree_node_->render_manager()->GetFrameHostForNavigation(
+                this, &browsing_context_group_swap_);
         result.has_value()) {
       render_frame_host_ = result.value();
     } else {
@@ -4184,8 +4185,8 @@ NavigationRequest::CreateNavigationEarlyHintsManagerParams(
   // The CrossOriginRedirectAfterEarlyHints variant of
   // Navigation.MainFrame.TimeToReadyToCommit2 histogram tracks the performance
   // impacts.
-  auto result =
-      frame_tree_node_->render_manager()->GetFrameHostForNavigation(this);
+  auto result = frame_tree_node_->render_manager()->GetFrameHostForNavigation(
+      this, &browsing_context_group_swap_);
 
   // Early hints is an optimization; if it is not possible to get a suitable
   // RenderFrameHost for any reason, just bail out.
@@ -4310,7 +4311,7 @@ void NavigationRequest::OnRequestFailedInternal(
           ConvertToCrossDocumentType(common_params_->navigation_type);
       if (auto result =
               frame_tree_node_->render_manager()->GetFrameHostForNavigation(
-                  this);
+                  this, &browsing_context_group_swap_);
           result.has_value()) {
         render_frame_host = result.value();
       } else {
@@ -5134,11 +5135,16 @@ void NavigationRequest::CommitNavigation() {
   // A navigation request should only commit once the response has been
   // processed.
   DCHECK_GE(state_, WILL_PROCESS_RESPONSE);
+#if DCHECK_IS_ON()
   // In NavigationControllerImpl::NavigateToExistingPendingEntry we're verifying
   // that the task ID is only passed along if the initiator RFH is the same as
   // the navigated RFH.
-  DCHECK((IsSameDocument() && IsInOutermostMainFrame()) ||
-         !commit_params_->soft_navigation_heuristic_task_id);
+  if (commit_params_->soft_navigation_heuristics_task_id) {
+    DCHECK(IsSameDocument());
+    DCHECK(IsInMainFrame());
+    DCHECK(!frame_tree_node()->IsFencedFrameRoot());
+  }
+#endif
 
   if (!CoopCoepSanityCheck())
     return;
@@ -6496,7 +6502,7 @@ void NavigationRequest::DidCommitNavigation(
   // time. The renderer has now committed the page and we can safely enforce the
   // empty name on the browser side.
   bool should_clear_browsing_instance_name =
-      coop_status().require_browsing_instance_swap() ||
+      browsing_context_group_swap().ShouldClearWindowName() ||
       (commit_params().is_cross_site_cross_browsing_context_group &&
        base::FeatureList::IsEnabled(
            features::kClearCrossSiteCrossBrowsingContextGroupWindowName));
@@ -7210,7 +7216,7 @@ bool NavigationRequest::IsInOutermostMainFrame() {
   return !GetParentFrameOrOuterDocument();
 }
 
-bool NavigationRequest::IsInPrerenderedMainFrame() {
+bool NavigationRequest::IsInPrerenderedMainFrame() const {
   return GetNavigatingFrameType() == FrameType::kPrerenderMainFrame;
 }
 
@@ -8046,6 +8052,11 @@ void NavigationRequest::RecordAddressSpaceFeature() {
   ContentBrowserClient* client = GetContentClient()->browser();
   client->LogWebFeatureForCurrentPage(initiator_render_frame_host,
                                       *optional_feature);
+  client->LogWebFeatureForCurrentPage(
+      initiator_render_frame_host,
+      IsInOutermostMainFrame()
+          ? blink::mojom::WebFeature::kPrivateNetworkAccessFetchedTopFrame
+          : blink::mojom::WebFeature::kPrivateNetworkAccessFetchedSubFrame);
 }
 
 void NavigationRequest::ComputePoliciesToCommit() {

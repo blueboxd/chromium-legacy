@@ -190,7 +190,6 @@ import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.undo_tab_close_snackbar.UndoBarController;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
-import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.chrome.features.start_surface.StartSurfaceDelegate;
 import org.chromium.chrome.features.start_surface.StartSurfaceState;
@@ -779,8 +778,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 mRootUiCoordinator.getScrimCoordinator(),
                 /* rootView= */ tabSwitcherContainer,
                 compositorViewHolder::getDynamicResourceLoader, getSnackbarManager(),
-                getModalDialogManager(),
-                mRootUiCoordinator.getIncognitoReauthControllerSupplier()));
+                getModalDialogManager(), mRootUiCoordinator.getIncognitoReauthControllerSupplier(),
+                mBackPressManager));
     }
 
     private void setupCompositorContentPostNative() {
@@ -2245,8 +2244,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             TabModel currentModel = mTabModelSelector.getCurrentModel();
             if (!currentModel.isIncognito()) currentModel.openMostRecentlyClosedEntry();
             RecordUserAction.record("MobileTabClosedUndoShortCut");
-        } else if (id == R.id.enter_vr_id) {
-            VrModuleProvider.getDelegate().enterVrIfNecessary();
         } else {
             return super.onMenuOrKeyboardAction(id, fromMenu);
         }
@@ -2593,6 +2590,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             }
         }
 
+        ReturnToChromeUtil.recordStartSurfaceState(state);
+
         // If we don't have a current tab, show the overview mode.
         if (currentTab == null) {
             mLayoutManager.showLayout(layoutTypeToShow, false);
@@ -2926,7 +2925,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         if (currentTab.isIncognito()) mTabModelSelector.selectModel(/*incognito=*/false);
 
         if (StartSurfaceUserData.getKeepTab(currentTab)
-                || ReturnToChromeUtil.isTabFromStartSurface(currentTab)) {
+                || StartSurfaceUserData.isOpenedFromStart(currentTab)) {
             // If the current tab is created from the start surface with the keepTab property,
             // shows the Start surface non-incognito homepage to prevent a loop between the
             // current tab and previous overview mode. Once in the Start surface, it will close

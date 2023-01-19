@@ -19,6 +19,7 @@ build_webui("build") {
     "data_export_done.ts",
     "issue_details.ts",
     "pii_selection.ts",
+    "screenshot.ts",
     "spinner_page.ts",
     "support_tool.ts",
     "url_generator.ts",
@@ -30,6 +31,8 @@ build_webui("build") {
   ]
 
   css_files = [ "support_tool_shared.css" ]
+
+  icons_html_files = [ "icons.html" ]
 
   ts_deps = [
     "//third_party/polymer/v3_0:library",

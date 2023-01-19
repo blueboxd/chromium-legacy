@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
-
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 
 import * as routesMojomWebui from '../mojom-webui/routes.mojom-webui.js';
@@ -366,6 +364,9 @@ function createOSSettingsRoutes() {
     r.SMB_SHARES = createSubpage(
         r.FILES, routesMojomWebui.NETWORK_FILE_SHARES_SUBPAGE_PATH,
         Subpage.kNetworkFileShares);
+    r.OFFICE = createSubpage(
+        r.FILES, routesMojomWebui.OFFICE_FILES_SUBPAGE_PATH,
+        Subpage.kOfficeFiles);
   }
 
   // Printing section.

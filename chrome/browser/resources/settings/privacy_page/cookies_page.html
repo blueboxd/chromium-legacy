@@ -9,6 +9,10 @@
         padding: 0 var(--cr-section-padding);
       }
 
+      #explanationText {
+        margin-top: 16px;
+      }
+
       .radio-group-sub-heading {
         padding-bottom: 10px;
       }
@@ -54,14 +58,13 @@
           src="chrome://settings/images/cookies_banner.svg">
     </picture>
     <template is="dom-if" if="[[isPrivacySandboxSettings4_]]">
-      <!-- TODO(crbug.com/1378703): Update strings -->
       <div id="explanationText" class="secondary">
-        $i18n{privacyPageTitle}
+        $i18n{thirdPartyCookiesPageDescription}
       </div>
       <div id="generalControls">
-        <h2>$i18n{privacyPageTitle}</h2>
+        <h2>$i18n{thirdPartyCookiesPageDefaultBehaviorHeading}</h2>
         <div class="secondary radio-group-sub-heading">
-          $i18n{privacyPageTitle}
+          $i18n{thirdPartyCookiesPageDefaultBehaviorDescription}
         </div>
         <settings-radio-group id="primarySettingGroup" no-set-pref
             pref="{{prefs.profile.cookie_controls_mode}}"
@@ -71,33 +74,41 @@
           <settings-collapse-radio-button id="allowThirdParty"
               pref="[[prefs.profile.cookie_controls_mode]]"
               name="[[cookieControlsModeEnum_.OFF]]"
-              label="$i18n{privacyPageTitle}"
-              expand-aria-label="$i18n{privacyPageTitle}">
+              label="$i18n{thirdPartyCookiesPageAllowRadioLabel}"
+              expand-aria-label="
+                  $i18n{thirdPartyCookiesPageAllowExpandA11yLabel}">
             <div slot="collapse">
               <div class="bullet-line">
                 <iron-icon icon="settings:cookie"></iron-icon>
-                <div class="secondary">$i18n{privacyPageTitle}</div>
+                <div class="secondary">
+                  $i18n{thirdPartyCookiesPageAllowBulOne}
+                </div>
               </div>
               <div class="bullet-line">
                 <iron-icon icon="settings:cookie"></iron-icon>
-                <div class="secondary">$i18n{privacyPageTitle}</div>
+                <div class="secondary">
+                  $i18n{thirdPartyCookiesPageAllowBulTwo}
+                </div>
               </div>
             </div>
           </settings-collapse-radio-button>
           <settings-collapse-radio-button id="blockThirdPartyIncognito"
               pref="[[prefs.profile.cookie_controls_mode]]"
               name="[[cookieControlsModeEnum_.INCOGNITO_ONLY]]"
-              label="$i18n{privacyPageTitle}"
-              expand-aria-label="$i18n{privacyPageTitle}">
+              label="$i18n{thirdPartyCookiesPageBlockIncognitoRadioLabel}"
+              expand-aria-label="
+                  $i18n{thirdPartyCookiesPageBlockIncognitoExpandA11yLabel}">
             <div slot="collapse">
               <div class="bullet-line">
                 <iron-icon icon="settings:cookie"></iron-icon>
-                <div class="secondary">$i18n{privacyPageTitle}</div>
+                <div class="secondary">
+                  $i18n{thirdPartyCookiesPageBlockIncognitoBulOne}
+                </div>
               </div>
-              <div class="bullet-line" id="cookiePageBlockThirdIncognitoBulTwo">
+              <div class="bullet-line" id="blockThirdPartyIncognitoBulTwo">
                 <iron-icon icon="settings:block"></iron-icon>
                 <div class="secondary">
-                  [[getCookiePageBlockThirdIncognitoBulTwoLabel()]]
+                  [[getThirdPartyCookiesPageBlockThirdPartyIncognitoBulTwoLabel_()]]
                 </div>
               </div>
             </div>
@@ -105,23 +116,28 @@
           <settings-collapse-radio-button id="blockThirdParty"
               pref="[[prefs.profile.cookie_controls_mode]]"
               name="[[cookieControlsModeEnum_.BLOCK_THIRD_PARTY]]"
-              label="$i18n{privacyPageTitle}"
-              expand-aria-label="$i18n{privacyPageTitle}">
+              label="$i18n{thirdPartyCookiesPageBlockRadioLabel}"
+              expand-aria-label="
+                  $i18n{thirdPartyCookiesPageBlockExpandA11yLabel}">
             <div slot="collapse">
               <div class="bullet-line">
                 <iron-icon icon="settings:cookie"></iron-icon>
-                <div class="secondary">$i18n{privacyPageTitle}</div>
+                <div class="secondary">
+                  $i18n{thirdPartyCookiesPageBlockBulOne}
+                </div>
               </div>
               <div class="bullet-line">
                 <iron-icon icon="settings:block"></iron-icon>
-                <div class="secondary">$i18n{privacyPageTitle}</div>
+                <div class="secondary">
+                  $i18n{thirdPartyCookiesPageBlockBulTwo}
+                </div>
               </div>
               <template is="dom-if" if="[[enableFirstPartySetsUI_]]">
                 <settings-toggle-button
                     id="firstPartySetsToggle"
                     pref="{{prefs.privacy_sandbox.first_party_sets_enabled}}"
-                    label="$i18n{privacyPageTitle}"
-                    sub-label="$i18n{privacyPageTitle}"
+                    label="$i18n{cookiePageFpsLabel}"
+                    sub-label="$i18n{cookiePageFpsSubLabel}"
                     disabled="[[firstPartySetsToggleDisabled_(
                         prefs.profile.cookie_controls_mode.value)]]">
                 </settings-toggle-button>
@@ -168,10 +184,11 @@
                       $i18n{cookiePageBlockThirdIncognitoBulOne}
                 </div>
               </div>
-              <div class="bullet-line" id="cookiePageBlockThirdIncognitoBulTwo">
+              <div class="bullet-line"
+                  id="cookiesPageBlockThirdPartyIncognitoBulTwo">
                 <iron-icon icon="settings:block"></iron-icon>
                 <div class="secondary">
-                  [[getCookiePageBlockThirdIncognitoBulTwoLabel()]]
+                  [[getCookiesPageBlockThirdPartyIncognitoBulTwoLabel_()]]
                 </div>
               </div>
             </div>
@@ -264,15 +281,16 @@
     </cr-link-row>
     <template is="dom-if" if="[[isPrivacySandboxSettings4_]]">
       <div id="exceptionHeader">
-        <h2>$i18n{siteSettingsCustomizedBehaviors}</h2>
+        <h2>$i18n{thirdPartyCookiesPageCustomizedBehaviorHeading}</h2>
         <div id="exceptionHeaderSubLabel" class="secondary">
-          $i18n{siteSettingsCustomizedBehaviorsDescription}
+          $i18n{thirdPartyCookiesPageCustomizedBehaviorDescription}
         </div>
       </div>
       <site-list id="allowExceptionsList"
           category="[[cookiesContentSettingType_]]"
           category-subtype="[[contentSetting_.ALLOW]]"
-          category-header="$i18n{cookiePageAllowExceptions}"
+          category-header="
+              $i18n{thirdPartyCookiesPageAllowExceptionsSubHeading}"
           read-only-list="[[exceptionListsReadOnly_]]"
           search-filter="[[searchTerm]]"
           cookies-exception-type="third-party">

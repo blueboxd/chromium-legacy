@@ -11,6 +11,7 @@
 
 @class PinnedTabsViewController;
 @protocol GridImageDataSource;
+@protocol TabCollectionDragDropHandler;
 @protocol TabContextMenuProvider;
 
 // Protocol used to relay relevant user interactions from the
@@ -29,6 +30,9 @@
             (PinnedTabsViewController*)pinnedTabsViewController
               didChangeItemCount:(NSUInteger)count;
 
+// Tells the delegate that the `pinnedTabsViewController` is hidden.
+- (void)pinnedTabsViewControllerDidHide;
+
 @end
 
 // UICollectionViewController used to display pinned tabs.
@@ -44,12 +48,21 @@
 // Provides context menus.
 @property(nonatomic, weak) id<TabContextMenuProvider> menuProvider;
 
+// Handles drag and drop interactions that involved the model layer.
+@property(nonatomic, weak) id<TabCollectionDragDropHandler> dragDropHandler;
+
+// Tracks if a drop animation is in progress.
+@property(nonatomic, assign) BOOL dropAnimationInProgress;
+
 // Updates the view when starting or ending a drag action.
 - (void)dragSessionEnabled:(BOOL)enabled;
 
 // Makes the pinned tabs view available. The pinned view should only be
 // available when the regular tabs grid is displayed.
 - (void)pinnedTabsAvailable:(BOOL)available;
+
+// Updates the view when the drop animation did end.
+- (void)dropAnimationDidEnd;
 
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 
@@ -59,6 +72,10 @@
 
 - (instancetype)initWithCollectionViewLayout:(UICollectionViewLayout*)layout
     NS_UNAVAILABLE;
+
+// Notifies the ViewController that its content is being displayed or hidden.
+- (void)contentWillAppearAnimated:(BOOL)animated;
+- (void)contentWillDisappear;
 
 @end
 

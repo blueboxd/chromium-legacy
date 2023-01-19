@@ -105,6 +105,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& EnableConflictDialog() {
+    options.enable_conflict_dialog = true;
+    return *this;
+  }
+
   TestCase& DisableNativeSmb() {
     options.native_smb = false;
     return *this;
@@ -133,11 +138,6 @@ struct TestCase {
   // https://crbug.com/736930.
   TestCase& WithBrowser() {
     options.browser = true;
-    return *this;
-  }
-
-  TestCase& EnableDriveDssPin() {
-    options.drive_dss_pin = true;
     return *this;
   }
 
@@ -206,6 +206,10 @@ struct TestCase {
     if (options.files_experimental)
       full_name += "_FilesExperimental";
 
+    if (options.enable_conflict_dialog) {
+      full_name += "_ConflictDialog";
+    }
+
     if (!options.native_smb)
       full_name += "_DisableNativeSmb";
 
@@ -214,9 +218,6 @@ struct TestCase {
 
     if (options.photos_documents_provider)
       full_name += "_PhotosDocumentsProvider";
-
-    if (options.drive_dss_pin)
-      full_name += "_DriveDssPin";
 
     if (options.single_partition_format)
       full_name += "_SinglePartitionFormat";
@@ -1014,7 +1015,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("keyboardCopyDownloads").InGuestMode(),
         TestCase("keyboardCopyDownloads"),
         TestCase("keyboardCopyDownloads").EnableTrash(),
+        TestCase("keyboardCopyDownloads").EnableConflictDialog(),
         TestCase("keyboardCopyDrive"),
+        TestCase("keyboardCopyDrive").EnableConflictDialog(),
 // TODO(crbug.com/1236842): Remove flakiness and enable this test.
 #if !defined(ADDRESS_SANITIZER) && defined(NDEBUG)
         TestCase("keyboardFocusOutlineVisible"),
@@ -1314,11 +1317,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveLinkOpenFileThroughLinkedDirectory"),
         TestCase("driveLinkOpenFileThroughTransitiveLink"),
         TestCase("driveWelcomeBanner"),
-        TestCase("driveOfflineInfoBanner").EnableDriveDssPin(),
-        TestCase("driveOfflineInfoBannerWithoutFlag")
-        // TODO(b/258987225): Enable
-        // TestCase("driveInlineSyncStatusSingleFile").EnableInlineStatusSync(),
-        // TestCase("driveInlineSyncStatusParentFolder").EnableInlineStatusSync()
+        TestCase("driveOfflineInfoBanner"),
+        TestCase("driveDeleteDialogDoesntMentionPermanentDelete"),
+        TestCase("driveInlineSyncStatusSingleFile").EnableInlineStatusSync(),
+        TestCase("driveInlineSyncStatusParentFolder").EnableInlineStatusSync()
         // TODO(b/189173190): Enable
         // TestCase("driveEnableDocsOfflineDialog"),
         // TODO(b/189173190): Enable
@@ -1800,7 +1802,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("searchHidingTextEntryField").EnableSearchV2(),
         TestCase("searchButtonToggles"),
         TestCase("searchButtonToggles").EnableSearchV2(),
-        TestCase("searchOptions").EnableSearchV2()
+        TestCase("searchWithLocationOptions").EnableSearchV2(),
+        TestCase("searchWithTypeOptions").EnableSearchV2(),
+        TestCase("searchWithRecencyOptions").EnableSearchV2()
         // TODO(b/189173190): Enable
         // TestCase("searchQueryLaunchParam")
         ));

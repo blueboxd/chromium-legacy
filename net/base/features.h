@@ -12,6 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "crypto/crypto_buildflags.h"
 #include "net/base/net_export.h"
 #include "net/net_buildflags.h"
 
@@ -216,6 +217,15 @@ NET_EXPORT extern const base::FeatureParam<int> kChromeRootStoreSysImpl;
 #endif /* BUILDFLAG(IS_MAC) */
 #endif /* BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED) */
 
+// When enabled, TrustStore implementations will use TRUSTED_LEAF,
+// TRUSTED_ANCHOR_OR_LEAF, and TRUSTED_ANCHOR as appropriate. When disabled,
+// TrustStore implementation will only use TRUSTED_ANCHOR.
+// TODO(https://crbug.com/1403034): remove this a few milestones after the
+// trusted leaf support has been launched on all relevant platforms.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(USE_NSS_CERTS)
+NET_EXPORT BASE_DECLARE_FEATURE(kTrustStoreTrustedLeafSupport);
+#endif
+
 // Turns off streaming media caching to disk when on battery power.
 NET_EXPORT BASE_DECLARE_FEATURE(kTurnOffStreamingMediaCachingOnBattery);
 
@@ -319,26 +329,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kBlockSetCookieHeader);
 
 NET_EXPORT BASE_DECLARE_FEATURE(kOptimisticBlockfileWrite);
 
-NET_EXPORT BASE_DECLARE_FEATURE(kOptimizeNetworkBuffers);
-
-NET_EXPORT
-extern const base::FeatureParam<int> kOptimizeNetworkBuffersBytesReadLimit;
-
-NET_EXPORT extern const base::FeatureParam<int>
-    kOptimizeNetworkBuffersMinInputStreamAvailableValueToIgnore;
-
-NET_EXPORT extern const base::FeatureParam<int>
-    kOptimizeNetworkBuffersMinInputStreamReadSize;
-
-NET_EXPORT extern const base::FeatureParam<int>
-    kOptimizeNetworkBuffersMaxInputStreamBytesToReadWhenAvailableUnknown;
-
-NET_EXPORT extern const base::FeatureParam<int>
-    kOptimizeNetworkBuffersFilterSourceStreamBufferSize;
-
-NET_EXPORT extern const base::FeatureParam<bool>
-    kOptimizeNetworkBuffersInputStreamCheckAvailable;
-
 // Enable the Storage Access API. https://crbug.com/989663.
 NET_EXPORT BASE_DECLARE_FEATURE(kStorageAccessAPI);
 
@@ -393,6 +383,10 @@ NET_EXPORT BASE_DECLARE_FEATURE(kPlatformKeyProbeSHA256);
 // Enable support for HTTP extensible priorities (RFC 9218)
 // https://crbug.com/1362031
 NET_EXPORT BASE_DECLARE_FEATURE(kPriorityIncremental);
+
+// Prefetch to follow normal semantics instead of 5-minute rule
+// https://crbug.com/1345207
+NET_EXPORT BASE_DECLARE_FEATURE(kPrefetchFollowsNormalCacheSemantics);
 
 }  // namespace net::features
 

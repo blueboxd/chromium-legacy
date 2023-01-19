@@ -155,15 +155,18 @@ static_library("hook_util") {
 }
 
 # This target contains utility functions which must only depend on
-# kernel32. Please don't add dependencies on other system libraries.
+# kernel32 or ntdll. Please don't add dependencies on other system libraries.
 static_library("nt_registry") {
   sources = [
-    "../../sandbox/win/src/nt_internals.h",
     "nt_registry/nt_registry.cc",
     "nt_registry/nt_registry.h",
+    "nt_registry/nt_registry_functions.h",
   ]
 
-  libs = [ "kernel32.lib" ]
+  libs = [
+    "kernel32.lib",
+    "ntdll.lib",
+  ]
 }
 
 source_set("pe_image_safe") {

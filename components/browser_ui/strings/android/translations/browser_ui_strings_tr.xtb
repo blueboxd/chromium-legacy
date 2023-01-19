@@ -13,7 +13,6 @@
 <translation id="1289742167380433257">Veri tasarrufu amacıyla bu sayfadaki görseller Google tarafından optimize edilmiştir.</translation>
 <translation id="129382876167171263">Web siteleri tarafından kaydedilen dosyalar burada görünür</translation>
 <translation id="1317194122196776028">Bu siteyi unut</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" />-<ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676"><ph name="SITE_NAME" /> sitesi eklendi</translation>
 <translation id="1383876407941801731">Ara</translation>
 <translation id="1384959399684842514">İndirme işlemi duraklatıldı</translation>
@@ -22,6 +21,7 @@
 <translation id="1426410128494586442">Evet</translation>
 <translation id="1446450296470737166">MIDI cihazlarının tam denetimine izin verme</translation>
 <translation id="1448064542941920355">Yakınlaştırmayı azalt</translation>
+<translation id="1547123415014299762">Üçüncü taraf çerezlerine izin verilir</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1633720957382884102">İlgili siteler</translation>
 <translation id="1644574205037202324">Geçmiş</translation>
@@ -59,6 +59,7 @@
 <translation id="2238944249568001759">Son sekmenize göre önerilen aramalar</translation>
 <translation id="2241634353105152135">Sadece bir defa</translation>
 <translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> öğesini kaldır</translation>
+<translation id="228293613124499805">Ziyaret ettiğiniz çoğu site, genellikle tercihlerinizi veya siteyle paylaştığınız bilgileri kaydederek deneyiminizi iyileştirmek için cihazınıza veri kaydeder. Bu ayarı açık tutmanızı öneririz.</translation>
 <translation id="2289270750774289114">Bir site yakındaki Bluetooth cihazları bulmak istediğinde sor (önerilir)</translation>
 <translation id="2315043854645842844">İstemci tarafı sertifika seçimi, işletim sistemi tarafından desteklenmiyor.</translation>
 <translation id="2321958826496381788">Bu yazıyı rahatça okuyana kadar kaydırma çubuğunu sürükleyin. Bir paragrafa iki kez hafifçe dokunduğunuzda metin en az bunun kadar büyük görünmelidir.</translation>
@@ -136,6 +137,7 @@
 <translation id="3744111561329211289">Arka plan senkronizasyonu</translation>
 <translation id="3763247130972274048">10 sn. atlamak için videoda sola veya sağa iki kez dokunun</translation>
 <translation id="3797520601150691162">Belirli bir siteye koyu tema uygulama</translation>
+<translation id="3803367742635802571">Ziyaret ettiğiniz siteler tasarlandığı şekilde çalışmayabilir</translation>
 <translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
 <translation id="381841723434055211">Telefon numaraları</translation>
 <translation id="3826050100957962900">Üçüncü taraf oturum açma</translation>
@@ -175,6 +177,7 @@
 <translation id="4534723447064627427"><ph name="APP_NAME" /> uygulamasının mikrofonunuza erişebilmesi için <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda da mikrofonu açın.</translation>
 <translation id="4566417217121906555">Mikrofonun sesini kapat</translation>
 <translation id="4570913071927164677">Ayrıntılar</translation>
+<translation id="4598549027014564149">Gizli moddayken siteler, alakalı siteler de dahil olmak üzere farklı sitelerde tarama etkinliğinizi görmek için çerezlerinizi kullanamaz. Tarama etkinliğiniz reklam kişiselleştirme gibi işlemler için kullanılmaz. Bazı sitelerdeki özellikler çalışmayabilir.</translation>
 <translation id="4645575059429386691">Ebeveyniniz tarafından yönetiliyor</translation>
 <translation id="4670064810192446073">Sanal gerçeklik</translation>
 <translation id="4751476147751820511">Hareket veya ışık sensörleri</translation>
@@ -304,6 +307,7 @@
 <translation id="7141896414559753902">Sitelerin pop-up göstermesini ve yönlendirme yapmasını engelle (önerilir)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7180611975245234373">Yenile</translation>
+<translation id="7188508872042490670">Cihaz üzerindeki site verileri</translation>
 <translation id="7203150201908454328">Genişletilmiş</translation>
 <translation id="723171743924126238">Resim seç</translation>
 <translation id="7243308994586599757">Sayfanın altına yakın bir yerde kullanılabilen seçenekler</translation>
@@ -348,6 +352,7 @@
 <translation id="8042586301629853791">Sıralama ölçütü:</translation>
 <translation id="8067883171444229417">Videoyu oynat</translation>
 <translation id="8068648041423924542">Sertifika seçilemiyor.</translation>
+<translation id="8077120325605624147">Ziyaret ettiğiniz herhangi bir site size reklam gösterebilir</translation>
 <translation id="8087000398470557479">Bu içerik Google tarafından <ph name="DOMAIN_NAME" /> adresinden sağlanmaktadır.</translation>
 <translation id="8116925261070264013">Ses kapatıldı</translation>
 <translation id="813082847718468539">Site bilgilerini görüntüle</translation>
@@ -378,12 +383,14 @@
 <translation id="8487700953926739672">Çevrimdışı kullanılabilir</translation>
 <translation id="848952951823693243">Her zaman mobil siteyi iste</translation>
 <translation id="8499083585497694743">Mikrofonun sesini aç</translation>
+<translation id="8514955299594277296">Sitelerin cihazıma veri kaydetmesine izin verme (önerilmez)</translation>
 <translation id="851751545965956758">Sitelerin cihazlara bağlanmasını engelle</translation>
 <translation id="8525306231823319788">Tam ekran</translation>
 <translation id="8564613706851221529">{COUNT,plural, =1{<ph name="FPS_MEMBERS_COUNT" /> <ph name="FPS_OWNER" /> sitesi için çerezlere izin veriliyor}other{<ph name="FPS_MEMBERS_COUNT" /> <ph name="FPS_OWNER" /> sitesi için çerezlere izin veriliyor}}</translation>
 <translation id="857943718398505171">İzin verildi (önerilir)</translation>
 <translation id="8609465669617005112">Yukarı taşı</translation>
 <translation id="8676374126336081632">Girişi temizle</translation>
+<translation id="8681886425883659911">Araya giren veya yanıltıcı reklamlar gösterdiği bilinen sitelerdeki reklamlar engellenir</translation>
 <translation id="868929229000858085">Kişilerinizde arama yapın</translation>
 <translation id="8702612070107455751">Tüm çevrimdışı veriler temizlenecek.</translation>
 <translation id="8712637175834984815">Anlaşıldı</translation>
@@ -396,6 +403,7 @@
 <translation id="8816026460808729765">Sitelerin sensörlere erişimini engelle</translation>
 <translation id="8823559166155093873">Çerezleri engelle</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8899807382908246773">Araya giren reklamlar</translation>
 <translation id="8903921497873541725">Yakınlaştır</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC bu cihazda kapalı. Bu özelliği <ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda açın.</translation>

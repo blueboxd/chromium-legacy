@@ -14,11 +14,9 @@ namespace blink {
 namespace {
 
 class NGAnchorQueryTest : public RenderingTest,
-                          private ScopedLayoutNGForTest,
                           private ScopedCSSAnchorPositioningForTest {
  public:
-  NGAnchorQueryTest()
-      : ScopedLayoutNGForTest(true), ScopedCSSAnchorPositioningForTest(true) {}
+  NGAnchorQueryTest() : ScopedCSSAnchorPositioningForTest(true) {}
 
   const NGPhysicalAnchorQuery* AnchorQuery(const Element& element) const {
     const LayoutBlockFlow* container =
@@ -421,7 +419,6 @@ TEST_F(NGAnchorQueryTest, Scroll) {
 }
 
 TEST_F(NGAnchorQueryTest, FragmentedContainingBlock) {
-  ScopedLayoutNGBlockFragmentationForTest block_fragmentation(true);
   SetBodyInnerHTML(R"HTML(
     <style>
     html, body {

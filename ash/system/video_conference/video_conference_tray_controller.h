@@ -9,9 +9,14 @@
 #include "ash/system/video_conference/effects/video_conference_tray_effects_manager.h"
 #include "ash/system/video_conference/video_conference_media_state.h"
 #include "base/observer_list_types.h"
+#include "base/time/time.h"
 #include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "chromeos/crosapi/mojom/video_conference.mojom-forward.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
+
+namespace base {
+class UnguessableToken;
+}  // namespace base
 
 namespace ash {
 
@@ -76,6 +81,9 @@ class ASH_EXPORT VideoConferenceTrayController
   virtual void GetMediaApps(
       base::OnceCallback<void(MediaApps)> ui_callback) = 0;
 
+  // Brings the app with the given `id` to the foreground.
+  virtual void ReturnToApp(const base::UnguessableToken& id) = 0;
+
   // Updates the tray UI with the given `VideoConferenceMediaState`.
   void UpdateWithMediaState(VideoConferenceMediaState state);
 
@@ -93,6 +101,10 @@ class ASH_EXPORT VideoConferenceTrayController
       bool mute_on,
       CrasAudioHandler::InputMuteChangeMethod method) override;
 
+  // CrasAudioHandler::AudioObserver:
+  // Pop up a toast when speaking on mute is detected.
+  void OnSpeakOnMuteDetected() override;
+
   VideoConferenceTrayEffectsManager& effects_manager() {
     return effects_manager_;
   }
@@ -107,6 +119,9 @@ class ASH_EXPORT VideoConferenceTrayController
 
   // Registered observers.
   base::ObserverList<Observer> observer_list_;
+
+  // The last time speak-on-mute notification showed.
+  absl::optional<base::TimeTicks> last_speak_on_mute_notification_time_;
 };
 
 }  // namespace ash

@@ -156,13 +156,13 @@ class IOSChromePasswordCheckManagerTest : public PlatformTest {
 
 // Sets up the password store with a password and unmuted compromised
 // credential. Verifies that the result is matching expectation.
-TEST_F(IOSChromePasswordCheckManagerTest, GetUnmutedCompromisedCredentials) {
+TEST_F(IOSChromePasswordCheckManagerTest, GetInsecureCredentials) {
   PasswordForm form = MakeSavedPassword(kExampleCom, kUsername116);
   AddIssueToForm(&form, InsecureType::kLeaked, base::Minutes(1));
   store().AddLogin(form);
   RunUntilIdle();
 
-  EXPECT_THAT(manager().GetUnmutedCompromisedCredentials(),
+  EXPECT_THAT(manager().GetInsecureCredentials(),
               ElementsAre(CredentialUIEntry(form)));
 }
 
@@ -177,7 +177,7 @@ TEST_F(IOSChromePasswordCheckManagerTest, NoLeakedFound) {
                          IsLeaked(false));
   RunUntilIdle();
 
-  EXPECT_THAT(manager().GetUnmutedCompromisedCredentials(), IsEmpty());
+  EXPECT_THAT(manager().GetInsecureCredentials(), IsEmpty());
 }
 
 // Test that a found leak creates a compromised credential in the password
@@ -193,7 +193,7 @@ TEST_F(IOSChromePasswordCheckManagerTest, OnLeakFoundCreatesCredential) {
   RunUntilIdle();
 
   AddIssueToForm(&form, InsecureType::kLeaked, base::Minutes(0));
-  EXPECT_THAT(manager().GetUnmutedCompromisedCredentials(),
+  EXPECT_THAT(manager().GetInsecureCredentials(),
               ElementsAre(CredentialUIEntry(form)));
 }
 
@@ -308,12 +308,15 @@ TEST_F(IOSChromePasswordCheckManagerTest, CheckFinishedWithDelay) {
   manager().RemoveObserver(&observer);
 }
 
-// Tests that that the correct number of compromised credentials is returned.
+// Tests that the correct number of compromised credentials is returned.
 TEST_F(IOSChromePasswordCheckManagerTest, CheckCompromisedCredentialsCount) {
-  // Enable unmuted compromised credential feature.
+  // Enable unmuted compromised credential feature and disable Password Checkup
+  // feature.
   base::test::ScopedFeatureList featureList;
-  featureList.InitAndEnableFeature(
-      password_manager::features::kMuteCompromisedPasswords);
+  featureList.InitWithFeatures(
+      /*enabled_features=*/{password_manager::features::
+                                kMuteCompromisedPasswords},
+      /*disabled_features=*/{password_manager::features::kIOSPasswordCheckup});
 
   // Add a muted password.
   PasswordForm form1 = MakeSavedPassword(kExampleCom, kUsername216);
@@ -321,7 +324,7 @@ TEST_F(IOSChromePasswordCheckManagerTest, CheckCompromisedCredentialsCount) {
   store().AddLogin(form1);
   RunUntilIdle();
   // Should return an empty list because the compromised credential is muted.
-  EXPECT_THAT(manager().GetUnmutedCompromisedCredentials(), IsEmpty());
+  EXPECT_THAT(manager().GetInsecureCredentials(), IsEmpty());
 
   // Add an unmuted password.
   PasswordForm form2 = MakeSavedPassword(kExampleCom, kUsername116);
@@ -330,6 +333,64 @@ TEST_F(IOSChromePasswordCheckManagerTest, CheckCompromisedCredentialsCount) {
   RunUntilIdle();
 
   // Should return only the unmuted compromised credentials.
-  EXPECT_THAT(manager().GetUnmutedCompromisedCredentials(),
+  EXPECT_THAT(manager().GetInsecureCredentials(),
               ElementsAre(CredentialUIEntry(form2)));
+}
+
+// Tests that the correct warning type is returned.
+TEST_F(IOSChromePasswordCheckManagerTest,
+       CheckReturnedHighestPriorityWarningType) {
+  // Enable Password Checkup feature.
+  base::test::ScopedFeatureList featureList;
+  featureList.InitAndEnableFeature(
+      password_manager::features::kIOSPasswordCheckup);
+
+  // The "no insecure passwords" warning is the highest priority warning.
+  EXPECT_THAT(manager().GetWarningOfHighestPriority(),
+              WarningType::kNoInsecurePasswordsWarning);
+
+  // Add a muted password.
+  PasswordForm form1 = MakeSavedPassword(kExampleCom, kUsername216);
+  AddIssueToForm(&form1, InsecureType::kLeaked, base::Minutes(1),
+                 /*is_muted=*/true);
+  store().AddLogin(form1);
+  RunUntilIdle();
+  // The "dismissed warnings" warning becomes the highest priority warning.
+  EXPECT_THAT(manager().GetWarningOfHighestPriority(),
+              WarningType::kDismissedWarningsWarning);
+
+  // Add a weak password.
+  PasswordForm form2 = MakeSavedPassword(kExampleCom, kUsername216);
+  AddIssueToForm(&form2, InsecureType::kWeak, base::Minutes(1));
+  store().AddLogin(form2);
+  RunUntilIdle();
+  // TODO(crbug.com/1406540): Verify that the "weak passwords" warning becomes
+  // the highest priority warning once the weak passwords are going to be
+  // returned in InsecureCredentialsManager::GetInsecureCredentialEntries() (as
+  // of now, we don't take them into account and filter them out). Until then,
+  // the "dismissed warnings" warning stays the highest priority warning.
+  EXPECT_THAT(manager().GetWarningOfHighestPriority(),
+              WarningType::kNoInsecurePasswordsWarning);
+
+  // Add a reused password.
+  PasswordForm form3 = MakeSavedPassword(kExampleCom, kUsername216);
+  AddIssueToForm(&form3, InsecureType::kReused, base::Minutes(1));
+  store().AddLogin(form3);
+  RunUntilIdle();
+  // TODO(crbug.com/1406540): Verify that the "reused passwords" warning becomes
+  // the highest priority warning once the reused passwords are going to be
+  // returned in InsecureCredentialsManager::GetInsecureCredentialEntries() (as
+  // of now, we don't take them into account and filter them out). Until then,
+  // the "dismissed warnings" warning stays the highest priority warning.
+  EXPECT_THAT(manager().GetWarningOfHighestPriority(),
+              WarningType::kNoInsecurePasswordsWarning);
+
+  // Add an unmuted compromised password.
+  PasswordForm form4 = MakeSavedPassword(kExampleCom, kUsername216);
+  AddIssueToForm(&form4, InsecureType::kLeaked, base::Minutes(1));
+  store().AddLogin(form4);
+  RunUntilIdle();
+  // The "compromised passwords" warning becomes the highest priority warning.
+  EXPECT_THAT(manager().GetWarningOfHighestPriority(),
+              WarningType::kCompromisedPasswordsWarning);
 }

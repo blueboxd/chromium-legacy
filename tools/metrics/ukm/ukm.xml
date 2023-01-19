@@ -168,7 +168,9 @@ be describing additional metrics about the same event.
     </summary>
     <aggregation>
       <history>
-        <statistics/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
       </history>
     </aggregation>
   </metric>
@@ -2134,6 +2136,51 @@ be describing additional metrics about the same event.
   <metric name="HadValueBeforeFilling" enum="Boolean">
     <summary>
       Whether there was a value before autofill in the field.
+    </summary>
+  </metric>
+  <metric name="HeuristicType" enum="AutofillServerFieldType">
+    <summary>
+      There are multiple heuristic classification strategies working in
+      parallel. This type is predicted from the active pattern source.
+    </summary>
+  </metric>
+  <metric name="HeuristicTypeDefault" enum="AutofillServerFieldType">
+    <summary>
+      The type of the field predicted from the source of local heuristics on the
+      client, which uses patterns applied for most users, the types are from
+      |autofill::ServerFieldType|.
+    </summary>
+  </metric>
+  <metric name="HeuristicTypeExperimental" enum="AutofillServerFieldType">
+    <summary>
+      The type of the field predicted from the heuristics that uses experimental
+      patterns, the types are from |autofill::ServerFieldType|.
+    </summary>
+  </metric>
+  <metric name="HeuristicTypeLegacy" enum="AutofillServerFieldType">
+    <summary>
+      The type of the field predicted from patterns whose stability is above
+      suspicion, the types are from |autofill::ServerFieldType|.
+    </summary>
+  </metric>
+  <metric name="HeuristicTypeNextGen" enum="AutofillServerFieldType">
+    <summary>
+      The type of the field predicted from the heuristics that uses patterns
+      only for non-user-visible metrics, one step before experimental, the types
+      are from |autofill::ServerFieldType|.
+    </summary>
+  </metric>
+  <metric name="IsFocusable" enum="Boolean">
+    <summary>
+      Whether the field is focusable to the user. This is an approximation of
+      visibility with false positives.
+    </summary>
+  </metric>
+  <metric name="RankInFieldSignatureGroup">
+    <summary>
+      If multiple fields have the same signature, this indicates the position
+      within this set of fields. This allows us to understand problems related
+      to duplicated field signatures.
     </summary>
   </metric>
   <metric name="SuggestionWasAccepted" enum="Boolean">
@@ -17834,6 +17881,21 @@ be describing additional metrics about the same event.
       are from the Chrome enum content::PreloadingType.
     </summary>
   </metric>
+  <metric name="ReadyTime">
+    <summary>
+      The amount of time the attempt took to reach a state in which it is ready
+      to be used for the next navigation, in milliseconds. Note: currently only
+      Prefetch, Prerender and NoStatePrefetch have a ready state. This field is
+      only meaningful to these three types of preloading.
+    </summary>
+  </metric>
+  <metric name="TimeToNextNavigation">
+    <summary>
+      The amount of time the attempt took to reach the next navigation, in
+      milliseconds. This can happen multiple times, but only the first is
+      recorded.
+    </summary>
+  </metric>
   <metric name="TriggeringOutcome">
     <summary>
       Specifies whether the preloading attempt triggered and was used for the
@@ -17895,6 +17957,21 @@ be describing additional metrics about the same event.
       The type of preloading operation used for the preloading attempt.
     </summary>
   </metric>
+  <metric name="ReadyTime">
+    <summary>
+      The amount of time the attempt took to reach a state in which it is ready
+      to be used for the next navigation, in milliseconds. Note: currently only
+      Prefetch, Prerender and NoStatePrefetch have a ready state. This field is
+      only meaningful to these three types of preloading.
+    </summary>
+  </metric>
+  <metric name="TimeToNextNavigation">
+    <summary>
+      The amount of time the attempt took to reach the next navigation, in
+      milliseconds. This can happen multiple times, but only the first is
+      recorded.
+    </summary>
+  </metric>
   <metric name="TriggeringOutcome">
     <summary>
       Specifies whether the preloading triggered and was used for the next
@@ -17934,6 +18011,13 @@ be describing additional metrics about the same event.
       content::PreloadingPredictor or ChromePreloadingPredictor.
     </summary>
   </metric>
+  <metric name="TimeToNextNavigation">
+    <summary>
+      The amount of time the prediction took to reach the next navigation, in
+      milliseconds. This can happen multiple times, but only the first is
+      recorded.
+    </summary>
+  </metric>
 </event>
 
 <event name="Preloading.Prediction.PreviousPrimaryPage">
@@ -17965,6 +18049,13 @@ be describing additional metrics about the same event.
     <summary>
       The type of preloading predictor which made the preloading prediction.
       Values are from content::PreloadingPredictor or ChromePreloadingPredictor.
+    </summary>
+  </metric>
+  <metric name="TimeToNextNavigation">
+    <summary>
+      The amount of time the prediction took to reach the next navigation, in
+      milliseconds. This can happen multiple times, but only the first is
+      recorded.
     </summary>
   </metric>
 </event>
@@ -18064,6 +18155,18 @@ be describing additional metrics about the same event.
       resource has a 'Cache-control: no-store' response header. Recorded only
       for main frame request.
     </summary>
+  </metric>
+  <metric name="PageEndReason" enum="PageEndReason">
+    <summary>
+      The |page_load_metrics::PageEndReason| for the prerender's activation.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="Timing.ActivationToFirstContentfulPaint">
     <summary>

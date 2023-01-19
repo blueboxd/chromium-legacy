@@ -19,7 +19,6 @@
 #include "chrome/browser/lookalikes/lookalike_url_blocking_page.h"
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 #include "chrome/browser/lookalikes/lookalike_url_service.h"
-#include "chrome/browser/lookalikes/safety_tip_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -27,7 +26,6 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/lookalikes/core/features.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
 #include "components/lookalikes/core/safety_tip_test_utils.h"
 #include "components/lookalikes/core/safety_tips_config.h"
@@ -63,9 +61,14 @@
 
 namespace {
 
+using lookalikes::LookalikeUrlMatchType;
+using lookalikes::NavigationSuggestionEvent;
 using security_interstitials::MetricsHelper;
 using security_interstitials::SecurityInterstitialCommand;
 using UkmEntry = ukm::builders::LookalikeUrl_NavigationSuggestion;
+using lookalikes::GetDomainInfo;
+using lookalikes::kInterstitialHistogramName;
+using lookalikes::LookalikeUrlBlockingPageUserAction;
 
 // An engagement score above MEDIUM.
 const int kHighEngagement = 20;
@@ -340,8 +343,8 @@ class LookalikeUrlNavigationThrottleBrowserTest
     ui_test_utils::HistoryEnumerator enumerator(browser->profile());
     EXPECT_FALSE(base::Contains(enumerator.urls(), navigated_url));
 
-    histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
-    histograms.ExpectBucketCount(lookalikes::kHistogramName, expected_event, 1);
+    histograms.ExpectTotalCount(kInterstitialHistogramName, 1);
+    histograms.ExpectBucketCount(kInterstitialHistogramName, expected_event, 1);
 
     histograms.ExpectTotalCount(kInterstitialDecisionMetric, 2);
     histograms.ExpectBucketCount(kInterstitialDecisionMetric,
@@ -377,8 +380,8 @@ class LookalikeUrlNavigationThrottleBrowserTest
         GURL(chrome::kChromeUINewTabURL),
         browser->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
 
-    histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
-    histograms.ExpectBucketCount(lookalikes::kHistogramName, expected_event, 1);
+    histograms.ExpectTotalCount(kInterstitialHistogramName, 1);
+    histograms.ExpectBucketCount(kInterstitialHistogramName, expected_event, 1);
 
     histograms.ExpectTotalCount(kInterstitialDecisionMetric, 2);
     histograms.ExpectBucketCount(kInterstitialDecisionMetric,
@@ -418,8 +421,8 @@ class LookalikeUrlNavigationThrottleBrowserTest
     ui_test_utils::HistoryEnumerator enumerator(browser->profile());
     EXPECT_TRUE(base::Contains(enumerator.urls(), navigated_url));
 
-    histograms->ExpectTotalCount(lookalikes::kHistogramName, 1);
-    histograms->ExpectBucketCount(lookalikes::kHistogramName, expected_event,
+    histograms->ExpectTotalCount(kInterstitialHistogramName, 1);
+    histograms->ExpectBucketCount(kInterstitialHistogramName, expected_event,
                                   1);
 
     histograms->ExpectTotalCount(kInterstitialDecisionMetric, 2);
@@ -644,8 +647,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 
   base::HistogramTester histograms;
   TestInterstitialNotShown(browser(), kNavigatedUrl);
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
-  histograms.ExpectBucketCount(lookalikes::kHistogramName,
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 1);
+  histograms.ExpectBucketCount(kInterstitialHistogramName,
                                NavigationSuggestionEvent::kMatchSkeletonTop5k,
                                1);
 
@@ -799,9 +802,9 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   test_clock()->Advance(base::Hours(1));
 
   TestInterstitialNotShown(browser(), kNavigatedUrl);
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 1);
   histograms.ExpectBucketCount(
-      lookalikes::kHistogramName,
+      kInterstitialHistogramName,
       NavigationSuggestionEvent::kMatchEditDistanceSiteEngagement, 1);
 
   // Navigate away so that safety tip metrics are recorded.
@@ -822,9 +825,9 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
 
   TestInterstitialNotShown(browser(), kNavigatedUrl);
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 1);
   histograms.ExpectBucketCount(
-      lookalikes::kHistogramName,
+      kInterstitialHistogramName,
       NavigationSuggestionEvent::kMatchCharacterSwapTop500, 1);
 
   // Navigate away so that safety tip metrics are recorded.
@@ -848,7 +851,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   test_clock()->Advance(base::Hours(1));
 
   TestInterstitialNotShown(browser(), kNavigatedUrl);
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 0);
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 0);
   test_helper()->CheckNoLookalikeUkm();
 }
 
@@ -867,8 +870,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
 
   TestInterstitialNotShown(browser(), kNavigatedUrl);
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
-  histograms.ExpectBucketCount(lookalikes::kHistogramName,
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 1);
+  histograms.ExpectBucketCount(kInterstitialHistogramName,
                                NavigationSuggestionEvent::kMatchEditDistance,
                                1);
 
@@ -893,7 +896,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
 
   TestInterstitialNotShown(browser(), kNavigatedUrl);
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 0);
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 0);
   test_helper()->CheckNoLookalikeUkm();
 }
 
@@ -916,7 +919,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   test_clock()->Advance(base::Hours(1));
 
   TestInterstitialNotShown(browser(), kNavigatedUrl);
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 0);
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 0);
   test_helper()->CheckNoLookalikeUkm();
 }
 
@@ -958,8 +961,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   // Matches 1234.com but is too short.
   TestInterstitialNotShown(browser(), GetURL("123.com"));
 
-  test_helper()->CheckInterstitialUkmCount(0);
-  test_helper()->CheckSafetyTipUkmCount(1);
+  test_helper()->CheckNoLookalikeUkm();
 }
 
 // Test that the heuristics are not triggered with net errors.
@@ -1117,8 +1119,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
                        AllowedByPolicy) {
   const GURL kNavigatedUrl = GetURL("xn--googl-fsa.com");
-  SetEnterpriseAllowlistForTesting(browser()->profile()->GetPrefs(),
-                                   {"xn--googl-fsa.com"});
+  lookalikes::SetEnterpriseAllowlistForTesting(browser()->profile()->GetPrefs(),
+                                               {"xn--googl-fsa.com"});
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   TestInterstitialNotShown(browser(), kNavigatedUrl);
 
@@ -1209,7 +1211,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
     base::HistogramTester histograms;
     test_clock()->Advance(base::Hours(1));
     TestInterstitialNotShown(incognito, kNavigatedUrl);
-    histograms.ExpectTotalCount(lookalikes::kHistogramName, 0);
+    histograms.ExpectTotalCount(kInterstitialHistogramName, 0);
   }
 
   // Now reverse the scores: Set low engagement in the main profile and high
@@ -1235,7 +1237,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
     base::HistogramTester histograms;
     test_clock()->Advance(base::Hours(1));
     TestInterstitialNotShown(browser(), kNavigatedUrl);
-    histograms.ExpectTotalCount(lookalikes::kHistogramName, 0);
+    histograms.ExpectTotalCount(kInterstitialHistogramName, 0);
   }
 
   test_helper()->CheckSafetyTipUkmCount(0);
@@ -1252,7 +1254,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   SetEngagementScore(browser(), high_engagement_url, kHighEngagement);
   TestInterstitialNotShown(browser(), high_engagement_url);
 
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 0);
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 0);
   test_helper()->CheckNoLookalikeUkm();
 }
 
@@ -1268,7 +1270,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   SetEngagementScore(browser(), low_engagement_url, kLowEngagement);
   TestInterstitialNotShown(browser(), low_engagement_url);
 
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 0);
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 0);
   test_helper()->CheckNoLookalikeUkm();
 }
 
@@ -1289,7 +1291,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
   SetEngagementScore(browser(), GURL("http://tést"), kHighEngagement);
   TestInterstitialNotShown(browser(), GetURL("tést.com"));
 
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 0);
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 0);
   test_helper()->CheckNoLookalikeUkm();
 }
 
@@ -1543,8 +1545,8 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottleBrowserTest,
 
   TestInterstitialNotShown(browser(), kNavigatedUrl);
 
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
-  histograms.ExpectBucketCount(lookalikes::kHistogramName,
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 1);
+  histograms.ExpectBucketCount(kInterstitialHistogramName,
                                NavigationSuggestionEvent::kComboSquatting, 1);
 
   CheckInterstitialUkm({kNavigatedUrl}, "MatchType",
@@ -1566,9 +1568,9 @@ IN_PROC_BROWSER_TEST_P(
 
   TestInterstitialNotShown(browser(), kNavigatedUrl);
 
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 1);
   histograms.ExpectBucketCount(
-      lookalikes::kHistogramName,
+      kInterstitialHistogramName,
       NavigationSuggestionEvent::kComboSquattingSiteEngagement, 1);
 
   CheckInterstitialUkm({kNavigatedUrl}, "MatchType",
@@ -1857,7 +1859,7 @@ IN_PROC_BROWSER_TEST_P(LookalikeUrlNavigationThrottlePrerenderBrowserTest,
   LoadAndCheckInterstitialAt(browser(), kNavigateUrl);
   SendInterstitialCommandSync(browser(),
                               SecurityInterstitialCommand::CMD_PROCEED);
-  SafetyTipService::Get(browser()->profile())
+  LookalikeUrlService::Get(browser()->profile())
       ->ResetWarningDismissedETLDPlusOnesForTesting();
 
   // Start a prerender.

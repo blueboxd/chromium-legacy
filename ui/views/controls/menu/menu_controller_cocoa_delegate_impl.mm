@@ -191,22 +191,13 @@ NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
 
 @end
 
-@interface IdentifierContainer : NSObject
-- (std::vector<ui::ElementIdentifier>&)ids;
-@end
-
-@implementation IdentifierContainer {
-  std::vector<ui::ElementIdentifier> _ids;
-}
-- (std::vector<ui::ElementIdentifier>&)ids {
-  return _ids;
+@interface MenuControllerCocoaDelegateImpl () {
+  NSMutableArray* _menuObservers;
+  gfx::Rect _anchorRect;
 }
 @end
 
 @implementation MenuControllerCocoaDelegateImpl
-
-NSMutableArray* _menuObservers;
-gfx::Rect _anchorRect;
 
 - (instancetype)init {
   if (self = [super init]) {
@@ -262,8 +253,11 @@ gfx::Rect _anchorRect;
 
 - (void)controllerWillAddMenu:(NSMenu*)menu fromModel:(ui::MenuModel*)model {
   absl::optional<size_t> alerted_index;
-  IdentifierContainer* const element_ids =
-      [[[IdentifierContainer alloc] init] autorelease];
+
+  // This list will be copied into callback blocks later if it's non-empty, but
+  // since it's fairly small that's not a big deal.
+  std::vector<ui::ElementIdentifier> element_ids;
+
   for (size_t i = 0; i < model->GetItemCount(); ++i) {
     if (model->IsAlertedAt(i)) {
       DCHECK(!alerted_index.has_value());
@@ -271,11 +265,11 @@ gfx::Rect _anchorRect;
     }
     const ui::ElementIdentifier identifier = model->GetElementIdentifierAt(i);
     if (identifier) {
-      [element_ids ids].push_back(identifier);
+      element_ids.push_back(identifier);
     }
   }
 
-  if (alerted_index.has_value() || ![element_ids ids].empty()) {
+  if (alerted_index.has_value() || !element_ids.empty()) {
     auto shown_callback = ^(NSNotification* note) {
       NSMenu* const menu_obj = note.object;
       if (alerted_index.has_value()) {
@@ -335,7 +329,7 @@ gfx::Rect _anchorRect;
               }
             }
 
-            for (ui::ElementIdentifier element_id : [element_ids ids]) {
+            for (ui::ElementIdentifier element_id : element_ids) {
               ui::ElementTrackerMac::GetInstance()->NotifyMenuItemShown(
                   menu_obj, element_id, screen_rect);
             }
@@ -350,7 +344,7 @@ gfx::Rect _anchorRect;
                               usingBlock:shown_callback]];
   }
 
-  if (![element_ids ids].empty()) {
+  if (!element_ids.empty()) {
     auto hidden_callback = ^(NSNotification* note) {
       NSMenu* const menu_obj = note.object;
       // We expect to see the following order of events:
@@ -364,7 +358,7 @@ gfx::Rect _anchorRect;
       dispatch_after(
           dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_MSEC),
           dispatch_get_main_queue(), ^{
-            for (ui::ElementIdentifier element_id : [element_ids ids]) {
+            for (ui::ElementIdentifier element_id : element_ids) {
               ui::ElementTrackerMac::GetInstance()->NotifyMenuItemHidden(
                   menu_obj, element_id);
             }

@@ -1152,6 +1152,7 @@
 <translation id="3872834068356954457">วิทยาศาสตร์</translation>
 <translation id="3875783148670536197">แสดงวิธีการ</translation>
 <translation id="3881478300875776315">แสดงบรรทัดน้อยลง</translation>
+<translation id="3883500545751229739">โฆษณาที่รบกวน</translation>
 <translation id="3884278016824448484">ตัวชี้อุปกรณ์ขัดแย้งกัน</translation>
 <translation id="388632593194507180">ตรวจพบการตรวจสอบ</translation>
 <translation id="3886948180919384617">สแต็กเกอร์ 3</translation>
@@ -1713,7 +1714,6 @@
 <translation id="5284295735376057059">คุณสมบัติของเอกสาร</translation>
 <translation id="528468243742722775">สิ้นสุด</translation>
 <translation id="5285570108065881030">แสดงรหัสผ่านที่บันทึกไว้ทั้งหมด</translation>
-<translation id="5287240709317226393">แสดงคุกกี้</translation>
 <translation id="5287456746628258573">เว็บไซต์นี้ใช้การกำหนดค่าความปลอดภัยที่ล้าสมัย ซึ่งอาจทำให้ข้อมูลของคุณรั่วไหลเมื่อส่งไปยังเว็บไซต์นี้ (เช่น รหัสผ่านหรือหมายเลขบัตรเครดิต)</translation>
 <translation id="5288108484102287882">มีคำเตือนจากการตรวจสอบความถูกต้องของค่านโยบาย</translation>
 <translation id="5288393065350884210">การบัญชีและการตรวจสอบ</translation>
@@ -3118,6 +3118,7 @@
 <translation id="8891727572606052622">โหมดพร็อกซีไม่ถูกต้อง</translation>
 <translation id="8894794286471754040">ด้านขอบยาวก่อน</translation>
 <translation id="8897428486789851669">ว่ายน้ำ</translation>
+<translation id="8899807382908246773">โฆษณาที่รบกวน</translation>
 <translation id="8903921497873541725">ขยาย</translation>
 <translation id="890493561996401738">ปุ่ม "นำคำแนะนำออก" กด Enter เพื่อนำออก <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8912362522468806198">บัญชี Google</translation>
@@ -3195,7 +3196,6 @@
 <translation id="9096425087209440047"><ph name="SET_CHROME_AS_DEFAULT_BROWSER_FOCUSED_FRIENDLY_MATCH_TEXT" /> กด Tab แล้วกด Enter เพื่อตั้ง Chrome เป็นเบราว์เซอร์เริ่มต้นของระบบในการตั้งค่า iOS</translation>
 <translation id="9096679202588811390">รายการทีวี</translation>
 <translation id="9101630580131696064">ถาด 1</translation>
-<translation id="9102081333385212048">ไฟล์ที่คุณคัดลอกหรือย้ายจะส่งไปยัง Google Cloud หรือบุคคลที่สามเพื่อทำการวิเคราะห์ เช่น อาจมีการสแกนหาข้อมูลที่ละเอียดอ่อนหรือมัลแวร์</translation>
 <translation id="9103537084693478942">ซอฟต์แวร์วิดีโอ</translation>
 <translation id="9103872766612412690">โดยทั่วไป <ph name="SITE" /> จะใช้การเข้ารหัสเพื่อปกป้องข้อมูลของคุณ เมื่อ Chromium พยายามเชื่อมต่อกับ <ph name="SITE" /> ในครั้งนี้ เว็บไซต์ดังกล่าวส่งข้อมูลรับรองที่ผิดปกติและไม่ถูกต้องกลับมา เหตุการณ์นี้อาจเกิดขึ้นเมื่อผู้บุกรุกพยายามปลอมเป็น <ph name="SITE" /> หรือหน้าจอการลงชื่อเข้าใช้ Wi-Fi รบกวนการเชื่อมต่อ ข้อมูลของคุณยังปลอดภัยอยู่เนื่องจาก Chromium หยุดการเชื่อมต่อก่อนมีการแลกเปลี่ยนข้อมูล</translation>
 <translation id="9106062320799175032">เพิ่มที่อยู่สำหรับการเรียกเก็บเงิน</translation>

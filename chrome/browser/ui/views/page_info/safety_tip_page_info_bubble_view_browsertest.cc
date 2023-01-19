@@ -16,7 +16,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_test_utils.h"
 #include "chrome/browser/lookalikes/lookalike_test_helper.h"
-#include "chrome/browser/lookalikes/safety_tip_service.h"
+#include "chrome/browser/lookalikes/lookalike_url_service.h"
 #include "chrome/browser/lookalikes/safety_tip_ui.h"
 #include "chrome/browser/lookalikes/safety_tip_ui_helper.h"
 #include "chrome/browser/lookalikes/safety_tip_web_contents_observer.h"
@@ -35,7 +35,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/lookalikes/core/features.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
 #include "components/lookalikes/core/safety_tip_test_utils.h"
 #include "components/lookalikes/core/safety_tips.pb.h"
@@ -69,6 +68,9 @@
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
+
+using lookalikes::kInterstitialHistogramName;
+using lookalikes::NavigationSuggestionEvent;
 
 namespace {
 
@@ -255,7 +257,7 @@ class SafetyTipPageInfoBubbleViewBrowserTest : public InProcessBrowserTest {
 
     LookalikeTestHelper::SetUpLookalikeTestParams();
     // Check that the test top domain list contains google.
-    ASSERT_TRUE(IsTopDomain(GetDomainInfo("google.com")));
+    ASSERT_TRUE(IsTopDomain(lookalikes::GetDomainInfo("google.com")));
 
     InProcessBrowserTest::SetUpOnMainThread();
   }
@@ -263,7 +265,7 @@ class SafetyTipPageInfoBubbleViewBrowserTest : public InProcessBrowserTest {
   void TearDownOnMainThread() override {
     InProcessBrowserTest::TearDownOnMainThread();
     LookalikeTestHelper::TearDownLookalikeTestParams();
-    SafetyTipService::Get(browser()->profile())
+    LookalikeUrlService::Get(browser()->profile())
         ->ResetWarningDismissedETLDPlusOnesForTesting();
   }
 
@@ -556,7 +558,7 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
       // This doesn't show a safety tip.
       "g0ogle.com"};
 
-  SetEnterpriseAllowlistForTesting(
+  lookalikes::SetEnterpriseAllowlistForTesting(
       browser()->profile()->GetPrefs(),
       {"accounts1-google.com", "bla.accounts2-google.com", "g0ogle.com"});
 
@@ -677,7 +679,6 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
                                ->tab_strip_model()
                                ->GetActiveWebContents()
                                ->GetLastCommittedURL());
-
   ASSERT_NO_FATAL_FAILURE(CheckPageInfoShowsSafetyTipInfo(
       browser(), security_state::SafetyTipStatus::kLookalike,
       GURL("https://google.com")));
@@ -958,11 +959,8 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_FALSE(IsUIShowing());
 
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 0);
-
-  // TODO(crbug.com/1401102): This shouldn't record metrics.
-  test_helper()->CheckSafetyTipUkmCount(1);
-  test_helper()->CheckInterstitialUkmCount(0);
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 0);
+  test_helper()->CheckNoLookalikeUkm();
 }
 
 // Navigate to a domain within a character swap of 1 to a top domain,
@@ -971,7 +969,7 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     SafetyTipPageInfoBubbleViewBrowserTest,
     DoesntTriggerOnCharacterSwap_TopSiteWithDifferentRegistry) {
-  ASSERT_TRUE(IsTopDomain(GetDomainInfo("google.rs")));
+  ASSERT_TRUE(IsTopDomain(lookalikes::GetDomainInfo("google.rs")));
 
   base::HistogramTester histograms;
   // google.sr is within one character swap of google.rs which is a top domain.
@@ -986,7 +984,7 @@ IN_PROC_BROWSER_TEST_F(
   // recorded.
   EXPECT_FALSE(IsUIShowing());
 
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 0);
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 0);
   test_helper()->CheckNoLookalikeUkm();
 }
 
@@ -1241,8 +1239,8 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
 
   // Make sure that the UI isn't showing but interstitial histogram is recorded.
   ASSERT_FALSE(IsUIShowing());
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
-  histograms.ExpectBucketCount(lookalikes::kHistogramName,
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 1);
+  histograms.ExpectBucketCount(kInterstitialHistogramName,
                                NavigationSuggestionEvent::kComboSquatting, 1);
 
   ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
@@ -1395,8 +1393,8 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   histograms.ExpectBucketCount(kSafetyTipShownHistogram,
                                security_state::SafetyTipStatus::kLookalike, 1);
   // Lookalike throttle also records an entry for all heuristic matches.
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
-  histograms.ExpectBucketCount(lookalikes::kHistogramName,
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 1);
+  histograms.ExpectBucketCount(kInterstitialHistogramName,
                                NavigationSuggestionEvent::kComboSquatting, 1);
 
   // Make sure that the UI is now showing, and that no UKM data has been
@@ -1455,7 +1453,7 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   // Make sure that the UI is not showing, and that no histogram has been
   // recorded.
   ASSERT_FALSE(IsUIShowing());
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 0);
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 0);
 
   // TODO(crbug.com/1401102): This shouldn't record a UKM.
   test_helper()->CheckSafetyTipUkmCount(1);
@@ -1481,8 +1479,8 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
   histograms.ExpectBucketCount(kSafetyTipShownHistogram,
                                security_state::SafetyTipStatus::kLookalike, 1);
   // Lookalike throttle always records an entry for heuristic matches.
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
-  histograms.ExpectBucketCount(lookalikes::kHistogramName,
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 1);
+  histograms.ExpectBucketCount(kInterstitialHistogramName,
                                NavigationSuggestionEvent::kComboSquatting, 1);
 
   // Make sure that the UI is now showing, and that no UKM data has been
@@ -1541,9 +1539,9 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
                                security_state::SafetyTipStatus::kLookalike, 1);
   // Lookalike navigation throttle always records an entry for heuristic
   // matches.
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 1);
   histograms.ExpectBucketCount(
-      lookalikes::kHistogramName,
+      kInterstitialHistogramName,
       NavigationSuggestionEvent::kComboSquattingSiteEngagement, 1);
 
   // Make sure that the UI is now showing, and that no UKM data has been
@@ -1593,8 +1591,8 @@ IN_PROC_BROWSER_TEST_F(SafetyTipPageInfoBubbleViewBrowserTest,
 
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
 
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
-  histograms.ExpectBucketCount(lookalikes::kHistogramName,
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 1);
+  histograms.ExpectBucketCount(kInterstitialHistogramName,
                                NavigationSuggestionEvent::kComboSquatting, 1);
 
   // Make sure that the UI is not showing, and that no safety tip UKM has been
@@ -1618,9 +1616,9 @@ IN_PROC_BROWSER_TEST_F(
 
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
 
-  histograms.ExpectTotalCount(lookalikes::kHistogramName, 1);
+  histograms.ExpectTotalCount(kInterstitialHistogramName, 1);
   histograms.ExpectBucketCount(
-      lookalikes::kHistogramName,
+      kInterstitialHistogramName,
       NavigationSuggestionEvent::kComboSquattingSiteEngagement, 1);
 
   // Make sure that the UI is not showing, and that no safety tip UKM has been

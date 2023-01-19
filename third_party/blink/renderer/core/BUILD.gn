@@ -413,6 +413,13 @@ blink_core_sources("core_hot") {
     "//third_party/blink/renderer/core/exported",
     "//third_party/blink/renderer/core/probe",
   ]
+
+  if (use_inner_html_parser_fast_path) {
+    sources += [
+      "html/parser/html_document_parser_fastpath.cc",
+      "html/parser/html_document_parser_fastpath.h",
+    ]
+  }
 }
 
 source_set("testing") {
@@ -540,7 +547,6 @@ generate_event_interfaces("core_event_interfaces") {
     "events/animation_event.idl",
     "events/animation_playback_event.idl",
     "events/before_create_policy_event.idl",
-    "events/before_toggle_event.idl",
     "events/before_unload_event.idl",
     "events/clipboard_event.idl",
     "events/composition_event.idl",
@@ -557,6 +563,7 @@ generate_event_interfaces("core_event_interfaces") {
     "events/page_transition_event.idl",
     "events/pointer_event.idl",
     "events/pop_state_event.idl",
+    "events/popover_toggle_event.idl",
     "events/progress_event.idl",
     "events/promise_rejection_event.idl",
     "events/resource_progress_event.idl",
@@ -1442,6 +1449,10 @@ source_set("unit_tests") {
       "//third_party/blink/renderer/platform/media",
       "//ui/gfx/geometry",
     ]
+  }
+
+  if (use_inner_html_parser_fast_path) {
+    sources += [ "html/parser/html_document_parser_fastpath_test.cc" ]
   }
 }
 

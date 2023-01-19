@@ -32,7 +32,7 @@
 #include <memory>
 #include <string>
 
-#include "base/callback_helpers.h"
+#include "base/functional/callback_helpers.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -4743,11 +4743,7 @@ TEST_F(WebViewTest, PreferredSizeWithGrid) {
                                      base_url);
 
   gfx::Size size = web_view->ContentsPreferredMinimumSize();
-  if (RuntimeEnabledFeatures::LayoutNGEnabled())
-    EXPECT_EQ(0, size.width());
-  else
-    EXPECT_EQ(100, size.width());
-
+  EXPECT_EQ(0, size.width());
   EXPECT_EQ(100, size.height());
 }
 
@@ -5404,8 +5400,6 @@ TEST_F(WebViewTest, ViewportUnitsPrintingWithPageZoom) {
 }
 
 TEST_F(WebViewTest, ResizeWithFixedPosCrash) {
-  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
-    return;
   ScopedLayoutNGPrintingForTest ng_printing_enabled(true);
   WebViewImpl* web_view = web_view_helper_.Initialize();
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");

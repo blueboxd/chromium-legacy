@@ -14,10 +14,6 @@ class Profile;
 
 namespace web_app {
 
-BASE_DECLARE_FEATURE(kMigrateDefaultChromeAppToWebAppsGSuite);
-
-BASE_DECLARE_FEATURE(kMigrateDefaultChromeAppToWebAppsNonGSuite);
-
 #if BUILDFLAG(IS_CHROMEOS)
 BASE_DECLARE_FEATURE(kCursiveManagedStylusPreinstall);
 
@@ -29,9 +25,6 @@ BASE_DECLARE_FEATURE(kMessagesPreinstall);
 // installation on features listed in |kPreinstalledAppInstallFeatures|.
 bool IsPreinstalledAppInstallFeatureEnabled(base::StringPiece feature_name,
                                             const Profile& profile);
-
-// Checks if migration flag is enabled on all OS.
-bool IsAnyChromeAppToWebAppMigrationEnabled(const Profile& profile);
 
 base::AutoReset<bool> SetPreinstalledAppInstallFeatureAlwaysEnabledForTesting();
 

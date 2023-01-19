@@ -65,14 +65,15 @@ std::vector<history::Cluster> GetClustersFromFile() {
   }
 
   // Parse the JSON.
-  const base::Value* json_clusters = json_value->FindKey("clusters");
-  if (!json_clusters || !json_clusters->is_list()) {
+  const base::Value::List* json_clusters =
+      json_value->GetDict().FindList("clusters");
+  if (!json_clusters) {
     return {};
   }
   std::vector<history::Cluster> clusters;
-  clusters.reserve(json_clusters->GetList().size());
+  clusters.reserve(json_clusters->size());
 
-  for (const auto& json_cluster : json_clusters->GetList()) {
+  for (const auto& json_cluster : *json_clusters) {
     const auto& json_cluster_dict = json_cluster.GetDict();
 
     history::Cluster cluster;
@@ -229,7 +230,8 @@ FileClusteringBackend::CreateIfEnabled() {
 void FileClusteringBackend::GetClusters(
     ClusteringRequestSource clustering_request_source,
     ClustersCallback callback,
-    std::vector<history::AnnotatedVisit> visits) {
+    std::vector<history::AnnotatedVisit> visits,
+    bool unused_requires_ui_and_triggerability) {
   background_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
       base::BindOnce(&GetClustersOnBackgroundThread, std::move(visits)),

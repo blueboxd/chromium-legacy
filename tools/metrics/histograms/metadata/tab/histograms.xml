@@ -59,6 +59,10 @@ chromium-metrics-reviews@google.com.
 <variants name="TabDiscardReason">
   <variant name=".External"
       summary="from outside of TabManager (e.g. by an extension)"/>
+  <variant name=".Proactive"
+      summary="proactively by Performance Manager before the system is in a
+               critical condition, such as when Memory Saver Mode discards
+               the tab"/>
   <variant name=".Urgent"
       summary="urgently by TabManager when the system is in a critical
                condition"/>
@@ -548,7 +552,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tab.RendererTermination.AliveRenderersCount" units="renderers"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>ajuma@chromium.org</owner>
   <owner>bling-fundamentals@google.com</owner>
   <summary>
@@ -576,7 +580,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tab.RendererTermination.TotalTabCount" units="tabs"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>ajuma@chromium.org</owner>
   <owner>thegreenfrog@chromium.org</owner>
   <summary>
@@ -645,7 +649,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tab.StateAtRendererTermination" enum="TabForegroundState"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>gambard@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -1182,7 +1186,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="TabManager.Discarding.ReloadToCloseTime" units="ms"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>chrisha@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -1299,6 +1303,22 @@ chromium-metrics-reviews@google.com.
     Error code returned by [removeItemAtPath:error:] when removing previous
     session file. 0 in case of success.
   </summary>
+</histogram>
+
+<histogram name="TabRestore.{RestoreType}.TimeBetweenClosedAndRestored"
+    units="ms" expires_after="2023-07-10">
+  <owner>sreejakshetty@chromium.org</owner>
+  <owner>chrome-brapp-loading@google.com</owner>
+  <summary>
+    Recorded when the user restores a {RestoreType}. The value is the time
+    duration between the previous closing of the {RestoreType} and the
+    {RestoreType} being restored.
+  </summary>
+  <token key="RestoreType">
+    <variant name="Group" summary="tab group"/>
+    <variant name="Tab" summary="tab"/>
+    <variant name="Window" summary="window"/>
+  </token>
 </histogram>
 
 <histogram name="Tabs.CountAtResume" units="tabs" expires_after="2022-11-02">
@@ -1447,7 +1467,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tabs.NTPCountAtStartup" units="tabs"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>gogerald@chromium.org</owner>
   <owner>nasims@google.com</owner>
   <summary>[iOS] The number of NTP tabs open at cold launch.</summary>
@@ -1843,18 +1863,6 @@ chromium-metrics-reviews@google.com.
     This metric is to be removed after M46 hits stable. We don't expect this
     metric to change over release, so we will remove this once we have the
     numbers from stable.
-  </summary>
-</histogram>
-
-<histogram name="Tabs.StateTransfer.Target" enum="TabStripState"
-    expires_after="M85">
-  <owner>kouhei@chromium.org</owner>
-  <owner>tzik@chromium.org</owner>
-  <summary>
-    The state to which a tab transitioned. Recorded when a tab transitions from
-    the state in the histogram name to a new state.
-
-    kouhei@ and tzik@ will remove some variation of these once M46 hits stable.
   </summary>
 </histogram>
 
@@ -2568,7 +2576,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tabs.Tasks.OrderValidOnStartup" units="boolean"
-    expires_after="M114">
+    expires_after="2023-07-16">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
@@ -2578,7 +2586,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tabs.Tasks.TabAddedWithValidProposedPosition" units="boolean"
-    expires_after="M114">
+    expires_after="2023-07-16">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>

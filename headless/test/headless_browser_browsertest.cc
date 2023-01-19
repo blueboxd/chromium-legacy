@@ -28,13 +28,13 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
-#include "headless/app/headless_shell_switches.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_select_file_dialog_factory.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_web_contents.h"
+#include "headless/public/switches.h"
 #include "headless/test/headless_browser_test.h"
 #include "headless/test/headless_browser_test_utils.h"
 #include "net/base/net_errors.h"
@@ -403,13 +403,12 @@ class CrashReporterTest : public HeadlessBrowserTest,
   CrashReporterTest() {}
   ~CrashReporterTest() override = default;
 
-  void SetUp() override {
+  void SetUpCommandLine(base::CommandLine* command_line) override {
     base::CreateNewTempDirectory(FILE_PATH_LITERAL("CrashReporterTest"),
                                  &crash_dumps_dir_);
-    EXPECT_FALSE(options()->enable_crash_reporter);
-    options()->enable_crash_reporter = true;
-    options()->crash_dumps_dir = crash_dumps_dir_;
-    HeadlessBrowserTest::SetUp();
+    command_line->AppendSwitch(switches::kEnableCrashReporter);
+    command_line->AppendSwitchPath(switches::kCrashDumpsDir, crash_dumps_dir_);
+    HeadlessBrowserTest::SetUpCommandLine(command_line);
   }
 
   void TearDown() override {

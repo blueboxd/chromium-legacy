@@ -434,6 +434,11 @@
           '--debug',
         ],
       },
+      'linux-blink-rel': {
+        'swarming': {
+          'hard_timeout': 2400,
+        },
+      },
       'linux-blink-web-tests-force-accessibility-rel': {
         'args': [
           '--flag-specific=force-renderer-accessibility',
@@ -463,14 +468,6 @@
         'args': [
           '--flag-specific=enable-editing-ng',
         ],
-      },
-      'linux_layout_tests_layout_ng_disabled': {
-        'args': [
-          '--flag-specific=disable-layout-ng',
-        ],
-        'swarming': {
-          'shards': 8,
-        },
       },
       'mac10.13-blink-rel': {
         'swarming': {
@@ -508,6 +505,12 @@
         'swarming': {
           'hard_timeout': 2400,
         },
+      },
+      'win-rel-cft': {
+        'args': [
+          '--target',
+          'Release_x64',
+        ],
       },
       'win10-rel-no-external-ip': {
         'args': [
@@ -747,6 +750,11 @@
           '--debug',
         ],
       },
+      'linux-blink-rel': {
+        'swarming': {
+          'hard_timeout': 2400,
+        },
+      },
       'linux-blink-web-tests-force-accessibility-rel': {
         'args': [
           '--flag-specific=force-renderer-accessibility',
@@ -769,14 +777,6 @@
         'args': [
           '--flag-specific=enable-editing-ng',
         ],
-      },
-      'linux_layout_tests_layout_ng_disabled': {
-        'args': [
-          '--flag-specific=disable-layout-ng',
-        ],
-        'swarming': {
-          'shards': 12,
-        },
       },
       'mac10.13-blink-rel': {
         'swarming': {
@@ -815,6 +815,12 @@
           'hard_timeout': 2400,
         },
       },
+      'win-rel-cft': {
+        'args': [
+          '--target',
+          'Release_x64',
+        ],
+      },
       'win10-rel-no-external-ip': {
         'args': [
           '--target',
@@ -838,7 +844,7 @@
           '--target',
           'Release_x64',
         ],
-      }
+      },
     },
   },
   'browser_tests': {
@@ -1097,6 +1103,9 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac-rel-cft.browser_tests.filter',
         ],
+        'swarming': {
+          'shards': 20,  # crbug.com/1361887
+        },
       },
       'win-asan': {
         # These are very slow on the ASAN trybot for some reason.
@@ -1112,6 +1121,8 @@
       },
       'win-rel-cft': {
         'args': [
+          # crbug.com/868082
+          '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
           '--test-launcher-filter-file=../../testing/buildbot/filters/win.win-rel-cft.browser_tests.filter',
         ],
       },
@@ -1258,14 +1269,12 @@
   'chrome_public_smoke_test': {
     'remove_from': [
       'android-code-coverage-native', # Does not generate profraw data.
-      'android-pie-arm64-coverage-experimental-rel', # Does not generate profraw data.
     ],
   },
   'chrome_public_test_apk': {
     'remove_from': [
       'android-asan',  # https://crbug.com/964562
       'android-code-coverage-native', # Does not generate profraw data.
-      'android-pie-arm64-coverage-experimental-rel', # Does not generate profraw data.
     ],
     'modifications': {
       'Oreo Phone Tester': {
@@ -1409,7 +1418,6 @@
       'ToTAndroid',
       'android-asan',  # https://crbug.com/964562
       'android-code-coverage-native', # Does not generate profraw data.
-      'android-pie-arm64-coverage-experimental-rel', # Does not generate profraw data.
     ],
   },
   'chrome_public_test_vr_apk-vega': {
@@ -1431,7 +1439,6 @@
     'remove_from': [
       'android-asan',  # https://crbug.com/964562
       'android-code-coverage-native', # Does not generate profraw data.
-      'android-pie-arm64-coverage-experimental-rel', # Does not generate profraw data.
     ],
     'modifications': {
       'android-12-x64-rel': {
@@ -1724,11 +1731,6 @@
           ],
         },
       },
-      'android-pie-arm64-coverage-experimental-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64.content_browsertests_coverage.filter',
-        ],
-      },
       'android-pie-arm64-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64.content_browsertests_coverage.filter',
@@ -1768,6 +1770,11 @@
         'swarming': {
           'shards': 41,
         },
+        'args': [
+          # TODO(crbug.com/1406693): Remove this when the kernal panic in
+          # fuchsia has been resolved.
+          '--test-arg=--test-launcher-jobs=1',
+        ],
       },
       'fuchsia-x64-rel': {
         'swarming': {
@@ -1853,7 +1860,6 @@
     'remove_from': [
       'android-asan',  # https://crbug.com/964562
       'android-code-coverage-native', # Does not generate profraw data.
-      'android-pie-arm64-coverage-experimental-rel', # Does not generate profraw data.
     ],
     'modifications': {
       'android-11-x86-rel': {
@@ -2103,7 +2109,7 @@
       'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/831667
     ],
     'modifications': {
-      'android-pie-arm64-coverage-experimental-rel': {
+      'android-code-coverage-native': {
         'args': [
           # https://crbug.com/1404782
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64.gin_unittests_coverage.filter',
@@ -2227,14 +2233,14 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.arm64_proguard_rel.gl_tests.filter', # https://crbug.com/1034007
         ],
       },
+      'android-code-coverage-native': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64_rel.gl_tests.filter', # https://crbug.com/1034007
+        ],
+      },
       'android-nougat-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_n.gl_tests.filter',
-        ],
-      },
-      'android-pie-arm64-coverage-experimental-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.pie_arm64_rel.gl_tests.filter', # https://crbug.com/1034007
         ],
       },
       'android-pie-arm64-rel': {
@@ -2704,7 +2710,6 @@
   'mojo_test_apk': {
     'remove_from': [
       'android-code-coverage-native', # Does not generate profraw data.
-      'android-pie-arm64-coverage-experimental-rel', # Does not generate profraw data.
     ],
   },
   'mojo_unittests': {
@@ -2992,7 +2997,6 @@
       'android-asan',
       'android-code-coverage',
       'android-code-coverage-native',
-      'android-pie-arm64-coverage-experimental-rel', # Does not generate profraw data.
       'android-pie-arm64-rel',
       'android-pie-x86-rel',
       'android-11-x86-rel',
@@ -3023,6 +3027,7 @@
     # need to update this field.
     'remove_from': [
       'Win11 Tests x64',
+      'win-rel-cft',
     ],
   },
   'pixel_skia_gold_passthrough_test': {
@@ -3429,6 +3434,7 @@
       'Win10 Tests x64 (dbg)',
       'Win11 Tests x64',
       'win10-rel-no-external-ip',
+      'win-rel-cft',
     ],
   },
   'telemetry_unittests': {
@@ -3450,6 +3456,7 @@
       'Win10 Tests x64',
       'Win11 Tests x64',
       'win10-rel-no-external-ip',
+      'win-rel-cft',
 
       # TODO(https://crbug.com/1267161): Re-enable when platform is supported.
       'mac11-arm64-rel-tests',
@@ -3654,12 +3661,6 @@
   'vr_common_unittests': {
     'remove_from': [
       'android-pie-x86-rel',
-    ],
-  },
-  'vr_pixeltests': {
-    'remove_from': [
-      'android-pie-x86-rel',
-      'VR Linux',
     ],
   },
   'vulkan_pixel_skia_gold_test': {
@@ -4061,7 +4062,6 @@
       'ToTAndroid',
       'android-asan',  # https://crbug.com/964562
       'android-code-coverage-native', # Does not generate profraw data.
-      'android-pie-arm64-coverage-experimental-rel', # Does not generate profraw data.
     ],
     'modifications': {
       'Oreo Phone Tester': {

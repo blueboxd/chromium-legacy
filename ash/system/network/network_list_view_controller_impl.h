@@ -30,10 +30,11 @@
 namespace views {
 class ImageView;
 class Label;
-}
+}  // namespace views
 
 namespace ash {
 
+class HoverHighlightView;
 class NetworkDetailedNetworkView;
 
 // Implementation of NetworkListViewController.
@@ -71,7 +72,8 @@ class ASH_EXPORT NetworkListViewControllerImpl
     kWifiSeparator = 16,
     kWifiSectionHeader = 17,
     kWifiStatusMessage = 18,
-    kConnectionWarningIcon = 19
+    kConnectionWarningSystemIcon = 19,
+    kConnectionWarningManagedIcon = 20
   };
 
   // Map of network guids and their corresponding list item views.
@@ -120,6 +122,9 @@ class ASH_EXPORT NetworkListViewControllerImpl
   // `is_known` is false, it creates "Unknown networks" header, which is the
   // `unknown_header_`.
   size_t CreateWifiGroupHeader(size_t index, const bool is_known);
+
+  // Creates and adds the join wifi entry at the bottom of the wifi networks.
+  size_t CreateJoinWifiEntry(size_t index);
 
   // Updates Mobile data section, updates add eSIM button states and
   // calls UpdateMobileToggleAndSetStatusMessage().
@@ -215,6 +220,7 @@ class ASH_EXPORT NetworkListViewControllerImpl
   // Owned by views hierarchy.
   views::Label* known_header_ = nullptr;
   views::Label* unknown_header_ = nullptr;
+  HoverHighlightView* join_wifi_entry_ = nullptr;
 
   bool has_mobile_networks_;
   bool has_wifi_networks_;

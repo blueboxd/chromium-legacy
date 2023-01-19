@@ -4,6 +4,7 @@
 <translation id="1002108253973310084">Foi detetada uma versão de protocolo incompatível. Certifique-se de que tem a versão mais recente do software instalada em ambos os computadores e tente novamente.</translation>
 <translation id="1008557486741366299">Agora não</translation>
 <translation id="1201402288615127009">Seguinte</translation>
+<translation id="1296511125400541222">Copyright 2023 The Chromium Authors. Todos os direitos reservados.</translation>
 <translation id="1297009705180977556">Erro ao ligar a <ph name="HOSTNAME" /></translation>
 <translation id="1450760146488584666">O objeto solicitado não existe.</translation>
 <translation id="1480046233931937785">Créditos</translation>
@@ -36,7 +37,6 @@ Se "<ph name="SERVICE_SCRIPT_NAME" />" já estiver selecionado, desselecione-o e
 <translation id="2599300881200251572">Este serviço permite receber ligações de clientes do Ambiente de Trabalho Remoto do Chrome.</translation>
 <translation id="2647232381348739934">Serviço Chromoting</translation>
 <translation id="2676780859508944670">Em execução...</translation>
-<translation id="2692522824157224199">Copyright 2022 Google LLC. Todos os direitos reservados.</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2758123043070977469">Ocorreu um problema na autenticação. Inicie sessão novamente.</translation>
 <translation id="2803375539583399270">Introduzir PIN</translation>
@@ -73,7 +73,6 @@ Se "<ph name="SERVICE_SCRIPT_NAME" />" já estiver selecionado, desselecione-o e
 <translation id="4257751272692708833">Encaminhamento de URL do <ph name="PRODUCT_NAME" /></translation>
 <translation id="4277736576214464567">O código de acesso é inválido. Tente novamente.</translation>
 <translation id="4281844954008187215">Termos de Utilização</translation>
-<translation id="4372650392690220936">Copyright 2022 The Chromium Authors. Todos os direitos reservados.</translation>
 <translation id="4405930547258349619">Biblioteca Principal</translation>
 <translation id="443560535555262820">Abrir as Preferências de acessibilidade</translation>
 <translation id="4450893287417543264">Não mostrar de novo</translation>
@@ -90,6 +89,7 @@ Se "<ph name="SERVICE_SCRIPT_NAME" />" já estiver selecionado, desselecione-o e
 <translation id="4808503597364150972">Introduza o PIN para <ph name="HOSTNAME" />.</translation>
 <translation id="4812684235631257312">Anfitrião</translation>
 <translation id="4867841927763172006">Enviar PrtScn</translation>
+<translation id="4960795469833295568">Copyright 2023 Google LLC. Todos os direitos reservados.</translation>
 <translation id="4974476491460646149">Ligação a <ph name="HOSTNAME" /> fechada</translation>
 <translation id="4985296110227979402">Primeiro, tem de configurar o computador para acesso remoto</translation>
 <translation id="4987330545941822761">O Ambiente de Trabalho Remoto do Chrome não consegue determinar o navegador para abrir URLs localmente. Escolha-o na lista abaixo.</translation>

@@ -199,8 +199,6 @@ void BaseRenderingContext2D::beginLayer() {
     // We also need to flip how and where the shadows and filter are applied
     // if there are shadows.
     cc::PaintFlags flags;
-    GetState().FillStyle()->ApplyToFlags(flags);
-    flags.setColor(GetState().FillStyle()->PaintColor());
     flags.setBlendMode(GetState().GlobalComposite());
     flags.setImageFilter(GetState().ShouldDrawShadows()
                              ? GetState().ShadowAndForegroundImageFilter()
@@ -215,22 +213,18 @@ void BaseRenderingContext2D::beginLayer() {
         std::max(state_stack_.size(), max_state_stack_depth_);
 
     cc::PaintFlags extra_flags;
-    GetState().FillStyle()->ApplyToFlags(extra_flags);
-    extra_flags.setColor(GetState().FillStyle()->PaintColor());
-    extra_flags.setAlpha(globalAlpha() * 255);
+    extra_flags.setAlphaf(static_cast<float>(globalAlpha()));
     if (GetState().ShouldDrawShadows())
       extra_flags.setImageFilter(StateGetFilter());
     canvas->saveLayer(extra_flags);
   } else {
     cc::PaintFlags flags;
-    GetState().FillStyle()->ApplyToFlags(flags);
-    flags.setColor(GetState().FillStyle()->PaintColor());
     flags.setBlendMode(GetState().GlobalComposite());
     // This ComposePaintFilter will work always, whether there is only
     // shadows, or filters, both of them, or none of them.
     flags.setImageFilter(sk_make_sp<ComposePaintFilter>(
         GetState().ShadowAndForegroundImageFilter(), StateGetFilter()));
-    flags.setAlpha(globalAlpha() * 255);
+    flags.setAlphaf(static_cast<float>(globalAlpha()));
     canvas->saveLayer(flags);
   }
 
@@ -240,7 +234,7 @@ void BaseRenderingContext2D::beginLayer() {
   setShadowOffsetX(0);
   setShadowOffsetY(0);
   setShadowBlur(0);
-  GetState().SetShadowColor(SK_ColorTRANSPARENT);
+  GetState().SetShadowColor(Color::kTransparent);
   DCHECK(!GetState().ShouldDrawShadows());
   setGlobalAlpha(1.0);
   setGlobalCompositeOperation("source-over");
@@ -441,7 +435,9 @@ void BaseRenderingContext2D::setStrokeStyle(v8::Isolate* isolate,
 
   switch (v8_style.type) {
     case V8CanvasStyleType::kCSSColorValue:
-      GetState().SetStrokeColor(v8_style.css_color_value);
+      // TODO (crbug.com/1399566): v8_style should probably store another format
+      // for color.
+      GetState().SetStrokeColor(Color::FromSkColor(v8_style.css_color_value));
       break;
     case V8CanvasStyleType::kGradient:
       GetState().SetStrokeGradient(v8_style.gradient);
@@ -458,11 +454,11 @@ void BaseRenderingContext2D::setStrokeStyle(v8::Isolate* isolate,
       if (!ParseColorOrCurrentColor(v8_style.string, parsed_color)) {
         return;
       }
-      if (GetState().StrokeStyle()->IsEquivalentRGBA(parsed_color.Rgb())) {
+      if (GetState().StrokeStyle()->IsEquivalentColor(parsed_color)) {
         GetState().SetUnparsedStrokeColor(v8_style.string);
         return;
       }
-      GetState().SetStrokeColor(parsed_color.Rgb());
+      GetState().SetStrokeColor(parsed_color);
       break;
     }
   }
@@ -506,7 +502,9 @@ void BaseRenderingContext2D::setFillStyle(v8::Isolate* isolate,
 
   switch (v8_style.type) {
     case V8CanvasStyleType::kCSSColorValue:
-      GetState().SetFillColor(v8_style.css_color_value);
+      // TODO (crbug.com/1399566): v8_style should probably store another format
+      // for color.
+      GetState().SetFillColor(Color::FromSkColor(v8_style.css_color_value));
       break;
     case V8CanvasStyleType::kGradient:
       GetState().SetFillGradient(v8_style.gradient);
@@ -523,11 +521,11 @@ void BaseRenderingContext2D::setFillStyle(v8::Isolate* isolate,
       if (!ParseColorOrCurrentColor(v8_style.string, parsed_color)) {
         return;
       }
-      if (GetState().FillStyle()->IsEquivalentRGBA(parsed_color.Rgb())) {
+      if (GetState().FillStyle()->IsEquivalentColor(parsed_color)) {
         GetState().SetUnparsedFillColor(v8_style.string);
         return;
       }
-      GetState().SetFillColor(parsed_color.Rgb());
+      GetState().SetFillColor(parsed_color);
       break;
     }
   }
@@ -651,7 +649,7 @@ void BaseRenderingContext2D::setShadowBlur(double blur) {
 String BaseRenderingContext2D::shadowColor() const {
   // TODO(https://1351544): CanvasRenderingContext2DState's shadow color should
   // be a Color, not an SkColor or SkColor4f.
-  return Color::FromSkColor(GetState().ShadowColor()).SerializeAsCanvasColor();
+  return GetState().ShadowColor().SerializeAsCanvasColor();
 }
 
 void BaseRenderingContext2D::setShadowColor(const String& color_string) {
@@ -659,13 +657,14 @@ void BaseRenderingContext2D::setShadowColor(const String& color_string) {
   if (!ParseColorOrCurrentColor(color_string, color)) {
     return;
   }
-  if (Color::FromSkColor(GetState().ShadowColor()) == color)
+  if (GetState().ShadowColor() == color) {
     return;
+  }
   if (identifiability_study_helper_.ShouldUpdateBuilder()) {
     identifiability_study_helper_.UpdateBuilder(CanvasOps::kSetShadowColor,
                                                 color.Rgb());
   }
-  GetState().SetShadowColor(color.Rgb());
+  GetState().SetShadowColor(color);
 }
 
 const Vector<double>& BaseRenderingContext2D::getLineDash() const {

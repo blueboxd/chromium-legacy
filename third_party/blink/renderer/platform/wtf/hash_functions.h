@@ -192,14 +192,16 @@ inline void AddFloatToHash(unsigned& hash, float value) {
 template <typename T>
 struct DefaultHash;
 
-// Actual implementation of DefaultHash.
+// Actual implementation of DefaultHash. This is kept temporarily before we
+// combine all DefaultHash into HashTraits.
 //
-// The case of |isIntegral| == false is not implemented. If you see a compile
-// error saying DefaultHashImpl<T, false> is not defined, that's because the
-// default hash functions for T are not defined. You need to implement them
-// yourself.
+// The case of |isIntegral| == false is not implemented by default.
 template <typename T, bool isIntegral>
-struct DefaultHashImpl;
+struct DefaultHashImpl {
+  // If DefaultHash<T> falls back to this, the hash traits type is supposed to
+  // be completely implemented. See hash_traits.h.
+  using Undefined = void;
+};
 
 template <typename T>
 struct DefaultHashImpl<T, true> : IntHash<T> {};
@@ -265,57 +267,6 @@ struct PairHash
 
 template <typename T, typename U>
 struct DefaultHash<std::pair<T, U>> : PairHash<T, U> {};
-
-// Wrapper for integral type to extend to have 0 and max keys.
-template <typename T>
-struct IntegralWithAllKeys {
-  IntegralWithAllKeys() : IntegralWithAllKeys(0, ValueType::kEmpty) {}
-  explicit IntegralWithAllKeys(T value)
-      : IntegralWithAllKeys(value, ValueType::kValid) {}
-  explicit IntegralWithAllKeys(HashTableDeletedValueType)
-      : IntegralWithAllKeys(0, ValueType::kDeleted) {}
-
-  bool IsHashTableDeletedValue() const {
-    return value_type_ == ValueType::kDeleted;
-  }
-
-  unsigned Hash() const {
-    return HashInts(value_, static_cast<unsigned>(value_type_));
-  }
-
-  bool operator==(const IntegralWithAllKeys& b) const {
-    return value_ == b.value_ && value_type_ == b.value_type_;
-  }
-
- private:
-  enum class ValueType : uint8_t { kEmpty, kValid, kDeleted };
-
-  IntegralWithAllKeys(T value, ValueType value_type)
-      : value_(value), value_type_(value_type) {
-    static_assert(std::is_integral<T>::value,
-                  "Only integral types are supported.");
-  }
-
-  T value_;
-  ValueType value_type_;
-};
-
-// Specialization for integral type to have all possible values for key
-// including 0 and max.
-template <typename T>
-struct IntegralWithAllKeysHash {
-  static unsigned GetHash(const IntegralWithAllKeys<T>& key) {
-    return key.Hash();
-  }
-  static bool Equal(const IntegralWithAllKeys<T>& a,
-                    const IntegralWithAllKeys<T>& b) {
-    return a == b;
-  }
-  static const bool safe_to_compare_to_empty_or_deleted = true;
-};
-
-template <typename T>
-struct DefaultHash<IntegralWithAllKeys<T>> : IntegralWithAllKeysHash<T> {};
 
 }  // namespace WTF
 

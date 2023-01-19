@@ -17,6 +17,7 @@ import '../settings_shared.css.js';
 import '../controls/settings_toggle_button.js';
 import '../prefs/prefs.js';
 import './credit_card_edit_dialog.js';
+import './iban_edit_dialog.js';
 import './passwords_shared.css.js';
 import './payments_list.js';
 import './virtual_card_unenroll_dialog.js';
@@ -89,6 +90,14 @@ export class SettingsPaymentsSectionElement extends
       },
 
       /**
+       * An array of all saved IBANs.
+       */
+      ibans: {
+        type: Array,
+        value: () => [],
+      },
+
+      /**
        * An array of all saved UPI IDs.
        */
       upiIds: {
@@ -119,11 +128,17 @@ export class SettingsPaymentsSectionElement extends
       },
 
       /**
-       * The model for any credit card related action menus or dialogs.
+       * The model for any credit card-related action menus or dialogs.
        */
       activeCreditCard_: Object,
 
+      /**
+       * The model for any IBAN-related action menus or dialogs.
+       */
+      activeIban_: Object,
+
       showCreditCardDialog_: Boolean,
+      showIbanDialog_: Boolean,
       showVirtualCardUnenrollDialog_: Boolean,
       migratableCreditCardsInfo_: String,
 
@@ -139,6 +154,18 @@ export class SettingsPaymentsSectionElement extends
       },
 
       /**
+       * Whether the removal of Expiration and Type titles on settings page is
+       * enabled.
+       */
+      removeCardExpirationAndTypeTitlesEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('removeCardExpirationAndTypeTitles');
+        },
+        readOnly: true,
+      },
+
+      /**
        * Whether virtual card enroll management on settings page is enabled.
        */
       virtualCardEnrollmentEnabled_: {
@@ -148,20 +175,36 @@ export class SettingsPaymentsSectionElement extends
         },
         readOnly: true,
       },
+
+      /**
+       * Whether virtual card metadata on settings page is enabled.
+       */
+      virtualCardMetadataEnabled_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('virtualCardMetadataEnabled');
+        },
+        readOnly: true,
+      },
     };
   }
 
   prefs: {[key: string]: any};
   creditCards: chrome.autofillPrivate.CreditCardEntry[];
+  ibans: chrome.autofillPrivate.IbanEntry[];
   upiIds: string[];
   private showIbanSettingsEnabled_: boolean;
   private userIsFidoVerifiable_: boolean;
   private activeCreditCard_: chrome.autofillPrivate.CreditCardEntry|null;
+  private activeIban_: chrome.autofillPrivate.IbanEntry|null;
   private showCreditCardDialog_: boolean;
+  private showIbanDialog_: boolean;
   private showVirtualCardUnenrollDialog_: boolean;
   private migratableCreditCardsInfo_: string;
   private migrationEnabled_: boolean;
+  private removeCardExpirationAndTypeTitlesEnabled_: boolean;
   private virtualCardEnrollmentEnabled_: boolean;
+  private virtualCardMetadataEnabled_: boolean;
   private activeDialogAnchor_: HTMLElement|null;
   private paymentsManager_: PaymentsManagerProxy =
       PaymentsManagerImpl.getInstance();
@@ -209,9 +252,14 @@ export class SettingsPaymentsSectionElement extends
         });
 
     const setPersonalDataListener: PersonalDataChangedListener =
-        (_addressList, cardList) => {
+        (_addressList, cardList, ibanList) => {
           this.creditCards = cardList;
+          this.ibans = ibanList;
         };
+
+    const setIbansListener = (ibanList: chrome.autofillPrivate.IbanEntry[]) => {
+      this.ibans = ibanList;
+    };
 
     const setUpiIdsListener = (upiIdList: string[]) => {
       this.upiIds = upiIdList;
@@ -222,6 +270,7 @@ export class SettingsPaymentsSectionElement extends
 
     // Request initial data.
     this.paymentsManager_.getCreditCardList().then(setCreditCardsListener);
+    this.paymentsManager_.getIbanList().then(setIbansListener);
     this.paymentsManager_.getUpiIdList().then(setUpiIdsListener);
 
     // Listen for changes.
@@ -238,6 +287,16 @@ export class SettingsPaymentsSectionElement extends
     this.paymentsManager_.removePersonalDataManagerListener(
         this.setPersonalDataListener_!);
     this.setPersonalDataListener_ = null;
+  }
+
+  /**
+   * Calculate the class style for `paymentsList` based on flags.
+   */
+  private computeCssClass_(): string {
+    return this.removeCardExpirationAndTypeTitlesEnabled_ &&
+            this.virtualCardMetadataEnabled_ ?
+        'payment-list-margin-start' :
+        '';
   }
 
   /**
@@ -306,6 +365,29 @@ export class SettingsPaymentsSectionElement extends
     focusWithoutInk(this.activeDialogAnchor_);
     this.activeDialogAnchor_ = null;
     this.activeCreditCard_ = null;
+  }
+
+  /**
+   * Handles clicking on the add "IBAN" option.
+   */
+  private onAddIbanClick_(e: Event) {
+    e.preventDefault();
+    this.showIbanDialog_ = true;
+    this.activeDialogAnchor_ =
+        this.shadowRoot!.querySelector<CrButtonElement>('#addPaymentMethods');
+    const menu = this.shadowRoot!
+                     .querySelector<CrLazyRenderElement<CrActionMenuElement>>(
+                         '#paymentMethodsActionMenu')!.get();
+    assert(menu);
+    menu.close();
+  }
+
+  private onIbanDialogClose_() {
+    this.showIbanDialog_ = false;
+    assert(this.activeDialogAnchor_);
+    focusWithoutInk(this.activeDialogAnchor_);
+    this.activeDialogAnchor_ = null;
+    this.activeIban_ = null;
   }
 
   /**
@@ -389,6 +471,10 @@ export class SettingsPaymentsSectionElement extends
   private saveCreditCard_(
       event: CustomEvent<chrome.autofillPrivate.CreditCardEntry>) {
     this.paymentsManager_.saveCreditCard(event.detail);
+  }
+
+  private onSaveIban_(event: CustomEvent<chrome.autofillPrivate.IbanEntry>) {
+    this.paymentsManager_.saveIban(event.detail);
   }
 
   /**

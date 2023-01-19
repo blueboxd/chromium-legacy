@@ -271,10 +271,10 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
     parent_proxy->GetAssociatedRemoteFrame()->CreateRemoteChild(
         frame_token_, opener_frame_token, frame_tree_node_->tree_scope_type(),
         frame_tree_node_->current_replication_state().Clone(),
+        frame_tree_node_->frame_owner_properties().Clone(),
         frame_tree_node_->IsLoading(),
         frame_tree_node_->current_frame_host()->devtools_frame_token(),
         CreateAndBindRemoteFrameInterfaces());
-
   } else {
     GetRenderViewHost()->GetAssociatedPageBroadcast()->CreateRemoteMainFrame(
         frame_token_, opener_frame_token,
@@ -286,18 +286,6 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
   }
 
   SetRenderFrameProxyCreated(true);
-
-  // For subframes, initialize the proxy's FrameOwnerProperties only if they
-  // differ from default values.
-  bool should_send_properties =
-      !frame_tree_node_->frame_owner_properties().Equals(
-          blink::mojom::FrameOwnerProperties());
-  if (frame_tree_node_->parent() && should_send_properties) {
-    auto frame_owner_properties =
-        frame_tree_node_->frame_owner_properties().Clone();
-    GetAssociatedRemoteFrame()->SetFrameOwnerProperties(
-        std::move(frame_owner_properties));
-  }
 
   return true;
 }
@@ -628,13 +616,22 @@ void RenderFrameProxyHost::UpdateTargetURL(
 }
 
 void RenderFrameProxyHost::RouteCloseEvent() {
+  // The renderer already ensures that this can only be called on an outermost
+  // main frame - see DOMWindow::Close().  Terminate the renderer if this is
+  // not the case.
+  RenderFrameHostImpl* rfh = frame_tree_node_->current_frame_host();
+  if (!rfh->IsOutermostMainFrame()) {
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFPH_WINDOW_CLOSE_ON_NON_OUTERMOST_FRAME);
+    return;
+  }
+
   // Tell the active RenderFrameHost to run unload handlers and close, as long
   // as the request came from a RenderFrameHost in the same BrowsingInstance.
   // We receive this from a WebViewImpl when it receives a request to close
   // the window containing the active RenderFrameHost.
-  RenderFrameHostImpl* rfh = frame_tree_node_->current_frame_host();
   if (GetSiteInstance()->IsRelatedSiteInstance(rfh->GetSiteInstance())) {
-    rfh->render_view_host()->ClosePage();
+    rfh->ClosePage();
   }
 }
 

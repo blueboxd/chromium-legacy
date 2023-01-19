@@ -17,9 +17,9 @@
 #include <vector>
 
 #include "base/at_exit.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/cxx20_erase_vector.h"
+#include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
@@ -74,7 +74,8 @@ constexpr const char kAllCategory[] = "test_all";
 bool IsCategoryEnabled(const char* name) {
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
   bool result;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(perfetto::DynamicCategory(name), &result);
+  perfetto::DynamicCategory dynamic_category(name);
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(dynamic_category, &result);
   return result;
 #else
   return *TraceLog::GetInstance()->GetCategoryGroupEnabled(name);

@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace blink {
@@ -436,6 +437,31 @@ void DrawLineForBoxSide(GraphicsContext& context,
                         bool antialias,
                         const AutoDarkMode& auto_dark_mode);
 
+Color CalculateBorderStyleColor(const EBorderStyle& style,
+                                const BoxSide& side,
+                                const Color& color) {
+  bool is_darken = (side == BoxSide::kTop || side == BoxSide::kLeft) ==
+                   (style == EBorderStyle::kInset);
+
+  // Inset, outset, ridge, and groove paint a darkened or "shadow" edge:
+  // https://w3c.github.io/csswg-drafts/css-backgrounds/#border-style. By
+  // default, darken |color| for the darker edge and use |color| for the lighter
+  // edge.
+  if (is_darken) {
+    return color.Dark();
+  }
+  // This constant is used to determine if there is enough contrast between
+  // the darkened edge and |color|. If not, also lighten |color| for the
+  // lighter edge.
+  constexpr float kMinimumBorderEdgeContrastRatio = 1.75f;
+  if (color_utils::GetContrastRatio(color.toSkColor4f(),
+                                    color.Dark().toSkColor4f()) <
+      kMinimumBorderEdgeContrastRatio) {
+    return color.Light();
+  }
+  return color;
+}
+
 void DrawDoubleBoxSide(GraphicsContext& context,
                        int x1,
                        int y1,
@@ -453,8 +479,6 @@ void DrawDoubleBoxSide(GraphicsContext& context,
   DCHECK_GT(third_of_thickness, 0);
 
   if (!adjacent_width1 && !adjacent_width2) {
-    StrokeStyle old_stroke_style = context.GetStrokeStyle();
-    context.SetStrokeStyle(kNoStroke);
     context.SetFillColor(color);
 
     bool was_antialiased = context.ShouldAntialias();
@@ -463,24 +487,23 @@ void DrawDoubleBoxSide(GraphicsContext& context,
     switch (side) {
       case BoxSide::kTop:
       case BoxSide::kBottom:
-        context.DrawRect(gfx::Rect(x1, y1, length, third_of_thickness),
+        context.FillRect(gfx::Rect(x1, y1, length, third_of_thickness),
                          auto_dark_mode);
-        context.DrawRect(
+        context.FillRect(
             gfx::Rect(x1, y2 - third_of_thickness, length, third_of_thickness),
             auto_dark_mode);
         break;
       case BoxSide::kLeft:
       case BoxSide::kRight:
-        context.DrawRect(gfx::Rect(x1, y1, third_of_thickness, length),
+        context.FillRect(gfx::Rect(x1, y1, third_of_thickness, length),
                          auto_dark_mode);
-        context.DrawRect(
+        context.FillRect(
             gfx::Rect(x2 - third_of_thickness, y1, third_of_thickness, length),
             auto_dark_mode);
         break;
     }
 
     context.SetShouldAntialias(was_antialiased);
-    context.SetStrokeStyle(old_stroke_style);
     return;
   }
 
@@ -748,17 +771,8 @@ void DrawLineForBoxSide(GraphicsContext& context,
                                auto_dark_mode);
       break;
     case EBorderStyle::kInset:
-      // FIXME: Maybe we should lighten the colors on one side like Firefox.
-      // https://bugs.webkit.org/show_bug.cgi?id=58608
-      if (side == BoxSide::kTop || side == BoxSide::kLeft) {
-        color = color.Dark();
-      }
-      [[fallthrough]];
     case EBorderStyle::kOutset:
-      if (style == EBorderStyle::kOutset &&
-          (side == BoxSide::kBottom || side == BoxSide::kRight)) {
-        color = color.Dark();
-      }
+      color = CalculateBorderStyleColor(style, side, color);
       [[fallthrough]];
     case EBorderStyle::kSolid:
       DrawSolidBoxSide(context, x1, y1, x2, y2, side, color, adjacent_width1,
@@ -1412,20 +1426,15 @@ void BoxBorderPainter::DrawBoxSideFromPath(const Path& border_path,
       return;
     }
     case EBorderStyle::kInset:
-      if (side == BoxSide::kTop || side == BoxSide::kLeft)
-        color = color.Dark();
-      break;
     case EBorderStyle::kOutset:
-      if (side == BoxSide::kBottom || side == BoxSide::kRight)
-        color = color.Dark();
+      color = CalculateBorderStyleColor(border_style, side, color);
       break;
     default:
       break;
   }
 
-  context_.SetStrokeStyle(kNoStroke);
   context_.SetFillColor(color);
-  context_.DrawRect(gfx::ToRoundedRect(outer_.Rect()),
+  context_.FillRect(gfx::ToRoundedRect(outer_.Rect()),
                     PaintAutoDarkMode(style_, element_role_));
 }
 
@@ -1886,6 +1895,32 @@ void BoxBorderPainter::DrawBoxSide(GraphicsContext& context,
   DrawLineForBoxSide(context, snapped_edge_rect.x(), snapped_edge_rect.y(),
                      snapped_edge_rect.right(), snapped_edge_rect.bottom(),
                      side, color, style, 0, 0, true, auto_dark_mode);
+}
+
+Color BoxBorderPainter::CalculateBorderStyleColor(const EBorderStyle& style,
+                                                  const BoxSide& side,
+                                                  const Color& color) {
+  bool is_darken = (side == BoxSide::kTop || side == BoxSide::kLeft) ==
+                   (style == EBorderStyle::kInset);
+
+  // Inset, outset, ridge, and groove paint a darkened or "shadow" edge:
+  // https://w3c.github.io/csswg-drafts/css-backgrounds/#border-style. By
+  // default, darken |color| for the darker edge and use |color| for the lighter
+  // edge.
+  if (is_darken) {
+    return color.Dark();
+  } else {
+    // This constant is used to determine if there is enough contrast between
+    // the darkened edge and |color|. If not, also lighten |color| for the
+    // lighter edge.
+    constexpr float kMinimumBorderEdgeContrastRatio = 1.75f;
+    if (color_utils::GetContrastRatio(color.toSkColor4f(),
+                                      color.Dark().toSkColor4f()) <
+        kMinimumBorderEdgeContrastRatio) {
+      return color.Light();
+    }
+  }
+  return color;
 }
 
 }  // namespace blink

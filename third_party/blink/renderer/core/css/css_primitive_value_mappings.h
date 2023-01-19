@@ -729,73 +729,6 @@ inline TextEmphasisMark CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(FontDescription::Kerning kerning)
-    : CSSValue(kIdentifierClass) {
-  switch (kerning) {
-    case FontDescription::kAutoKerning:
-      value_id_ = CSSValueID::kAuto;
-      return;
-    case FontDescription::kNormalKerning:
-      value_id_ = CSSValueID::kNormal;
-      return;
-    case FontDescription::kNoneKerning:
-      value_id_ = CSSValueID::kNone;
-      return;
-  }
-
-  NOTREACHED();
-  value_id_ = CSSValueID::kAuto;
-}
-
-template <>
-inline FontDescription::Kerning CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueID::kAuto:
-      return FontDescription::kAutoKerning;
-    case CSSValueID::kNormal:
-      return FontDescription::kNormalKerning;
-    case CSSValueID::kNone:
-      return FontDescription::kNoneKerning;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return FontDescription::kAutoKerning;
-}
-
-template <>
-inline CSSIdentifierValue::CSSIdentifierValue(OpticalSizing optical_sizing)
-    : CSSValue(kIdentifierClass) {
-  switch (optical_sizing) {
-    case kAutoOpticalSizing:
-      value_id_ = CSSValueID::kAuto;
-      return;
-    case kNoneOpticalSizing:
-      value_id_ = CSSValueID::kNone;
-      return;
-  }
-
-  NOTREACHED();
-  value_id_ = CSSValueID::kAuto;
-}
-
-template <>
-inline OpticalSizing CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueID::kAuto:
-      return kAutoOpticalSizing;
-    case CSSValueID::kNone:
-      return kNoneOpticalSizing;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return kAutoOpticalSizing;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(
     FontDescription::FontSynthesisWeight font_synthesis_weight)
     : CSSValue(kIdentifierClass) {
@@ -1803,22 +1736,22 @@ inline TimelineScroller CSSIdentifierValue::ConvertTo() const {
 
 template <>
 inline CSSIdentifierValue::CSSIdentifierValue(
-    Timing::TimelineNamedPhase named_phase)
+    Timing::TimelineNamedRange named_range)
     : CSSValue(kIdentifierClass) {
-  switch (named_phase) {
-    case Timing::TimelineNamedPhase::kCover:
+  switch (named_range) {
+    case Timing::TimelineNamedRange::kCover:
       value_id_ = CSSValueID::kCover;
       break;
-    case Timing::TimelineNamedPhase::kContain:
+    case Timing::TimelineNamedRange::kContain:
       value_id_ = CSSValueID::kContain;
       break;
-    case Timing::TimelineNamedPhase::kEnter:
+    case Timing::TimelineNamedRange::kEnter:
       value_id_ = CSSValueID::kEnter;
       break;
-    case Timing::TimelineNamedPhase::kExit:
+    case Timing::TimelineNamedRange::kExit:
       value_id_ = CSSValueID::kExit;
       break;
-    case Timing::TimelineNamedPhase::kNone:
+    default:
       NOTREACHED();
       value_id_ = CSSValueID::kCover;
       break;
@@ -1826,21 +1759,21 @@ inline CSSIdentifierValue::CSSIdentifierValue(
 }
 
 template <>
-inline Timing::TimelineNamedPhase CSSIdentifierValue::ConvertTo() const {
+inline Timing::TimelineNamedRange CSSIdentifierValue::ConvertTo() const {
   switch (GetValueID()) {
     case CSSValueID::kCover:
-      return Timing::TimelineNamedPhase::kCover;
+      return Timing::TimelineNamedRange::kCover;
     case CSSValueID::kContain:
-      return Timing::TimelineNamedPhase::kContain;
+      return Timing::TimelineNamedRange::kContain;
     case CSSValueID::kEnter:
-      return Timing::TimelineNamedPhase::kEnter;
+      return Timing::TimelineNamedRange::kEnter;
     case CSSValueID::kExit:
-      return Timing::TimelineNamedPhase::kExit;
+      return Timing::TimelineNamedRange::kExit;
     default:
       break;
   }
   NOTREACHED();
-  return Timing::TimelineNamedPhase::kCover;
+  return Timing::TimelineNamedRange::kCover;
 }
 
 }  // namespace blink

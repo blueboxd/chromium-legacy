@@ -608,6 +608,7 @@ Koble enheten til strøm.</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> er flyttet til mappen <ph name="FOLDER_NAME" />.</translation>
 <translation id="4302592941791324970">Ikke tilgjengelig</translation>
 <translation id="4303223480529385476">Vis statusområdet</translation>
+<translation id="4311195029067684288">Full</translation>
 <translation id="4312840429157639164">Kameraet er festet til øvre høyre hjørne. Konflikt med systemoverflaten.</translation>
 <translation id="4316910396681052118">ALLE APPER</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -638,6 +639,7 @@ Koble enheten til strøm.</translation>
 <translation id="4455051983450390249">Se varslene på telefonen din på <ph name="DEVICE_TYPE" /></translation>
 <translation id="445864333228800152">God kveld</translation>
 <translation id="4458688154122353284">Avslutt skjermopptak</translation>
+<translation id="445923051607553918">Koble til wifi-nettverk</translation>
 <translation id="4471354919263203780">Laster ned filer for talegjenkjenning … <ph name="PERCENT" /> %</translation>
 <translation id="4471432286288241507">{0,plural, =0{Oppdater enheten nå}=1{Oppdater enheten innen 1 sekund}other{Oppdater enheten innen # sekunder}}</translation>
 <translation id="4472575034687746823">Kom i gang</translation>

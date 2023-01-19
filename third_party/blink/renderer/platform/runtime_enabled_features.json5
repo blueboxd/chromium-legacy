@@ -445,8 +445,9 @@
     },
     {
       // If set, the parser will canonicalize whitespace strings.
-      name: "CanonicalizeWhiteSpaceStrings",
-      base_feature: "CanonicalizeWhiteSpaceStrings",
+      name: "CanonicalizeWhitespaceStrings",
+      status: "stable",
+      base_feature: "CanonicalizeWhitespaceStrings",
     },
     {
       name: "Canvas2dImageChromium",
@@ -656,7 +657,11 @@
     },
     {
       name: "CSSColorTypedOM",
-      status:  "experimental",
+      status: "experimental",
+    },
+    {
+      name: "CSSDisplayAnimation",
+      status: "test"
     },
     {
       // Include custom properties in CSSComputedStyleDeclaration::item/length.
@@ -693,7 +698,6 @@
     },
     {
       name: "CSSGridTemplatePropertyInterpolation",
-      depends_on: ["LayoutNGGridFragmentation"],
       status: "stable",
     },
     {
@@ -790,7 +794,7 @@
     },
     {
       name: "CSSNewRootFontUnits",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSObjectViewBox",
@@ -839,6 +843,11 @@
       status: "experimental",
     },
     {
+      name: "CSSPseudoHasNonForgivingParsing",
+      status: "experimental",
+      base_feature: "CSSPseudoHasNonForgivingParsing",
+    },
+    {
       // When an audio, video, or similar resource is "playing"
       // or "paused".
       // https://www.w3.org/TR/selectors-4/#video-state
@@ -873,7 +882,7 @@
       //
       // https://drafts.csswg.org/selectors-4/#the-nth-child-pseudo
       name: "CSSSelectorNthChildComplexSelector",
-      status: "experimental"
+      status: "stable"
     },
     {
       // Support for CSS ::spelling-error, ::grammar-error, and the
@@ -896,6 +905,13 @@
     {
       name: "CSSToggles",
       status: "experimental",
+    },
+    {
+      // Support for tree-scoped [1] timeline names (e.g. produced by
+      // scroll-timeline).
+      //
+      // [1] https://drafts.csswg.org/css-scoping-1/#shadow-names
+      name: "CSSTreeScopedTimelines",
     },
     {
       // Explainer: https://github.com/DevSDK/css-trigonometric-functions
@@ -1044,11 +1060,20 @@
       status: "stable",
       base_feature: "DisableTextDecorationColorOverride",
     },
-    // This feature should only be enabled if ThirdPartyStoragePartitioning
-    // is enabled, but as ThirdPartyStoragePartitioning will be linked to a
-    // deprecation trial it isn't possible to set a `depends_on`.
+    // This feature should only be enabled if
+    // DisableThirdPartyStoragePartitioning is enabled, but as
+    // DisableThirdPartyStoragePartitioning will be linked to a deprecation
+    // trial it isn't possible to set a `depends_on`.
     {
       name: "DisableThirdPartySessionStoragePartitioningAfterGeneralPartitioning",
+      status: "experimental",
+      browser_process_read_write_access: true,
+    },
+    // This feature will represent the deprecation trial that allows first
+    // parties to temporarily use unpartitioned storage in embeds loaded
+    // on their site.
+    {
+      name: "DisableThirdPartyStoragePartitioning",
       status: "experimental",
       browser_process_read_write_access: true,
     },
@@ -1207,6 +1232,11 @@
       status: "stable",
     },
     {
+      name: "FedCmAutoSignin",
+      depends_on: ["FedCm"],
+      public: true,
+    },
+    {
       // This only exists so we can use RuntimeEnabled in the IDL file
       // when either implied_by flag is enabled.
       name: "FedCmIdentityProviderInterface",
@@ -1324,12 +1354,6 @@
       // OPFS File System Access API.
       name: "FileSystemAccessOriginPrivate",
       status: "stable",
-    },
-    {
-      // Whether to re-enable async interface for FileSystemSyncAccessHandle
-      // This is used by enterprise policy during migration.
-      name: "FileSystemSyncAccessHandleAsyncInterfaceOverride",
-      public: true,
     },
     {
       name: "FirstPartySets",
@@ -1465,6 +1489,7 @@
       status: {
         "ChromeOS_Ash": "test",
         "ChromeOS_Lacros": "test",
+        "Linux": "test",
         "default": "",
       }
     },
@@ -1488,6 +1513,7 @@
     },
     {
       name: "HighlightInheritance",
+      status: "experimental",
     },
     {
       name: "HighlightOverlayPainting",
@@ -1508,12 +1534,6 @@
       name: "HTMLMapToImgMatchingByNameAndId",
       status: "stable",
       base_feature: "HTMLMapToImgMatchingByNameAndId",
-    },
-    {
-      // TODO(crbug.com/1315717): This flag is being used to deprecate support for <param> urls within <object> elements. This feature is controlled by blink::features::kHTMLParamElementUrlSupport.
-      name: "HTMLParamElementUrlSupport",
-      status: "stable",
-      base_feature: "HTMLParamElementUrlSupport",
     },
     {
       // TODO(crbug.com/1307772): Enables the Popover API.
@@ -1570,6 +1590,12 @@
       name: "InfiniteCullRect",
     },
     {
+      // If enabled, setting innerHTML will use a special fast-path parser.
+      name: "InnerHTMLParserFastpath",
+      base_feature: "InnerHTMLParserFastpath",
+      status: "experimental",
+    },
+    {
       name: "InputMultipleFieldsUI",
       // No plan to support complex UI for date/time INPUT types on Android.
       status: {"Android": "test", "default": "stable"},
@@ -1615,43 +1641,21 @@
       base_feature: "LayoutNG",
     },
     {
-      name: "LayoutNGBlockFragmentation",
-      status: "stable",
-    },
-    {
-      name: "LayoutNGBlockInInline",
-      depends_on: ["LayoutNG"],
-      status: "stable",
-    },
-    {
       // A kill-switch for a fix of crbug.com/1366268.
       name: "LayoutNGDelayScrollOffsetClamping",
       base_feature: "LayoutNGDelayScrollOffsetClamping",
       status: "stable",
     },
     {
-      // Block fragmentation support in the flex layout algorithm.
-      // https://drafts.csswg.org/css-flexbox-1/#pagination
-      name: "LayoutNGFlexFragmentation",
-      depends_on: ["LayoutNG", "LayoutNGBlockFragmentation"],
+      // crbug.com/1353190
+      name: "LayoutNGNoCopyBack",
+      depends_on: ["LayoutMediaNGContainer", "LayoutNGReplacedNoBoxSetters"],
       status: "stable",
-    },
-    {
-      // crbug.com/1346221
-      name: "LayoutNGFrameSet",
-      depends_on: ["LayoutNG"],
-      status: "stable",
-    },
-    {
-      // Block fragmentation support in the grid layout algorithm.
-      // https://drafts.csswg.org/css-grid-1/#pagination
-      name: "LayoutNGGridFragmentation",
-      depends_on: ["LayoutNG","LayoutNGBlockFragmentation"],
-      status: "stable",
+      base_feature: "LayoutNGNoCopyBack",
     },
     {
       name: "LayoutNGPrinting",
-      depends_on: ["LayoutNG","LayoutNGBlockFragmentation"],
+      depends_on: ["LayoutNG"],
       status: "stable",
       base_feature: "LayoutNGPrinting",
     },
@@ -1668,13 +1672,6 @@
       name: "LayoutNGSubgrid",
       depends_on: ["LayoutNG"],
       status: "test"
-    },
-    {
-      // Block fragmentation support in the table layout algorithm.
-      // https://drafts.csswg.org/css-tables-3/#fragmentation
-      name: "LayoutNGTableFragmentation",
-      depends_on: ["LayoutNG","LayoutNGBlockFragmentation"],
-      status: "stable",
     },
     {
       // Merge UpdateAfterLayout() calls for LayoutReplaced into one in
@@ -1892,10 +1889,6 @@
         "ChromeOS_Lacros": "stable",
         "default": "experimental",
       },
-    },
-    {
-      name: "NeverSlowMode",
-      public: true,
     },
     {
       name: "NewFlexboxSizing",
@@ -2363,6 +2356,10 @@
       status: "experimental",
     },
     {
+      name: "ResourceTimingInterimResponseTimes",
+      status: "test"
+    },
+    {
       name: "ResourceTimingResponseStatus",
       status: "stable",
     },
@@ -2379,6 +2376,11 @@
       name: "RtcAudioJitterBufferMaxPackets",
       origin_trial_feature_name: "RtcAudioJitterBufferMaxPackets",
       status: "experimental",
+    },
+    {
+      name: "RTCEncodedVideoFrameAdditionalMetadata",
+      status: "experimental",
+      base_feature: "RTCEncodedVideoFrameAdditionalMetadata",
     },
     {
       name: "RTCEncodedVideoFrameClone",
@@ -2421,6 +2423,7 @@
     {
       name: "RTCSvcScalabilityMode",
       status: "experimental",
+      base_feature: "RTCSvcScalabilityMode",
     },
     {
       name: "SanitizerAPI",
@@ -2635,6 +2638,12 @@
       origin_trial_allows_third_party: true,
     },
     {
+      name: "SpeculationRulesDocumentRulesSelectorMatches",
+    },
+    {
+      name: "SpeculationRulesEagerness",
+    },
+    {
       name: "SpeculationRulesFetchFromHeader",
       origin_trial_feature_name: "SpeculationRulesPrefetchFuture",
       origin_trial_allows_third_party: true,
@@ -2712,6 +2721,12 @@
       base_feature: "StorageBuckets",
     },
     {
+      // Gates the `locks()` method on a storage bucket.
+      name: "StorageBucketsLocks",
+      status: "experimental",
+      base_feature: "StorageBucketsLocks",
+    },
+    {
       name: "StreamingDeclarativeShadowDOM",
       status: "experimental",
       base_feature: "StreamingDeclarativeShadowDOM",
@@ -2749,11 +2764,6 @@
       name: "SvgContainersRejectSvgInDisplayContents",
       status: "stable",
       base_feature: "SvgContainersRejectSvgInDisplayContents",
-    },
-    {
-      name: "SVGTextNG",
-      depends_on: ["LayoutNG"],
-      status: "stable"
     },
     {
       name: "SynthesizedKeyboardEventsForAccessibilityActions",
@@ -2811,6 +2821,8 @@
       name: "TextFragmentTapOpensContextMenu",
       status: {"Android": "stable"},
     },
+    // To enable the deprecation trial, use the
+    // `DisableThirdPartyStoragePartitioning` feature instead.
     {
       name: "ThirdPartyStoragePartitioning",
       status: "experimental",
@@ -2888,6 +2900,14 @@
     {
       name: "UnclosedFormControlIsInvalid",
       status: "experimental",
+    },
+    {
+      // Allow unbalanced columns (no implicit breaks), even if the block-size
+      // of the multicol container isn't constrained, rather than forcing column
+      // balancing in such cases. See crbug.com/1156312
+      name: "UnconstrainedColumnFillAuto",
+      status: "stable",
+      base_feature: "UnconstrainedColumnFillAuto",
     },
     {
       name: "UnexposedTaskIds",
@@ -3087,6 +3107,11 @@
       origin_trial_os: ["win", "mac", "linux", "chromeos"],
       status: "stable",
     },
+    {
+      name: "WebAssemblyGC",
+      origin_trial_feature_name: "WebAssemblyGC",
+      status: "experimental",
+    },
     // WebAuth is disabled on Android versions prior to N (7.0) due to lack of
     // supporting APIs, see runtime_features.cc.
     {
@@ -3114,6 +3139,11 @@
     },
     {
       name: "WebAuthenticationLargeBlobExtension",
+      status: "experimental",
+    },
+    // https://w3c.github.io/webauthn/#prf-extension
+    {
+      name: "WebAuthenticationPRF",
       status: "experimental",
     },
     {

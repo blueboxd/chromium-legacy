@@ -309,9 +309,6 @@ class InstallStaticUtilTest
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     static constexpr wchar_t kPolicyKey[] =
         L"Software\\Policies\\Google\\Chrome";
-#elif BUILDFLAG(GOOGLE_CHROME_FOR_TESTING_BRANDING)
-    static constexpr wchar_t kPolicyKey[] =
-        L"Software\\Policies\\Google\\Chrome for Testing";
 #else
     static constexpr wchar_t kPolicyKey[] = L"Software\\Policies\\Chromium";
 #endif

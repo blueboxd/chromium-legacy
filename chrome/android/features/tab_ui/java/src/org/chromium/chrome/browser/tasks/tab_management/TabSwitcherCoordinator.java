@@ -24,6 +24,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -52,6 +53,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorAction
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorAction.ShowMode;
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorCoordinator.TabSelectionEditorController;
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorCoordinator.TabSelectionEditorNavigationProvider;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiMetricsHelper.TabSelectionEditorOpenMetricGroups;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionsOrchestrator;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
@@ -170,8 +172,8 @@ public class TabSwitcherCoordinator
             @NonNull Supplier<DynamicResourceLoader> dynamicResourceLoaderSupplier,
             @NonNull SnackbarManager snackbarManager,
             @NonNull ModalDialogManager modalDialogManager,
-            @Nullable OneshotSupplier<IncognitoReauthController>
-                    incognitoReauthControllerSupplier) {
+            @Nullable OneshotSupplier<IncognitoReauthController> incognitoReauthControllerSupplier,
+            @Nullable BackPressManager backPressManager) {
         try (TraceEvent e = TraceEvent.scoped("TabSwitcherCoordinator.constructor")) {
             mActivity = activity;
             mMode = mode;
@@ -197,7 +199,8 @@ public class TabSwitcherCoordinator
 
             mMediator = new TabSwitcherMediator(activity, this, containerViewModel,
                     tabModelSelector, browserControls, container, tabContentManager, this, this,
-                    multiWindowModeStateDispatcher, mode, incognitoReauthControllerSupplier);
+                    multiWindowModeStateDispatcher, mode, incognitoReauthControllerSupplier,
+                    backPressManager);
 
             mTabSwitcherCustomViewManager = new TabSwitcherCustomViewManager(mMediator);
 
@@ -532,7 +535,8 @@ public class TabSwitcherCoordinator
         }
         mTabSelectionEditorCoordinator.getController().show(
                 tabs, /*preSelectedTabCount=*/0, mTabListCoordinator.getRecyclerViewPosition());
-        RecordUserAction.record("TabMultiSelectV2.OpenFromGrid");
+        TabUiMetricsHelper.recordSelectionEditorOpenMetrics(
+                TabSelectionEditorOpenMetricGroups.OPEN_FROM_GRID, mActivity);
     }
 
     private void setUpPriceTracking(Context context, ModalDialogManager modalDialogManager) {
@@ -575,6 +579,11 @@ public class TabSwitcherCoordinator
     @Override
     public TabSwitcherCustomViewManager getTabSwitcherCustomViewManager() {
         return mTabSwitcherCustomViewManager;
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        return mMediator.onBackPressed();
     }
 
     @Override

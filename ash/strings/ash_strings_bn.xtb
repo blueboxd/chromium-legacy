@@ -608,6 +608,7 @@
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> অ্যাপ <ph name="FOLDER_NAME" /> ফোল্ডারে সরানো হয়েছে।</translation>
 <translation id="4302592941791324970">উপলভ্য নেই</translation>
 <translation id="4303223480529385476">স্ট্যাটাস এরিয়া বড় করুন</translation>
+<translation id="4311195029067684288">পূর্ণ</translation>
 <translation id="4312840429157639164">ক্যামেরাটি উপরে ডানদিকের কোণে স্ন্যাপ করা হয়েছে। সিস্টেমের সারফেসে ছবির কিছুটা ঢাকা পড়ছে।</translation>
 <translation id="4316910396681052118">সব অ্যাপ</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -638,6 +639,7 @@
 <translation id="4455051983450390249"><ph name="DEVICE_TYPE" />-এ ফোনের বিজ্ঞপ্তি দেখুন</translation>
 <translation id="445864333228800152">শুভ সন্ধ্যা,</translation>
 <translation id="4458688154122353284">স্ক্রিন রেকর্ডিং বন্ধ করুন</translation>
+<translation id="445923051607553918">ওয়াই-ফাই  নেটওয়ার্কে যোগ দিন</translation>
 <translation id="4471354919263203780">স্পিচ শনাক্তকরণ ফাইল ডাউনলোড করা হচ্ছে... <ph name="PERCENT" />%</translation>
 <translation id="4471432286288241507">{0,plural, =0{এখনই ডিভাইস আপডেট করুন}=1{১ সেকেন্ডের মধ্যে ডিভাইস আপডেট করুন}one{# সেকেন্ডের মধ্যে ডিভাইস আপডেট করুন}other{# সেকেন্ডের মধ্যে ডিভাইস আপডেট করুন}}</translation>
 <translation id="4472575034687746823">শুরু করা যাক</translation>

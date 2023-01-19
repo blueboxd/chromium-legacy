@@ -16,6 +16,8 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "remoting/host/linux/keyboard_layout_monitor_utils.h"
+#include "remoting/host/linux/keyboard_layout_monitor_wayland.h"
+#include "remoting/host/linux/wayland_utils.h"
 #include "remoting/proto/control.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/glib/glib_signal.h"
@@ -328,9 +330,13 @@ gboolean KeyboardLayoutMonitorLinux::StartLayoutMonitorOnGtkThread(
 
 }  // namespace
 
+// static
 std::unique_ptr<KeyboardLayoutMonitor> KeyboardLayoutMonitor::Create(
     base::RepeatingCallback<void(const protocol::KeyboardLayout&)> callback,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner) {
+  if (IsRunningWayland()) {
+    return std::make_unique<KeyboardLayoutMonitorWayland>(std::move(callback));
+  }
   return std::make_unique<KeyboardLayoutMonitorLinux>(std::move(callback));
 }
 

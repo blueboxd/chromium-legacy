@@ -92,13 +92,16 @@ AXTreeDistiller::AXTreeDistiller(
   if (features::IsReadAnythingWithScreen2xEnabled()) {
     render_frame_->GetBrowserInterfaceBroker()->GetInterface(
         main_content_extractor_.BindNewPipeAndPassReceiver());
+    main_content_extractor_.set_disconnect_handler(
+        base::BindOnce(&AXTreeDistiller::OnMainContentExtractorDisconnected,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 #endif
 }
 
 AXTreeDistiller::~AXTreeDistiller() = default;
 
-void AXTreeDistiller::Distill(ui::AXTree* tree,
+void AXTreeDistiller::Distill(const ui::AXTree& tree,
                               const ui::AXTreeUpdate& snapshot) {
   // If Read Anything with Screen 2x is enabled, kick off Screen 2x run, which
   // distills the AXTree in the utility process using ML.
@@ -113,10 +116,10 @@ void AXTreeDistiller::Distill(ui::AXTree* tree,
   DistillViaAlgorithm(tree);
 }
 
-void AXTreeDistiller::DistillViaAlgorithm(ui::AXTree* tree) {
+void AXTreeDistiller::DistillViaAlgorithm(const ui::AXTree& tree) {
   std::vector<const ui::AXNode*> content_root_nodes;
   std::vector<ui::AXNodeID> content_node_ids;
-  GetContentRootNodes(tree->root(), &content_root_nodes);
+  GetContentRootNodes(tree.root(), &content_root_nodes);
   for (const ui::AXNode* content_root_node : content_root_nodes) {
     AddContentNodesToVector(content_root_node, &content_node_ids);
   }
@@ -124,17 +127,17 @@ void AXTreeDistiller::DistillViaAlgorithm(ui::AXTree* tree) {
 }
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-void AXTreeDistiller::DistillViaScreen2x(ui::AXTree* tree,
+void AXTreeDistiller::DistillViaScreen2x(const ui::AXTree& tree,
                                          const ui::AXTreeUpdate& snapshot) {
   DCHECK(main_content_extractor_.is_bound());
   main_content_extractor_->ExtractMainContent(
       snapshot,
       base::BindOnce(&AXTreeDistiller::ProcessScreen2xResult,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(tree)));
+                     weak_ptr_factory_.GetWeakPtr(), std::cref(tree)));
 }
 
 void AXTreeDistiller::ProcessScreen2xResult(
-    ui::AXTree* tree,
+    const ui::AXTree& tree,
     const std::vector<ui::AXNodeID>& content_node_ids) {
   // If content nodes were identified, run callback.
   if (!content_node_ids.empty()) {
@@ -148,5 +151,9 @@ void AXTreeDistiller::ProcessScreen2xResult(
   // TODO(crbug.com/1266555): If still no content nodes were identified, and
   // there is a selection, try sending Screen2x a partial tree just containing
   // the selected nodes.
+}
+
+void AXTreeDistiller::OnMainContentExtractorDisconnected() {
+  on_ax_tree_distilled_callback_.Run(std::vector<ui::AXNodeID>());
 }
 #endif

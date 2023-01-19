@@ -730,13 +730,13 @@ StyleDifference ComputedStyle::VisualInvalidationDiff(
   if (DiffNeedsReshapeAndFullLayoutAndPaintInvalidation(*this, other)) {
     diff.SetNeedsReshape();
     diff.SetNeedsFullLayout();
-    diff.SetNeedsPaintInvalidation();
+    diff.SetNeedsNormalPaintInvalidation();
   }
 
-  if ((!diff.NeedsFullLayout() || !diff.NeedsPaintInvalidation()) &&
+  if ((!diff.NeedsFullLayout() || !diff.NeedsNormalPaintInvalidation()) &&
       DiffNeedsFullLayoutAndPaintInvalidation(other)) {
     diff.SetNeedsFullLayout();
-    diff.SetNeedsPaintInvalidation();
+    diff.SetNeedsNormalPaintInvalidation();
   }
 
   if (!diff.NeedsFullLayout() && DiffNeedsFullLayout(document, other)) {
@@ -946,13 +946,13 @@ void ComputedStyle::AdjustDiffForNeedsPaintInvalidation(
     const Document& document) const {
   if (ComputedStyleBase::DiffNeedsPaintInvalidation(*this, other) ||
       !BorderVisuallyEqual(other) || !RadiiEqual(other)) {
-    diff.SetNeedsPaintInvalidation();
+    diff.SetNeedsNormalPaintInvalidation();
   }
 
   AdjustDiffForClipPath(other, diff);
   AdjustDiffForBackgroundVisuallyEqual(other, diff);
 
-  if (diff.NeedsPaintInvalidation()) {
+  if (diff.NeedsNormalPaintInvalidation()) {
     return;
   }
 
@@ -960,7 +960,7 @@ void ComputedStyle::AdjustDiffForNeedsPaintInvalidation(
     for (const auto& image : *PaintImagesInternal()) {
       DCHECK(image);
       if (DiffNeedsPaintInvalidationForPaintImage(*image, other, document)) {
-        diff.SetNeedsPaintInvalidation();
+        diff.SetNeedsNormalPaintInvalidation();
         return;
       }
     }
@@ -994,7 +994,7 @@ void ComputedStyle::AdjustDiffForBackgroundVisuallyEqual(
   }
 
   if (!BackgroundInternal().VisuallyEqual(other.BackgroundInternal())) {
-    diff.SetNeedsPaintInvalidation();
+    diff.SetNeedsNormalPaintInvalidation();
     return;
   }
   // If the background image depends on currentColor
@@ -1005,7 +1005,7 @@ void ComputedStyle::AdjustDiffForBackgroundVisuallyEqual(
       (GetCurrentColor() != other.GetCurrentColor() ||
        GetInternalVisitedCurrentColor() !=
            other.GetInternalVisitedCurrentColor())) {
-    diff.SetNeedsPaintInvalidation();
+    diff.SetNeedsNormalPaintInvalidation();
   }
 }
 
@@ -1124,7 +1124,7 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
     diff.SetNeedsRecomputeVisualOverflow();
   }
 
-  if (!diff.NeedsPaintInvalidation() &&
+  if (!diff.NeedsNormalPaintInvalidation() &&
       ComputedStyleBase::UpdatePropertySpecificDifferencesTextDecorationOrColor(
           *this, other)) {
     diff.SetTextDecorationOrColorChanged();
@@ -2178,8 +2178,10 @@ Color ComputedStyle::VisitedDependentColor(const Longhand& color_property,
   // the flag when the unvisited color is ‘currentColor’ would break tests like
   // css/css-pseudo/selection-link-001 and css/css-pseudo/target-text-008.
   // TODO(dazabani@igalia.com) improve behaviour where unvisited is currentColor
-  return blink::Color(visited_color.Red(), visited_color.Green(),
-                      visited_color.Blue(), unvisited_color.Alpha());
+  return Color::FromColorSpace(visited_color.GetColorSpace(),
+                               visited_color.Param0(), visited_color.Param1(),
+                               visited_color.Param2(),
+                               unvisited_color.FloatAlpha());
 }
 
 blink::Color ComputedStyle::ResolvedColor(const StyleColor& color,

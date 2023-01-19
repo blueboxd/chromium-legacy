@@ -57,7 +57,6 @@ BASE_DECLARE_FEATURE(kSyncAndroidLimitNTPPromoImpressions);
 inline constexpr base::FeatureParam<int> kSyncAndroidNTPPromoMaxImpressions{
     &kSyncAndroidLimitNTPPromoImpressions, "SyncAndroidNTPPromoMaxImpressions",
     5};
-BASE_DECLARE_FEATURE(kSyncAndroidPromosWithTitle);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // Controls whether to enable syncing of Autofill Wallet Usage Data.
@@ -84,6 +83,9 @@ BASE_DECLARE_FEATURE(kSyncChromeOSExplicitPassphraseSharing);
 
 // Whether Apps toggle value is exposed by Ash to Lacros.
 BASE_DECLARE_FEATURE(kSyncChromeOSAppsToggleSharing);
+
+// Whether SyncedSessions are updated by Lacros to Ash.
+BASE_DECLARE_FEATURE(kChromeOSSyncedSessionSharing);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 // Whether the periodic degraded recoverability polling is enabled.
@@ -152,8 +154,6 @@ inline constexpr base::FeatureParam<int>
         &kSyncEnableHistoryDataType, "foreign_visit_deletions_per_batch", 100};
 
 BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataType);
-
-BASE_DECLARE_FEATURE(kSyncPauseUponAnyPersistentAuthError);
 
 // If enabled, issues error and disables bookmarks sync when limit is crossed.
 BASE_DECLARE_FEATURE(kSyncEnforceBookmarksCountLimit);

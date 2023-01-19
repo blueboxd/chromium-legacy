@@ -417,8 +417,13 @@ class RenderFrameHostManagerTest
 
     // And also simulates the 2nd and final call to GetFrameHostForNavigation
     // that determines the final frame that will commit the navigation.
+    BrowsingContextGroupSwap ignored_bcg_swap_info =
+        BrowsingContextGroupSwap::CreateDefault();
     TestRenderFrameHost* frame_host = static_cast<TestRenderFrameHost*>(
-        manager->GetFrameHostForNavigation(navigation_request.get()).value());
+        manager
+            ->GetFrameHostForNavigation(navigation_request.get(),
+                                        &ignored_bcg_swap_info)
+            .value());
     CHECK(frame_host);
 
     frame_host->SetPolicyContainerHost(
@@ -1657,8 +1662,9 @@ TEST_P(RenderFrameHostManagerTest, CloseWithPendingWhileUnresponsive) {
   TestRenderFrameHost* rfh1 = contents()->GetPrimaryMainFrame();
 
   // Start to close the tab, but assume it's unresponsive.
-  rfh1->render_view_host()->ClosePage();
-  EXPECT_TRUE(rfh1->render_view_host()->is_waiting_for_page_close_completion());
+  rfh1->ClosePage();
+  EXPECT_EQ(rfh1->page_close_state_,
+            RenderFrameHostImpl::PageCloseState::kRunningUnloadHandlers);
 
   // Start a navigation to a new site.
   controller().LoadURL(kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK,
@@ -1667,7 +1673,7 @@ TEST_P(RenderFrameHostManagerTest, CloseWithPendingWhileUnresponsive) {
   EXPECT_TRUE(contents()->CrossProcessNavigationPending());
 
   // Simulate the unresponsiveness timer.  The tab should close.
-  rfh1->render_view_host()->ClosePageTimeout();
+  rfh1->ClosePageTimeout();
   EXPECT_TRUE(close_delegate.is_closed());
 }
 
@@ -3202,7 +3208,12 @@ TEST_P(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
   EXPECT_FALSE(GetPendingFrameHost(manager));
 
   // Prepare to commit, update the navigating RenderFrameHost.
-  EXPECT_EQ(host, manager->GetFrameHostForNavigation(navigation_request.get()));
+  BrowsingContextGroupSwap ignored_bcg_swap_info =
+      BrowsingContextGroupSwap::CreateDefault();
+  EXPECT_EQ(host, manager
+                      ->GetFrameHostForNavigation(navigation_request.get(),
+                                                  &ignored_bcg_swap_info)
+                      .value());
 
   // No pending RenderFrameHost as the current one should be reused.
   EXPECT_FALSE(GetPendingFrameHost(manager));

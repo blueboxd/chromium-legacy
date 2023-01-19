@@ -51,6 +51,9 @@ class ASH_EXPORT PrivacyHubNotificationController {
   // a notification.
   static void OpenPrivacyHubSettingsPage();
 
+  // Open the support page for Privacy Hub.
+  static void OpenSupportUrl();
+
  private:
   // Show all notifications that are currently active and combine them if
   // necessary. From the `changed_sensor` in combination with `sensors_`,
@@ -68,7 +71,8 @@ class ASH_EXPORT PrivacyHubNotificationController {
   bool ignore_new_combinable_notifications_{false};
   SensorEnumSet sensors_;
   std::unique_ptr<PrivacyHubNotification> combined_notification_;
-  base::flat_map<Sensor, PrivacyHubNotification> sw_notifications_;
+  base::flat_map<Sensor, std::unique_ptr<PrivacyHubNotification>>
+      sw_notifications_;
   base::WeakPtrFactory<PrivacyHubNotificationController> weak_ptr_factory_{
       this};
 };

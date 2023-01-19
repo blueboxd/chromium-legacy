@@ -23,7 +23,6 @@ import {BackgroundManager} from './background_manager.js';
 import {CustomizeDialogPage} from './customize_dialog_types.js';
 import {loadTimeData} from './i18n_setup.js';
 import {IframeElement} from './iframe.js';
-import {LensUploadDialogElement} from './lens_upload_dialog.js';
 import {LogoElement} from './logo.js';
 import {recordLoadDuration} from './metrics_utils.js';
 import {PageCallbackRouter, PageHandlerRemote, Theme} from './new_tab_page.mojom-webui.js';
@@ -57,7 +56,9 @@ export enum NtpElement {
   MOST_VISITED = 5,
   MIDDLE_SLOT_PROMO = 6,
   MODULE = 7,
-  CUSTOMIZE = 8,
+  CUSTOMIZE = 8,  // Obsolete
+  CUSTOMIZE_BUTTON = 9,
+  CUSTOMIZE_DIALOG = 10,
 }
 
 const CUSTOMIZE_URL_PARAM: string = 'customize';
@@ -120,7 +121,6 @@ export class AppElement extends PolymerElement {
         type: Boolean,
         value: () =>
             WindowProxy.getInstance().url.searchParams.has(CUSTOMIZE_URL_PARAM),
-        observer: 'onShowCustomizeUpdate_',
       },
 
       showCustomizeDialog_: {
@@ -167,10 +167,6 @@ export class AppElement extends PolymerElement {
       customizeChromeEnabled_: {
         type: Boolean,
         value: () => loadTimeData.getBoolean('customizeChromeEnabled'),
-      },
-
-      customizeChromeSidePanelShowing_: {
-        type: Boolean,
       },
 
       logoColor_: {
@@ -297,7 +293,6 @@ export class AppElement extends PolymerElement {
   private backgroundImageAttributionUrl_: string;
   private backgroundColor_: SkColor;
   private customizeChromeEnabled_: boolean;
-  private customizeChromeSidePanelShowing_: boolean;
   private logoColor_: string;
   private singleColoredLogo_: boolean;
   private realboxLensSearchEnabled_: boolean;
@@ -317,13 +312,13 @@ export class AppElement extends PolymerElement {
   private promoAndModulesLoaded_: boolean;
   private removeScrim_: boolean;
   private lazyRender_: boolean;
+  private openLensDialog: Function|null;
 
   private callbackRouter_: PageCallbackRouter;
   private pageHandler_: PageHandlerRemote;
   private backgroundManager_: BackgroundManager;
   private setThemeListenerId_: number|null = null;
-  private customizeChromeSidePanelVisibilityChangedListener_: number|null =
-      null;
+  private setCustomizeChromeSidePanelVisibilityListener_: number|null = null;
   private eventTracker_: EventTracker = new EventTracker();
   private shouldPrintPerformance_: boolean;
   private backgroundImageLoadStartEpoch_: number;
@@ -364,10 +359,15 @@ export class AppElement extends PolymerElement {
           performance.measure('theme-set');
           this.theme_ = theme;
         });
-    this.customizeChromeSidePanelVisibilityChangedListener_ =
-        this.callbackRouter_.customizeChromeSidePanelVisibilityChanged
-            .addListener(
-                this.onCustomizeChromeSidePanelVisibilityChanged_.bind(this));
+    this.setCustomizeChromeSidePanelVisibilityListener_ =
+        this.callbackRouter_.setCustomizeChromeSidePanelVisibility.addListener(
+            (visible: boolean) => {
+              this.showCustomize_ = visible;
+            });
+    // Open Customize Chrome if there are Customize Chrome URL params.
+    if (this.showCustomize_) {
+      this.pageHandler_.setCustomizeChromeSidePanelVisible(this.showCustomize_);
+    }
     this.eventTracker_.add(window, 'message', (event: MessageEvent) => {
       const data = event.data;
       // Something in OneGoogleBar is sending a message that is received here.
@@ -407,7 +407,7 @@ export class AppElement extends PolymerElement {
     super.disconnectedCallback();
     this.callbackRouter_.removeListener(this.setThemeListenerId_!);
     this.callbackRouter_.removeListener(
-        this.customizeChromeSidePanelVisibilityChangedListener_!);
+        this.setCustomizeChromeSidePanelVisibilityListener_!);
     this.eventTracker_.removeAll();
   }
 
@@ -481,13 +481,23 @@ export class AppElement extends PolymerElement {
     recordVoiceAction(VoiceAction.ACTIVATE_SEARCH_BOX);
   }
 
+  /**
+   * Sets the openLensDialog function when the child LensUploadDialogComponent
+   * is lazily loaded.
+   *
+   * We use the connected callback with a custom event dispatch to get around
+   * bundling the upload dialog component with the primary bundle to call open
+   * dialog.
+   */
+  private bindOpenLensDialog_(e: CustomEvent<{fn: () => void}>) {
+    this.openLensDialog = e.detail.fn;
+  }
+
   private onOpenLensSearch_() {
-    // TODO(crbug.com/1371943): Use shadow root to select upload dialog until
-    // feature is no-longer wrapped by dom-if.
-    (this.shadowRoot!.querySelector(LensUploadDialogElement.is)! as
-     LensUploadDialogElement)
-        .openDialog();
-    this.showLensUploadDialog_ = true;
+    if (this.openLensDialog) {
+      this.openLensDialog();
+      this.showLensUploadDialog_ = true;
+    }
   }
 
   private onCloseLensSearch_() {
@@ -496,23 +506,13 @@ export class AppElement extends PolymerElement {
 
   private onCustomizeClick_() {
     if (this.customizeChromeEnabled_) {
-      this.showCustomize_ = !this.customizeChromeSidePanelShowing_;
+      // TODO(crbug.com/1402251): Scroll to section requested by
+      // |this.selectedCustomizeDialogPage_|.
+      this.pageHandler_.setCustomizeChromeSidePanelVisible(
+          !this.showCustomize_);
     } else {
       this.showCustomize_ = true;
     }
-  }
-
-  private onShowCustomizeUpdate_() {
-    if (!this.customizeChromeEnabled_) {
-      return;
-    }
-    this.pageHandler_.setCustomizeChromeSidePanelVisible(this.showCustomize_);
-    // TODO(crbug.com/1402251): Scroll to section requested by
-    // |this.selectedCustomizeDialogPage_|.
-  }
-
-  private onCustomizeChromeSidePanelVisibilityChanged_(visible: boolean) {
-    this.customizeChromeSidePanelShowing_ = visible;
   }
 
   private onCustomizeDialogClose_() {
@@ -705,6 +705,9 @@ export class AppElement extends PolymerElement {
 
   private onCustomizeModule_() {
     this.showCustomize_ = true;
+    if (this.customizeChromeEnabled_) {
+      this.pageHandler_.setCustomizeChromeSidePanelVisible(this.showCustomize_);
+    }
     this.selectedCustomizeDialogPage_ = CustomizeDialogPage.MODULES;
   }
 
@@ -769,8 +772,10 @@ export class AppElement extends PolymerElement {
           recordClick(NtpElement.MODULE);
           return;
         case $$(this, '#customizeButton'):
+          recordClick(NtpElement.CUSTOMIZE_BUTTON);
+          return;
         case $$(this, 'ntp-customize-dialog'):
-          recordClick(NtpElement.CUSTOMIZE);
+          recordClick(NtpElement.CUSTOMIZE_DIALOG);
           return;
       }
     }

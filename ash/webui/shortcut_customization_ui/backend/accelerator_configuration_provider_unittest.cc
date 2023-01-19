@@ -260,6 +260,18 @@ class AcceleratorConfigurationProviderTest : public AshTestBase {
         ->second.replacements.value();
   }
 
+  bool TextAccelContainsReplacements(int action_id) {
+    return non_configurable_actions_map_
+        .find(static_cast<ash::NonConfigurableActions>(action_id))
+        ->second.replacements.has_value();
+  }
+
+  int GetMessageIdForTextAccel(int action_id) {
+    return non_configurable_actions_map_
+        .find(static_cast<ash::NonConfigurableActions>(action_id))
+        ->second.message_id.value();
+  }
+
   std::unique_ptr<AcceleratorConfigurationProvider> provider_;
   NonConfigurableActionsMap non_configurable_actions_map_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -576,6 +588,112 @@ TEST_F(AcceleratorConfigurationProviderTest, SixPackKeyAcceleratorRemapped) {
                                observer.config());
 }
 
+TEST_F(AcceleratorConfigurationProviderTest,
+       ReversedSixPackKeyAcceleratorRemapped) {
+  FakeAcceleratorsUpdatedObserver observer;
+  SetUpObserver(&observer);
+  EXPECT_EQ(0, observer.num_times_notified());
+
+  // kImprovedKeyboardShortcuts is enabled.
+  EXPECT_TRUE(::features::IsImprovedKeyboardShortcutsEnabled());
+
+  const AcceleratorData test_data[] = {
+      // Below are fake shortcuts, only used for testing.
+      {/*trigger_on_press=*/true, ui::VKEY_LEFT, ui::EF_ALT_DOWN,
+       CYCLE_BACKWARD_MRU},
+      {/*trigger_on_press=*/true, ui::VKEY_LEFT, ui::EF_COMMAND_DOWN, NEW_TAB},
+      {/*trigger_on_press=*/true, ui::VKEY_TAB,
+       ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, DISABLE_CAPS_LOCK},
+
+      {/*trigger_on_press=*/true, ui::VKEY_LEFT,
+       ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, KEYBOARD_BRIGHTNESS_UP},
+      {/*trigger_on_press=*/true, ui::VKEY_LEFT,
+       ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN,
+       TAKE_WINDOW_SCREENSHOT},
+      {/*trigger_on_press=*/true, ui::VKEY_PRIOR,
+       ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, DESKS_NEW_DESK},
+      {/*trigger_on_press=*/true, ui::VKEY_RIGHT,
+       ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN,
+       TOGGLE_FULLSCREEN},
+      {/*trigger_on_press=*/true, ui::VKEY_DOWN,
+       ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, KEYBOARD_BRIGHTNESS_DOWN},
+
+      {/*trigger_on_press=*/true, ui::VKEY_BACK,
+       ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU},
+      {/*trigger_on_press=*/true, ui::VKEY_BACK,
+       ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
+       SHOW_TASK_MANAGER},
+      {/*trigger_on_press=*/true, ui::VKEY_BACK,
+       ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN, BRIGHTNESS_UP},
+  };
+
+  const AcceleratorData expected_data[] = {
+      // When [Search] is not part of original accelerator, no remapping is
+      // done. [Left]+[Alt]>[Left]+[Alt].
+      {/*trigger_on_press=*/true, ui::VKEY_LEFT, ui::EF_ALT_DOWN,
+       CYCLE_BACKWARD_MRU},
+      // When [Search] is the only modifier, no remapping is done.
+      // [Left]+[Search]->[Left]+[Search].
+      {/*trigger_on_press=*/true, ui::VKEY_LEFT, ui::EF_COMMAND_DOWN, NEW_TAB},
+      // When key code is not reversed six pack key, no remapping is done.
+      // [Tab]+[Search]+[Alt]->[Tab]+[Search]+[Alt].
+      {/*trigger_on_press=*/true, ui::VKEY_TAB,
+       ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, DISABLE_CAPS_LOCK},
+
+      // [Left]+[Search]+[Alt]->[Home]+[Alt].
+      {/*trigger_on_press=*/true, ui::VKEY_LEFT,
+       ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, KEYBOARD_BRIGHTNESS_UP},
+      {/*trigger_on_press=*/true, ui::VKEY_HOME, ui::EF_ALT_DOWN,
+       KEYBOARD_BRIGHTNESS_UP},
+      // [Left]+[Search]+[Shift]+[Alt]->[Home]+[Shift]+[Alt].
+      {/*trigger_on_press=*/true, ui::VKEY_LEFT,
+       ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
+       TAKE_WINDOW_SCREENSHOT},
+      {/*trigger_on_press=*/true, ui::VKEY_HOME,
+       ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, TAKE_WINDOW_SCREENSHOT},
+      // [Prior]+[Search]+[Alt]->[Up]+[Alt].
+      {/*trigger_on_press=*/true, ui::VKEY_PRIOR,
+       ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, DESKS_NEW_DESK},
+      {/*trigger_on_press=*/true, ui::VKEY_UP, ui::EF_ALT_DOWN, DESKS_NEW_DESK},
+      // [Right]+[Search]+[Shift]+[Alt]->[End]+[Shift]+[Alt].
+      {/*trigger_on_press=*/true, ui::VKEY_RIGHT,
+       ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
+       TOGGLE_FULLSCREEN},
+      {/*trigger_on_press=*/true, ui::VKEY_END,
+       ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, TOGGLE_FULLSCREEN},
+      // [Down]+[Search]+[Alt]->[Next]+[Alt].
+      {/*trigger_on_press=*/true, ui::VKEY_DOWN,
+       ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, KEYBOARD_BRIGHTNESS_DOWN},
+      {/*trigger_on_press=*/true, ui::VKEY_NEXT, ui::EF_ALT_DOWN,
+       KEYBOARD_BRIGHTNESS_DOWN},
+
+      // [Back]+[Search]+[Alt]->[Delete]+[Alt].
+      {/*trigger_on_press=*/true, ui::VKEY_BACK,
+       ui::EF_COMMAND_DOWN | ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU},
+      {/*trigger_on_press=*/true, ui::VKEY_DELETE, ui::EF_ALT_DOWN,
+       CYCLE_FORWARD_MRU},
+      // [Back]+[Search]+[Shift]+[Alt]->[Insert]+[Alt].
+      {/*trigger_on_press=*/true, ui::VKEY_BACK,
+       ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
+       SHOW_TASK_MANAGER},
+      {/*trigger_on_press=*/true, ui::VKEY_INSERT, ui::EF_ALT_DOWN,
+       SHOW_TASK_MANAGER},
+
+      // If the accelerator is just the reverse of [Insert], no remapping is
+      // done. [Back]+[Search]+[Shift] -> [Back]+[Search]+[Shift].
+      {/*trigger_on_press=*/true, ui::VKEY_BACK,
+       ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN, BRIGHTNESS_UP},
+  };
+
+  Shell::Get()->ash_accelerator_configuration()->Initialize(test_data);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, observer.num_times_notified());
+  // Verify observer received the correct remapped accelerators.
+  ExpectMojomAcceleratorsEqual(mojom::AcceleratorSource::kAsh, expected_data,
+                               observer.config());
+}
+
 TEST_F(AcceleratorConfigurationProviderTest, InputMethodChanged) {
   FakeAcceleratorsUpdatedObserver observer;
   SetUpObserver(&observer);
@@ -627,11 +745,19 @@ TEST_F(AcceleratorConfigurationProviderTest, NonConfigurableActions) {
         // Matching Accelerator was found.
         EXPECT_TRUE(found_match);
       } else {
+        const auto& text_accel =
+            info->layout_properties->get_text_accelerator()->parts;
+        if (!TextAccelContainsReplacements(id)) {
+          // Ambient accelerators that contain no replacements e.g., Drag the
+          // link to the tab's address bar
+          EXPECT_EQ(text_accel[0]->text,
+                    l10n_util::GetStringUTF16(GetMessageIdForTextAccel(id)));
+          continue;
+        }
         // We're only concerned with validating the replacements
         // (keys/modifiers). Validating the plain text parts is handled by the
         // paramaterized tests below.
-        const auto& text_accel_parts = RemovePlainTextParts(
-            info->layout_properties->get_text_accelerator()->text_accelerator);
+        const auto& text_accel_parts = RemovePlainTextParts(text_accel);
         const auto& replacement_parts = GetReplacementsForAction(id);
         for (size_t i = 0; i < replacement_parts.size(); i++) {
           ValidateTextAccelerators(replacement_parts[i], text_accel_parts[i]);
@@ -642,9 +768,11 @@ TEST_F(AcceleratorConfigurationProviderTest, NonConfigurableActions) {
 }
 
 using FlagsKeyboardCodesVariant =
-    std::variant<ui::EventFlags, ui::KeyboardCode>;
-using FlagsKeyboardCodeStringVariant =
-    std::variant<ui::EventFlags, ui::KeyboardCode, std::u16string>;
+    std::variant<ui::EventFlags, ui::KeyboardCode, TextAcceleratorDelimiter>;
+using FlagsKeyboardCodeStringVariant = std::variant<ui::EventFlags,
+                                                    ui::KeyboardCode,
+                                                    std::u16string,
+                                                    TextAcceleratorDelimiter>;
 
 class TextAcceleratorParsingTest
     : public AcceleratorConfigurationProviderTest,
@@ -662,8 +790,10 @@ class TextAcceleratorParsingTest
     for (const auto& r : replacements_parts) {
       if (std::holds_alternative<ui::KeyboardCode>(r)) {
         replacements_.emplace_back(std::get<ui::KeyboardCode>(r));
-      } else {
+      } else if (std::holds_alternative<ui::EventFlags>(r)) {
         replacements_.emplace_back(std::get<ui::EventFlags>(r));
+      } else {
+        replacements_.emplace_back(std::get<TextAcceleratorDelimiter>(r));
       }
     }
 
@@ -672,8 +802,10 @@ class TextAcceleratorParsingTest
         expected_parts_.emplace_back(std::get<std::u16string>(v));
       } else if (std::holds_alternative<ui::KeyboardCode>(v)) {
         expected_parts_.emplace_back(std::get<ui::KeyboardCode>(v));
-      } else {
+      } else if (std::holds_alternative<ui::EventFlags>(v)) {
         expected_parts_.emplace_back(std::get<ui::EventFlags>(v));
+      } else {
+        expected_parts_.emplace_back(std::get<TextAcceleratorDelimiter>(v));
       }
     }
   }
@@ -696,10 +828,11 @@ INSTANTIATE_TEST_SUITE_P(
                                std::vector<FlagsKeyboardCodesVariant>,
                                std::vector<FlagsKeyboardCodeStringVariant>>>{
             {
-                u"$1 + $2 through $3",
-                {ui::EF_CONTROL_DOWN, ui::VKEY_1, ui::VKEY_8},
-                {ui::EF_CONTROL_DOWN, u" + ", ui::VKEY_1, u" through ",
-                 ui::VKEY_8},
+                u"$1 $2 $3 through $4",
+                {ui::EF_CONTROL_DOWN, TextAcceleratorDelimiter::kPlusSign,
+                 ui::VKEY_1, ui::VKEY_8},
+                {ui::EF_CONTROL_DOWN, u" ", TextAcceleratorDelimiter::kPlusSign,
+                 u" ", ui::VKEY_1, u" through ", ui::VKEY_8},
             },
             {
                 u"Press $1 and $2",
@@ -747,6 +880,21 @@ INSTANTIATE_TEST_SUITE_P(
                 {u" ", ui::VKEY_B},
             },
             {
+                u"$1",
+                {TextAcceleratorDelimiter::kPlusSign},
+                {TextAcceleratorDelimiter::kPlusSign},
+            },
+            {
+                u"$1 ",
+                {TextAcceleratorDelimiter::kPlusSign},
+                {TextAcceleratorDelimiter::kPlusSign, u" "},
+            },
+            {
+                u" $1",
+                {TextAcceleratorDelimiter::kPlusSign},
+                {u" ", TextAcceleratorDelimiter::kPlusSign},
+            },
+            {
                 u"Drag the link to a blank area on the tab strip",
                 {},
                 {u"Drag the link to a blank area on the tab strip"},
@@ -761,11 +909,11 @@ TEST_P(TextAcceleratorParsingTest, TextAcceleratorParsing) {
   auto& bundle = ui::ResourceBundle::GetSharedInstance();
   int FAKE_RESOURCE_ID = 1;
   bundle.OverrideLocaleStringResource(FAKE_RESOURCE_ID, replacement_string_);
-  const auto parts = provider_->CreateTextAcceleratorProperties(
+  const auto text_accelerator = provider_->CreateTextAcceleratorProperties(
       {FAKE_RESOURCE_ID, replacements_});
-  EXPECT_EQ(expected_parts_.size(), parts->text_accelerator.size());
+  EXPECT_EQ(expected_parts_.size(), text_accelerator->parts.size());
   for (size_t i = 0; i < expected_parts_.size(); i++) {
-    ValidateTextAccelerators(expected_parts_[i], parts->text_accelerator[i]);
+    ValidateTextAccelerators(expected_parts_[i], text_accelerator->parts[i]);
   }
 }
 

@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/modules/direct_sockets/udp_readable_stream_wrapper.h"
 
-#include "base/callback_helpers.h"
 #include "base/containers/span.h"
+#include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/net_errors.h"
@@ -64,6 +64,7 @@ class FakeRestrictedUDPSocket
   void SetTestingDatagram(String datagram) { datagram_ = std::move(datagram); }
 
  private:
+  GC_PLUGIN_IGNORE("https://crbug.com/1381979")
   mojo::Remote<network::mojom::blink::UDPSocketListener> remote_;
   uint32_t num_requested_datagrams = 0;
   String datagram_{"abcde"};

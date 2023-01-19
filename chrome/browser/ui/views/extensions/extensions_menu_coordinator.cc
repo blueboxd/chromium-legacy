@@ -7,13 +7,11 @@
 #include <memory>
 
 #include "base/feature_list.h"
-#include "chrome/browser/ui/views/controls/page_switcher_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_view_controller.h"
 #include "extensions/common/extension_features.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view_tracker.h"
-#include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 
 ExtensionsMenuCoordinator::ExtensionsMenuCoordinator(Browser* browser)
@@ -39,14 +37,13 @@ void ExtensionsMenuCoordinator::Show(
   bubble_delegate->SetButtons(ui::DIALOG_BUTTON_NONE);
   bubble_delegate->SetEnableArrowKeyTraversal(true);
 
-  auto empty_initial_page = std::make_unique<views::View>();
-  auto* contents_view = bubble_delegate->SetContentsView(
-      std::make_unique<PageSwitcherView>(std::move(empty_initial_page)));
-  contents_view->View::AddObserver(this);
-  bubble_tracker_.SetView(contents_view);
+  auto* bubble_contents = bubble_delegate->SetContentsView(
+      views::Builder<views::View>().SetUseDefaultFillLayout(true).Build());
+  bubble_contents->View::AddObserver(this);
+  bubble_tracker_.SetView(bubble_contents);
 
   controller_ = std::make_unique<ExtensionsMenuViewController>(
-      browser_, extensions_container, contents_view);
+      browser_, extensions_container, bubble_contents, bubble_delegate.get());
   controller_->OpenMainPage();
 
   views::BubbleDialogDelegate::CreateBubble(std::move(bubble_delegate))->Show();

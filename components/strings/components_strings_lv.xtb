@@ -800,6 +800,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="2986368408720340940">Šis saņemšanas veids nav pieejams. Izmēģiniet citu veidu.</translation>
 <translation id="2987034854559945715">Nav atbilstošu līdzekļu</translation>
 <translation id="2989742184762224133">Divkāršs skavojums augšdaļā</translation>
+<translation id="2990882401221831923">Kredītkaršu saraksts ir aizvērts.</translation>
 <translation id="2991174974383378012">Kopīgošana ar vietnēm</translation>
 <translation id="299122504639061328">Pārvaldīt noklusējuma meklētājprogrammu un meklēšanu vietnēs</translation>
 <translation id="2991571918955627853">Pašlaik nevarat apmeklēt vietni <ph name="SITE" />, jo tā izmanto HSTS. Tā kā tīkla kļūdas un uzbrukumi parasti ir īslaicīgi, visticamāk, šī lapa vēlāk darbosies.</translation>
@@ -1151,6 +1152,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="3872834068356954457">Zinātne</translation>
 <translation id="3875783148670536197">Parādīt, kā</translation>
 <translation id="3881478300875776315">Rādīt mazāk rindu</translation>
+<translation id="3883500545751229739">traucējošas reklāmas</translation>
 <translation id="3884278016824448484">Ierīces identifikators rada konfliktu.</translation>
 <translation id="388632593194507180">Konstatēta pārraudzība</translation>
 <translation id="3886948180919384617">3. izvades vieta</translation>
@@ -1583,6 +1585,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="4976702386844183910">Pēdējoreiz apmeklēta: <ph name="DATE" /></translation>
 <translation id="498323057460789381">Shēmas validācijas kļūda. <ph name="ERROR" /></translation>
 <translation id="4984088539114770594">Vai lietot mikrofonu?</translation>
+<translation id="4988822846878841743">Pieskaroties aizpildāmo kredītkaršu saraksts ir atvērts pusekrāna augstumā.</translation>
 <translation id="4989163558385430922">Skatīt visu</translation>
 <translation id="4989542687859782284">Nav pieejami</translation>
 <translation id="4989809363548539747">Šis spraudnis netiek atbalstīts</translation>
@@ -1711,7 +1714,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="5284295735376057059">Dokumenta rekvizīti</translation>
 <translation id="528468243742722775">Beigas</translation>
 <translation id="5285570108065881030">Rādīt visas saglabātās paroles</translation>
-<translation id="5287240709317226393">Rādīt sīkfailus</translation>
 <translation id="5287456746628258573">Šajā vietnē tiek izmantota novecojusi drošības konfigurācija, tādēļ var tikt atklāta jūsu informācija (piemēram, paroles vai kredītkaršu numuri), kad tā tiek nosūtīta uz šo vietni.</translation>
 <translation id="5288108484102287882">Validējot politikas vērtības, tika konstatētas kļūdas</translation>
 <translation id="5288393065350884210">Grāmatvedība un auditēšana</translation>
@@ -1931,6 +1933,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="5863847714970149516">Nākamajā lapā var tikt mēģināts pieprasīt naudu</translation>
 <translation id="5866257070973731571">Tālruņa numura pievienošana</translation>
 <translation id="5866898949289125849">Jūs skatāt izstrādātāja rīku lapu</translation>
+<translation id="5868548454963263350">Pieskaroties aizpildāmo kredītkaršu saraksts ir atvērts pilna ekrāna augstumā.</translation>
 <translation id="5869405914158311789">Šī vietne nav sasniedzama</translation>
 <translation id="5869522115854928033">Saglabātās paroles</translation>
 <translation id="5873013647450402046">Banka vēlas apstiprināt jūsu identitāti</translation>
@@ -2643,6 +2646,7 @@ Papildu informācija:
 <translation id="7653957176542370971">Maksājumu apstrādātāja lapa ir aizvērta</translation>
 <translation id="7654909834015434372">Ja rediģēsiet piezīmes, šī dokumenta rotācija tiks atiestatīta.</translation>
 <translation id="765676359832457558">Slēpt papildu iestatījumus...</translation>
+<translation id="7656935528854393684">Pieskaroties aizpildāmo kredītkaršu saraksts.</translation>
 <translation id="7658239707568436148">Atcelt</translation>
 <translation id="7659327900411729175">Aploksne Kaku 8</translation>
 <translation id="7659878911471462949">Prieka asaras</translation>
@@ -3114,6 +3118,7 @@ Papildu informācija:
 <translation id="8891727572606052622">Nederīgs starpniekservera režīms.</translation>
 <translation id="8894794286471754040">Vispirms garākā mala</translation>
 <translation id="8897428486789851669">Peldēšana</translation>
+<translation id="8899807382908246773">Traucējošas reklāmas</translation>
 <translation id="8903921497873541725">Tuvināt</translation>
 <translation id="890493561996401738">Ieteikuma noņemšanas poga, nospiediet ievadīšanas taustiņu, lai noņemtu, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8912362522468806198">Google konts</translation>
@@ -3191,7 +3196,6 @@ Papildu informācija:
 <translation id="9096425087209440047"><ph name="SET_CHROME_AS_DEFAULT_BROWSER_FOCUSED_FRIENDLY_MATCH_TEXT" />; nospiediet tabulēšanas taustiņu un pēc tam — taustiņu Enter, lai iestatītu Chrome kā sistēmas noklusējuma pārlūku iOS iestatījumos.</translation>
 <translation id="9096679202588811390">TV seriāli un pārraides</translation>
 <translation id="9101630580131696064">1. paplāte</translation>
-<translation id="9102081333385212048">Jūsu kopētie vai pārvietotie faili tiek nosūtīti uz Google mākoni vai trešajām pusēm, lai veiktu analīzi. Šie faili var tikt pārmeklēti, lai konstatētu, piemēram, vai tajos ir ietverti sensitīvi dati vai ļaunprātīga programmatūra.</translation>
 <translation id="9103537084693478942">Video programmatūra</translation>
 <translation id="9103872766612412690">Vietnē <ph name="SITE" /> informācijas aizsargāšanai parasti tiek izmantota šifrēšana. Kad pārlūkā Chromium tika mēģināts izveidot savienojumu ar vietni <ph name="SITE" />, šoreiz tā nosūtīja neparastus un nepareizus akreditācijas datus. Iespējams, tas notika, jo uzbrucējs mēģināja uzdoties par vietni <ph name="SITE" />, vai arī Wi-Fi pierakstīšanās ekrāns pārtrauca savienojumu. Jūsu informācija joprojām ir drošībā, jo pārlūks Chromium pārtrauca savienojumu, pirms tika veikta jebkādu datu apmaiņa.</translation>
 <translation id="9106062320799175032">Norēķinu adreses pievienošana</translation>

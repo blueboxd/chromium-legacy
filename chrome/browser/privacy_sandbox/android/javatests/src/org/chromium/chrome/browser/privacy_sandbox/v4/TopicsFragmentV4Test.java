@@ -42,7 +42,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.UserActionTester;
@@ -73,7 +72,6 @@ import java.io.IOException;
 @Batch(Batch.PER_CLASS)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
-@DisabledTest(message = "The test is tempoprary disabled until we fix the duplicate string problem")
 public final class TopicsFragmentV4Test {
     private static final String TOPIC_NAME_1 = "Topic 1";
     private static final String TOPIC_NAME_2 = "Topic 2";
@@ -117,7 +115,8 @@ public final class TopicsFragmentV4Test {
 
     private void startTopicsSettings() {
         mSettingsActivityTestRule.startSettingsActivity();
-        onViewWaiting(withText(R.string.settings_topics_page_title));
+        onViewWaiting(allOf(withText(R.string.settings_topics_page_title),
+                withParent(withId(R.id.action_bar))));
     }
 
     private Matcher<View> getTopicsToggleMatcher() {
@@ -127,7 +126,7 @@ public final class TopicsFragmentV4Test {
     }
 
     private View getTopicsRootView() {
-        return getRootViewSanitized(R.string.settings_topics_page_title);
+        return getRootViewSanitized(R.string.settings_topics_page_toggle_sub_label);
     }
 
     private View getBlockedTopicsRootView() {
@@ -231,6 +230,7 @@ public final class TopicsFragmentV4Test {
         startTopicsSettings();
         onView(getTopicsToggleMatcher()).perform(click());
 
+        assertTrue(mFakePrivacySandboxBridge.getLastTopicsToggleValue());
         assertTrue(isTopicsPrefEnabled());
         onViewWaiting(withText(R.string.settings_topics_page_current_topics_description_empty))
                 .check(matches(isDisplayed()));
@@ -254,6 +254,7 @@ public final class TopicsFragmentV4Test {
 
         // Click on the toggle.
         onView(getTopicsToggleMatcher()).perform(click());
+        assertTrue(mFakePrivacySandboxBridge.getLastTopicsToggleValue());
 
         // Check that the Topics list is displayed when Topics are enabled.
         onViewWaiting(withText(TOPIC_NAME_1)).check(matches(isDisplayed()));
@@ -270,6 +271,7 @@ public final class TopicsFragmentV4Test {
         setTopicsPrefEnabled(true);
         startTopicsSettings();
         onView(getTopicsToggleMatcher()).perform(click());
+        assertFalse(mFakePrivacySandboxBridge.getLastTopicsToggleValue());
 
         assertFalse(isTopicsPrefEnabled());
         onViewWaiting(withText(R.string.settings_topics_page_current_topics_description_disabled))
@@ -334,13 +336,13 @@ public final class TopicsFragmentV4Test {
         // Remove the first Topic from the list.
         clickImageButtonNextToText(TOPIC_NAME_1);
         onView(withText(TOPIC_NAME_1)).check(doesNotExist());
-        onView(withText(R.string.privacy_sandbox_remove_interest_snackbar))
+        onView(withText(R.string.settings_topics_page_block_topic_snackbar))
                 .check(matches(isDisplayed()));
 
         // Remove the second Topic from the list.
         clickImageButtonNextToText(TOPIC_NAME_2);
         onView(withText(TOPIC_NAME_2)).check(doesNotExist());
-        onView(withText(R.string.privacy_sandbox_remove_interest_snackbar))
+        onView(withText(R.string.settings_topics_page_block_topic_snackbar))
                 .check(matches(isDisplayed()));
 
         // Check that the empty state UI is displayed when the Topic list is empty.
@@ -375,13 +377,13 @@ public final class TopicsFragmentV4Test {
         // Unblock the first Topic
         clickImageButtonNextToText(TOPIC_NAME_1);
         onView(withText(TOPIC_NAME_1)).check(doesNotExist());
-        onView(withText(R.string.privacy_sandbox_add_interest_snackbar))
+        onView(withText(R.string.settings_topics_page_add_topic_snackbar))
                 .check(matches(isDisplayed()));
 
         // Unblock the second Topic
         clickImageButtonNextToText(TOPIC_NAME_2);
         onView(withText(TOPIC_NAME_2)).check(doesNotExist());
-        onView(withText(R.string.privacy_sandbox_add_interest_snackbar))
+        onView(withText(R.string.settings_topics_page_add_topic_snackbar))
                 .check(matches(isDisplayed()));
 
         // Check that the empty state UI is displayed when the Topic list is empty.
@@ -390,7 +392,7 @@ public final class TopicsFragmentV4Test {
 
         // Go back to the main Topics fragment
         pressBack();
-        onViewWaiting(withText(R.string.settings_topics_page_title));
+        onViewWaiting(withText(R.string.settings_topics_page_toggle_sub_label));
 
         // Verify that the Topics are unblocked
         onView(withText(TOPIC_NAME_1)).check(matches(isDisplayed()));
@@ -416,10 +418,26 @@ public final class TopicsFragmentV4Test {
         assertFalse(isTopicsPrefEnabled());
         onView(getTopicsToggleMatcher()).check(matches(not(isChecked())));
         onView(getTopicsToggleMatcher()).perform(click());
+        assertFalse(mFakePrivacySandboxBridge.getLastTopicsToggleValue());
 
         // Check that the state of the pref and the toggle did not change.
         assertFalse(isTopicsPrefEnabled());
         onView(getTopicsToggleMatcher()).check(matches(not(isChecked())));
+    }
+
+    @Test
+    @SmallTest
+    public void testLearnMoreLink() {
+        startTopicsSettings();
+        // Open the Topics learn more activity
+        onView(withText(containsString("Learn more"))).perform(clickOnClickableSpan(0));
+        onViewWaiting(withText(R.string.settings_topics_page_learn_more_heading))
+                .check(matches(isDisplayed()));
+        // Close the additional activity by navigating back.
+        pressBack();
+        // Verify that metrics are sent
+        assertThat(mUserActionTester.getActions(),
+                hasItems("Settings.PrivacySandbox.Topics.LearnMoreClicked"));
     }
 
     @Test
@@ -444,7 +462,8 @@ public final class TopicsFragmentV4Test {
         startTopicsSettings();
         // Open a CookieSettings activity.
         onView(withText(containsString("cookie settings"))).perform(clickOnClickableSpan(1));
-        onView(withText(R.string.third_party_cookies_page_title)).check(matches(isDisplayed()));
+        onViewWaiting(withText(R.string.third_party_cookies_page_title))
+                .check(matches(isDisplayed()));
         // Close the additional activity by navigating back.
         pressBack();
     }

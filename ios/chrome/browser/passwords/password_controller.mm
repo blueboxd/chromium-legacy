@@ -39,6 +39,7 @@
 #import "components/password_manager/core/browser/password_generation_frame_helper.h"
 #import "components/password_manager/core/browser/password_manager.h"
 #import "components/password_manager/core/browser/password_manager_client.h"
+#import "components/password_manager/core/browser/password_sync_util.h"
 #import "components/password_manager/ios/account_select_fill_data.h"
 #import "components/password_manager/ios/password_controller_driver_helper.h"
 #import "components/password_manager/ios/password_form_helper.h"
@@ -58,7 +59,6 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
-#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/credential_provider_promo_commands.h"
 #import "ios/chrome/browser/ui/commands/password_breach_commands.h"
@@ -72,6 +72,7 @@
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/web_state.h"
 #import "services/network/public/cpp/shared_url_loader_factory.h"
+#import "third_party/abseil-cpp/absl/types/optional.h"
 #import "ui/base/device_form_factor.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "url/gurl.h"
@@ -117,12 +118,6 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
 // PasswordController.
 @property(nonatomic, strong)
     NotifyUserAutoSigninViewController* notifyAutoSigninViewController;
-
-// The action sheet coordinator, if one is currently being shown.
-@property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
-
-// Tracks current potential generated password until accepted or rejected.
-@property(nonatomic, copy) NSString* generatedPotentialPassword;
 
 // Displays infobar for `form` with `type`. If `type` is UPDATE, the user
 // is prompted to update the password. If `type` is SAVE, the user is prompted
@@ -358,18 +353,6 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
 
 #pragma mark - Private methods
 
-// Returns the user email.
-- (NSString*)userEmail {
-  DCHECK(self.browserState);
-
-  AuthenticationService* authService =
-      AuthenticationServiceFactory::GetForBrowserState(self.browserState);
-  id<SystemIdentity> authenticatedIdentity =
-      authService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
-
-  return authenticatedIdentity.userEmail;
-}
-
 // The dispatcher used for PasswordBreachCommands.
 - (id<PasswordBreachCommands>)passwordBreachDispatcher {
   DCHECK(self.dispatcher);
@@ -438,20 +421,16 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
     return;
   }
 
-  bool isSyncUser = false;
+  absl::optional<std::string> accountToStorePassword = absl::nullopt;
   if (self.browserState) {
     syncer::SyncService* syncService =
         SyncServiceFactory::GetForBrowserState(self.browserState);
-    isSyncUser =
-        password_bubble_experiment::HasChosenToSyncPasswords(syncService);
+    accountToStorePassword =
+        password_manager::sync_util::GetSyncingAccount(syncService);
   }
+
   infobars::InfoBarManager* infoBarManager =
       InfoBarManagerImpl::FromWebState(_webState);
-
-  AuthenticationService* authService =
-      AuthenticationServiceFactory::GetForBrowserState(self.browserState);
-  id<SystemIdentity> authenticatedIdentity =
-      authService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
 
   switch (type) {
     case PasswordInfoBarType::SAVE: {
@@ -463,7 +442,7 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
       }
 
       auto delegate = std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
-          authenticatedIdentity.userEmail, isSyncUser,
+          accountToStorePassword,
           /*password_update=*/false, std::move(form));
       std::unique_ptr<InfoBarIOS> infobar = std::make_unique<InfoBarIOS>(
           InfobarType::kInfobarTypePasswordSave, std::move(delegate),
@@ -481,7 +460,7 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
         }
 
         auto delegate = std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
-            authenticatedIdentity.userEmail, isSyncUser,
+            accountToStorePassword,
             /*password_update=*/true, std::move(form));
         std::unique_ptr<InfoBarIOS> infobar = std::make_unique<InfoBarIOS>(
             InfobarType::kInfobarTypePasswordUpdate, std::move(delegate),
@@ -500,50 +479,11 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
   self.notifyAutoSigninViewController = nil;
 }
 
-- (void)generatePasswordPopupDismissed {
-  [self.actionSheetCoordinator stop];
-  self.actionSheetCoordinator = nil;
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  self.generatedPotentialPassword = nil;
-}
-
-- (void)updateGeneratePasswordStrings:(id)sender {
-  NSString* title =
-      [NSString stringWithFormat:@"%@\n%@\n ",
-                                 GetNSString(IDS_IOS_SUGGESTED_STRONG_PASSWORD),
-                                 self.generatedPotentialPassword];
-  NSString* message = l10n_util::GetNSStringF(
-      IDS_IOS_SUGGESTED_STRONG_PASSWORD_HINT_DISPLAYING_EMAIL,
-      base::SysNSStringToUTF16([self userEmail]));
-
-  self.actionSheetCoordinator.attributedTitle =
-      [[NSMutableAttributedString alloc]
-          initWithString:title
-              attributes:@{
-                NSFontAttributeName :
-                    [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
-              }];
-
-  self.actionSheetCoordinator.attributedMessage =
-      [[NSMutableAttributedString alloc]
-          initWithString:message
-              attributes:@{
-                NSFontAttributeName :
-                    [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
-              }];
-
-  // TODO(crbug.com/886583): find a way to make action sheet coordinator
-  // responsible for font size changes.
-  [self.actionSheetCoordinator updateAttributedText];
-}
-
 #pragma mark - SharedPasswordControllerDelegate
 
 - (void)sharedPasswordController:(SharedPasswordController*)controller
     showGeneratedPotentialPassword:(NSString*)generatedPotentialPassword
                    decisionHandler:(void (^)(BOOL accept))decisionHandler {
-  self.generatedPotentialPassword = generatedPotentialPassword;
-
   [self.passwordSuggestionDispatcher
       showPasswordSuggestion:generatedPotentialPassword
              decisionHandler:decisionHandler];

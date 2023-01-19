@@ -33,8 +33,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
+#include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/checked_math.h"
@@ -1580,7 +1580,7 @@ ScriptPromise HTMLCanvasElement::CreateImageBitmap(
     ExceptionState& exception_state) {
   return ImageBitmapSource::FulfillImageBitmap(
       script_state, MakeGarbageCollected<ImageBitmap>(this, crop_rect, options),
-      exception_state);
+      options, exception_state);
 }
 
 void HTMLCanvasElement::SetOffscreenCanvasResource(

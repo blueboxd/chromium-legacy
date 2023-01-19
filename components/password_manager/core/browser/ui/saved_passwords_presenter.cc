@@ -15,6 +15,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
@@ -87,22 +88,6 @@ IsPasswordNoteChanged IsNoteChanged(const password_manager::PasswordForm& form,
   return IsPasswordNoteChanged(
       form.GetNoteWithEmptyUniqueDisplayName().value_or(std::u16string()) !=
       new_note);
-}
-
-PasswordNoteAction NoteChangeResultToPasswordNoteEditDialogAction(
-    password_manager::PasswordNoteChangeResult result) {
-  switch (result) {
-    case password_manager::PasswordNoteChangeResult::kNoteAdded:
-      return PasswordNoteAction::kNoteAddedInEditDialog;
-    case password_manager::PasswordNoteChangeResult::kNoteEdited:
-      return PasswordNoteAction::kNoteEditedInEditDialog;
-    case password_manager::PasswordNoteChangeResult::kNoteRemoved:
-      return PasswordNoteAction::kNoteRemovedInEditDialog;
-    case password_manager::PasswordNoteChangeResult::kNoteNotChanged:
-      return PasswordNoteAction::kNoteNotChanged;
-  }
-  NOTREACHED();
-  return PasswordNoteAction::kNoteNotChanged;
 }
 
 }  // namespace
@@ -252,14 +237,6 @@ bool SavedPasswordsPresenter::AddCredential(
   PasswordForm form = GenerateFormFromCredential(credential, type);
 
   GetStoreFor(form).AddLogin(form);
-
-  if (form.type == password_manager::PasswordForm::Type::kManuallyAdded) {
-    if (!form.notes.empty() && form.notes[0].value.length() > 0) {
-      password_manager::metrics_util::LogPasswordNoteActionInSettings(
-          PasswordNoteAction::kNoteAddedInAddDialog);
-    }
-  }
-
   return true;
 }
 
@@ -313,14 +290,14 @@ void SavedPasswordsPresenter::AddCredentials(
   RemoveObservers();
 
   // Reinitialize presenter after all add operations are complete.
-  base::RepeatingClosure barrier_closure = base::BarrierClosure(
+  base::RepeatingClosure completion_barrier_closure = base::BarrierClosure(
       valid_credentials.size(),
       base::BindOnce(&SavedPasswordsPresenter::Init,
                      weak_ptr_factory_.GetWeakPtr())
           .Then(base::BindOnce(std::move(completion), std::move(results))));
 
   for (CredentialUIEntry& credential : valid_credentials)
-    AddCredentialAsync(std::move(credential), type, barrier_closure);
+    AddCredentialAsync(std::move(credential), type, completion_barrier_closure);
 }
 
 SavedPasswordsPresenter::EditResult
@@ -361,6 +338,15 @@ SavedPasswordsPresenter::EditSavedCredentials(
     return EditResult::kNothingChanged;
   }
 
+  base::RepeatingClosure completion_barrier_closure = base::DoNothing();
+  // Only change in username or password is interesting for OnEdited listeners.
+  if (username_changed || password_changed) {
+    completion_barrier_closure = base::BarrierClosure(
+        forms_to_change.size(),
+        base::BindOnce(&SavedPasswordsPresenter::NotifyEdited,
+                       weak_ptr_factory_.GetWeakPtr(), updated_credential));
+  }
+
   for (const auto& old_form : forms_to_change) {
     PasswordStoreInterface& store = GetStoreFor(old_form);
     PasswordForm new_form = old_form;
@@ -375,16 +361,9 @@ SavedPasswordsPresenter::EditSavedCredentials(
       new_form.password_issues.clear();
     }
 
-    if (base::FeatureList::IsEnabled(syncer::kPasswordNotesWithBackup)) {
-      if (note_changed) {
-        password_manager::PasswordNoteChangeResult note_change_result =
-            new_form.SetNoteWithEmptyUniqueDisplayName(updated_credential.note);
-        metrics_util::LogPasswordNoteActionInSettings(
-            NoteChangeResultToPasswordNoteEditDialogAction(note_change_result));
-      } else {
-        metrics_util::LogPasswordNoteActionInSettings(
-            PasswordNoteAction::kNoteNotChanged);
-      }
+    if (base::FeatureList::IsEnabled(syncer::kPasswordNotesWithBackup) &&
+        note_changed) {
+      new_form.SetNoteWithEmptyUniqueDisplayName(updated_credential.note);
     }
 
     // An updated username implies a change in the primary key, thus we need
@@ -397,15 +376,11 @@ SavedPasswordsPresenter::EditSavedCredentials(
       new_form.password_issues.erase(InsecureType::kLeaked);
       // Changing username requires deleting old form and adding new one. So
       // the different API should be called.
-      store.UpdateLoginWithPrimaryKey(new_form, old_form);
+      store.UpdateLoginWithPrimaryKey(new_form, old_form,
+                                      completion_barrier_closure);
     } else {
-      store.UpdateLogin(new_form);
+      store.UpdateLogin(new_form, completion_barrier_closure);
     }
-  }
-
-  // Only change in username or password is interesting for OnEdited listeners.
-  if (username_changed || password_changed) {
-    NotifyEdited(updated_credential);
   }
 
   password_manager::metrics_util::LogPasswordEditResult(username_changed,

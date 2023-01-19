@@ -119,8 +119,12 @@
 #endif
 
 #if BUILDFLAG(IS_OZONE)
-#include "gpu/command_buffer/service/image_factory_native_pixmap.h"
+#include "ui/gfx/buffer_format_util.h"
+#include "ui/gfx/buffer_usage_util.h"
+#include "ui/gfx/native_pixmap.h"
 #include "ui/gl/gl_image_native_pixmap.h"
+#include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
 #endif
 
 #if BUILDFLAG(IS_MAC)
@@ -2489,10 +2493,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
                                        GLuint* source_texture_service_id,
                                        GLenum* source_texture_target);
 
-  // Whether a texture backed by a Chromium Image needs to emulate GL_RGB format
-  // using GL_RGBA and glColorMask.
-  bool ChromiumImageNeedsRGBEmulation();
-
   // Note: Creation of anonymous images is possible only on Ozone.
 #if BUILDFLAG(IS_OZONE)
   bool SupportsCreateAnonymousImage();
@@ -2502,12 +2502,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
       bool* is_cleared);
 #endif
   unsigned int RequiredTextureTypeForAnonymousImage();
-
-#if BUILDFLAG(IS_OZONE)
-  ImageFactoryNativePixmap* image_factory_for_nacl_swapchain() {
-    return &image_factory_for_nacl_swapchain_;
-  }
-#endif
 
   // Helper method to call glClear workaround.
   void ClearFramebufferForWorkaround(GLbitfield mask);
@@ -2830,10 +2824,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
   std::set<scoped_refptr<TextureRef>> texture_refs_pending_destruction_;
 #endif
 
-#if BUILDFLAG(IS_OZONE)
-  ImageFactoryNativePixmap image_factory_for_nacl_swapchain_;
-#endif
-
   base::WeakPtrFactory<GLES2DecoderImpl> weak_ptr_factory_{this};
 };
 
@@ -2940,26 +2930,6 @@ ScopedResolvedFramebufferBinder::ScopedResolvedFramebufferBinder(
   auto* api = decoder_->api();
   ScopedGLErrorSuppressor suppressor("ScopedResolvedFramebufferBinder::ctor",
                                      decoder_->error_state_.get());
-
-  // On old AMD GPUs on macOS, glColorMask doesn't work correctly for
-  // multisampled renderbuffers and the alpha channel can be overwritten. This
-  // workaround clears the alpha channel before resolving.
-  bool alpha_channel_needs_clear =
-      decoder_->should_use_native_gmb_for_backbuffer_ &&
-      !decoder_->offscreen_buffer_should_have_alpha_ &&
-      decoder_->ChromiumImageNeedsRGBEmulation() &&
-      decoder_->workarounds()
-          .disable_multisampling_color_mask_usage;
-  if (alpha_channel_needs_clear) {
-    api->glBindFramebufferEXTFn(GL_DRAW_FRAMEBUFFER_EXT,
-                                decoder_->offscreen_target_frame_buffer_->id());
-    decoder_->state_.SetDeviceColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_TRUE);
-    decoder->state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
-    decoder->ClearDeviceWindowRectangles();
-    api->glClearColorFn(0, 0, 0, 1);
-    api->glClearFn(GL_COLOR_BUFFER_BIT);
-    decoder_->RestoreClearState();
-  }
 
   api->glBindFramebufferEXTFn(GL_READ_FRAMEBUFFER_EXT,
                               decoder_->offscreen_target_frame_buffer_->id());
@@ -3071,10 +3041,7 @@ BackTexture::BackTexture(GLES2DecoderImpl* decoder)
     : memory_tracker_(decoder->memory_tracker()),
       bytes_allocated_(0),
       decoder_(decoder) {
-#if BUILDFLAG(IS_OZONE)
-  DCHECK(!decoder_->should_use_native_gmb_for_backbuffer_ ||
-         decoder_->image_factory_for_nacl_swapchain());
-#else
+#if !BUILDFLAG(IS_OZONE)
   DCHECK(!decoder_->should_use_native_gmb_for_backbuffer_);
 #endif
 }
@@ -3251,24 +3218,17 @@ bool BackTexture::AllocateNativeGpuMemoryBuffer(const gfx::Size& size,
       decoder_->CreateAnonymousImage(size, buffer_format, &is_cleared);
   if (!image)
     return false;
-  DCHECK_EQ(format, image->GetDataFormat());
   if (!image->BindTexImage(Target()))
     return false;
 
   image_ = image;
   decoder_->texture_manager()->SetLevelInfo(
-      texture_ref_.get(), Target(), 0, image_->GetInternalFormat(),
-      size.width(), size.height(), 1, 0, image->GetDataFormat(),
-      image->GetDataType(), gfx::Rect(size));
+      texture_ref_.get(), Target(), 0, format, size.width(), size.height(), 1,
+      0, format, GL_UNSIGNED_BYTE, gfx::Rect(size));
   decoder_->texture_manager()->SetLevelImage(texture_ref_.get(), Target(), 0,
                                              image_.get(), Texture::BOUND);
 
-  // Ignore the zero flag if the alpha channel needs to be cleared for RGB
-  // emulation.
-  bool needs_clear_for_rgb_emulation =
-      !decoder_->offscreen_buffer_should_have_alpha_ &&
-      decoder_->ChromiumImageNeedsRGBEmulation();
-  if (!is_cleared || zero || needs_clear_for_rgb_emulation) {
+  if (!is_cleared || zero) {
     GLuint fbo;
     api()->glGenFramebuffersEXTFn(1, &fbo);
     {
@@ -3594,9 +3554,6 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   if (workarounds().rely_on_implicit_sync_for_swap_buffers)
     surface_->SetRelyOnImplicitSync();
 
-  if (workarounds().force_gl_flush_on_swap_buffers)
-    surface_->SetForceGlFlushOnSwapBuffers();
-
   // Create GPU Tracer for timing values.
   gpu_tracer_ = std::make_unique<GPUTracer>(this);
 
@@ -3641,30 +3598,14 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
 
   should_use_native_gmb_for_backbuffer_ =
       attrib_helper.should_use_native_gmb_for_backbuffer;
-  if (should_use_native_gmb_for_backbuffer_) {
-    bool supported = false;
-#if BUILDFLAG(IS_OZONE)
-    switch (image_factory_for_nacl_swapchain()->RequiredTextureType()) {
-      case GL_TEXTURE_RECTANGLE_ARB:
-        supported = feature_info_->feature_flags().arb_texture_rectangle;
-        break;
-      case GL_TEXTURE_EXTERNAL_OES:
-        supported = feature_info_->feature_flags().oes_egl_image_external;
-        break;
-      case GL_TEXTURE_2D:
-        supported = true;
-        break;
-      default:
-        break;
-    }
-#endif
 
-    if (!supported) {
-      LOG(ERROR) << "ContextResult::kFatalFailure: "
-                    "native gmb format not supported";
-      return gpu::ContextResult::kFatalFailure;
-    }
+#if !BUILDFLAG(IS_OZONE)
+  if (should_use_native_gmb_for_backbuffer_) {
+    LOG(ERROR) << "ContextResult::kFatalFailure: "
+                  "native gmb format not supported";
+    return gpu::ContextResult::kFatalFailure;
   }
+#endif
 
   // In theory |needs_emulation| needs to be true on Desktop GL 4.1 or lower.
   // However, we set it to true everywhere, not to trust drivers to handle
@@ -3789,13 +3730,6 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   if (offscreen) {
     offscreen_buffer_should_have_alpha_ = attrib_helper.alpha_size > 0;
 
-    // Whether the offscreen buffer texture should have an alpha channel. Does
-    // not include logic from workarounds.
-    bool offscreen_buffer_texture_needs_alpha =
-        offscreen_buffer_should_have_alpha_ ||
-        (ChromiumImageNeedsRGBEmulation() &&
-         attrib_helper.should_use_native_gmb_for_backbuffer);
-
     if (attrib_helper.samples > 0 && attrib_helper.sample_buffers > 0 &&
         features().chromium_framebuffer_multisample) {
       // Per ext_framebuffer_multisample spec, need max bound on sample count.
@@ -3818,11 +3752,11 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
       // buffer formats are available--instead fall back to 8-bit textures.
       if (rgb8_supported && offscreen_target_samples_ > 0) {
         offscreen_target_color_format_ =
-            offscreen_buffer_texture_needs_alpha ? GL_RGBA8 : GL_RGB8;
+            offscreen_buffer_should_have_alpha_ ? GL_RGBA8 : GL_RGB8;
       } else {
         offscreen_target_samples_ = 0;
         offscreen_target_color_format_ =
-            offscreen_buffer_texture_needs_alpha ||
+            offscreen_buffer_should_have_alpha_ ||
                     workarounds().disable_gl_rgb_format
                 ? GL_RGBA
                 : GL_RGB;
@@ -3848,7 +3782,7 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
       }
     } else {
       offscreen_target_color_format_ =
-          offscreen_buffer_texture_needs_alpha ||
+          offscreen_buffer_should_have_alpha_ ||
                   workarounds().disable_gl_rgb_format
               ? GL_RGBA
               : GL_RGB;
@@ -3873,7 +3807,7 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
       }
     }
 
-    offscreen_saved_color_format_ = offscreen_buffer_texture_needs_alpha ||
+    offscreen_saved_color_format_ = offscreen_buffer_should_have_alpha_ ||
                                             workarounds().disable_gl_rgb_format
                                         ? GL_RGBA
                                         : GL_RGB;
@@ -3889,7 +3823,9 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
       // like glClear.
       // TODO(piman): allow empty framebuffers, similar to
       // EGL_KHR_surfaceless_context / GL_OES_surfaceless_context.
-      initial_size = gfx::Size(1, 1);
+      // Use 64x64 instead of 1x1 to handle minimum framebuffer size
+      // requirement on some platforms: b/265847440.
+      initial_size = gfx::Size(64, 64);
     }
 
     state_.viewport_width = initial_size.width();
@@ -19289,14 +19225,6 @@ bool GLES2DecoderImpl::NeedsCopyTextureImageWorkaround(
   return true;
 }
 
-bool GLES2DecoderImpl::ChromiumImageNeedsRGBEmulation() {
-#if BUILDFLAG(IS_OZONE)
-  return !image_factory_for_nacl_swapchain()->SupportsFormatRGB();
-#else
-  return false;
-#endif
-}
-
 void GLES2DecoderImpl::ClearFramebufferForWorkaround(GLbitfield mask) {
   ScopedGLErrorSuppressor suppressor("GLES2DecoderImpl::ClearWorkaround",
                                      error_state_.get());
@@ -19550,16 +19478,38 @@ error::Error GLES2DecoderImpl::HandleSetActiveURLCHROMIUM(
 
 #if BUILDFLAG(IS_OZONE)
 bool GLES2DecoderImpl::SupportsCreateAnonymousImage() {
-  return image_factory_for_nacl_swapchain()->SupportsCreateAnonymousImage();
+  return ui::OzonePlatform::GetInstance()
+      ->GetPlatformRuntimeProperties()
+      .supports_native_pixmaps;
 }
 
 scoped_refptr<gl::GLImageNativePixmap> GLES2DecoderImpl::CreateAnonymousImage(
     const gfx::Size& size,
     gfx::BufferFormat format,
     bool* is_cleared) {
-  return image_factory_for_nacl_swapchain()->CreateAnonymousImage(
-      size, format, gfx::BufferUsage::SCANOUT, gpu::kNullSurfaceHandle,
-      is_cleared);
+  gfx::BufferUsage usage = gfx::BufferUsage::SCANOUT;
+  SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
+
+  scoped_refptr<gfx::NativePixmap> pixmap;
+  pixmap =
+      ui::OzonePlatform::GetInstance()
+          ->GetSurfaceFactoryOzone()
+          ->CreateNativePixmap(surface_handle, nullptr, size, format, usage);
+  if (!pixmap.get()) {
+    LOG(ERROR) << "Failed to create pixmap " << size.ToString() << ", "
+               << gfx::BufferFormatToString(format) << ", usage "
+               << gfx::BufferUsageToString(usage);
+    return nullptr;
+  }
+  auto image = gl::GLImageNativePixmap::Create(size, format, std::move(pixmap));
+  if (!image) {
+    LOG(ERROR) << "Failed to create GLImage " << size.ToString() << ", "
+               << gfx::BufferFormatToString(format) << ", usage "
+               << gfx::BufferUsageToString(usage);
+    return nullptr;
+  }
+  *is_cleared = true;
+  return image;
 }
 
 #endif
@@ -19567,7 +19517,7 @@ scoped_refptr<gl::GLImageNativePixmap> GLES2DecoderImpl::CreateAnonymousImage(
 // An image can only be bound to a texture with the appropriate type.
 unsigned int GLES2DecoderImpl::RequiredTextureTypeForAnonymousImage() {
 #if BUILDFLAG(IS_OZONE)
-  return image_factory_for_nacl_swapchain()->RequiredTextureType();
+  return GL_TEXTURE_2D;
 #else
   NOTREACHED();
   return 0;

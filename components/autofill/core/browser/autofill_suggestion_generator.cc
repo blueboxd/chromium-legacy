@@ -227,8 +227,7 @@ std::vector<CreditCard*> AutofillSuggestionGenerator::GetOrderedCardsToSuggest(
       autofill_client->GetPersonalDataManager();
   DCHECK(personal_data);
   std::vector<CreditCard*> cards_to_suggest =
-      personal_data->GetCreditCardsToSuggest(
-          autofill_client->AreServerCardsSupported());
+      personal_data->GetCreditCardsToSuggest();
 
   // If a card has available card linked offers on the last committed url, rank
   // it to the top.
@@ -254,7 +253,7 @@ std::vector<CreditCard*> AutofillSuggestionGenerator::GetOrderedCardsToSuggest(
 
 // static
 std::vector<Suggestion> AutofillSuggestionGenerator::GetSuggestionsForIBANs(
-    const std::vector<IBAN*>& ibans) {
+    const std::vector<const IBAN*>& ibans) {
   std::vector<Suggestion> suggestions;
   for (const IBAN* iban : ibans) {
     Suggestion& suggestion = suggestions.emplace_back(iban->value());
@@ -627,6 +626,7 @@ AutofillSuggestionGenerator::GetSuggestionLabelsForCard(
         Suggestion::Text(credit_card.ObfuscatedNumberWithVisibleLastFourDigits(
             GetObfuscationLength()))};
   }
+
   // E.g. "Product Description/Nickname/Network  ••••1234, expires on 01/25".
   return {Suggestion::Text(
       credit_card.CardIdentifierStringAndDescriptiveExpiration(app_locale))};
@@ -662,43 +662,37 @@ void AutofillSuggestionGenerator::AdjustVirtualCardSuggestionContent(
     // displayed on a single row. The minor_text and the labels are
     // concatenated, so we have: String 1 = main_text, String 2 = minor_text +
     // labels.
-    // For the card number field, suggestion = virtual card label + card name +
-    // last 4 digits.
-    if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
-      if (ShouldSplitCardNameAndLastFourDigits()) {
-        // Before: main_text = card name, minor_text = last 4 digits, labels =
-        // expiration date.
-        // We add the virtual card label as a prefix to the main_text.
-        // After: main_text = virtual card label + card name, minor_text = last
-        // 4 digits, labels = expiration date.
-        suggestion.main_text.value = base::StrCat(
-            {VIRTUAL_CARD_LABEL, u"  ", suggestion.main_text.value});
-      } else {
-        // Before: main_text = card name + last 4 digits, minor_text = null,
-        // labels = expiration date.
-        // The main_text is assigned to the minor_text, and the virtual card
-        // label is shown as the main_text.
-        // After: main_text = virtual card label, minor_text = card name + last
-        // 4 digits, minor_text = null, labels = expiration date.
-        suggestion.minor_text.value = suggestion.main_text.value;
-        suggestion.main_text.value = VIRTUAL_CARD_LABEL;
-      }
-      // The expiration date is not shown, so it is removed.
-      suggestion.labels = {};
+    // There is a limit on the size of the keyboard accessory chips. When the
+    // suggestion content exceeds this limit, the card name or the cardholder
+    // name can be truncated, the last 4 digits should never be truncated.
+    // Contents in the main_text are automatically truncated from the right end
+    // on the Android side when the size limit is exceeded, so the card name and
+    // the cardholder name is appended to the main_text.
+    // Here we modify the `Suggestion` members to make it suitable for showing
+    // on the keyboard accessory.
+    // Card number field:
+    // Before: main_text = card name, minor_text = last 4 digits, labels =
+    // expiration date.
+    // After: main_text = virtual card label + card name, minor_text = last 4
+    // digits, labels = null.
+    // Cardholder name field:
+    // Before: main_text = cardholder name, minor_text = null, labels = last 4
+    // digits.
+    // After: main_text = virtual card label + cardholder name, minor_text =
+    // null, labels = last 4 digits.
+    if (ShouldSplitCardNameAndLastFourDigits()) {
+      suggestion.main_text.value =
+          base::StrCat({VIRTUAL_CARD_LABEL, u"  ", suggestion.main_text.value});
     } else {
-      // For the cardholder name field, suggestion = virtual card label +
-      // cardholder name + last 4 digits.
-      // Before: main_text = cardholder name, minor_text = null, labels = last 4
-      // digits.
-      // The main_text is assigned to the minor_text, and the virtual card label
-      // is shown as the main_text.
-      // After: main_text = virtual card label, minor_text = cardholder name,
-      // labels = last 4 digits.
       suggestion.minor_text.value = suggestion.main_text.value;
       suggestion.main_text.value = VIRTUAL_CARD_LABEL;
     }
-    // Desktop/Android dropdown.
-  } else {
+    if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
+      // The expiration date is not shown for the card number field, so it is
+      // removed.
+      suggestion.labels = {};
+    }
+  } else {  // Desktop/Android dropdown.
     if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
       // If the focused field is a credit card number field, reset all labels
       // and populate only the virtual card text.

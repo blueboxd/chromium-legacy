@@ -659,20 +659,28 @@
     self.pinnedTabsMediator = [[PinnedTabsMediator alloc]
         initWithConsumer:baseViewController.pinnedTabsConsumer];
     self.pinnedTabsMediator.browser = _regularBrowser;
-    self.baseViewController.pinnedTabsDelegate = self.pinnedTabsMediator;
+    baseViewController.pinnedTabsDelegate = self.pinnedTabsMediator;
+    baseViewController.pinnedTabsImageDataSource = self.pinnedTabsMediator;
   }
 
   self.incognitoTabsMediator = [[TabGridMediator alloc]
       initWithConsumer:baseViewController.incognitoTabsConsumer];
   self.incognitoTabsMediator.browser = _incognitoBrowser;
   self.incognitoTabsMediator.delegate = self;
+
   baseViewController.regularTabsDelegate = self.regularTabsMediator;
   baseViewController.incognitoTabsDelegate = self.incognitoTabsMediator;
+
   baseViewController.regularTabsDragDropHandler = self.regularTabsMediator;
   baseViewController.incognitoTabsDragDropHandler = self.incognitoTabsMediator;
+  if (IsPinnedTabsEnabled()) {
+    baseViewController.pinnedTabsDragDropHandler = self.pinnedTabsMediator;
+  }
+
   baseViewController.regularTabsImageDataSource = self.regularTabsMediator;
   baseViewController.priceCardDataSource = self.priceCardMediator;
   baseViewController.incognitoTabsImageDataSource = self.incognitoTabsMediator;
+
   baseViewController.regularTabsShareableItemsProvider =
       self.regularTabsMediator;
   baseViewController.incognitoTabsShareableItemsProvider =
@@ -1157,20 +1165,29 @@
   }
 }
 
-- (void)pinTabWithIdentifier:(NSString*)identifier incognito:(BOOL)incognito {
-  if (incognito) {
-    [self.incognitoTabsMediator pinItemWithID:identifier];
-  } else {
-    [self.regularTabsMediator pinItemWithID:identifier];
-  }
+- (void)pinTabWithIdentifier:(NSString*)identifier {
+  [self.regularTabsMediator setPinState:YES forItemWithIdentifier:identifier];
 }
 
-- (void)closeTabWithIdentifier:(NSString*)identifier incognito:(BOOL)incognito {
+- (void)unpinTabWithIdentifier:(NSString*)identifier {
+  [self.pinnedTabsMediator setPinState:NO forItemWithIdentifier:identifier];
+}
+
+- (void)closeTabWithIdentifier:(NSString*)identifier
+                     incognito:(BOOL)incognito
+                        pinned:(BOOL)pinned {
   if (incognito) {
     [self.incognitoTabsMediator closeItemWithID:identifier];
-  } else {
-    [self.regularTabsMediator closeItemWithID:identifier];
+    return;
   }
+
+  if (pinned) {
+    DCHECK(IsPinnedTabsEnabled());
+    [self.pinnedTabsMediator closeItemWithID:identifier];
+    return;
+  }
+
+  [self.regularTabsMediator closeItemWithID:identifier];
 }
 
 - (void)selectTabs {

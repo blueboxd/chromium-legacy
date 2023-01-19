@@ -42,6 +42,8 @@ constexpr uint8_t kAccountKeyStartByte = 0x04;
 
 constexpr base::TimeDelta kGattOperationTimeout = base::Seconds(15);
 constexpr int kMaxNumGattConnectionAttempts = 3;
+constexpr base::TimeDelta kCoolOffPeriodBeforeGattConnectionAfterDisconnect =
+    base::Seconds(2);
 
 constexpr const char* ToString(
     device::BluetoothGattService::GattErrorCode error_code) {
@@ -167,6 +169,8 @@ FastPairGattServiceClientImpl::FastPairGattServiceClientImpl(
 FastPairGattServiceClientImpl::~FastPairGattServiceClientImpl() = default;
 
 void FastPairGattServiceClientImpl::AttemptGattConnection() {
+  QP_LOG(INFO) << __func__;
+
   if (num_gatt_connection_attempts_ == kMaxNumGattConnectionAttempts) {
     NotifyInitializedError(PairFailure::kCreateGattConnection);
     RecordEffectiveGattConnectionSuccess(/*success=*/false);
@@ -187,16 +191,68 @@ void FastPairGattServiceClientImpl::AttemptGattConnection() {
     return;
   }
 
-  gatt_service_discovery_timer_.Start(
-      FROM_HERE, kGattOperationTimeout,
+  // Remove any pre-existing GATT connection on the device before we make a
+  // new one. We cannot determine if there is a GATT connection already
+  // established, and because its not very expensive and has no impact if there
+  // is no connection established, we call `Disconnect` regardless.
+  QP_LOG(INFO) << __func__
+               << ": Disconnecting any previous connections before attempt";
+  device->Disconnect(
+      base::BindOnce(
+          &FastPairGattServiceClientImpl::CoolOffBeforeCreateGattConnection,
+          weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&FastPairGattServiceClientImpl::NotifyInitializedError,
                      weak_ptr_factory_.GetWeakPtr(),
-                     PairFailure::kGattServiceDiscoveryTimeout));
+                     PairFailure::kFailureToDisconnectGattBetweenRetries));
+}
+
+void FastPairGattServiceClientImpl::CoolOffBeforeCreateGattConnection() {
+  QP_LOG(INFO) << __func__;
+
+  // In order for the Disconnect to propagate into the platform code, we need
+  // a cool off period before we attempt to create a GATT connection in the case
+  // we did disconnect an active GATT connection.
+  gatt_connect_after_disconnect_cool_off_timer_.Start(
+      FROM_HERE, kCoolOffPeriodBeforeGattConnectionAfterDisconnect,
+      base::BindOnce(&FastPairGattServiceClientImpl::CreateGattConnection,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void FastPairGattServiceClientImpl::CreateGattConnection() {
+  QP_LOG(INFO) << __func__;
+
+  // Attempt creating a GATT connection with the device.
+  auto* device = adapter_->GetDevice(device_address_);
+  if (!device) {
+    // The device must have been lost between connection attempts.
+    NotifyInitializedError(
+        PairFailure::kPairingDeviceLostBetweenGattConnectionAttempts);
+    return;
+  }
+
+  gatt_service_discovery_timer_.Start(
+      FROM_HERE, kGattOperationTimeout,
+      base::BindOnce(
+          &FastPairGattServiceClientImpl::OnGattServiceDiscoveryTimeout,
+          weak_ptr_factory_.GetWeakPtr()));
 
   device->CreateGattConnection(
       base::BindOnce(&FastPairGattServiceClientImpl::OnGattConnection,
                      weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()),
       kFastPairBluetoothUuid);
+}
+
+void FastPairGattServiceClientImpl::OnGattServiceDiscoveryTimeout() {
+  // This PairFailure is not surfaced to consumers on the
+  // `on_initialized_callback_` because we retry the GATT connection. We don't
+  // want the consumers to retry a FastPairHandshake before retries are
+  // complete so we log the failure here and continue with the retry if we
+  // haven't maxed out yet.
+  QP_LOG(INFO) << __func__
+               << ": reattempting from previous GATT connection failure: "
+               << PairFailure::kGattServiceDiscoveryTimeout;
+  RecordGattRetryFailureReason(PairFailure::kGattServiceDiscoveryTimeout);
+  AttemptGattConnection();
 }
 
 void FastPairGattServiceClientImpl::OnGattConnection(
@@ -208,6 +264,17 @@ void FastPairGattServiceClientImpl::OnGattConnection(
                     << ToString(error_code.value());
     RecordGattConnectionErrorCode(error_code.value());
     RecordGattConnectionResult(/*success=*/false);
+
+    // This PairFailure is not surfaced to consumers on the
+    // `on_initialized_callback_` because we retry the GATT connection. We don't
+    // want the consumers to retry a FastPairHandshake before retries are
+    // complete so we log the failure here and continue with the retry if we
+    // haven't maxed out yet.
+    QP_LOG(INFO) << __func__
+                 << ": reattempting from previous GATT connection failure: "
+                 << PairFailure::kBluetoothDeviceFailureCreatingGattConnection;
+    RecordGattRetryFailureReason(
+        PairFailure::kBluetoothDeviceFailureCreatingGattConnection);
     AttemptGattConnection();
   } else {
     QP_LOG(INFO) << __func__
@@ -241,14 +308,17 @@ void FastPairGattServiceClientImpl::ClearCurrentState() {
 
 void FastPairGattServiceClientImpl::NotifyInitializedError(
     PairFailure failure) {
+  QP_LOG(VERBOSE) << __func__ << failure;
   ClearCurrentState();
 
   // This function is invoked in several flows and it is possible for it to run
   // twice. In that case, we are ok with the first instance being the one that
   // reports the failure. An example is if we timeout waiting for all notify
   // sessions to start.
-  if (on_initialized_callback_)
+  if (on_initialized_callback_) {
+    QP_LOG(VERBOSE) << __func__ << "Executing initialized callback";
     std::move(on_initialized_callback_).Run(failure);
+  }
 }
 
 void FastPairGattServiceClientImpl::NotifyWriteRequestError(

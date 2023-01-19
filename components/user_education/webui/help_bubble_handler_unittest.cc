@@ -8,12 +8,14 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/user_education/common/help_bubble_factory_registry.h"
 #include "components/user_education/common/help_bubble_params.h"
 #include "components/user_education/webui/help_bubble_webui.h"
 #include "components/user_education/webui/tracked_element_webui.h"
 #include "components/vector_icons/vector_icons.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/interaction/element_identifier.h"
@@ -29,6 +31,7 @@ namespace {
 
 DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kHelpBubbleHandlerTestElementIdentifier);
 DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kHelpBubbleHandlerTestElementIdentifier2);
+constexpr gfx::RectF kElementBounds{50, 51, 51, 53};
 
 // Mock version of the help bubble client so we don't need a remote (while being
 // able to know when the remote methods would have been called).
@@ -68,6 +71,11 @@ class TestHelpBubbleHandler : public HelpBubbleHandlerBase {
   // macros.
   testing::StrictMock<MockHelpBubbleClient>& mock() {
     return static_cast<ClientProvider*>(client_provider())->client_;
+  }
+
+  content::WebUIController* GetController() override {
+    NOTREACHED() << "Should not call this in tests.";
+    return nullptr;
   }
 
  private:
@@ -150,7 +158,7 @@ TEST_F(HelpBubbleHandlerTest, StartsWithNoElement) {
 
 TEST_F(HelpBubbleHandlerTest, ElementCreatedOnEvent) {
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier.GetName(), true);
+      kHelpBubbleHandlerTestElementIdentifier.GetName(), true, kElementBounds);
   EXPECT_TRUE(ui::ElementTracker::GetElementTracker()->GetElementInAnyContext(
       kHelpBubbleHandlerTestElementIdentifier));
   EXPECT_FALSE(ui::ElementTracker::GetElementTracker()->GetElementInAnyContext(
@@ -166,9 +174,9 @@ TEST_F(HelpBubbleHandlerTest, ElementCreatedOnEvent) {
 
 TEST_F(HelpBubbleHandlerTest, ElementHiddenOnEvent) {
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier.GetName(), true);
+      kHelpBubbleHandlerTestElementIdentifier.GetName(), true, kElementBounds);
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier.GetName(), false);
+      kHelpBubbleHandlerTestElementIdentifier.GetName(), false, gfx::RectF());
   EXPECT_FALSE(ui::ElementTracker::GetElementTracker()->GetElementInAnyContext(
       kHelpBubbleHandlerTestElementIdentifier));
   EXPECT_FALSE(ui::ElementTracker::GetElementTracker()->GetElementInAnyContext(
@@ -178,7 +186,7 @@ TEST_F(HelpBubbleHandlerTest, ElementHiddenOnEvent) {
 TEST_F(HelpBubbleHandlerTest, ElementActivatedOnEvent) {
   UNCALLED_MOCK_CALLBACK(ui::ElementTracker::Callback, activated);
   const std::string name = kHelpBubbleHandlerTestElementIdentifier.GetName();
-  handler()->HelpBubbleAnchorVisibilityChanged(name, true);
+  handler()->HelpBubbleAnchorVisibilityChanged(name, true, kElementBounds);
   auto* const tracker = ui::ElementTracker::GetElementTracker();
   auto* const element =
       tracker->GetElementInAnyContext(kHelpBubbleHandlerTestElementIdentifier);
@@ -195,7 +203,8 @@ TEST_F(HelpBubbleHandlerTest, ElementCustomEventOnEvent) {
   const std::string element_name =
       kHelpBubbleHandlerTestElementIdentifier.GetName();
   UNCALLED_MOCK_CALLBACK(ui::ElementTracker::Callback, custom_event);
-  handler()->HelpBubbleAnchorVisibilityChanged(element_name, true);
+  handler()->HelpBubbleAnchorVisibilityChanged(element_name, true,
+                                               kElementBounds);
   auto* const tracker = ui::ElementTracker::GetElementTracker();
   auto* const element =
       tracker->GetElementInAnyContext(kHelpBubbleHandlerTestElementIdentifier);
@@ -210,9 +219,9 @@ TEST_F(HelpBubbleHandlerTest, ElementCustomEventOnEvent) {
 TEST_F(HelpBubbleHandlerTest, MultipleIdentifiers) {
   // Show two elements.
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier.GetName(), true);
+      kHelpBubbleHandlerTestElementIdentifier.GetName(), true, kElementBounds);
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier2.GetName(), true);
+      kHelpBubbleHandlerTestElementIdentifier2.GetName(), true, kElementBounds);
   EXPECT_TRUE(ui::ElementTracker::GetElementTracker()->GetElementInAnyContext(
       kHelpBubbleHandlerTestElementIdentifier));
   EXPECT_TRUE(ui::ElementTracker::GetElementTracker()->GetElementInAnyContext(
@@ -220,7 +229,7 @@ TEST_F(HelpBubbleHandlerTest, MultipleIdentifiers) {
 
   // Hide one element.
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier.GetName(), false);
+      kHelpBubbleHandlerTestElementIdentifier.GetName(), false, gfx::RectF());
   EXPECT_FALSE(ui::ElementTracker::GetElementTracker()->GetElementInAnyContext(
       kHelpBubbleHandlerTestElementIdentifier));
   EXPECT_TRUE(ui::ElementTracker::GetElementTracker()->GetElementInAnyContext(
@@ -228,7 +237,7 @@ TEST_F(HelpBubbleHandlerTest, MultipleIdentifiers) {
 
   // Hide the other element.
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier2.GetName(), false);
+      kHelpBubbleHandlerTestElementIdentifier2.GetName(), false, gfx::RectF());
   EXPECT_FALSE(ui::ElementTracker::GetElementTracker()->GetElementInAnyContext(
       kHelpBubbleHandlerTestElementIdentifier));
   EXPECT_FALSE(ui::ElementTracker::GetElementTracker()->GetElementInAnyContext(
@@ -236,7 +245,7 @@ TEST_F(HelpBubbleHandlerTest, MultipleIdentifiers) {
 
   // Re-show an element.
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier.GetName(), true);
+      kHelpBubbleHandlerTestElementIdentifier.GetName(), true, kElementBounds);
   EXPECT_TRUE(ui::ElementTracker::GetElementTracker()->GetElementInAnyContext(
       kHelpBubbleHandlerTestElementIdentifier));
   EXPECT_FALSE(ui::ElementTracker::GetElementTracker()->GetElementInAnyContext(
@@ -245,7 +254,7 @@ TEST_F(HelpBubbleHandlerTest, MultipleIdentifiers) {
 
 TEST_F(HelpBubbleHandlerTest, ShowHelpBubble) {
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier.GetName(), true);
+      kHelpBubbleHandlerTestElementIdentifier.GetName(), true, kElementBounds);
   auto* const element =
       ui::ElementTracker::GetElementTracker()->GetUniqueElement(
           kHelpBubbleHandlerTestElementIdentifier, test_handler_->context());
@@ -289,7 +298,7 @@ TEST_F(HelpBubbleHandlerTest, ShowHelpBubble) {
 
 TEST_F(HelpBubbleHandlerTest, ShowHelpBubbleWithButtonsAndProgress) {
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier.GetName(), true);
+      kHelpBubbleHandlerTestElementIdentifier.GetName(), true, kElementBounds);
   auto* const element =
       ui::ElementTracker::GetElementTracker()->GetUniqueElement(
           kHelpBubbleHandlerTestElementIdentifier, test_handler_->context());
@@ -348,7 +357,7 @@ TEST_F(HelpBubbleHandlerTest, ShowHelpBubbleWithButtonsAndProgress) {
 
 TEST_F(HelpBubbleHandlerTest, FocusHelpBubble) {
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier.GetName(), true);
+      kHelpBubbleHandlerTestElementIdentifier.GetName(), true, kElementBounds);
   auto* const element =
       ui::ElementTracker::GetElementTracker()->GetUniqueElement(
           kHelpBubbleHandlerTestElementIdentifier, test_handler_->context());
@@ -376,9 +385,9 @@ TEST_F(HelpBubbleHandlerTest, FocusHelpBubble) {
 
 TEST_F(HelpBubbleHandlerTest, HelpBubbleClosedWhenVisibilityChanges) {
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier.GetName(), true);
+      kHelpBubbleHandlerTestElementIdentifier.GetName(), true, kElementBounds);
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier2.GetName(), true);
+      kHelpBubbleHandlerTestElementIdentifier2.GetName(), true, kElementBounds);
   auto* const element =
       ui::ElementTracker::GetElementTracker()->GetUniqueElement(
           kHelpBubbleHandlerTestElementIdentifier, test_handler_->context());
@@ -393,11 +402,11 @@ TEST_F(HelpBubbleHandlerTest, HelpBubbleClosedWhenVisibilityChanges) {
 
   // This should have no effect since it's the wrong element.
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier2.GetName(), false);
+      kHelpBubbleHandlerTestElementIdentifier2.GetName(), false, gfx::RectF());
   EXPECT_TRUE(help_bubble->is_open());
 
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier.GetName(), false);
+      kHelpBubbleHandlerTestElementIdentifier.GetName(), false, gfx::RectF());
   EXPECT_FALSE(help_bubble->is_open());
 }
 
@@ -405,7 +414,7 @@ TEST_F(HelpBubbleHandlerTest, HelpBubbleClosedWhenClosedRemotely) {
   UNCALLED_MOCK_CALLBACK(HelpBubble::ClosedCallback, closed);
 
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier.GetName(), true);
+      kHelpBubbleHandlerTestElementIdentifier.GetName(), true, kElementBounds);
   auto* const element =
       ui::ElementTracker::GetElementTracker()->GetUniqueElement(
           kHelpBubbleHandlerTestElementIdentifier, test_handler_->context());
@@ -429,7 +438,7 @@ TEST_F(HelpBubbleHandlerTest, HelpBubbleClosedWhenClosedRemotely) {
 
 TEST_F(HelpBubbleHandlerTest, DestroyHandlerCleansUpElement) {
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier.GetName(), true);
+      kHelpBubbleHandlerTestElementIdentifier.GetName(), true, kElementBounds);
   const ui::ElementContext context = test_handler_->context();
   EXPECT_TRUE(ui::ElementTracker::GetElementTracker()->IsElementVisible(
       kHelpBubbleHandlerTestElementIdentifier, context));
@@ -442,7 +451,7 @@ TEST_F(HelpBubbleHandlerTest, DestroyHandlerClosesHelpBubble) {
   UNCALLED_MOCK_CALLBACK(HelpBubble::ClosedCallback, closed);
 
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier.GetName(), true);
+      kHelpBubbleHandlerTestElementIdentifier.GetName(), true, kElementBounds);
   auto* const element =
       ui::ElementTracker::GetElementTracker()->GetUniqueElement(
           kHelpBubbleHandlerTestElementIdentifier, test_handler_->context());
@@ -467,7 +476,7 @@ TEST_F(HelpBubbleHandlerTest, HelpBubbleClosedWhenClosedByUserCallsDismiss) {
   UNCALLED_MOCK_CALLBACK(base::OnceClosure, dismissed);
 
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier.GetName(), true);
+      kHelpBubbleHandlerTestElementIdentifier.GetName(), true, kElementBounds);
   auto* const element =
       ui::ElementTracker::GetElementTracker()->GetUniqueElement(
           kHelpBubbleHandlerTestElementIdentifier, test_handler_->context());
@@ -494,7 +503,7 @@ TEST_F(HelpBubbleHandlerTest, ButtonPressedCallsCallback) {
   UNCALLED_MOCK_CALLBACK(base::OnceClosure, button2_pressed);
 
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier.GetName(), true);
+      kHelpBubbleHandlerTestElementIdentifier.GetName(), true, kElementBounds);
   auto* const element =
       ui::ElementTracker::GetElementTracker()->GetUniqueElement(
           kHelpBubbleHandlerTestElementIdentifier, test_handler_->context());
@@ -529,9 +538,9 @@ TEST_F(HelpBubbleHandlerTest, ButtonPressedCallsCallback) {
 
 TEST_F(HelpBubbleHandlerTest, ShowMultipleBubblesAndCloseOneViaVisibility) {
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier.GetName(), true);
+      kHelpBubbleHandlerTestElementIdentifier.GetName(), true, kElementBounds);
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier2.GetName(), true);
+      kHelpBubbleHandlerTestElementIdentifier2.GetName(), true, kElementBounds);
   auto* const element =
       ui::ElementTracker::GetElementTracker()->GetUniqueElement(
           kHelpBubbleHandlerTestElementIdentifier, test_handler_->context());
@@ -561,7 +570,7 @@ TEST_F(HelpBubbleHandlerTest, ShowMultipleBubblesAndCloseOneViaVisibility) {
 
   // Close one bubble without closing the other.
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier.GetName(), false);
+      kHelpBubbleHandlerTestElementIdentifier.GetName(), false, gfx::RectF());
   EXPECT_FALSE(help_bubble->is_open());
   EXPECT_TRUE(help_bubble2->is_open());
 
@@ -574,9 +583,9 @@ TEST_F(HelpBubbleHandlerTest, ShowMultipleBubblesAndCloseOneViaVisibility) {
 
 TEST_F(HelpBubbleHandlerTest, ShowMultipleBubblesAndCloseOneViaCallback) {
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier.GetName(), true);
+      kHelpBubbleHandlerTestElementIdentifier.GetName(), true, kElementBounds);
   handler()->HelpBubbleAnchorVisibilityChanged(
-      kHelpBubbleHandlerTestElementIdentifier2.GetName(), true);
+      kHelpBubbleHandlerTestElementIdentifier2.GetName(), true, kElementBounds);
   auto* const element =
       ui::ElementTracker::GetElementTracker()->GetUniqueElement(
           kHelpBubbleHandlerTestElementIdentifier, test_handler_->context());

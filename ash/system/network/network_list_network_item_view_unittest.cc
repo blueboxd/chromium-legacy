@@ -20,7 +20,7 @@
 #include "base/functional/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/test/scoped_feature_list.h"
-#include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
+#include "chromeos/ash/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -36,15 +36,14 @@ namespace ash {
 
 namespace {
 
-using chromeos::network_config::CrosNetworkConfigTestHelper;
-
-using chromeos::network_config::mojom::ActivationStateType;
-using chromeos::network_config::mojom::ConnectionStateType;
-using chromeos::network_config::mojom::NetworkStatePropertiesPtr;
-using chromeos::network_config::mojom::NetworkType;
-using chromeos::network_config::mojom::OncSource;
-using chromeos::network_config::mojom::PortalState;
-using chromeos::network_config::mojom::SecurityType;
+using ::chromeos::network_config::mojom::ActivationStateType;
+using ::chromeos::network_config::mojom::ConnectionStateType;
+using ::chromeos::network_config::mojom::NetworkStatePropertiesPtr;
+using ::chromeos::network_config::mojom::NetworkType;
+using ::chromeos::network_config::mojom::OncSource;
+using ::chromeos::network_config::mojom::PortalState;
+using ::chromeos::network_config::mojom::SecurityType;
+using network_config::CrosNetworkConfigTestHelper;
 
 const std::string kWiFiName = "WiFi";
 const std::string kCellularName = "cellular";
@@ -68,9 +67,7 @@ class NetworkListNetworkItemViewTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
 
-    feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kQuickSettingsNetworkRevamp},
-        /*disabled_features=*/{features::kCaptivePortalUI2022});
+    feature_list_.InitAndEnableFeature(features::kQuickSettingsNetworkRevamp);
 
     SetUpDefaultNetworkDevices();
 
@@ -279,24 +276,9 @@ TEST_F(NetworkListNetworkItemViewTest, HasCorrectCellularSublabel) {
 }
 
 TEST_F(NetworkListNetworkItemViewTest, HasCorrectPortalSublabel) {
-  EXPECT_FALSE(network_list_network_item_view()->sub_text_label());
-
-  NetworkStatePropertiesPtr wifi_network = CreateStandaloneNetworkProperties(
-      kWiFiName, NetworkType::kWiFi, ConnectionStateType::kPortal);
-  wifi_network->portal_state = PortalState::kPortal;
-
-  UpdateViewForNetwork(wifi_network);
-  EXPECT_TRUE(network_list_network_item_view()->sub_text_label());
-  EXPECT_EQ(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED),
-      network_list_network_item_view()->sub_text_label()->GetText());
-}
-
-TEST_F(NetworkListNetworkItemViewTest, HasCorrectPortalSublabelWithFlag) {
   feature_list_.Reset();
   feature_list_.InitWithFeatures(
-      /*enabled_features=*/{features::kCaptivePortalUI2022,
-                            features::kQuickSettingsNetworkRevamp},
+      /*enabled_features=*/{features::kQuickSettingsNetworkRevamp},
       /*disabled_features=*/{});
   EXPECT_FALSE(network_list_network_item_view()->sub_text_label());
 
@@ -311,11 +293,10 @@ TEST_F(NetworkListNetworkItemViewTest, HasCorrectPortalSublabelWithFlag) {
       network_list_network_item_view()->sub_text_label()->GetText());
 }
 
-TEST_F(NetworkListNetworkItemViewTest, HasCorrectProxyAuthSublabelWithFlag) {
+TEST_F(NetworkListNetworkItemViewTest, HasCorrectProxyAuthSublabel) {
   feature_list_.Reset();
   feature_list_.InitWithFeatures(
-      /*enabled_features=*/{features::kCaptivePortalUI2022,
-                            features::kQuickSettingsNetworkRevamp},
+      /*enabled_features=*/{features::kQuickSettingsNetworkRevamp},
       /*disabled_features=*/{});
   EXPECT_FALSE(network_list_network_item_view()->sub_text_label());
 
@@ -330,12 +311,10 @@ TEST_F(NetworkListNetworkItemViewTest, HasCorrectProxyAuthSublabelWithFlag) {
       network_list_network_item_view()->sub_text_label()->GetText());
 }
 
-TEST_F(NetworkListNetworkItemViewTest,
-       HasCorrectPortalSuspectedSublabelWithFlag) {
+TEST_F(NetworkListNetworkItemViewTest, HasCorrectPortalSuspectedSublabel) {
   feature_list_.Reset();
   feature_list_.InitWithFeatures(
-      /*enabled_features=*/{features::kCaptivePortalUI2022,
-                            features::kQuickSettingsNetworkRevamp},
+      /*enabled_features=*/{features::kQuickSettingsNetworkRevamp},
       /*disabled_features=*/{});
   EXPECT_FALSE(network_list_network_item_view()->sub_text_label());
 
@@ -350,12 +329,10 @@ TEST_F(NetworkListNetworkItemViewTest,
             network_list_network_item_view()->sub_text_label()->GetText());
 }
 
-TEST_F(NetworkListNetworkItemViewTest,
-       HasCorrectNoConnectivitySublabelWithFlag) {
+TEST_F(NetworkListNetworkItemViewTest, HasCorrectNoConnectivitySublabel) {
   feature_list_.Reset();
   feature_list_.InitWithFeatures(
-      /*enabled_features=*/{features::kCaptivePortalUI2022,
-                            features::kQuickSettingsNetworkRevamp},
+      /*enabled_features=*/{features::kQuickSettingsNetworkRevamp},
       /*disabled_features=*/{});
   EXPECT_FALSE(network_list_network_item_view()->sub_text_label());
 
@@ -681,95 +658,6 @@ TEST_F(NetworkListNetworkItemViewTest, HasExpectedDescriptionForCellular) {
 }
 
 TEST_F(NetworkListNetworkItemViewTest, HasExpectedDescriptionForWiFi) {
-  SecurityType security_types[2] = {SecurityType::kNone, SecurityType::kWepPsk};
-
-  NetworkStatePropertiesPtr wifi_network = CreateStandaloneNetworkProperties(
-      kWiFiName, NetworkType::kWiFi, ConnectionStateType::kConnected);
-
-  for (const auto& security : security_types) {
-    wifi_network->type_state->get_wifi()->security = security;
-    const std::u16string security_label = l10n_util::GetStringUTF16(
-        security == SecurityType::kWepPsk
-            ? IDS_ASH_STATUS_TRAY_NETWORK_STATUS_SECURED
-            : IDS_ASH_STATUS_TRAY_NETWORK_STATUS_UNSECURED);
-
-    for (const auto& connection : GetConnectionStateTypes()) {
-      wifi_network->connection_state = connection;
-      std::u16string connection_status;
-      for (const auto& policy : GetPolicies()) {
-        wifi_network->source = policy;
-        switch (connection) {
-          case ConnectionStateType::kConnected:
-          case ConnectionStateType::kPortal:
-          case ConnectionStateType::kOnline: {
-            connection_status = l10n_util::GetStringUTF16(
-                IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTED);
-            if (policy == OncSource::kDevicePolicy) {
-              AssertA11yDescription(
-                  wifi_network,
-                  l10n_util::GetStringFUTF16(
-                      IDS_ASH_STATUS_TRAY_WIFI_NETWORK_A11Y_DESC_MANAGED_WITH_CONNECTION_STATUS,
-                      security_label, connection_status,
-                      base::FormatPercent(kSignalStrength)));
-
-            } else {
-              AssertA11yDescription(
-                  wifi_network,
-                  l10n_util::GetStringFUTF16(
-                      IDS_ASH_STATUS_TRAY_WIFI_NETWORK_A11Y_DESC_WITH_CONNECTION_STATUS,
-                      security_label, connection_status,
-                      base::FormatPercent(kSignalStrength)));
-            }
-            break;
-          }
-          case ConnectionStateType::kConnecting: {
-            connection_status = l10n_util::GetStringUTF16(
-                IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CONNECTING);
-            if (policy == OncSource::kDevicePolicy) {
-              AssertA11yDescription(
-                  wifi_network,
-                  l10n_util::GetStringFUTF16(
-                      IDS_ASH_STATUS_TRAY_WIFI_NETWORK_A11Y_DESC_MANAGED_WITH_CONNECTION_STATUS,
-                      security_label, connection_status,
-                      base::FormatPercent(kSignalStrength)));
-
-            } else {
-              AssertA11yDescription(
-                  wifi_network,
-                  l10n_util::GetStringFUTF16(
-                      IDS_ASH_STATUS_TRAY_WIFI_NETWORK_A11Y_DESC_WITH_CONNECTION_STATUS,
-                      security_label, connection_status,
-                      base::FormatPercent(kSignalStrength)));
-            }
-            break;
-          }
-          case ConnectionStateType::kNotConnected:
-            if (policy == OncSource::kDevicePolicy) {
-              AssertA11yDescription(
-                  wifi_network,
-                  l10n_util::GetStringFUTF16(
-                      IDS_ASH_STATUS_TRAY_WIFI_NETWORK_A11Y_DESC_MANAGED,
-                      security_label, base::FormatPercent(kSignalStrength)));
-            } else {
-              AssertA11yDescription(
-                  wifi_network,
-                  l10n_util::GetStringFUTF16(
-                      IDS_ASH_STATUS_TRAY_WIFI_NETWORK_A11Y_DESC,
-                      security_label, base::FormatPercent(kSignalStrength)));
-            }
-        }
-      }
-    }
-  }
-}
-
-TEST_F(NetworkListNetworkItemViewTest, HasExpectedDescriptionForWiFiWithFlag) {
-  feature_list_.Reset();
-  feature_list_.InitWithFeatures(
-      /*enabled_features=*/{features::kCaptivePortalUI2022,
-                            features::kQuickSettingsNetworkRevamp},
-      /*disabled_features=*/{});
-
   SecurityType security_types[2] = {SecurityType::kNone, SecurityType::kWepPsk};
 
   NetworkStatePropertiesPtr wifi_network = CreateStandaloneNetworkProperties(

@@ -12,8 +12,9 @@
 <translation id="1272079795634619415">Parar</translation>
 <translation id="1289742167380433257">Para guardar os seus dados, as imagens desta página foram otimizadas pela Google.</translation>
 <translation id="129382876167171263">Os ficheiros guardados por Websites são apresentados aqui.</translation>
+<translation id="131112695174432497">Os dados que afetam a personalização de anúncios são apagados</translation>
 <translation id="1317194122196776028">Esquecer este site</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
+<translation id="1343356790768851700">Este site determina o conteúdo de que gosta e, em seguida, sugere anúncios para outros sites</translation>
 <translation id="1369915414381695676">Site <ph name="SITE_NAME" /> adicionado</translation>
 <translation id="1371239764779356792">Permita que um site guarde dados no seu dispositivo</translation>
 <translation id="1383876407941801731">Pesquisar</translation>
@@ -24,6 +25,7 @@
 <translation id="1446450296470737166">Perm. controlo total dispo. MIDI</translation>
 <translation id="1448064542941920355">Diminuir zoom</translation>
 <translation id="1510341833810331442">Os sites não têm autorização para guardar dados no dispositivo</translation>
+<translation id="1547123415014299762">Os cookies de terceiros são permitidos</translation>
 <translation id="1620510694547887537">Câmara</translation>
 <translation id="1633720957382884102">Sites relacionados</translation>
 <translation id="1644574205037202324">Histórico</translation>
@@ -57,11 +59,11 @@
 <translation id="2182457891543959921">Perguntar antes de permitir que os sites criem um mapa 3D do ambiente à sua volta ou monitorizem a posição da câmara (recomendado)</translation>
 <translation id="2212565012507486665">Permitir cookies</translation>
 <translation id="2228071138934252756">Para permitir que a app <ph name="APP_NAME" /> aceda à câmara, ative também a câmara nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
-<translation id="2230120995564025978">Suspendisse vitae malesuada purus, ut molestie eros. Fusce malesuada ullamcorper sem a blandit.</translation>
 <translation id="2235344399760031203">Os cookies de terceiros estão bloqueados.</translation>
 <translation id="2238944249568001759">Pesquisas sugeridas com base no último separador</translation>
 <translation id="2241634353105152135">Apenas uma vez</translation>
 <translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> Remover</translation>
+<translation id="228293613124499805">É provável que a maioria dos sites que visita guarde dados no seu dispositivo, muitas vezes para melhorar a sua experiência ao guardar as suas preferências ou informações que partilha com o site. Recomendamos que mantenha esta definição ativada.</translation>
 <translation id="2289270750774289114">Perguntar quando um site pretende detetar dispositivos Bluetooth próximos (recomendado)</translation>
 <translation id="2315043854645842844">O sistema operativo não suporta a seleção do certificado do lado do cliente.</translation>
 <translation id="2321958826496381788">Arraste o controlo de deslize até conseguir ler confortavelmente. O texto deve ter, pelo menos, este tamanho depois de tocar duas vezes num parágrafo.</translation>
@@ -88,6 +90,7 @@
 <translation id="2586657967955657006">Área de transferência</translation>
 <translation id="2597457036804169544">Não aplique o tema escuro aos sites</translation>
 <translation id="2621115761605608342">Permitir JavaScript num site específico.</translation>
+<translation id="2639227409413857192">Este site determina o conteúdo de que gosta e, em seguida, sugere anúncios para outros sites. Este site também obtém os seus tópicos de anúncios do Chrome para lhe mostrar anúncios mais relevantes.</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2677748264148917807">Sair</translation>
 <translation id="2687403674020088961">Bloquear todos os cookies (não recomendado).</translation>
@@ -201,7 +204,6 @@
 <translation id="4994033804516042629">Não foram encontrados contactos</translation>
 <translation id="4996978546172906250">Partilhar através de</translation>
 <translation id="5001526427543320409">Cookies de terceiros</translation>
-<translation id="5038049331464490262">Permita cookies de terceiros para um site específico</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5048398596102334565">Permitir que os sites acedam aos sensores de movimentos (recomendado)</translation>
 <translation id="5050380848339752099">Este site está prestes a partilhar informações com uma app fora do Modo de navegação anónima.</translation>
@@ -222,6 +224,7 @@
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5335288049665977812">Permitir que os sites executem JavaScript (recomendado)</translation>
 <translation id="534295439873310000">Dispositivos NFC</translation>
+<translation id="5344522958567249764">Gerir privacidade de anúncios</translation>
 <translation id="5354152178998424783">Esta ação eliminará <ph name="DATASIZE" /> de dados e cookies armazenados pelos sites.</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(mais 1)}other{(mais #)}}</translation>
 <translation id="5403592356182871684">Nomes</translation>
@@ -269,6 +272,7 @@
 <translation id="6181444274883918285">Adicionar exceção de site</translation>
 <translation id="6192792657125177640">Excepções</translation>
 <translation id="6196640612572343990">Bloquear cookies de terceiros</translation>
+<translation id="6205314730813004066">Privacidade de anúncios</translation>
 <translation id="6216432067784365534">Opções de <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6231752747840485235">Pretende desinstalar a app "<ph name="APP_NAME" />"?</translation>
 <translation id="6262191102408817757">Com base no seu último separador</translation>
@@ -300,7 +304,6 @@
 <translation id="6746124502594467657">Mover para baixo</translation>
 <translation id="6749077623962119521">Pretende repor as autorizações?</translation>
 <translation id="6766622839693428701">Deslize rapidamente para baixo para fechar.</translation>
-<translation id="6785073030727361123">Bloqueie cookies de terceiros para um site específico</translation>
 <translation id="6790428901817661496">Reproduzir</translation>
 <translation id="6818926723028410516">Selecionar itens</translation>
 <translation id="6864395892908308021">Este dispositivo não suporta a tecnologia NFC.</translation>
@@ -363,6 +366,7 @@
 <translation id="8042586301629853791">Ordenar por:</translation>
 <translation id="8067883171444229417">Reproduzir vídeo</translation>
 <translation id="8068648041423924542">Não é possível selecionar o certificado.</translation>
+<translation id="8077120325605624147">Qualquer site que visitar pode mostrar-lhe qualquer anúncio</translation>
 <translation id="8087000398470557479">Este conteúdo é proveniente de <ph name="DOMAIN_NAME" />, fornecido pela Google.</translation>
 <translation id="8116925261070264013">Com som desativado</translation>
 <translation id="813082847718468539">Ver informações do Website</translation>
@@ -396,10 +400,12 @@
 <translation id="8514955299594277296">Não permitir que os sites guardem dados no seu dispositivo (não recomendado)</translation>
 <translation id="851751545965956758">Impedir a ligação de sites a dispositivos</translation>
 <translation id="8525306231823319788">Ecrã inteiro</translation>
+<translation id="8541410041357371550">Este site obtém os seus tópicos de anúncios do Chrome para lhe mostrar anúncios mais relevantes</translation>
 <translation id="8564613706851221529">{COUNT,plural, =1{Cookies permitidos para <ph name="FPS_MEMBERS_COUNT" /> site de <ph name="FPS_OWNER" />}other{Cookies permitidos para <ph name="FPS_MEMBERS_COUNT" /> sites de <ph name="FPS_OWNER" />}}</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="8609465669617005112">Mover para cima</translation>
 <translation id="8676374126336081632">Limpar texto</translation>
+<translation id="8681886425883659911">Os anúncios são bloqueados em sites conhecidos por mostrarem anúncios intrusivos ou enganadores</translation>
 <translation id="868929229000858085">Pesquise os seus contactos</translation>
 <translation id="8702612070107455751">Todos os dados offline serão limpos.</translation>
 <translation id="8712637175834984815">Entendido</translation>
@@ -412,6 +418,7 @@
 <translation id="8816026460808729765">Impedir que os sites acedam aos sensores</translation>
 <translation id="8823559166155093873">Bloquear cookies</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8899807382908246773">Anúncios intrusivos</translation>
 <translation id="8903921497873541725">Ampliar</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">O NFC está desativado para este dispositivo. Ative-o nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>

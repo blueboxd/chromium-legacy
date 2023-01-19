@@ -7,7 +7,7 @@
  */
 import {AbstractRole, ChromeVoxRole, CustomRole} from '../../common/role_type.js';
 
-import {OutputCustomEvent, OutputEventType} from './output_types.js';
+import {OutputCustomEvent, OutputEventType, OutputFormatType} from './output_types.js';
 
 const EventType = chrome.automation.EventType;
 const RoleType = chrome.automation.RoleType;
@@ -24,13 +24,13 @@ export let OutputRuleSpecifier;
 export class OutputRule {
   /** @param {!OutputEventType} event */
   constructor(event) {
-    /** @private {!OutputEventType} */
+    /** @protected {!OutputEventType} */
     this.event_ = this.getEvent_(event);
-    /** @private {!ChromeVoxRole} */
+    /** @protected {!ChromeVoxRole} */
     this.role_ = CustomRole.DEFAULT;
-    /** @private {string|undefined} */
+    /** @protected {string|undefined} */
     this.navigation_;
-    /** @private {string|undefined} */
+    /** @protected {string|undefined} */
     this.output_;
   }
 
@@ -59,7 +59,7 @@ export class OutputRule {
   /**
    * @param {ChromeVoxRole|undefined} role
    * @param {ChromeVoxRole|undefined} parentRole
-   * @param {string} formatName
+   * @param {string|undefined} formatName
    * @return {boolean} true if the role was set, false otherwise.
    */
   populateRole(role, parentRole, formatName) {
@@ -109,10 +109,36 @@ export class OutputRule {
 }
 
 export class AncestryOutputRule extends OutputRule {
+  /**
+   * @param {!OutputEventType} eventType
+   * @param {ChromeVoxRole|undefined} nodeRole
+   * @param {ChromeVoxRole|undefined} parentRole
+   * @param {string|undefined} formatName
+   */
+  constructor(eventType, nodeRole, parentRole, formatName) {
+    super(eventType);
+    /** @private {string|undefined} */
+    this.formatName_ = formatName;
+
+    this.populateRole(nodeRole, parentRole, formatName);
+    this.populateNavigation(formatName);
+  }
+
   /** @param {string|undefined} formatName */
   populateNavigation(formatName) {
     if (formatName && OutputRule.RULES[this.event_][this.role_][formatName]) {
       this.navigation_ = formatName;
+    }
+  }
+
+  /** @param {boolean} tryBraille */
+  populateOutput(tryBraille) {
+    const rule = OutputRule.RULES[this.event_][this.role_][this.formatName_];
+    if (rule && rule.speak) {
+      this.output_ = OutputFormatType.SPEAK;
+    }
+    if (rule && tryBraille && rule.braille) {
+      this.output_ = OutputFormatType.BRAILLE;
     }
   }
 }

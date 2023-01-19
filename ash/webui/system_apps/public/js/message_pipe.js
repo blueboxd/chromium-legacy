@@ -41,7 +41,7 @@ class MessageData {
  *     stack: string,
  * }}
  */
-let GenericErrorResponse;
+export let GenericErrorResponse;
 
 /**
  * Error object allowing attributes to be undefined.
@@ -109,7 +109,7 @@ class NativeResolver {
  * @closurePrimitive {asserts.truthy}
  * @suppress {reportUnknownTypes} because T is not sufficiently constrained.
  */
-/* #export */ function assertCast(condition) {
+export function assertCast(condition) {
   if (!condition) {
     throw new Error('Failed assertion');
   }
@@ -163,7 +163,7 @@ function throwIfReserved(messageType) {
  * having to handle the internals. The caller can send messages to the other
  * window and receive async responses.
  */
-/* #export */ class MessagePipe {
+export class MessagePipe {
   /**
    * Constructs a new message pipe to the `target` window which has the
    * `targetOrigin` origin.

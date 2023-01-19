@@ -115,8 +115,9 @@ void FloatingWorkspaceService::
       GetMostRecentlyUsedRemoteSession();
   const sync_sessions::SyncedSession* local_session = GetLocalSession();
   if (!most_recently_used_remote_session ||
-      (local_session && local_session->modified_time >
-                            most_recently_used_remote_session->modified_time)) {
+      (local_session &&
+       local_session->GetModifiedTime() >
+           most_recently_used_remote_session->GetModifiedTime())) {
     // If local session is the most recently modified or no remote session,
     // dispatch a delayed task to check whether any foreign session got updated.
     // If remote session is not updated after the delay, launch local session.
@@ -144,8 +145,8 @@ void FloatingWorkspaceService::TryRestoreMostRecentlyUsedSession() {
       GetMostRecentlyUsedRemoteSession();
   if (local_session) {
     if (!most_recently_used_remote_session ||
-        local_session->modified_time >
-            most_recently_used_remote_session->modified_time) {
+        local_session->GetModifiedTime() >
+            most_recently_used_remote_session->GetModifiedTime()) {
       // This is a delayed task, if at this time local session is still
       // most recent, restore local session.
       RestoreLocalSessionWindows();
@@ -201,8 +202,8 @@ void FloatingWorkspaceService::RestoreForeignSessionWindows(
     const sync_sessions::SyncedSession* session) {
   sync_sessions::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
   std::vector<const sessions::SessionWindow*> session_windows;
-  if (open_tabs &&
-      open_tabs->GetForeignSession(session->session_tag, &session_windows)) {
+  if (open_tabs && open_tabs->GetForeignSession(session->GetSessionTag(),
+                                                &session_windows)) {
     SessionRestore::RestoreForeignSessionWindows(
         profile_, session_windows.begin(), session_windows.end());
   }

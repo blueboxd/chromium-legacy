@@ -148,6 +148,13 @@ export class SettingsPrivacySandboxTopicsSubpageElement extends
     this.metricsBrowserProxy_.recordAction(
         target.checked ? 'Settings.PrivacySandbox.Topics.Enabled' :
                          'Settings.PrivacySandbox.Topics.Disabled');
+
+    this.privacySandboxBrowserProxy_.topicsToggleChanged(target.checked);
+
+    // Reset the list after the toggle changed. From disabled -> enabled, the
+    // list should already be empty. From enabled -> disabled, the current list
+    // is cleared.
+    this.topicsList_ = [];
   }
 
   private onLearnMoreClick_() {

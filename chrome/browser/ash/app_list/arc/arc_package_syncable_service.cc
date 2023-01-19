@@ -91,10 +91,7 @@ ArcSyncItem::SyncItem(const std::string& package_name,
 // ArcPackageSyncableService public
 ArcPackageSyncableService::ArcPackageSyncableService(Profile* profile,
                                                      ArcAppListPrefs* prefs)
-    : profile_(profile),
-      sync_processor_(nullptr),
-      sync_error_handler_(nullptr),
-      prefs_(prefs) {
+    : profile_(profile), sync_processor_(nullptr), prefs_(prefs) {
   if (prefs_)
     prefs_->AddObserver(this);
 
@@ -149,17 +146,14 @@ absl::optional<syncer::ModelError>
 ArcPackageSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
-    std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
-    std::unique_ptr<syncer::SyncErrorFactory> error_handler) {
+    std::unique_ptr<syncer::SyncChangeProcessor> sync_processor) {
   DCHECK(sync_processor.get());
-  DCHECK(error_handler.get());
   DCHECK_EQ(type, syncer::ARC_PACKAGE);
   DCHECK(!sync_processor_.get());
   DCHECK(!IsArcAppSyncFlowDisabled());
   DCHECK(prefs_->package_list_initial_refreshed());
 
   sync_processor_ = std::move(sync_processor);
-  sync_error_handler_ = std::move(error_handler);
   metrics_helper_.SetTimeSyncStarted();
   uint64_t num_expected_apps = 0;
 
@@ -213,7 +207,6 @@ void ArcPackageSyncableService::StopSyncing(syncer::ModelType type) {
   DCHECK_EQ(type, syncer::ARC_PACKAGE);
 
   sync_processor_.reset();
-  sync_error_handler_.reset();
   flare_.Reset();
 
   sync_items_.clear();
@@ -325,7 +318,7 @@ void ArcPackageSyncableService::OnPackageInstalled(
 
     sync_items_[package_name] = std::move(install_iter->second);
     pending_install_items_.erase(install_iter);
-    metrics_helper_.OnAppInstalled();
+    MaybeUpdateInstallMetrics(package_info);
     return;
   }
 
@@ -501,6 +494,19 @@ void ArcPackageSyncableService::OnArcSessionStopped(ArcStopReason stop_reason) {
     metrics_helper_.RecordMetrics();
   }
   profile_->GetPrefs()->ClearPref(ash::prefs::kRecordArcAppSyncMetrics);
+}
+
+void ArcPackageSyncableService::MaybeUpdateInstallMetrics(
+    const mojom::ArcPackageInfo& package_info) {
+  if (profile_->GetPrefs()->GetBoolean(ash::prefs::kRecordArcAppSyncMetrics)) {
+    const std::string app_id =
+        prefs_->GetAppIdByPackageName(package_info.package_name);
+    const std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+        prefs_->GetApp(app_id);
+    absl::optional<uint64_t> app_size =
+        app_info ? app_info->app_size_in_bytes : absl::nullopt;
+    metrics_helper_.OnAppInstalled(app_size);
+  }
 }
 
 }  // namespace arc

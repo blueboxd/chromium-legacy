@@ -6101,7 +6101,8 @@
   "GetDisplayMediaSetSelectAllScreensAllowedForUrls": {
     "os": [
       "chromeos_ash",
-      "chromeos_lacros"
+      "chromeos_lacros",
+      "linux"
     ],
     "policy_pref_mapping_tests": [
       {
@@ -20722,10 +20723,10 @@
   },
   "IdleTimeout": {
     "os": [
-      "win",
+      "android",
       "linux",
       "mac",
-      "fuchsia"
+      "win"
     ],
     "policy_pref_mapping_tests": [
       {
@@ -20754,19 +20755,21 @@
   },
   "IdleTimeoutActions": {
     "os": [
-      "win",
+      "android",
       "linux",
-      "mac"
+      "mac",
+      "win"
     ],
     "policy_pref_mapping_tests": [
       {
         "policies": {
           "IdleTimeout": 10,
-          "IdleTimeoutActions": ["close_browsers", "show_profile_picker"]
+          "IdleTimeoutActions": ["clear_browsing_history",
+                                 "clear_download_history"]
         },
         "prefs": {
           "idle_timeout_actions": {
-            "value": [0, 1]
+            "value": [2, 3]
           }
         }
       }
@@ -21062,43 +21065,7 @@
     ]
   },
   "FileSystemSyncAccessHandleAsyncInterfaceEnabled": {
-    "os": [
-      "win",
-      "linux",
-      "mac",
-      "chromeos_ash",
-      "chromeos_lacros",
-      "android",
-      "fuchsia"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {},
-        "prefs": {
-          "policy.file_system_sync_access_handle_async_interface_enabled": {
-            "default_value": false
-          }
-        }
-      },
-      {
-        "policies": {
-          "FileSystemSyncAccessHandleAsyncInterfaceEnabled": false
-        },
-        "prefs": {
-          "policy.file_system_sync_access_handle_async_interface_enabled": {
-            "value": false
-          }
-        }
-      },
-      {
-        "policies": { "FileSystemSyncAccessHandleAsyncInterfaceEnabled": true },
-        "prefs": {
-          "policy.file_system_sync_access_handle_async_interface_enabled": {
-            "value": true
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
   "DefaultHandlersForFileExtensions": {
     "os": ["chromeos_ash"],
@@ -21549,6 +21516,44 @@
       }
     ]
   },
+  "ForceEnablePepperVideoDecoderDevAPI": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "policy.force_enable_pepper_video_decoder_dev_api": {
+            "location": "local_state",
+            "default_value": false
+          }
+        }
+      },
+      {
+        "policies": { "ForceEnablePepperVideoDecoderDevAPI": true },
+        "prefs": {
+          "policy.force_enable_pepper_video_decoder_dev_api": {
+            "location": "local_state",
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": { "ForceEnablePepperVideoDecoderDevAPI": false },
+        "prefs": {
+          "policy.force_enable_pepper_video_decoder_dev_api": {
+            "location": "local_state",
+            "value": false
+          }
+        }
+      }
+    ]
+  },
   "PrivacySandboxPromptEnabled": {
     "os": [
       "win",
@@ -21764,6 +21769,48 @@
           "settings.input.device_hindi_inscript_layout_enabled": {
             "location": "local_state",
             "value": true
+          }
+        }
+      }
+    ]
+  },
+  "KioskTroubleshootingToolsEnabled": {
+    "os": [
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Check default value (no policies set)",
+        "policies": { },
+        "prefs": {
+          "kiosk_troubleshooting_tools_enabled": {
+            "location": "user_profile",
+            "default_value": false
+          }
+        }
+      },
+      {
+        "note": "Check true policy value",
+        "policies": {
+          "KioskTroubleshootingToolsEnabled": true
+        },
+        "prefs": {
+          "kiosk_troubleshooting_tools_enabled": {
+            "location": "user_profile",
+            "value": true
+          }
+        }
+      },
+      {
+        "note": "Check false policy value",
+        "policies": {
+          "KioskTroubleshootingToolsEnabled": false
+        },
+        "prefs": {
+          "kiosk_troubleshooting_tools_enabled": {
+            "location": "user_profile",
+            "value": false
           }
         }
       }

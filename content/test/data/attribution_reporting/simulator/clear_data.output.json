@@ -10,27 +10,7 @@
          "trigger_data": "7"
       },
       "intended_report_time": "1643411973000",
-      "report_url": "https://r.test/.well-known/attribution-reporting/report-event-attribution",
-      "test_info": {
-         "randomized_trigger": false
-      }
-    }
-  ],
-  "rejected_triggers": [
-    {
-      "event_level_reason": "noMatchingSources",
-      "trigger": {
-        "timestamp": "1643235575000",
-        "reporting_origin": "https://r.test",
-        "destination_origin": "https://d1.test",
-        "Attribution-Reporting-Register-Trigger": {
-          "event_trigger_data": [
-            {
-              "trigger_data": "6"
-            }
-          ]
-        }
-      }
+      "report_url": "https://r.test/.well-known/attribution-reporting/report-event-attribution"
     }
   ]
 }

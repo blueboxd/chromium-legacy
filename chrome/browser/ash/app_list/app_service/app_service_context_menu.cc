@@ -69,9 +69,11 @@ apps::WindowMode ConvertUseLaunchTypeCommandToWindowMode(int command_id) {
       return apps::WindowMode::kWindow;
     case ash::USE_LAUNCH_TYPE_TABBED_WINDOW:
       return apps::WindowMode::kTabbedWindow;
-    case ash::USE_LAUNCH_TYPE_PINNED:
-    case ash::USE_LAUNCH_TYPE_FULLSCREEN:
+    case ash::DEPRECATED_USE_LAUNCH_TYPE_PINNED:
+    case ash::DEPRECATED_USE_LAUNCH_TYPE_FULLSCREEN:
+      [[fallthrough]];
     default:
+      NOTREACHED();
       return apps::WindowMode::kUnknown;
   }
 }
@@ -244,8 +246,8 @@ void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
     }
     case ash::SHUTDOWN_GUEST_OS:
       if (app_id() == guest_os::kTerminalSystemAppId) {
-        crostini::CrostiniManager::GetForProfile(profile())->StopVm(
-            crostini::kCrostiniDefaultVmName, base::DoNothing());
+        crostini::CrostiniManager::GetForProfile(profile())->StopRunningVms(
+            base::DoNothing());
       } else if (app_id() == plugin_vm::kPluginVmShelfAppId) {
         plugin_vm::PluginVmManagerFactory::GetForProfile(profile())
             ->StopPluginVm(plugin_vm::kPluginVmName, /*force=*/false);

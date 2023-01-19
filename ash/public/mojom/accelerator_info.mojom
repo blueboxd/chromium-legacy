@@ -92,6 +92,7 @@ enum TextAcceleratorPartType {
   kPlainText,
   kModifier,
   kKey,
+  kDelimiter,
 };
 
 // The text to display as well as its corresponding type which determines how
@@ -104,7 +105,7 @@ struct TextAcceleratorPart {
 // An accelerator that can display arbitrary text with optional modifiers/keys
 // interspersed.
 struct TextAcceleratorProperties {
-  array<TextAcceleratorPart> text_accelerator;
+  array<TextAcceleratorPart> parts;
 };
 
 // An accelerator that has at least one modifier and a set of keys.

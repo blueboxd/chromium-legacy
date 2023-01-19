@@ -216,15 +216,10 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AwFeatures.WEBVIEW_USE_METRICS_UPLOAD_SERVICE,
                     "Upload UMA metrics logs through MetricsUploadService not via GMS-core"
                             + " directly."),
-            Flag.baseFeature("OptimizeNetworkBuffers2"),
             Flag.baseFeature(BlinkFeatures.SET_TIMEOUT_WITHOUT_CLAMP,
                     "Enables faster setTimeout(,0) by removing the 1 ms clamping."),
             Flag.baseFeature(BlinkFeatures.PAINT_HOLDING_CROSS_ORIGIN,
                     "Defers the first commit until FCP or timeout for cross-origin navigations."),
-            Flag.baseFeature(BlinkFeatures.HTML_PARAM_ELEMENT_URL_SUPPORT,
-                    "Enables the <param> element's URL-setting features (this functionality is"
-                            + " being deprecated and removed, so ENABLED is the safe/current"
-                            + " behavior, and DISABLED is the tested/new behavior)."),
             Flag.baseFeature(ContentFeatures.NAVIGATION_NETWORK_RESPONSE_QUEUE,
                     "Schedules tasks related to the navigation network responses on a higher "
                             + "priority task queue."),
@@ -276,8 +271,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.EARLY_EXIT_ON_NOOP_CLASS_OR_STYLE_CHANGE,
                     "Early exit when the style or class attribute of a DOM element is set to the"
                             + " same value as before."),
-            Flag.baseFeature(BlinkFeatures.INVALIDATION_SET_CLASS_BLOOM_FILTER,
-                    "If enabled, style invalidation will use a Bloom filter."),
             Flag.baseFeature(BlinkFeatures.THREADED_PRELOAD_SCANNER,
                     "If enabled, the HTMLPreloadScanner will run on a worker thread."),
             Flag.baseFeature(BlinkFeatures.TIMED_HTML_PARSER_BUDGET,
@@ -360,6 +353,8 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(MetricsFeatures.METRICS_SERVICE_ASYNC_COLLECTION,
                     "Controls whether the metrics service creates periodic logs"
                             + " in a background thread or on the main thread."),
+            Flag.baseFeature(ContentFeatures.MAIN_THREAD_COMPOSITING_PRIORITY,
+                    "When enabled runs the main thread at compositing priority."),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

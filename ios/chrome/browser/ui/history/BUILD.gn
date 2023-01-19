@@ -65,8 +65,6 @@ source_set("history_ui") {
     "history_menu_provider.h",
     "history_table_view_controller.h",
     "history_table_view_controller.mm",
-    "history_transitioning_delegate.h",
-    "history_transitioning_delegate.mm",
     "history_ui_delegate.h",
     "history_util.h",
     "history_util.mm",
@@ -146,7 +144,6 @@ source_set("clear_browsing_data") {
     "//ios/chrome/browser/ui/settings",
     "//ios/chrome/browser/ui/settings/clear_browsing_data",
     "//ios/chrome/browser/ui/table_view",
-    "//ios/chrome/browser/ui/table_view:presentation",
     "//ios/chrome/browser/url_loading",
     "//ios/web/public",
   ]

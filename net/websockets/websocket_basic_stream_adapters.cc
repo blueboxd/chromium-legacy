@@ -15,6 +15,7 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket.h"
 #include "net/spdy/spdy_buffer.h"
+#include "net/third_party/quiche/src/quiche/quic/core/http/spdy_utils.h"
 #include "net/websockets/websocket_quic_spdy_stream.h"
 
 namespace net {
@@ -230,8 +231,10 @@ void WebSocketSpdyStreamAdapter::CallDelegateOnClose() {
 }
 
 WebSocketQuicStreamAdapter::WebSocketQuicStreamAdapter(
-    WebSocketQuicSpdyStream* websocket_quic_spdy_stream)
-    : websocket_quic_spdy_stream_(websocket_quic_spdy_stream) {
+    WebSocketQuicSpdyStream* websocket_quic_spdy_stream,
+    Delegate* delegate)
+    : websocket_quic_spdy_stream_(websocket_quic_spdy_stream),
+      delegate_(delegate) {
   websocket_quic_spdy_stream_->set_delegate(this);
 }
 
@@ -239,6 +242,13 @@ WebSocketQuicStreamAdapter::~WebSocketQuicStreamAdapter() {
   if (websocket_quic_spdy_stream_) {
     websocket_quic_spdy_stream_->set_delegate(nullptr);
   }
+}
+
+size_t WebSocketQuicStreamAdapter::WriteHeaders(
+    spdy::Http2HeaderBlock header_block,
+    bool fin) {
+  return websocket_quic_spdy_stream_->WriteHeaders(std::move(header_block), fin,
+                                                   nullptr);
 }
 
 // WebSocketBasicStream::Adapter methods.
@@ -269,14 +279,31 @@ bool WebSocketQuicStreamAdapter::is_initialized() const {
 }
 
 // WebSocketQuicSpdyStream::Delegate methods.
-void WebSocketQuicStreamAdapter::ClearStream() {
-  if (websocket_quic_spdy_stream_) {
-    websocket_quic_spdy_stream_ = nullptr;
+
+void WebSocketQuicStreamAdapter::OnInitialHeadersComplete(
+    bool fin,
+    size_t frame_len,
+    const quic::QuicHeaderList& quic_header_list) {
+  spdy::Http2HeaderBlock response_headers;
+  if (!quic::SpdyUtils::CopyAndValidateHeaders(quic_header_list, nullptr,
+                                               &response_headers)) {
+    DLOG(ERROR) << "Failed to parse header list: "
+                << quic_header_list.DebugString();
+    websocket_quic_spdy_stream_->ConsumeHeaderList();
+    websocket_quic_spdy_stream_->Reset(quic::QUIC_BAD_APPLICATION_PAYLOAD);
+    return;
   }
+  delegate_->OnHeadersReceived(response_headers);
 }
 
 void WebSocketQuicStreamAdapter::OnBodyAvailable() {
   // TODO(momoka): implement this.
+}
+
+void WebSocketQuicStreamAdapter::ClearStream() {
+  if (websocket_quic_spdy_stream_) {
+    websocket_quic_spdy_stream_ = nullptr;
+  }
 }
 
 }  // namespace net

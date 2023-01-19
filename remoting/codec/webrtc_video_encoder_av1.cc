@@ -92,6 +92,26 @@ bool WebrtcVideoEncoderAV1::InitializeCodec(const webrtc::DesktopSize& size) {
   if (config_.g_threads > 1) {
     error = aom_codec_control(codec.get(), AV1E_SET_ROW_MT, 1);
     DCHECK_EQ(error, AOM_CODEC_OK) << "Failed to set AV1E_SET_ROW_MT";
+
+    // Use a smaller superblock size for 5k, 4k, and 2k displays.
+    if (config_.g_threads > 4) {
+      // The default value for AV1E_SET_SUPERBLOCK_SIZE is
+      // AOM_SUPERBLOCK_SIZE_DYNAMIC which uses 64x64 blocks for resolutions of
+      // 720px or lower and 128x128 for resolutions above that. When testing
+      // with display resolutions higher than 3840x2160 (4K), we found that
+      // increasing the number of threads from 16 to 32 increased performance
+      // for VP9 but performance decreased with AV1. The codec team investigated
+      // and suggested adjusting the superblock size down to 64x64 to increase
+      // the amount of parallelism.  This solution increased performance for 5K
+      // displays and put it around the level of what we see for a 4K display.
+      // Additional testing with 4K and 2K displays showed that a smaller
+      // superblock size increased performance there as well.
+      // See https://crbug.com/aomedia/3363 for more info.
+      error = aom_codec_control(codec.get(), AV1E_SET_SUPERBLOCK_SIZE,
+                                AOM_SUPERBLOCK_SIZE_64X64);
+      DCHECK_EQ(error, AOM_CODEC_OK)
+          << "Failed to set AV1E_SET_SUPERBLOCK_SIZE";
+    }
   }
 
   // The param used to set the tile columns and tile rows is in log2 so 0 is ok.
@@ -287,8 +307,11 @@ void WebrtcVideoEncoderAV1::ConfigureCodecParams() {
 
   config_.kf_mode = AOM_KF_DISABLED;
 
-  config_.rc_max_quantizer = 0;
-  config_.rc_min_quantizer = 0;
+  // Initial max/min qp values were suggested by the codecs team. The intent is
+  // to set a reasonable default for the first key frame before WebRTC begins
+  // sending us updated max/min qp values based on the network conditions.
+  config_.rc_max_quantizer = 52;
+  config_.rc_min_quantizer = 10;
   config_.rc_dropframe_thresh = 0;
   config_.rc_undershoot_pct = 50;
   config_.rc_overshoot_pct = 50;

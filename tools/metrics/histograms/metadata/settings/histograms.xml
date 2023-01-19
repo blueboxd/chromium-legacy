@@ -327,6 +327,30 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Settings.PrivacySandbox.AdMeasurement.Enabled"
+    enum="BooleanEnabled" expires_after="M115">
+  <owner>sauski@google.com</owner>
+  <owner>olesiamarukhno@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <owner>kartoffel-core-eng@google.com</owner>
+  <summary>
+    Records the startup state of the ad measurement API for Privacy Sandbox GA
+    M1. This is recorded during the profile start up.
+  </summary>
+</histogram>
+
+<histogram name="Settings.PrivacySandbox.DeprecatedRedirect"
+    enum="BooleanRedirected" expires_after="M115">
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <owner>kartoffel-core-eng@google.com</owner>
+  <summary>
+    Whether or not navigations to the Privacy sandbox settings page occured
+    because the user was redirected from the old version of the page. It occurs
+    once per navigation to the privacy sandbox settings page.
+  </summary>
+</histogram>
+
 <histogram name="Settings.PrivacySandbox.DialogDisplayHost"
     enum="SettingsPrivacySandboxDialogDisplayHostHash"
     expires_after="2023-06-18">
@@ -364,6 +388,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Settings.PrivacySandbox.Fledge.Enabled" enum="BooleanEnabled"
+    expires_after="M115">
+  <owner>sauski@google.com</owner>
+  <owner>olesiamarukhno@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <owner>kartoffel-core-eng@google.com</owner>
+  <summary>
+    Records the startup state of the fledge API for Privacy Sandbox GA M1. This
+    is recorded during the profile start up.
+  </summary>
+</histogram>
+
 <histogram name="Settings.PrivacySandbox.InvalidTopicIdLocalized" units="units"
     expires_after="M118">
   <owner>sauski@google.com</owner>
@@ -392,6 +428,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Settings.PrivacySandbox.PromptStartupState"
+    enum="SettingsPrivacySandboxStartupStates" expires_after="M115">
+  <owner>sauski@google.com</owner>
+  <owner>olesiamarukhno@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <owner>kartoffel-core-eng@google.com</owner>
+  <summary>
+    Records the startup state of the privacy sandbox prompt for Privacy Sandbox
+    GA M1. This is recorded during the profile start up.
+  </summary>
+</histogram>
+
 <histogram name="Settings.PrivacySandbox.StartupState"
     enum="SettingsPrivacySandboxStartupStates" expires_after="2023-06-18">
   <owner>sauski@google.com</owner>
@@ -400,6 +448,18 @@ chromium-metrics-reviews@google.com.
   <owner>chrome-friendly-settings@google.com</owner>
   <summary>
     Records the startup state of user prefs controlling Privacy Sandbox.
+  </summary>
+</histogram>
+
+<histogram name="Settings.PrivacySandbox.Topics.Enabled" enum="BooleanEnabled"
+    expires_after="M115">
+  <owner>sauski@google.com</owner>
+  <owner>olesiamarukhno@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <owner>kartoffel-core-eng@google.com</owner>
+  <summary>
+    Records the startup state of the topics API for Privacy Sandbox GA M1. This
+    is recorded during the profile start up.
   </summary>
 </histogram>
 

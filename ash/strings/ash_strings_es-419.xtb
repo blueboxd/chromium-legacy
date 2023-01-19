@@ -609,6 +609,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="430191667033048642">Se movió <ph name="MOVED_APP_NAME" /> a la carpeta <ph name="FOLDER_NAME" />.</translation>
 <translation id="4302592941791324970">No disponible</translation>
 <translation id="4303223480529385476">Expandir el área de estado</translation>
+<translation id="4311195029067684288">Total</translation>
 <translation id="4312840429157639164">Se ajustó la cámara a la esquina superior derecha. Entra en conflicto con la superficie del sistema.</translation>
 <translation id="4316910396681052118">TODAS LAS APPS</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -639,6 +640,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4455051983450390249">Mira las notificaciones del teléfono en tu <ph name="DEVICE_TYPE" /></translation>
 <translation id="445864333228800152">Buenas noches:</translation>
 <translation id="4458688154122353284">Detener la grabación de pantalla</translation>
+<translation id="445923051607553918">Únete a la red Wi-Fi</translation>
 <translation id="4471354919263203780">Descargando archivos de reconocimiento de voz… <ph name="PERCENT" />%</translation>
 <translation id="4471432286288241507">{0,plural, =0{Actualiza el dispositivo ahora}=1{Actualiza el dispositivo en el transcurso de 1 segundo}other{Actualiza el dispositivo en el transcurso de # segundos}}</translation>
 <translation id="4472575034687746823">Comenzar</translation>

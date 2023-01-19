@@ -800,6 +800,7 @@ Fel arall, bydd eich gosodiadau preifatrwydd yn rhwystro hyn. Bydd hyn yn caniat
 <translation id="2986368408720340940">Nid yw'r dull casglu hwn ar gael. Rhowch gynnig ar ddull gwahanol.</translation>
 <translation id="2987034854559945715">Nid oes unrhyw nodweddion sy'n cyfateb</translation>
 <translation id="2989742184762224133">Dwy stapl ar y brig</translation>
+<translation id="2990882401221831923">Rhestr o gardiau credyd ar gau.</translation>
 <translation id="2991174974383378012">Rhannu â Gwefannau</translation>
 <translation id="299122504639061328">Rheoli eich peiriant chwilio diofyn a'ch dull chwilio gwefan</translation>
 <translation id="2991571918955627853">Ni allwch fynd i <ph name="SITE" /> ar hyn o bryd oherwydd bod y wefan yn defnyddio HSTS. Mae gwallau ac ymosodiadau rhwydwaith fel arfer dros dro, felly mae'n debyg y bydd y dudalen hon yn gweithio'n nes ymlaen.</translation>
@@ -1152,6 +1153,7 @@ Fel arall, bydd eich gosodiadau preifatrwydd yn rhwystro hyn. Bydd hyn yn caniat
 <translation id="3872834068356954457">Gwyddoniaeth</translation>
 <translation id="3875783148670536197">Dangoswch i Fi Sut</translation>
 <translation id="3881478300875776315">Dangos llai o linellau</translation>
+<translation id="3883500545751229739">hysbysebion ymwthiol</translation>
 <translation id="3884278016824448484">Dynodwr dyfais anghyson</translation>
 <translation id="388632593194507180">Canfuwyd Monitro</translation>
 <translation id="3886948180919384617">Pentyrrwr 3</translation>
@@ -1584,6 +1586,7 @@ Fel arall, bydd eich gosodiadau preifatrwydd yn rhwystro hyn. Bydd hyn yn caniat
 <translation id="4976702386844183910">Ymwelwyd ddiwethaf <ph name="DATE" /></translation>
 <translation id="498323057460789381">Gwall dilysu sgema: <ph name="ERROR" /></translation>
 <translation id="4984088539114770594">Defnyddio'r meicroffon?</translation>
+<translation id="4988822846878841743">Rhestr o gardiau credyd i'w llenwi ar ôl agor ar hanner uchder.</translation>
 <translation id="4989163558385430922">Gweld popeth</translation>
 <translation id="4989542687859782284">Nid yw ar gael</translation>
 <translation id="4989809363548539747">Ni chefnogir yr ategyn hwn</translation>
@@ -1712,7 +1715,6 @@ Fel arall, bydd eich gosodiadau preifatrwydd yn rhwystro hyn. Bydd hyn yn caniat
 <translation id="5284295735376057059">Priodweddau'r ddogfen</translation>
 <translation id="528468243742722775">Diwedd</translation>
 <translation id="5285570108065881030">Dangos yr holl gyfrineiriau sydd wedi'u cadw</translation>
-<translation id="5287240709317226393">Dangos cwcis</translation>
 <translation id="5287456746628258573">Mae'r wefan hon yn defnyddio hen ffurfweddiad diogelwch, a allai ddatgelu'ch gwybodaeth (er enghraifft, cyfrineiriau neu rifau cardiau credyd) pan fydd yn cael ei hanfon i'r wefan hon.</translation>
 <translation id="5288108484102287882">Mae dilysu gwerthoedd polisi wedi codi rhybuddion</translation>
 <translation id="5288393065350884210">Cyfrifyddu ac archwilio</translation>
@@ -1932,6 +1934,7 @@ Fel arall, bydd eich gosodiadau preifatrwydd yn rhwystro hyn. Bydd hyn yn caniat
 <translation id="5863847714970149516">Gallai'r dudalen rydych ar fin mynd arni geisio codi tâl arnoch</translation>
 <translation id="5866257070973731571">Ychwanegu Rhif Ffôn</translation>
 <translation id="5866898949289125849">Rydych yn edrych ar dudalen offer datblygwyr</translation>
+<translation id="5868548454963263350">Rhestr o gardiau credyd i'w llenwi ar ôl agor ar uchder llawn.</translation>
 <translation id="5869405914158311789">Methu â chyrraedd y wefan hon</translation>
 <translation id="5869522115854928033">Cyfrineiriau sydd wedi'u cadw</translation>
 <translation id="5873013647450402046">Mae eich banc eisiau cadarnhau mai chi sydd yno.</translation>
@@ -2644,6 +2647,7 @@ Manylion ychwanegol:
 <translation id="7653957176542370971">Mae'r ddalen trinyddion taliadau ar gau</translation>
 <translation id="7654909834015434372">Pan fyddwch yn golygu anodiadau, bydd y ddogfen hon yn dychwelyd i'w chylchroad gwreiddiol</translation>
 <translation id="765676359832457558">Cuddio'r gosodiadau uwch...</translation>
+<translation id="7656935528854393684">Rhestr o gardiau credyd i'w llenwi ar gyffwrdd.</translation>
 <translation id="7658239707568436148">Canslo</translation>
 <translation id="7659327900411729175">Amlen Kaku 8</translation>
 <translation id="7659878911471462949">Dagrau Llawenydd</translation>
@@ -3114,6 +3118,7 @@ Manylion ychwanegol:
 <translation id="8891727572606052622">Modd dirprwy annilys.</translation>
 <translation id="8894794286471754040">Ymyl hir yn gyntaf</translation>
 <translation id="8897428486789851669">Nofio</translation>
+<translation id="8899807382908246773">Hysbysebion ymwthiol</translation>
 <translation id="8903921497873541725">Chwyddo</translation>
 <translation id="890493561996401738">Tynnwch y botwm Awgrym, pwyswch Enter i dynnu, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8912362522468806198">Cyfrif Google</translation>
@@ -3191,7 +3196,6 @@ Manylion ychwanegol:
 <translation id="9096425087209440047"><ph name="SET_CHROME_AS_DEFAULT_BROWSER_FOCUSED_FRIENDLY_MATCH_TEXT" />, Pwyswch Tab yna Enter i osod Chrome fel porwr diofyn y system yng ngosodiadau iOS</translation>
 <translation id="9096679202588811390">Rhaglenni teledu</translation>
 <translation id="9101630580131696064">Hambwrdd 1</translation>
-<translation id="9102081333385212048">Anfonir ffeiliau rydych yn eu copïo neu eu symud i Google Cloud neu drydydd partïon i'w dadansoddi. Er enghraifft, mae'n bosib y byddant yn cael eu sganio am ddata sensitif neu ddrwgwedd.</translation>
 <translation id="9103537084693478942">Meddalwedd fideo</translation>
 <translation id="9103872766612412690">Mae <ph name="SITE" /> fel arfer yn defnyddio amgryptio i amddiffyn eich gwybodaeth. Pan geisiodd Chromium gysylltu â <ph name="SITE" /> y tro hwn, anfonodd y wefan manylion adnabod anarferol ac anghywir yn ôl. Gall hyn ddigwydd pan fydd ymosodwr yn ceisio gweithredu fel <ph name="SITE" />, neu pan fydd sgrîn mewngofnodi Wi-Fi wedi torri ar draws y cysylltiad. Mae eich gwybodaeth yn dal yn ddiogel oherwydd stopiodd Chromium y cysylltiad cyn i unrhyw ddata gael eu cyfnewid.</translation>
 <translation id="9106062320799175032">Ychwanegu Cyfeiriad Bilio</translation>

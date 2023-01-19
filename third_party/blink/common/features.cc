@@ -210,11 +210,6 @@ BASE_FEATURE(kPath2DPaintCache,
              "Path2DPaintCache",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enable by default. This feature is for a kill switch.
-BASE_FEATURE(kLayoutNGBlockInInline,
-             "LayoutNGBlockInInline",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kPrivacySandboxAdsAPIs,
              "PrivacySandboxAdsAPIs",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -310,9 +305,13 @@ const base::FeatureParam<int>
     kSharedStorageMaxAllowedFencedFrameDepthForSelectURL = {
         &kSharedStorageAPI,
         "SharedStorageMaxAllowedFencedFrameDepthForSelectURL", 1};
+
+BASE_FEATURE(kSharedStorageSelectURLLimit,
+             "SharedStorageSelectURLLimit",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 const base::FeatureParam<int>
     kSharedStorageMaxAllowedSelectURLCallsPerOriginPerPageLoad = {
-        &kSharedStorageAPI,
+        &kSharedStorageSelectURLLimit,
         "SharedStorageMaxAllowedSelectURLCallsPerOriginPerPageLoad", 3};
 
 BASE_FEATURE(kSameSiteCrossOriginForSpeculationRulesPrerender,
@@ -542,7 +541,8 @@ BASE_FEATURE(kAudioWorkletThreadRealtimePriority,
 // A server-side switch for the output device (sink) selection in Web Audio API.
 // This enables the selection via the AudioContext constructor and also via
 // AudioContext.setSinkId() method.
-BASE_FEATURE(kWebAudioSinkSelection, "kWebAudioSinkSelection",
+BASE_FEATURE(kWebAudioSinkSelection,
+             "kWebAudioSinkSelection",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // A feature to reduce the set of resources fetched by No-State Prefetch.
@@ -1419,10 +1419,6 @@ BASE_FEATURE(kWebRtcExposeNonStandardStats,
              "WebRtc-ExposeNonStandardStats",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kInvalidationSetClassBloomFilter,
-             "InvalidationSetClassBloomFilter",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kPendingBeaconAPI,
              "PendingBeaconAPI",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1462,6 +1458,10 @@ BASE_FEATURE(kSimulateClickOnAXFocus,
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 );
+
+BASE_FEATURE(kSerializeAccessibilityPostLifecycle,
+             "SerializeAccessibilityPostLifeycle",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kThreadedPreloadScanner,
              "ThreadedPreloadScanner",
@@ -1519,10 +1519,6 @@ BASE_FEATURE(kWebRtcThreadsUseResourceEfficientType,
 BASE_FEATURE(kWebRtcMetronome,
              "WebRtcMetronome",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSyncAccessHandleAllSyncSurface,
-             "SyncAccessHandleAllSyncSurface",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRunTextInputUpdatePostLifecycle,
              "RunTextInputUpdatePostLifecycle",
@@ -1694,6 +1690,15 @@ BASE_FEATURE(kSpeculationRulesPrefetchFuture,
 BASE_FEATURE(kAllowPageWithIDBConnectionInBFCache,
              "AllowPageWithIDBConnectionInBFCache",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kAllowPageWithIDBTransactionInBFCache,
+             "AllowPageWithIDBTransactionInBFCache",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsAllowPageWithIDBConnectionAndTransactionInBFCacheEnabled() {
+  return base::FeatureList::IsEnabled(kAllowPageWithIDBConnectionInBFCache) &&
+         base::FeatureList::IsEnabled(kAllowPageWithIDBTransactionInBFCache);
+}
 
 BASE_FEATURE(kUseBlinkSchedulerTaskRunnerWithCustomDeleter,
              "UseBlinkSchedulerTaskRunnerWithCustomDeleter",

@@ -65,7 +65,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kFrequencyCappingForLargeStickyAdDetection);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDisplayLocking);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kEditingNG);
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLayoutNGBlockInInline);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kMixedContentAutoupgrade);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kNavigationPredictor);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAnchorElementInteraction);
@@ -131,8 +130,13 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
 // main frame has fenced frame depth 1, etc).
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kSharedStorageMaxAllowedFencedFrameDepthForSelectURL;
-// Maximum number of times per origin per pageload that
+
+// If enabled, limits the number of times per origin per pageload that
 // `sharedStorage.selectURL()` is allowed to be invoked.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSharedStorageSelectURLLimit);
+// Maximum number of times per origin per pageload that
+// `sharedStorage.selectURL()` is allowed to be invoked, if
+// `kSharedStorageSelectURLLimit` is enabled.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kSharedStorageMaxAllowedSelectURLCallsPerOriginPerPageLoad;
 
@@ -674,11 +678,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // If enabled, expose non-standard stats in the WebRTC getStats API.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcExposeNonStandardStats);
 
-// If enabled, style invalidation will use a Bloom filter for storing
-// CSS classes that need (only) self-invalidation, instead of having them
-// in the main hash map.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kInvalidationSetClassBloomFilter);
-
 // Whether the pending beacon API is enabled or not.
 // https://github.com/WICG/pending-beacon/blob/main/README.md
 // - kPendingBeaconAPI = {true: {"requires_origin_trial": false}} to enable the
@@ -719,6 +718,11 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
 // disabled by default (and removed) before 5/17/2023.
 // See https://crbug.com/1326622 for more info.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSimulateClickOnAXFocus);
+
+// When enabled, the serialization of accessibility information for the browser
+// process will be done during LocalFrameView::RunPostLifecycleSteps, rather
+// than from a stand-alone task.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSerializeAccessibilityPostLifecycle);
 
 // If enabled, the HTMLPreloadScanner will run on a worker thread.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kThreadedPreloadScanner);
@@ -775,9 +779,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kWebRtcThreadsUseResourceEfficientType);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcMetronome);
-
-// If enabled, all of FileSystemAccessSyncAccessHandle methods are synchronous.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSyncAccessHandleAllSyncSurface);
 
 // If enabled, IME updates are computed at the end of a lifecycle update rather
 // than the beginning.
@@ -965,9 +966,19 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // enabled.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSpeculationRulesPrefetchFuture);
 
-// Feature for allowing page with open IDB connection to be stored in
-// back/forward cache.
+// Feature for allowing page with open IDB connection to be
+// stored in back/forward cache.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAllowPageWithIDBConnectionInBFCache);
+
+// Feature for allowing page with open IDB transaction to be stored in
+// back/forward cache.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAllowPageWithIDBTransactionInBFCache);
+
+// Checks both of kAllowPageWithIDBConnectionInBFCache and
+// kAllowPageWithIDBTransactionInBFCache are turned on when determining if a
+// page with IndexedDB transaction is eligible for BFCache.
+BLINK_COMMON_EXPORT bool
+IsAllowPageWithIDBConnectionAndTransactionInBFCacheEnabled();
 
 // Kill switch for using a custom task runner in the blink scheduler that makes
 // DeleteSoon/ReleaseSoon less prone to memory leaks.

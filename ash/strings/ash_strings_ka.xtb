@@ -608,6 +608,7 @@
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> გადატანილია საქაღალდეში <ph name="FOLDER_NAME" />.</translation>
 <translation id="4302592941791324970">მიუწვდომელი</translation>
 <translation id="4303223480529385476">სტატუსის არის გაშლა</translation>
+<translation id="4311195029067684288">მთლიანი</translation>
 <translation id="4312840429157639164">კამერა მიზიდულია ზედა მარჯვენა კუთხეში. ის კონფლიქტშია სისტემის ზედაპირთან.</translation>
 <translation id="4316910396681052118">ყველა აპი</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -638,6 +639,7 @@
 <translation id="4455051983450390249">ნახეთ თქვენი ტელეფონის შეტყობინებები თქვენს <ph name="DEVICE_TYPE" />-ზე</translation>
 <translation id="445864333228800152">საღამო მშვიდობის,</translation>
 <translation id="4458688154122353284">ეკრანის ჩაწერის შეწყვეტა</translation>
+<translation id="445923051607553918">Wi-Fi ქსელთან შეერთება</translation>
 <translation id="4471354919263203780">მიმდინარეობს მეტყველების ამოცნობის ფაილების ჩამოტვირთვა... <ph name="PERCENT" />%</translation>
 <translation id="4471432286288241507">{0,plural, =0{განაახლეთ მოწყობილობა ახლავე}=1{განაახლეთ მოწყობილობა 1 წამის განმავლობაში}other{განაახლეთ მოწყობილობა # წამის განმავლობაში}}</translation>
 <translation id="4472575034687746823">დაწყება</translation>

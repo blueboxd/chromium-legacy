@@ -2390,6 +2390,7 @@ TEST_F(WebStateObserverTest, ImmediatelyStopNavigation) {
       /*has_user_gesture=*/false);
   EXPECT_CALL(*decider_, MockShouldAllowRequest(
                              _, RequestInfoMatch(expected_request_info), _))
+      .Times(::testing::AtMost(1))
       .WillOnce(
           RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
   test::LoadUrl(web_state(), test_server_->GetURL("/hung"));
@@ -2439,19 +2440,6 @@ TEST_F(WebStateObserverTest, StopFinishedNavigation) {
   // Stop the loading.
   web_state()->Stop();
   ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
-
-  // This test will create an unresponsive WebProcess. WebIntTest::TearDown will
-  // call ClearBrowingData, which can take a very long time with an unresponsive
-  // WebProcess. Work around this problem by force closing WKWebView via a
-  // private API.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wundeclared-selector"
-  web::WebStateImpl* web_state_impl =
-      static_cast<web::WebStateImpl*>(web_state());
-  WKWebView* web_view = base::mac::ObjCCast<WKWebView>(
-      web_state_impl->GetWebViewNavigationProxy());
-  [web_view performSelector:@selector(_close)];
-#pragma clang diagnostic pop
 }
 
 // Tests that iframe navigation triggers DidChangeBackForwardState.

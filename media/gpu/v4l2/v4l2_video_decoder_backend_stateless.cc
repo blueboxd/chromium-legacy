@@ -291,9 +291,9 @@ bool V4L2StatelessVideoDecoderBackend::SubmitSlice(
   size_t plane_size = dec_surface->input_buffer().GetPlaneSize(0);
   size_t bytes_used = dec_surface->input_buffer().GetPlaneBytesUsed(0);
   if (size > plane_size - bytes_used) {
-    VLOGF(1) << "The size of submitted slice(" << size
-             << ") is larger than the remaining buffer size("
-             << plane_size - bytes_used << "). Plane size is " << plane_size;
+    LOG(ERROR) << "The size of submitted slice(" << size
+               << ") is larger than the remaining buffer size("
+               << plane_size - bytes_used << "). Plane size is " << plane_size;
     client_->OnBackendError();
     return false;
   }
@@ -316,7 +316,7 @@ void V4L2StatelessVideoDecoderBackend::DecodeSurface(
   enqueuing_timestamps_[timestamp.InMilliseconds()] = base::TimeTicks::Now();
 
   if (!dec_surface->Submit()) {
-    VLOGF(1) << "Error while submitting frame for decoding!";
+    LOG(ERROR) << "Error while submitting frame for decoding!";
     client_->OnBackendError();
     return;
   }
@@ -374,8 +374,10 @@ void V4L2StatelessVideoDecoderBackend::DoDecodeWork() {
   if (!client_->IsDecoding())
     return;
 
-  if (!PumpDecodeTask())
+  if (!PumpDecodeTask()) {
+    LOG(ERROR) << "Failed to do decode work.";
     client_->OnBackendError();
+  }
 }
 
 bool V4L2StatelessVideoDecoderBackend::PumpDecodeTask() {
@@ -561,10 +563,13 @@ void V4L2StatelessVideoDecoderBackend::ChangeResolution() {
 
   const gfx::Rect visible_rect = decoder_->GetVisibleRect();
   const gfx::Size pic_size = decoder_->GetPicSize();
+  const uint8_t bit_depth = decoder_->GetBitDepth();
+
   // Set output format with the new resolution.
   DCHECK(!pic_size.IsEmpty());
   DVLOGF(3) << "Change resolution to " << pic_size.ToString();
-  client_->ChangeResolution(pic_size, visible_rect, num_codec_reference_frames);
+  client_->ChangeResolution(pic_size, visible_rect, num_codec_reference_frames,
+                            bit_depth);
 }
 
 bool V4L2StatelessVideoDecoderBackend::ApplyResolution(
@@ -596,6 +601,8 @@ void V4L2StatelessVideoDecoderBackend::OnChangeResolutionDone(
     return;
 
   if (status != CroStatus::Codes::kOk) {
+    LOG(ERROR) << "Backend failure when changing resolution ("
+               << static_cast<int>(status.code()) << ").";
     client_->OnBackendError();
     return;
   }

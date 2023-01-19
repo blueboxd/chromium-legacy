@@ -5,16 +5,22 @@
 import '../strings.m.js';
 import './commerce/shopping_list.js';
 import './icons.html.js';
-import './power_bookmark_chip.js';
 import './power_bookmarks_context_menu.js';
 import './power_bookmark_row.js';
+import '//bookmarks-side-panel.top-chrome/shared/sp_empty_state.js';
+import '//bookmarks-side-panel.top-chrome/shared/sp_filter_chip.js';
+import '//bookmarks-side-panel.top-chrome/shared/sp_footer.js';
+import '//bookmarks-side-panel.top-chrome/shared/sp_heading.js';
+import '//bookmarks-side-panel.top-chrome/shared/sp_list_item_badge.js';
 import '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import '//resources/cr_elements/cr_button/cr_button.js';
 import '//resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import '//resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import '//resources/cr_elements/cr_toast/cr_toast.js';
 import '//resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
+import '//resources/cr_elements/cr_toolbar/cr_toolbar_selection_overlay.js';
 import '//resources/cr_elements/icons.html.js';
+import '//resources/polymer/v3_0/iron-list/iron-list.js';
 
 import {getInstance as getAnnouncerInstance} from '//resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {CrActionMenuElement} from '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
@@ -640,6 +646,10 @@ export class PowerBookmarksListElement extends PolymerElement {
     }
   }
 
+  private setRenamingId_(event: CustomEvent<{id: string}>) {
+    this.renamingId_ = event.detail.id;
+  }
+
   private onRename_(
       event: CustomEvent<
           {bookmark: chrome.bookmarks.BookmarkTreeNode, value: string}>) {
@@ -862,6 +872,10 @@ export class PowerBookmarksListElement extends PolymerElement {
     this.showPriceTracking_ = true;
     chrome.metricsPrivate.recordUserAction(
         'Commerce.PriceTracking.SidePanel.TrackedProductsShown');
+  }
+
+  private shouldPinFooter_(): boolean {
+    return this.shownBookmarks_.length > 0;
   }
 }
 

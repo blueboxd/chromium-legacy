@@ -2091,18 +2091,21 @@ void Document::UpdateStyleAndLayoutTree(LayoutUpgrade& upgrade) {
 
   PostStyleUpdateScope post_style_update_scope(*this);
 
-  // This call has to happen even if UpdateStyleAndLayout below will be called.
-  // This is because the subsequent call to ShouldUpgrade may depend on the
-  // results produced by UpdateStyleAndLayoutTreeForThisDocument.
-  UpdateStyleAndLayoutTreeForThisDocument();
+  do {
+    // This call has to happen even if UpdateStyleAndLayout below will be
+    // called. This is because the subsequent call to ShouldUpgrade may depend
+    // on the results produced by UpdateStyleAndLayoutTreeForThisDocument.
+    UpdateStyleAndLayoutTreeForThisDocument();
 
-  if (upgrade.ShouldUpgrade()) {
-    GetDisplayLockDocumentState().EnsureMinimumForcedPhase(
-        DisplayLockContext::ForcedPhase::kLayout);
+    if (upgrade.ShouldUpgrade()) {
+      GetDisplayLockDocumentState().EnsureMinimumForcedPhase(
+          DisplayLockContext::ForcedPhase::kLayout);
 
-    // TODO(crbug.com/1145970): Provide a better reason.
-    UpdateStyleAndLayout(DocumentUpdateReason::kUnknown);
-  }
+      // TODO(crbug.com/1145970): Provide a better reason.
+      UpdateStyleAndLayout(DocumentUpdateReason::kUnknown);
+    }
+
+  } while (post_style_update_scope.Apply());
 
   // If the above call to UpdateStyleAndLayoutTreeForThisDocument caused us to
   // skip style recalc for some node, we should have upgraded [1] and performed
@@ -3540,6 +3543,10 @@ void Document::setBody(HTMLElement* prp_new_body,
 void Document::WillInsertBody() {
   if (Loader())
     fetcher_->LoosenLoadThrottlingPolicy();
+
+  if (auto* supplement = ViewTransitionSupplement::FromIfExists(*this)) {
+    supplement->WillInsertBody();
+  }
 
   // If we get to the <body> try to resume commits since we should have content
   // to paint now.

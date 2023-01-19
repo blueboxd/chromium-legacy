@@ -62,6 +62,28 @@ async function setupIndexedDBVersionChangeHandlerToNavigateTo(url) {
   };
 }
 
+function createIndexedDBTransaction() {
+  let transaction = db.transaction(['store'], 'readwrite');
+  transaction.oncomplete = () => {
+    window.domAutomationController.send('transaction_completed');
+  };
+  return [transaction, transaction.objectStore('store')];
+}
+
+function startIndexedDBTransaction() {
+  const [_, store] = createIndexedDBTransaction();
+  store.put("key", "value");
+}
+
+function runInfiniteIndexedDBTransactionLoop() {
+  const [_, store] = createIndexedDBTransaction();
+  const infiniteLoop = () => {
+    let request = store.put("key", "value");
+    request.onsuccess = infiniteLoop;
+  }
+  infiniteLoop();
+}
+
 function registerPagehideToCloseIndexedDBConnection() {
   addEventListener('pagehide', () => {
     db.close();
@@ -70,10 +92,9 @@ function registerPagehideToCloseIndexedDBConnection() {
 
 function registerPagehideToStartTransaction() {
   addEventListener('pagehide', () => {
-    let transaction = db.transaction(['store'], 'readwrite');
-    let store = transaction.objectStore('store');
+    const [_, store] = createIndexedDBTransaction();
     store.put("key", "value");
-
+    window.domAutomationController.send('transaction_created');
     // Queue a request to close the connection.
     db.close();
   });
@@ -81,8 +102,7 @@ function registerPagehideToStartTransaction() {
 
 function registerPagehideToStartAndCommitTransaction() {
   addEventListener('pagehide', () => {
-    let transaction = db.transaction(['store'], 'readwrite');
-    let store = transaction.objectStore('store');
+    const [transaction, store] = createIndexedDBTransaction();
     store.put("key", "value");
 
     // Call commit to run the transaction right away.
@@ -90,4 +110,8 @@ function registerPagehideToStartAndCommitTransaction() {
     // Close the connection.
     db.close();
   });
+}
+
+function registerPagehideToStartRunningInfiniteIndexedDBTransactionLoop() {
+  addEventListener('pagehide', runInfiniteIndexedDBTransactionLoop);
 }

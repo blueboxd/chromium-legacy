@@ -41,7 +41,6 @@
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/oobe_base_test.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
-#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/shelf/app_shortcut_shelf_item_controller.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
@@ -53,6 +52,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -350,8 +350,7 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, LearnModeEscapeWithGesture) {
 class NotificationCenterSpokenFeedbackTest : public LoggedInSpokenFeedbackTest {
  protected:
   NotificationCenterSpokenFeedbackTest() {
-    feature_list_.InitWithFeatures(
-        {features::kQsRevamp, features::kQsRevampWip}, {});
+    feature_list_.InitAndEnableFeature(features::kQsRevamp);
   }
   ~NotificationCenterSpokenFeedbackTest() override = default;
 
@@ -379,9 +378,11 @@ IN_PROC_BROWSER_TEST_F(NotificationCenterSpokenFeedbackTest, OpenBubble) {
   ASSERT_TRUE(test_api()->IsTrayShown());
 
   // Click on the tray and verify the bubble shows up.
-  test_api()->ToggleBubble();
-  EXPECT_TRUE(test_api()->GetWidget()->IsActive());
-  EXPECT_TRUE(test_api()->IsBubbleShown());
+  sm_.Call([this]() {
+    test_api()->ToggleBubble();
+    EXPECT_TRUE(test_api()->GetWidget()->IsActive());
+    EXPECT_TRUE(test_api()->IsBubbleShown());
+  });
   sm_.ExpectSpeech("Notification Center");
 
   sm_.Replay();
@@ -1745,8 +1746,9 @@ class TestBacklightsObserver : public ScreenBacklightObserver {
 
   // ScreenBacklightObserver:
   void OnBacklightsForcedOffChanged(bool backlights_forced_off) override {
-    if (backlights_forced_off_ == backlights_forced_off)
+    if (backlights_forced_off_ == backlights_forced_off) {
       return;
+    }
 
     backlights_forced_off_ = backlights_forced_off;
     if (run_loop_) {
@@ -1782,8 +1784,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DarkenScreenConfirmation) {
   sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_F7); });
   sm_.ExpectSpeech("Turn off screen?");
   sm_.ExpectSpeech("Dialog");
-  // TODO(crbug.com/1228418) - Improve the generation of summaries across ChromeOS.
-  // Expect the content to be spoken once it has been improved.
+  // TODO(crbug.com/1228418) - Improve the generation of summaries across
+  // ChromeOS. Expect the content to be spoken once it has been improved.
   /*sm_.ExpectSpeech(
       "Turn off screen? This improves privacy by turning off your screen so it "
       "isn’t visible to others. You can always turn the screen back on by "
@@ -1804,8 +1806,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DarkenScreenConfirmation) {
   sm_.ExpectSpeech("Screen off");
   // Make sure Ash gets the backlight change request.
   sm_.Call([&observer = observer, backlights_setter = backlights_setter]() {
-    if (observer.backlights_forced_off())
+    if (observer.backlights_forced_off()) {
       return;
+    }
     observer.WaitForBacklightStateChange();
     EXPECT_TRUE(backlights_setter->backlights_forced_off());
   });
@@ -1814,8 +1817,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DarkenScreenConfirmation) {
   sm_.ExpectNextSpeechIsNot("Continue");
   sm_.ExpectSpeech("Screen on");
   sm_.Call([&observer = observer, backlights_setter = backlights_setter]() {
-    if (!observer.backlights_forced_off())
+    if (!observer.backlights_forced_off()) {
       return;
+    }
     observer.WaitForBacklightStateChange();
     EXPECT_FALSE(backlights_setter->backlights_forced_off());
   });
@@ -1824,8 +1828,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DarkenScreenConfirmation) {
   sm_.ExpectNextSpeechIsNot("Continue");
   sm_.ExpectSpeech("Screen off");
   sm_.Call([&observer = observer, backlights_setter = backlights_setter]() {
-    if (observer.backlights_forced_off())
+    if (observer.backlights_forced_off()) {
       return;
+    }
     observer.WaitForBacklightStateChange();
     EXPECT_TRUE(backlights_setter->backlights_forced_off());
   });
@@ -2058,8 +2063,7 @@ IN_PROC_BROWSER_TEST_P(SigninToUserProfileSwitchTest, DISABLED_LoginAsNewUser) {
   sm_.ExpectSpeechPattern("*");
 
   sm_.Call([this]() {
-    ASSERT_EQ(AccessibilityManager::Get()->profile(),
-              ProfileHelper::GetSigninProfile());
+    ASSERT_TRUE(IsSigninBrowserContext(AccessibilityManager::Get()->profile()));
     login_manager_.LoginAsNewRegularUser();
   });
 

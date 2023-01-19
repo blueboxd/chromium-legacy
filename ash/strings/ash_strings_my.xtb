@@ -608,6 +608,7 @@
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> ကို <ph name="FOLDER_NAME" /> ဖိုင်တွဲသို့ ရွှေ့လိုက်ပါပြီ။</translation>
 <translation id="4302592941791324970">မရနိုင်ပါ</translation>
 <translation id="4303223480529385476">အခြေအနေပြ နေရာကို ချဲ့ရန်</translation>
+<translation id="4311195029067684288">အပြည့်</translation>
 <translation id="4312840429157639164">ကင်မရာကို အပေါ်ညာဘက်ထောင့်သို့ ကပ်ထားသည်။ စနစ်မျက်နှာပြင်နှင့် ငြိနေသည်။</translation>
 <translation id="4316910396681052118">အက်ပ်များ အားလုံး</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -638,6 +639,7 @@
 <translation id="4455051983450390249">သင့်ဖုန်းရှိ အကြောင်းကြားချက်များကို သင်၏ <ph name="DEVICE_TYPE" /> ၌ ကြည့်နိုင်သည်</translation>
 <translation id="445864333228800152">မင်္ဂလာ ညနေခင်းပါ၊</translation>
 <translation id="4458688154122353284">ဖန်သားပြင်ရိုက်ကူးမှု ရပ်ရန်</translation>
+<translation id="445923051607553918">Wi-Fi ကွန်ရက် ချိတ်ဆည်</translation>
 <translation id="4471354919263203780">Speech recognition ဖိုင်များကို ဒေါင်းလုဒ်လုပ်နေသည်… <ph name="PERCENT" />%</translation>
 <translation id="4471432286288241507">{0,plural, =0{စက်ကို ယခုအပ်ဒိတ်လုပ်ပါ}=1{စက်ကို ၁ စက္ကန့်အတွင်း အပ်ဒိတ်လုပ်ပါ}other{စက်ကို # စက္ကန့်အတွင်း အပ်ဒိတ်လုပ်ပါ}}</translation>
 <translation id="4472575034687746823">စကြရအောင်</translation>

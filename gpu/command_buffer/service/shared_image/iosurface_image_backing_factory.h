@@ -39,19 +39,6 @@ struct Mailbox;
 class GPU_GLES2_EXPORT IOSurfaceImageBackingFactory
     : public SharedImageBackingFactory {
  public:
-  static sk_sp<SkPromiseImageTexture> ProduceSkiaPromiseTextureMetal(
-      SharedImageBacking* backing,
-      scoped_refptr<SharedContextState> context_state,
-      gfx::ScopedIOSurface io_surface,
-      int plane_index);
-  static std::unique_ptr<DawnImageRepresentation> ProduceDawn(
-      SharedImageManager* manager,
-      SharedImageBacking* backing,
-      MemoryTypeTracker* tracker,
-      WGPUDevice device,
-      std::vector<WGPUTextureFormat> view_formats,
-      gfx::ScopedIOSurface io_surface);
-
   IOSurfaceImageBackingFactory(const GpuPreferences& gpu_preferences,
                                const GpuDriverBugWorkarounds& workarounds,
                                const gles2::FeatureInfo* feature_info,

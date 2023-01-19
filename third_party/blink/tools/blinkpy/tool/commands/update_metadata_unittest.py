@@ -505,7 +505,7 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
 
         self.assertEqual(linux['os'], 'linux')
         self.assertEqual(linux['version'], 'trusty')
-        self.assertEqual(linux['processor'], 'x86')
+        self.assertEqual(linux['processor'], 'x86_64')
         self.assertEqual(linux['bits'], 64)
         self.assertFalse(linux['debug'])
         self.assertEqual(linux['flag_specific'], '')
@@ -1037,6 +1037,21 @@ class UpdateMetadataASTSerializationTest(BaseUpdateMetadataTest):
                 expected:
                   if os == "win": TIMEOUT
                   FAIL
+            """)
+
+    def test_condition_no_change(self):
+        self.write_contents(
+            'external/wpt/variant.html.ini', """\
+            [variant.html?foo=baz]
+              [subtest]
+                expected: FAIL
+            """)
+        self.update()
+        self.assert_contents(
+            'external/wpt/variant.html.ini', """\
+            [variant.html?foo=baz]
+              [subtest]
+                expected: FAIL
             """)
 
 

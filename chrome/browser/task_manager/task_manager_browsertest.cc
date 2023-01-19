@@ -1473,7 +1473,6 @@ class PrerenderTaskBrowserTest : public TaskManagerBrowserTest {
         {
             {features::kBackForwardCache,
              {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}}},
-            {features::kOmniboxTriggerForPrerender2, {}},
         },
         /*disabled_features=*/{});
     EXPECT_TRUE(content::BackForwardCache::IsBackForwardCacheFeatureEnabled());
@@ -1688,7 +1687,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderTaskBrowserTest,
     ASSERT_NO_FATAL_FAILURE(WaitForTaskManagerRows(0, MatchAnyPrerender()));
     histogram_tester.ExpectUniqueSample(
         "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
-        /*PrerenderFinalStatus::kRendererProcessKilled=*/14, 1);
+        /*PrerenderFinalStatus::kPrimaryMainFrameRendererProcessKilled=*/57, 1);
   }
 }
 
@@ -1769,7 +1768,7 @@ IN_PROC_BROWSER_TEST_F(
     histogram_tester.ExpectUniqueSample(
         "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
         "DirectURLInput",
-        /*PrerenderFinalStatus::kRendererProcessKilled=*/14, 1);
+        /*PrerenderFinalStatus::kPrimaryMainFrameRendererProcessKilled=*/57, 1);
   }
 }
 

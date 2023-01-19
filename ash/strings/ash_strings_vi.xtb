@@ -608,6 +608,7 @@ Hãy sạc thiết bị.</translation>
 <translation id="430191667033048642">Đã chuyển <ph name="MOVED_APP_NAME" /> vào thư mục <ph name="FOLDER_NAME" />.</translation>
 <translation id="4302592941791324970">Không dùng được</translation>
 <translation id="4303223480529385476">Mở rộng khu vực trạng thái</translation>
+<translation id="4311195029067684288">Toàn màn hình</translation>
 <translation id="4312840429157639164">Máy ảnh đang bám theo góc trên bên phải. Xung đột với khu vực hệ thống.</translation>
 <translation id="4316910396681052118">TẤT CẢ ỨNG DỤNG</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -638,6 +639,7 @@ Hãy sạc thiết bị.</translation>
 <translation id="4455051983450390249">Xem thông báo của điện thoại trên <ph name="DEVICE_TYPE" /></translation>
 <translation id="445864333228800152">Xin chào!</translation>
 <translation id="4458688154122353284">Dừng ghi màn hình</translation>
+<translation id="445923051607553918">Tham gia mạng Wi-Fi</translation>
 <translation id="4471354919263203780">Đang tải các tệp nhận dạng lời nói xuống... <ph name="PERCENT" />%</translation>
 <translation id="4471432286288241507">{0,plural, =0{Cập nhật thiết bị ngay}=1{Cập nhật thiết bị trong vòng 1 giây}other{Cập nhật thiết bị trong vòng # giây}}</translation>
 <translation id="4472575034687746823">Bắt đầu</translation>

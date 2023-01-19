@@ -29,6 +29,7 @@
 #include "ash/quick_pair/keyed_service/quick_pair_mediator.h"
 #include "ash/session/fullscreen_controller.h"
 #include "ash/shelf/shelf_controller.h"
+#include "ash/style/color_palette_controller.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/system/camera/autozoom_controller_impl.h"
 #include "ash/system/camera/autozoom_nudge_controller.h"
@@ -36,7 +37,7 @@
 #include "ash/system/caps_lock_notification_controller.h"
 #include "ash/system/gesture_education/gesture_education_notification_controller.h"
 #include "ash/system/human_presence/snooping_protection_controller.h"
-#include "ash/system/input_device_settings/initializers/input_device_tracker_impl.h"
+#include "ash/system/input_device_settings/input_device_tracker_impl.h"
 #include "ash/system/keyboard_brightness/keyboard_backlight_color_controller.h"
 #include "ash/system/media/media_tray.h"
 #include "ash/system/message_center/message_center_controller.h"
@@ -88,6 +89,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   CellularSetupNotifier::RegisterProfilePrefs(registry);
   contextual_tooltip::RegisterProfilePrefs(registry);
   ClipboardNudgeController::RegisterProfilePrefs(registry);
+  ColorPaletteController::RegisterPrefs(registry);
   DarkLightModeControllerImpl::RegisterProfilePrefs(registry);
   desks_restore_util::RegisterProfilePrefs(registry);
   saved_desk_util::RegisterProfilePrefs(registry);

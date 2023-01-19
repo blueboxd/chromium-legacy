@@ -149,7 +149,7 @@ public class ToolbarControlContainerTest {
     @Test
     public void testIsDirty() {
         ToolbarViewResourceAdapter adapter = makeAdapter();
-        adapter.setOnResourceReadyCallback((resource) -> {});
+        adapter.addOnResourceReadyCallback((resource) -> {});
 
         Assert.assertEquals(0,
                 RecordHistogram.getHistogramTotalCountForTesting(
@@ -350,5 +350,19 @@ public class ToolbarControlContainerTest {
         setConstraintsOverride(BrowserControlsState.SHOWN);
 
         Assert.assertTrue(adapter.isDirty());
+    }
+
+    @Test
+    public void testInMotion_viewNotVisible() {
+        ToolbarViewResourceAdapter adapter =
+                new ToolbarViewResourceAdapter(mToolbarContainer, false);
+        initAdapter(adapter);
+        Mockito.doReturn(CaptureReadinessResult.readyWithSnapshotDifference(
+                                 ToolbarSnapshotDifference.URL_TEXT))
+                .when(mToolbar)
+                .isReadyForTextureCapture();
+        mIsVisible = false;
+
+        changeInMotion(true, false);
     }
 }

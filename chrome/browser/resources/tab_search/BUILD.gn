@@ -9,8 +9,6 @@ import("//ui/webui/webui_features.gni")
 
 assert(is_linux || is_chromeos || is_win || is_mac || is_fuchsia)
 
-import("//chrome/browser/resources/tools/build_webui.gni")
-
 preprocess_folder = "preprocessed"
 
 build_webui("build") {
@@ -78,7 +76,6 @@ build_webui("build") {
   optimize = optimize_webui
   if (optimize) {
     optimize_webui_host = "tab-search.top-chrome"
-    optimize_webui_out_files = [ "tab_search.rollup.js" ]
     optimize_webui_in_files = [ "tab_search.js" ]
     optimize_webui_excludes = [
       "chrome://resources/js/cr.js",

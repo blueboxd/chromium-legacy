@@ -8,8 +8,8 @@
 #include <tuple>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback_helpers.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/test/bind.h"
@@ -192,8 +192,8 @@ class VideoFrameSubmitterTest : public testing::Test {
     submitter_->surface_embedder_ = std::move(embedder);
     auto surface_id = viz::SurfaceId(
         viz::FrameSinkId(1, 1),
-        viz::LocalSurfaceId(11,
-                            base::UnguessableToken::Deserialize(0x111111, 0)));
+        viz::LocalSurfaceId(
+            11, base::UnguessableToken::CreateForTesting(0x111111, 0)));
     submitter_->frame_sink_id_ = surface_id.frame_sink_id();
     submitter_->child_local_surface_id_allocator_.UpdateFromParent(
         surface_id.local_surface_id());

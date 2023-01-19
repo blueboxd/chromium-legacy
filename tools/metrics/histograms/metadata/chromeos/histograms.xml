@@ -22,6 +22,16 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histograms>
 
+<variants name="AllCertProvisioningProtocolVersions">
+<!-- The variants are versions of the client certificate provisioning protocol.
+They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
+between provisioning a client certificate using the "Static" and the "Dynamic"
+  protocol versions. -->
+
+  <variant name="" summary="Static"/>
+  <variant name=".Dynamic" summary="Dynamic"/>
+</variants>
+
 <variants name="AllCertProvisioningScopes">
 <!-- The variants are scopes for which a client certificate can be provisioned.
 They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
@@ -259,7 +269,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Camera.AutoFraming.EnabledCount" units="times"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>kamesan@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -279,7 +289,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Camera.AutoFraming.Error" enum="AutoFramingError"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>kamesan@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -324,6 +334,78 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
     This metric is reported for all users and will not cause abnormal
     distribution since the metric is Chrome OS specified.
   </summary>
+</histogram>
+
+<histogram name="ChromeOS.Camera.Effects.SelectedEffect"
+    enum="CameraEffectType" expires_after="2024-01-01">
+  <owner>jmpollock@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records a user enabling a camera effect. Emitted at most once per camera
+    effect chosen when the camera session is closed, or every hour if the
+    session duration exceeds an hour (and then at the end of the session).
+  </summary>
+</histogram>
+
+<histogram
+    name="ChromeOS.Camera.Effects.{EffectType}.{StreamType}.AvgProcessedFrameInterval"
+    units="microseconds" expires_after="2024-01-01">
+  <owner>jmpollock@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records average wall time interval between successfully processed frames
+    within the EffectsStreamManipulator for the different effect + stream type
+    combinations.
+
+    This metric is reported on ChromeOS devices with an effect applied that does
+    not encounter an error during processing. It is emitted at the close of each
+    camera session, or every hour if the session duration exceeds an hour (and
+    then at the end of the session).
+  </summary>
+  <token key="EffectType">
+    <variant name="Blur"
+        summary="Average processed frame rate of the Blur effect"/>
+    <variant name="BlurAndRelight"
+        summary="Average processed frame rate of the Blur + Relight effect"/>
+    <variant name="Relight"
+        summary="Average processed frame rate of the Relight effect"/>
+  </token>
+  <token key="StreamType">
+    <variant name="BLOB" summary="Processing time for BLOB (JPEG) streams"/>
+    <variant name="YUV" summary="Processing time for YUV streams"/>
+  </token>
+</histogram>
+
+<histogram
+    name="ChromeOS.Camera.Effects.{EffectType}.{StreamType}.AvgProcessingLatency"
+    units="microseconds" expires_after="2024-01-01">
+  <owner>jmpollock@chromium.org</owner>
+  <owner>chromeos-camera-eng@google.com</owner>
+  <summary>
+    Records the wall time taken to execute the EffectsStreamManipulator
+    ProcessCaptureResult method for the different effect + stream type
+    combinations. Calculated as the average processing time / latency over the
+    camera session.
+
+    This metric is reported on ChromeOS devices with an effect applied that does
+    not encounter an error during processing. It is emitted at the close of each
+    camera session, or every hour if the session duration exceeds an hour (and
+    then at the end of the session).
+  </summary>
+  <token key="EffectType">
+    <variant name="Blur"
+        summary="EffectsStreamManipulator processing time of the Blur effect"/>
+    <variant name="BlurAndRelight"
+        summary="EffectsStreamManipulator processing time of the Blur +
+                 Relight effect"/>
+    <variant name="Relight"
+        summary="EffectsStreamManipulator processing time of the Relight
+                 effect"/>
+  </token>
+  <token key="StreamType">
+    <variant name="BLOB" summary="Processing time for BLOB (JPEG) streams"/>
+    <variant name="YUV" summary="Processing time for YUV streams"/>
+  </token>
 </histogram>
 
 <histogram name="ChromeOS.Camera.ErrorType" enum="ChromeOSCameraErrorType"
@@ -432,7 +514,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Camera.HDRnet.MaxOutputBuffersRendered"
-    units="buffers" expires_after="2023-05-14">
+    units="buffers" expires_after="2023-07-16">
   <owner>jcliang@chromium.org</owner>
   <owner>chromeos-camera-eng@google.com</owner>
   <summary>
@@ -553,64 +635,80 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
   <summary>Records the session duration in Chrome OS camera service.</summary>
 </histogram>
 
-<histogram name="ChromeOS.CertProvisioning.CsrSignTime.{CertProvisioningScope}"
+<histogram
+    name="ChromeOS.CertProvisioning.CsrSignTime{CertProvisioningProtocolVersion}.{CertProvisioningScope}"
     units="ms" expires_after="2024-02-01">
   <owner>miersh@google.com</owner>
   <owner>pmarko@chromium.org</owner>
   <summary>
-    The amount of time it took the certificate provisioning worker with scope
-    {CertProvisioningScope} to sign a CSR. Emitted after the sign is complete.
+    The amount of time it took the {CertProvisioningProtocolVersion} certificate
+    provisioning worker with scope {CertProvisioningScope} to sign a CSR.
+    Emitted after the sign is complete.
   </summary>
   <token key="CertProvisioningScope" variants="AllCertProvisioningScopes"/>
+  <token key="CertProvisioningProtocolVersion"
+      variants="AllCertProvisioningProtocolVersions"/>
 </histogram>
 
-<histogram name="ChromeOS.CertProvisioning.Event.{CertProvisioningScope}"
+<histogram
+    name="ChromeOS.CertProvisioning.Event{CertProvisioningProtocolVersion}.{CertProvisioningScope}"
     enum="CertProvisioningEvent" expires_after="2024-02-01">
   <owner>miersh@google.com</owner>
   <owner>pmarko@chromium.org</owner>
   <summary>
-    Number of times each event is reached during the certificate provisioning
-    flow with scope {CertProvisioningScope}.
+    Number of times each event is reached during the
+    {CertProvisioningProtocolVersion} certificate provisioning flow with scope
+    {CertProvisioningScope}.
   </summary>
   <token key="CertProvisioningScope" variants="AllCertProvisioningScopes"/>
+  <token key="CertProvisioningProtocolVersion"
+      variants="AllCertProvisioningProtocolVersions"/>
 </histogram>
 
 <histogram
-    name="ChromeOS.CertProvisioning.KeypairGenerationTime.{CertProvisioningScope}"
+    name="ChromeOS.CertProvisioning.KeypairGenerationTime{CertProvisioningProtocolVersion}.{CertProvisioningScope}"
     units="ms" expires_after="2024-02-01">
   <owner>miersh@google.com</owner>
   <owner>pmarko@chromium.org</owner>
   <summary>
-    The amount of time it took the certificate provisioning worker with scope
-    {CertProvisioningScope} to generate one key pair. Emitted after the
-    generation is complete.
+    The amount of time it took the {CertProvisioningProtocolVersion} certificate
+    provisioning worker with scope {CertProvisioningScope} to generate one key
+    pair. Emitted after the generation is complete.
   </summary>
   <token key="CertProvisioningScope" variants="AllCertProvisioningScopes"/>
+  <token key="CertProvisioningProtocolVersion"
+      variants="AllCertProvisioningProtocolVersions"/>
 </histogram>
 
-<histogram name="ChromeOS.CertProvisioning.Result.{CertProvisioningScope}"
+<histogram
+    name="ChromeOS.CertProvisioning.Result{CertProvisioningProtocolVersion}.{CertProvisioningScope}"
     enum="CertProvisioningWorkerState" expires_after="2024-02-01">
   <owner>miersh@google.com</owner>
   <owner>pmarko@chromium.org</owner>
   <summary>
     For final states (see the list in cert_provisioning::IsFinalState): number
-    of times the certificate provisioning worker with scope
-    {CertProvisioningScope} finished on every state. For other states: number of
-    times the worker failed on every state.
+    of times the {CertProvisioningProtocolVersion} certificate provisioning
+    worker with scope {CertProvisioningScope} finished on every state. For other
+    states: number of times the worker failed on every state.
   </summary>
   <token key="CertProvisioningScope" variants="AllCertProvisioningScopes"/>
+  <token key="CertProvisioningProtocolVersion"
+      variants="AllCertProvisioningProtocolVersions"/>
 </histogram>
 
-<histogram name="ChromeOS.CertProvisioning.VaTime.{CertProvisioningScope}"
+<histogram
+    name="ChromeOS.CertProvisioning.VaTime{CertProvisioningProtocolVersion}.{CertProvisioningScope}"
     units="ms" expires_after="2024-02-01">
   <owner>miersh@google.com</owner>
   <owner>pmarko@chromium.org</owner>
   <summary>
-    The amount of time it took the certificate provisioning worker with scope
-    {CertProvisioningScope} to build one Verified Access response. Emitted after
-    the response is built.
+    The amount of time it took the {CertProvisioningProtocolVersion} certificate
+    provisioning worker with scope {CertProvisioningScope} to build one Verified
+    Access response. Emitted after the response is built.
   </summary>
   <token key="CertProvisioningScope" variants="AllCertProvisioningScopes"/>
+  <token key="CertProvisioningProtocolVersion"
+      variants="AllCertProvisioningProtocolVersions"/>
 </histogram>
 
 <histogram name="ChromeOS.CWP.CollectPerf"
@@ -1105,6 +1203,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
   <token key="Survey">
     <variant name="General"/>
     <variant name="Performance"/>
+    <variant name="PrivacyHubBaseline"/>
     <variant name="Stability"/>
   </token>
 </histogram>
@@ -1308,7 +1407,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.Intents.LinkCapturingEvent2"
-    enum="LinkCapturingEvent" expires_after="2023-07-09">
+    enum="LinkCapturingEvent" expires_after="2023-07-16">
   <owner>vpao@google.com</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -1433,7 +1532,7 @@ They are used for the ChromeOS.CertProvisioning.* histograms to distinguish
 </histogram>
 
 <histogram name="ChromeOS.LanguagePacks.GetPackState.FeatureId"
-    enum="LanguagePackFeatureIds" expires_after="2023-05-14">
+    enum="LanguagePackFeatureIds" expires_after="2023-07-16">
   <owner>claudiomagni@chromium.org</owner>
   <owner>mlcui@google.com</owner>
   <owner>dvallet@chromium.org</owner>

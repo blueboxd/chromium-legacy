@@ -243,6 +243,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "components/privacy_sandbox/privacy_sandbox_settings.h"
 #include "components/safe_browsing/buildflags.h"
@@ -1551,6 +1552,8 @@ void ChromeContentBrowserClient::RegisterLocalStatePrefs(
       policy::policy_prefs::kUseMojoVideoDecoderForPepperAllowed, true);
   registry->RegisterBooleanPref(
       policy::policy_prefs::kPPAPISharedImagesSwapChainAllowed, true);
+  registry->RegisterBooleanPref(
+      policy::policy_prefs::kForceEnablePepperVideoDecoderDevAPI, false);
 }
 
 // static
@@ -2345,7 +2348,7 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
     InstantService* instant_service =
         InstantServiceFactory::GetForProfile(profile);
     if (instant_service)
-      instant_service->AddInstantProcess(site_instance->GetProcess()->GetID());
+      instant_service->AddInstantProcess(site_instance->GetProcess());
   }
 #endif
 
@@ -2706,14 +2709,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
             blink::switches::kPrefixedStorageInfoEnabled);
       }
 
-      // Enabled async interface for FileSystemSyncAccessHandle if enabled by
-      // enterprise policy.
-      if (prefs->GetBoolean(
-              storage::kFileSystemSyncAccessHandleAsyncInterfaceEnabled)) {
-        command_line->AppendSwitch(
-            switches::kFileSystemSyncAccessHandleAsyncInterfaceEnabled);
-      }
-
 #if !BUILDFLAG(IS_ANDROID)
       InstantService* instant_service =
           InstantServiceFactory::GetForProfile(profile);
@@ -2970,6 +2965,11 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
             policy::policy_prefs::kPPAPISharedImagesSwapChainAllowed)) {
       command_line->AppendSwitch(
           ::switches::kDisablePPAPISharedImagesSwapChain);
+    }
+    if (local_state->GetBoolean(
+            policy::policy_prefs::kForceEnablePepperVideoDecoderDevAPI)) {
+      command_line->AppendSwitch(
+          ::switches::kForceEnablePepperVideoDecoderDevAPI);
     }
   }
 }
@@ -6413,6 +6413,27 @@ bool ChromeContentBrowserClient::HandleWebUI(
     *url = ReplaceURLHostAndPath(*url, chrome::kChromeUISettingsHost,
                                  chrome::kChromeUIHelpHost);
   }
+
+#if !BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
+    // Redirect to the new version of privacy sandbox settings.
+    if (url->SchemeIs(content::kChromeUIScheme) &&
+        url->host() == chrome::kChromeUISettingsHost) {
+      if (url->path() == chrome::kPrivacySandboxSubPagePath) {
+        GURL::Replacements replacements;
+        replacements.SetPathStr(chrome::kAdPrivacySubPagePath);
+        *url = url->ReplaceComponents(replacements);
+        UMA_HISTOGRAM_BOOLEAN("Settings.PrivacySandbox.DeprecatedRedirect",
+                              true);
+      } else if (url->path() == chrome::kAdPrivacySubPagePath) {
+        // Log un-redirected navigations to the page as well to provide context
+        // for the raw number of redirects.
+        UMA_HISTOGRAM_BOOLEAN("Settings.PrivacySandbox.DeprecatedRedirect",
+                              false);
+      }
+    }
+  }
+#endif
 
 #if BUILDFLAG(IS_WIN)
   // TODO(crbug.com/1003960): Remove when issue is resolved.

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/task/single_thread_task_runner.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics.h"
 #include "chrome/browser/apps/app_service/metrics/app_platform_metrics_service.h"
 #include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
+#include "chrome/browser/apps/app_service/promise_apps/promise_apps.h"
 #include "chrome/browser/apps/app_service/publishers/app_publisher.h"
 #include "chrome/browser/apps/app_service/uninstall_dialog.h"
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
@@ -42,6 +44,7 @@
 #include "components/services/app_service/public/cpp/preferred_apps_list.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -196,17 +199,28 @@ void AppServiceProxyAsh::OnApps(std::vector<AppPtr> deltas,
                                 AppType app_type,
                                 bool should_notify_initialized) {
   if (base::FeatureList::IsEnabled(kUnifiedAppServiceIconLoading)) {
-    // Delete app icon folders for uninstalled apps.
+    // Delete app icon folders for uninstalled apps or the icon updated app.
     std::vector<std::string> app_ids;
     for (const auto& delta : deltas) {
-      if (delta->readiness != Readiness::kUnknown &&
-          !apps_util::IsInstalled(delta->readiness)) {
+      if ((delta->readiness != Readiness::kUnknown &&
+           !apps_util::IsInstalled(delta->readiness)) ||
+          (delta->icon_key.has_value() && delta->icon_key->raw_icon_updated)) {
+        // If there's already a deletion in progress, skip the deletion request.
+        if (base::Contains(pending_read_icon_requests_, delta->app_id)) {
+          continue;
+        }
+
         app_ids.push_back(delta->app_id);
+        pending_read_icon_requests_[delta->app_id] =
+            std::vector<base::OnceCallback<void()>>();
       }
     }
 
     if (!app_ids.empty()) {
-      ScheduleIconFoldersDeletion(profile_->GetPath(), app_ids);
+      ScheduleIconFoldersDeletion(
+          profile_->GetPath(), app_ids,
+          base::BindOnce(&AppServiceProxyAsh::PostIconFoldersDeletion,
+                         weak_ptr_factory_.GetWeakPtr(), app_ids));
     }
   }
 
@@ -355,8 +369,14 @@ void AppServiceProxyAsh::ReadIconsForTesting(AppType app_type,
                                              const IconKey& icon_key,
                                              IconType icon_type,
                                              LoadIconCallback callback) {
-  ReadIcons(app_type, app_id, size_in_dip, icon_key, icon_type,
+  ReadIcons(app_type, app_id, size_in_dip, icon_key.Clone(), icon_type,
             std::move(callback));
+}
+apps::PromiseAppRegistryCache& AppServiceProxyAsh::PromiseAppRegistryCache() {
+  return promise_app_registry_cache_;
+}
+void AppServiceProxyAsh::AddPromiseApp(PromiseAppPtr app) {
+  promise_app_registry_cache_.AddPromiseApp(std::move(app));
 }
 
 void AppServiceProxyAsh::Shutdown() {
@@ -698,16 +718,27 @@ bool AppServiceProxyAsh::ShouldReadIcons() {
 void AppServiceProxyAsh::ReadIcons(AppType app_type,
                                    const std::string& app_id,
                                    int32_t size_in_dip,
-                                   const IconKey& icon_key,
+                                   std::unique_ptr<IconKey> icon_key,
                                    IconType icon_type,
                                    LoadIconCallback callback) {
+  auto it = pending_read_icon_requests_.find(app_id);
+  if (it != pending_read_icon_requests_.end()) {
+    // The icon folder is being deleted, so add the `ReadIcons` request to
+    // `pending_read_icon_requests_` to wait for the deletion.
+    it->second.push_back(base::BindOnce(
+        &AppServiceProxyAsh::ReadIcons, weak_ptr_factory_.GetWeakPtr(),
+        app_type, app_id, size_in_dip, std::move(icon_key), icon_type,
+        std::move(callback)));
+    return;
+  }
+
   icon_reader_.ReadIcons(
-      app_id, size_in_dip, icon_key, icon_type,
+      app_id, size_in_dip, *icon_key, icon_type,
       base::BindOnce(&AppServiceProxyAsh::OnIconRead,
                      weak_ptr_factory_.GetWeakPtr(), app_type, app_id,
                      size_in_dip,
-                     static_cast<IconEffects>(icon_key.icon_effects), icon_type,
-                     std::move(callback)));
+                     static_cast<IconEffects>(icon_key->icon_effects),
+                     icon_type, std::move(callback)));
 }
 
 void AppServiceProxyAsh::OnIconRead(AppType app_type,
@@ -759,6 +790,24 @@ void AppServiceProxyAsh::OnIconInstalled(AppType app_type,
   icon_key.icon_effects = icon_effects;
   icon_reader_.ReadIcons(app_id, size_in_dip, icon_key, icon_type,
                          std::move(callback));
+}
+
+void AppServiceProxyAsh::PostIconFoldersDeletion(
+    const std::vector<std::string>& app_ids) {
+  for (const auto& app_id : app_ids) {
+    auto it = pending_read_icon_requests_.find(app_id);
+    if (it == pending_read_icon_requests_.end()) {
+      continue;
+    }
+
+    // The saved `ReadIcons` requests in `pending_read_icon_requests_` are run
+    // to load the icon for `app_id`.
+    std::vector<base::OnceCallback<void()>> callbacks = std::move(it->second);
+    pending_read_icon_requests_.erase(it);
+    for (auto& callback : callbacks) {
+      std::move(callback).Run();
+    }
+  }
 }
 
 IntentLaunchInfo AppServiceProxyAsh::CreateIntentLaunchInfo(

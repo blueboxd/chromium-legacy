@@ -22,14 +22,6 @@ bool GLImageEGLStream::BindTexImage(unsigned target) {
   return true;
 }
 
-unsigned GLImageEGLStream::GetInternalFormat() {
-  return GL_RGBA;
-}
-
-unsigned GLImageEGLStream::GetDataType() {
-  return GL_UNSIGNED_BYTE;
-}
-
 gfx::Size GLImageEGLStream::GetSize() {
   return size_;
 }

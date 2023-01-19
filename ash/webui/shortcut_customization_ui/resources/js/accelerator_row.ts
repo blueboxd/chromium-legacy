@@ -119,7 +119,7 @@ export class AcceleratorRowElement extends PolymerElement {
   }
 
   private showDialog(): void {
-    if (isCustomizationDisabled()) {
+    if (isCustomizationDisabled() || this.isTextLayout()) {
       return;
     }
 
@@ -145,7 +145,7 @@ export class AcceleratorRowElement extends PolymerElement {
     assert(info.length === 1);
     const textAcceleratorInfo = info[0];
     assert(isTextAcceleratorInfo(textAcceleratorInfo));
-    return textAcceleratorInfo.layoutProperties.textAccelerator.textAccelerator;
+    return textAcceleratorInfo.layoutProperties.textAccelerator.parts;
   }
 
   static get template(): HTMLTemplateElement {

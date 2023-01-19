@@ -37,7 +37,6 @@
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
-#include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
@@ -70,9 +69,9 @@ constexpr char kRelationship[] = "delegate_permission/common.handle_all_urls";
 }
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 namespace {
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // SystemWebAppDelegate provides menu.
 class SystemAppTabMenuModelFactory : public TabMenuModelFactory {
  public:
@@ -95,9 +94,14 @@ class SystemAppTabMenuModelFactory : public TabMenuModelFactory {
  private:
   raw_ptr<const ash::SystemWebAppDelegate> system_app_;
 };
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+base::OnceClosure& IconLoadCallbackForTesting() {
+  static base::NoDestructor<base::OnceClosure> callback;
+  return *callback;
+}
 
 }  // namespace
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace web_app {
 
@@ -161,7 +165,7 @@ void WebAppBrowserController::ToggleWindowControlsOverlayEnabled(
 
   provider_->scheduler().ScheduleCallbackWithLock<AppLock>(
       "WebAppBrowserController::ToggleWindowControlsOverlayEnabled",
-      std::make_unique<AppLockDescription, base::flat_set<AppId>>({app_id()}),
+      std::make_unique<AppLockDescription>(app_id()),
       base::BindOnce(
           [](base::OnceClosure on_complete, const AppId& app_id,
              AppLock& lock) {
@@ -220,7 +224,7 @@ bool WebAppBrowserController::AlwaysShowToolbarInFullscreen() const {
 void WebAppBrowserController::ToggleAlwaysShowToolbarInFullscreen() {
   provider_->scheduler().ScheduleCallbackWithLock<AppLock>(
       "WebAppBrowserController::ToggleAlwaysShowToolbarInFullscreen",
-      std::make_unique<AppLockDescription, base::flat_set<AppId>>({app_id()}),
+      std::make_unique<AppLockDescription>(app_id()),
       base::BindOnce(
           [](const AppId& app_id, AppLock& lock) {
             lock.sync_bridge().SetAlwaysShowToolbarInFullscreen(
@@ -291,11 +295,6 @@ void WebAppBrowserController::OnWebAppUninstalled(
 
 void WebAppBrowserController::OnWebAppInstallManagerDestroyed() {
   install_manager_observation_.Reset();
-}
-
-void WebAppBrowserController::SetReadIconCallbackForTesting(
-    base::OnceClosure callback) {
-  callback_for_testing_ = std::move(callback);
 }
 
 ui::ImageModel WebAppBrowserController::GetWindowAppIcon() const {
@@ -502,6 +501,11 @@ bool WebAppBrowserController::IsInstalled() const {
   return registrar().IsInstalled(app_id());
 }
 
+void WebAppBrowserController::SetIconLoadCallbackForTesting(
+    base::OnceClosure callback) {
+  IconLoadCallbackForTesting() = std::move(callback);
+}
+
 void WebAppBrowserController::OnTabInserted(content::WebContents* contents) {
   AppBrowserController::OnTabInserted(contents);
   SetAppPrefsForWebContents(contents);
@@ -553,8 +557,9 @@ void WebAppBrowserController::OnLoadIcon(apps::IconValuePtr icon_value) {
 
   if (auto* contents = web_contents())
     contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
-  if (callback_for_testing_)
-    std::move(callback_for_testing_).Run();
+  if (IconLoadCallbackForTesting()) {
+    std::move(IconLoadCallbackForTesting()).Run();
+  }
 }
 
 void WebAppBrowserController::OnReadIcon(IconPurpose purpose, SkBitmap bitmap) {
@@ -570,8 +575,9 @@ void WebAppBrowserController::OnReadIcon(IconPurpose purpose, SkBitmap bitmap) {
       ui::ImageModel::FromImageSkia(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
   if (auto* contents = web_contents())
     contents->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
-  if (callback_for_testing_)
-    std::move(callback_for_testing_).Run();
+  if (IconLoadCallbackForTesting()) {
+    std::move(IconLoadCallbackForTesting()).Run();
+  }
 }
 
 void WebAppBrowserController::PerformDigitalAssetLinkVerification(

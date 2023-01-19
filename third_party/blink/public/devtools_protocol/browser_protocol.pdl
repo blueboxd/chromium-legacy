@@ -745,6 +745,7 @@ experimental domain Audits
       CrossOriginPortalPostMessageError
       FormLabelForNameError
       FormDuplicateIdForInputError
+      FormInputWithNoLabelError
 
   # Depending on the concrete errorType, different properties are set.
   type GenericIssueDetails extends object
@@ -782,6 +783,7 @@ experimental domain Audits
       NoSysexWebMIDIWithoutPermission
       NotificationInsecureOrigin
       NotificationPermissionRequestedIframe
+      ObsoleteCreateImageBitmapImageOrientationNone
       ObsoleteWebRtcCipherSuite
       OpenWebDatabaseInsecureContext
       OverflowVisibleOnReplacedElement
@@ -3680,7 +3682,9 @@ domain Emulation
   # Missing optional values will be filled in by the target with what it would normally use.
   experimental type UserAgentMetadata extends object
     properties
+      # Brands appearing in Sec-CH-UA.
       optional array of UserAgentBrandVersion brands
+      # Brands appearing in Sec-CH-UA-Full-Version-List.
       optional array of UserAgentBrandVersion fullVersionList
       deprecated optional string fullVersion
       string platform
@@ -5267,9 +5271,9 @@ domain Network
   # are specified in third_party/blink/renderer/core/fetch/trust_token.idl.
   experimental type TrustTokenParams extends object
     properties
-      TrustTokenOperationType type
+      TrustTokenOperationType operation
 
-      # Only set for "token-redemption" type and determine whether
+      # Only set for "token-redemption" operation and determine whether
       # to request a fresh SRR or use a still valid cached SRR.
       enum refreshPolicy
         UseCached
@@ -8565,6 +8569,9 @@ domain Page
       ActivationNavigationDestroyedBeforeSuccess
       TabClosedByUserGesture
       TabClosedWithoutUserGesture
+      PrimaryMainFrameRendererProcessCrashed
+      PrimaryMainFrameRendererProcessKilled
+      ActivationFramePolicyNotCompatible
 
   # Fired when a prerender attempt is completed.
   experimental event prerenderAttemptCompleted
@@ -10549,6 +10556,10 @@ experimental domain WebAuthn
       # https://fidoalliance.org/specs/fido-v2.1-ps-20210615/fido-client-to-authenticator-protocol-v2.1-ps-20210615.html#sctn-minpinlength-extension
       # Defaults to false.
       optional boolean hasMinPinLength
+      # If set to true, the authenticator will support the prf extension.
+      # https://w3c.github.io/webauthn/#prf-extension
+      # Defaults to false.
+      optional boolean hasPrf
       # If set to true, tests of user presence will succeed immediately.
       # Otherwise, they will not be resolved. Defaults to true.
       optional boolean automaticPresenceSimulation

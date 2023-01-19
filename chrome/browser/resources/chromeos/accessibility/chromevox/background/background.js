@@ -14,6 +14,7 @@ import {ContentScriptBridge} from '../common/content_script_bridge.js';
 import {LocaleOutputHelper} from '../common/locale_output_helper.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
+import {PermissionChecker} from '../common/permission_checker.js';
 import {QueueMode, TtsSpeechProperties} from '../common/tts_types.js';
 import {JaPhoneticMap} from '../third_party/tamachiyomi/ja_phonetic_map.js';
 
@@ -76,9 +77,6 @@ export class Background extends ChromeVoxState {
     /** @private {CursorRange} */
     this.pageSel_ = null;
 
-    /** @private {CursorRange} */
-    this.previousRange_ = null;
-
     /** @private {boolean} */
     this.talkBackEnabled_ = false;
 
@@ -116,6 +114,7 @@ export class Background extends ChromeVoxState {
     await LocalStorage.init();
     BrailleBackground.init();
     ChromeVoxPrefs.init();
+    ChromeVoxRange.init();
     TtsBackground.init();
     ChromeVoxBackground.init();
 
@@ -135,7 +134,6 @@ export class Background extends ChromeVoxState {
     LiveRegions.init();
     LocaleOutputHelper.init();
     LogStore.init();
-    MediaAutomationHandler.init();
     PageLoadSoundHandler.init();
     PanelBackground.init();
     RangeAutomationHandler.init();
@@ -146,6 +144,8 @@ export class Background extends ChromeVoxState {
     await Promise.all([
       DesktopAutomationHandler.init(),
       EventStreamLogger.init(),
+      MediaAutomationHandler.init(),
+      PermissionChecker.init(),
     ]);
     ChromeVoxState.resolveReadyPromise_();
   }
@@ -183,7 +183,7 @@ export class Background extends ChromeVoxState {
    * @override
    */
   setCurrentRange(newRange) {
-    this.previousRange_ = this.currentRange_;
+    ChromeVoxRange.previous = this.currentRange_;
     this.currentRange_ = newRange;
   }
 
@@ -312,7 +312,7 @@ export class Background extends ChromeVoxState {
     }
 
     if (!this.currentRange_ || !this.currentRange_.isValid()) {
-      ChromeVoxRange.set(this.previousRange_);
+      ChromeVoxRange.set(ChromeVoxRange.previous);
     }
   }
 

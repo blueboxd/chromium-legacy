@@ -38,7 +38,6 @@ using ::chromeos::network_config::NetworkTypeMatchesType;
 using ::chromeos::network_config::mojom::ActivationStateType;
 using ::chromeos::network_config::mojom::CellularStateProperties;
 using ::chromeos::network_config::mojom::ConnectionStateType;
-using ::chromeos::network_config::mojom::DeviceStateProperties;
 using ::chromeos::network_config::mojom::DeviceStateType;
 using ::chromeos::network_config::mojom::NetworkStateProperties;
 using ::chromeos::network_config::mojom::NetworkStatePropertiesPtr;
@@ -174,13 +173,11 @@ void NetworkDetailedViewController::OnNetworkListItemSelected(
       return;
     }
 
-    // If the captive portal UI flag is enabled, the user is logged in, the
-    // network is connected, and the network is in a portal or proxy state, the
-    // user is shown the portal signin. We do not show portal sign in for user
-    // not logged in because it is the only way for the user to get to the
-    // network details page.
-    if (features::IsCaptivePortalUI2022Enabled() &&
-        Shell::Get()->session_controller()->login_status() !=
+    // If user is logged in, the network is connected, and the network is in a
+    // portal or proxy state, the user is shown the portal signin. We do not
+    // show portal sign in for user not logged in because it is the only way for
+    // the user to get to the network details page.
+    if (Shell::Get()->session_controller()->login_status() !=
             LoginStatus::NOT_LOGGED_IN &&
         chromeos::network_config::StateIsConnected(network->connection_state) &&
         IsNetworkBehindPortalOrProxy(network->portal_state)) {

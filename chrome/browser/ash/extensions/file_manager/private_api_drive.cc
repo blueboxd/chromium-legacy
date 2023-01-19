@@ -492,7 +492,7 @@ FileManagerPrivateInternalGetEntryPropertiesFunction::Run() {
         break;
       case storage::kFileSystemTypeDriveFs:
         file_manager::util::SingleEntryPropertiesGetterForDriveFs::Start(
-            file_system_url, profile, std::move(callback));
+            file_system_url, profile, names_as_set, std::move(callback));
         break;
       case storage::kFileSystemTypeArcDocumentsProvider:
         SingleEntryPropertiesGetterForDocumentsProvider::Start(
@@ -824,8 +824,6 @@ FileManagerPrivateGetDriveConnectionStateFunction::Run() {
       extensions::ExtensionRegistry::Get(browser_context())
           ->enabled_extensions();
   result.can_pin_hosted_files =
-      base::FeatureList::IsEnabled(
-          ash::features::kDriveFsBidirectionalNativeMessaging) &&
       enabled_extensions.Contains(extension_misc::kDocsOfflineExtensionId) &&
       enabled_extensions.Contains(
           GURL(drive::kDriveFsNativeMessageHostOrigins[0]).host());
@@ -965,14 +963,11 @@ FileManagerPrivateNotifyDriveDialogResultFunction::Run() {
 
 ExtensionFunction::ResponseAction
 FileManagerPrivatePollDriveHostedFilePinStatesFunction::Run() {
-  if (base::FeatureList::IsEnabled(
-          ash::features::kDriveFsBidirectionalNativeMessaging)) {
-    Profile* const profile = Profile::FromBrowserContext(browser_context());
-    drive::DriveIntegrationService* integration_service =
-        drive::util::GetIntegrationServiceByProfile(profile);
-    if (integration_service) {
-      integration_service->PollHostedFilePinStates();
-    }
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
+  drive::DriveIntegrationService* integration_service =
+      drive::util::GetIntegrationServiceByProfile(profile);
+  if (integration_service) {
+    integration_service->PollHostedFilePinStates();
   }
   return RespondNow(WithArguments());
 }

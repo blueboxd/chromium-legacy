@@ -94,7 +94,7 @@ BASE_FEATURE(kOptimizedRealtimeThreadingMac,
 #endif
 );
 
-const Feature kUseThreadQoSMac{"UseThreadQoSMac", FEATURE_DISABLED_BY_DEFAULT};
+const Feature kUseThreadQoSMac{"UseThreadQoSMac", FEATURE_ENABLED_BY_DEFAULT};
 
 namespace {
 
@@ -333,6 +333,7 @@ void SetCurrentThreadTypeImpl(ThreadType thread_type,
       break;
     case ThreadType::kResourceEfficient:
       if (use_thread_qos && pthread_set_qos_class_self_np_FuncPtr) {
+        priority = ThreadPriorityForTest::kUtility;
         pthread_set_qos_class_self_np_FuncPtr(QOS_CLASS_UTILITY, 0);
         break;
       }

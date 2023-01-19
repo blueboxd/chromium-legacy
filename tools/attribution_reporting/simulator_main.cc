@@ -10,7 +10,6 @@
 #include "base/containers/contains.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/strings/abseil_string_number_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
@@ -19,8 +18,6 @@
 #include "content/public/browser/attribution_reporting.h"
 #include "content/public/test/attribution_simulator.h"
 #include "content/public/test/attribution_simulator_environment.h"
-#include "third_party/abseil-cpp/absl/numeric/int128.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
@@ -32,7 +29,6 @@ constexpr char kSwitchVersionShort[] = "v";
 
 constexpr char kSwitchDelayMode[] = "delay_mode";
 constexpr char kSwitchNoiseMode[] = "noise_mode";
-constexpr char kSwitchNoiseSeed[] = "noise_seed";
 constexpr char kSwitchRemoveReportIds[] = "remove_report_ids";
 constexpr char kSwitchInputMode[] = "input_mode";
 constexpr char kSwitchCopyInputToOutput[] = "copy_input_to_output";
@@ -40,9 +36,7 @@ constexpr char kSwitchRandomizedResponseRateNavigation[] =
     "randomized_response_rate_navigation";
 constexpr char kSwitchRandomizedResponseRateEvent[] =
     "randomized_response_rate_event";
-constexpr char kSwitchRemoveActualReportTimes[] = "remove_actual_report_times";
 constexpr char kSwitchRemoveAssembledReport[] = "remove_assembled_report";
-constexpr char kSwitchSkipDebugCookieChecks[] = "skip_debug_cookie_checks";
 
 constexpr const char* kAllowedSwitches[] = {
     kSwitchHelp,
@@ -52,14 +46,11 @@ constexpr const char* kAllowedSwitches[] = {
 
     kSwitchDelayMode,
     kSwitchNoiseMode,
-    kSwitchNoiseSeed,
     kSwitchRemoveReportIds,
     kSwitchInputMode,
     kSwitchCopyInputToOutput,
     kSwitchRandomizedResponseRateNavigation,
     kSwitchRandomizedResponseRateEvent,
-    kSwitchSkipDebugCookieChecks,
-    kSwitchRemoveActualReportTimes,
 };
 
 constexpr char kHelpMsg[] = R"(
@@ -67,14 +58,11 @@ attribution_reporting_simulator
   [--copy_input_to_output]
   [--delay_mode=<mode>]
   [--noise_mode=<mode>]
-  [--noise_seed=<seed>]
   [--randomized_response_rate_event=<rate>]
   [--randomized_response_rate_navigation=<rate>]
   [--input_mode=<input_mode>]
   [--remove_report_ids]
   [--remove_assembled_report]
-  [--skip_debug_cookie_checks]
-  [--remove_actual_report_times]
 
 attribution_reporting_simulator is a command-line tool that simulates the
 Attribution Reporting API for for sources and triggers specified in an input
@@ -116,15 +104,6 @@ Switches:
 
                               none: None of the above applies.
 
-  --noise_seed=<seed>       - Optional 128-bit hex string. If set, the value is
-                              used to seed the random number generator used for
-                              noise; in this case, the algorithm is
-                              XorShift128+. If not set, the default source of
-                              randomness is used for noising and the
-                              simulation's output may vary between runs.
-
-                              May only be set if `noise_mode` is `noise`.
-
   --input_mode=<input_mode> - Optional. Either `single` (default) or `multi`.
                               single: the input file must conform to the JSON
                               input format below. Output will conform to the
@@ -157,14 +136,6 @@ Switches:
                               aggregatable report bodies, as they are randomly
                               generated. Use this switch to make the tool's
                               output more deterministic.
-
-  --skip_debug_cookie_checks
-                            - Optional. If present, skips debug cookie checks.
-
-  --remove_actual_report_times
-                            - Optional. If present, removes the `report_time`
-                              field from reports, as they are subject to
-                              implementation details.
 
   --version                 - Outputs the tool version and exits.
 
@@ -284,24 +255,6 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  absl::optional<absl::uint128> noise_seed;
-  if (command_line.HasSwitch(kSwitchNoiseSeed)) {
-    if (noise_mode != content::AttributionNoiseMode::kDefault) {
-      std::cerr << "noise seed may only be set when noise mode is `default`"
-                << std::endl;
-      return 1;
-    }
-
-    std::string str = command_line.GetSwitchValueASCII(kSwitchNoiseSeed);
-    absl::uint128 value;
-    if (!base::HexStringToUInt128(str, &value)) {
-      std::cerr << "invalid noise seed: " << str << std::endl;
-      return 1;
-    }
-
-    noise_seed = value;
-  }
-
   content::AttributionConfig config;
 
   if (!ParseRandomizedResponseRateSwitch(
@@ -348,19 +301,14 @@ int main(int argc, char* argv[]) {
 
   content::AttributionSimulationOptions options({
       .noise_mode = noise_mode,
-      .noise_seed = noise_seed,
       .config = config,
       .delay_mode = delay_mode,
-      .skip_debug_cookie_checks =
-          command_line.HasSwitch(kSwitchSkipDebugCookieChecks),
       .output_options =
           content::AttributionSimulationOutputOptions{
               .remove_report_ids =
                   command_line.HasSwitch(kSwitchRemoveReportIds),
               .remove_assembled_report =
                   command_line.HasSwitch(kSwitchRemoveAssembledReport),
-              .remove_actual_report_times =
-                  command_line.HasSwitch(kSwitchRemoveActualReportTimes),
           },
   });
 

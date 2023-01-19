@@ -7,13 +7,14 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/preloading/prefetch/prefetch_container.h"
 #include "content/browser/preloading/prefetch/prefetch_document_manager.h"
 #include "content/browser/preloading/prefetch/prefetch_features.h"
 #include "content/browser/preloading/prefetch/prefetch_params.h"
 #include "content/browser/preloading/prefetch/prefetch_status.h"
-#include "content/browser/preloading/prefetch/prefetched_mainframe_response_container.h"
 #include "content/browser/preloading/preloading.h"
 #include "content/browser/preloading/preloading_data_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -155,7 +156,7 @@ class ScopedPrefetchServiceContentBrowserClient
 
   // ContentBrowserClient.
   std::unique_ptr<PrefetchServiceDelegate> CreatePrefetchServiceDelegate(
-      content::BrowserContext*) override {
+      BrowserContext*) override {
     return std::move(mock_prefetch_service_delegate_);
   }
 
@@ -242,9 +243,12 @@ class PrefetchServiceTest : public RenderViewHostTestHarness {
 
     test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
     attempt_entry_builder_ =
-        std::make_unique<content::test::PreloadingAttemptUkmEntryBuilder>(
+        std::make_unique<test::PreloadingAttemptUkmEntryBuilder>(
             ToPreloadingPredictor(
                 ContentPreloadingPredictor::kSpeculationRules));
+
+    scoped_test_timer_ =
+        std::make_unique<base::ScopedMockElapsedTimersForTest>();
   }
 
   void TearDown() override {
@@ -263,7 +267,7 @@ class PrefetchServiceTest : public RenderViewHostTestHarness {
 
   virtual void InitScopedFeatureList() {
     scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{content::features::kPrefetchUseContentRefactor,
+        {{features::kPrefetchUseContentRefactor,
           {{"ineligible_decoy_request_probability", "0"},
            {"prefetch_container_lifetime_s", "-1"}}}},
         {network::features::kPrefetchNoVarySearch});
@@ -553,8 +557,14 @@ class PrefetchServiceTest : public RenderViewHostTestHarness {
     mock_handle.set_is_in_primary_main_frame(true);
     mock_handle.set_is_same_document(false);
     mock_handle.set_has_committed(true);
+    // Makes sure the accurate bit is always false.
+    mock_handle.set_url(GURL("http://Not.Accurate.Trigger.Url/"));
     auto* preloading_data =
         PreloadingData::GetOrCreateForWebContents(web_contents());
+    // Sets the accurate bit, and records `TimeToNextNavigation`.
+    static_cast<PreloadingDataImpl*>(preloading_data)
+        ->DidStartNavigation(&mock_handle);
+    // Records the UKMs.
     static_cast<PreloadingDataImpl*>(preloading_data)
         ->DidFinishNavigation(&mock_handle);
     return mock_handle.GetNextPageUkmSourceId();
@@ -570,10 +580,17 @@ class PrefetchServiceTest : public RenderViewHostTestHarness {
         test::kPreloadingAttemptUkmMetrics);
     EXPECT_EQ(actual_attempts.size(), 1u);
 
-    auto expected_attempts = {attempt_entry_builder()->BuildEntry(
+    absl::optional<base::TimeDelta> ready_time = absl::nullopt;
+    if (outcome == PreloadingTriggeringOutcome::kReady ||
+        outcome == PreloadingTriggeringOutcome::kSuccess) {
+      ready_time = base::ScopedMockElapsedTimersForTest::kMockElapsedTime;
+    }
+
+    const auto expected_attempts = {attempt_entry_builder()->BuildEntry(
         source_id, PreloadingType::kPrefetch, eligibility, holdback, outcome,
         failure,
-        /*accurate=*/false)};
+        /*accurate=*/false, ready_time)};
+
     EXPECT_THAT(actual_attempts,
                 testing::UnorderedElementsAreArray(expected_attempts))
         << test::ActualVsExpectedUkmEntriesToString(actual_attempts,
@@ -603,6 +620,8 @@ class PrefetchServiceTest : public RenderViewHostTestHarness {
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
   std::unique_ptr<test::PreloadingAttemptUkmEntryBuilder>
       attempt_entry_builder_;
+
+  std::unique_ptr<base::ScopedMockElapsedTimersForTest> scoped_test_timer_;
 };
 
 TEST_F(PrefetchServiceTest, CreateServiceWhenFeatureEnabled) {
@@ -610,7 +629,7 @@ TEST_F(PrefetchServiceTest, CreateServiceWhenFeatureEnabled) {
   // PrefetchService instance.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {content::features::kPrefetchUseContentRefactor},
+      {features::kPrefetchUseContentRefactor},
       {network::features::kPrefetchNoVarySearch});
 
   EXPECT_TRUE(PrefetchService::CreateIfPossible(browser_context()));
@@ -621,7 +640,7 @@ TEST_F(PrefetchServiceTest, DontCreateServiceWhenFeatureDisabled) {
   // PrefetchService instance.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {}, {content::features::kPrefetchUseContentRefactor,
+      {}, {features::kPrefetchUseContentRefactor,
            network::features::kPrefetchNoVarySearch});
 
   EXPECT_FALSE(PrefetchService::CreateIfPossible(browser_context()));
@@ -822,7 +841,7 @@ class PrefetchServiceAllowAllDomainsTest : public PrefetchServiceTest {
  public:
   void InitScopedFeatureList() override {
     scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{content::features::kPrefetchUseContentRefactor,
+        {{features::kPrefetchUseContentRefactor,
           {{"ineligible_decoy_request_probability", "0"},
            {"prefetch_container_lifetime_s", "-1"},
            {"allow_all_domains", "true"}}}},
@@ -908,7 +927,7 @@ class PrefetchServiceAllowAllDomainsForExtendedPreloadingTest
  public:
   void InitScopedFeatureList() override {
     scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{content::features::kPrefetchUseContentRefactor,
+        {{features::kPrefetchUseContentRefactor,
           {{"ineligible_decoy_request_probability", "0"},
            {"prefetch_container_lifetime_s", "-1"},
            {"allow_all_domains_for_extended_preloading", "true"}}}},
@@ -2342,7 +2361,7 @@ class PrefetchServiceLimitedPrefetchesTest : public PrefetchServiceTest {
  public:
   void InitScopedFeatureList() override {
     scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{content::features::kPrefetchUseContentRefactor,
+        {{features::kPrefetchUseContentRefactor,
           {{"ineligible_decoy_request_probability", "0"},
            {"prefetch_container_lifetime_s", "-1"},
            {"max_srp_prefetches", "2"}}}},
@@ -2485,14 +2504,18 @@ TEST_F(PrefetchServiceLimitedPrefetchesTest, LimitedNumberOfPrefetches) {
              PreloadingHoldbackStatus::kAllowed,
              PreloadingTriggeringOutcome::kReady,
              PreloadingFailureReason::kUnspecified,
-             /*accurate=*/false),
+             /*accurate=*/false,
+             /*ready_time=*/
+             base::ScopedMockElapsedTimersForTest::kMockElapsedTime),
          attempt_entry_builder()->BuildEntry(
              source_id, PreloadingType::kPrefetch,
              PreloadingEligibility::kEligible,
              PreloadingHoldbackStatus::kAllowed,
              PreloadingTriggeringOutcome::kReady,
              PreloadingFailureReason::kUnspecified,
-             /*accurate=*/false),
+             /*accurate=*/false,
+             /*ready_time=*/
+             base::ScopedMockElapsedTimersForTest::kMockElapsedTime),
          attempt_entry_builder()->BuildEntry(
              source_id, PreloadingType::kPrefetch,
              PreloadingEligibility::kEligible,
@@ -2511,7 +2534,7 @@ class PrefetchServiceWithHTMLOnlyTest : public PrefetchServiceTest {
  public:
   void InitScopedFeatureList() override {
     scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{content::features::kPrefetchUseContentRefactor,
+        {{features::kPrefetchUseContentRefactor,
           {{"ineligible_decoy_request_probability", "0"},
            {"prefetch_container_lifetime_s", "-1"},
            {"html_only", "true"}}}},
@@ -2586,7 +2609,7 @@ class PrefetchServiceAlwaysMakeDecoyRequestTest : public PrefetchServiceTest {
  public:
   void InitScopedFeatureList() override {
     scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{content::features::kPrefetchUseContentRefactor,
+        {{features::kPrefetchUseContentRefactor,
           {{"ineligible_decoy_request_probability", "1"},
            {"prefetch_container_lifetime_s", "-1"}}}},
         {network::features::kPrefetchNoVarySearch});
@@ -2724,8 +2747,7 @@ class PrefetchServiceHoldbackTest : public PrefetchServiceTest {
  public:
   void InitScopedFeatureList() override {
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        content::features::kPrefetchUseContentRefactor,
-        {{"prefetch_holdback", "true"}});
+        features::kPrefetchUseContentRefactor, {{"prefetch_holdback", "true"}});
   }
 };
 
@@ -2914,7 +2936,7 @@ class PrefetchServiceStreamingURLLoaderTest : public PrefetchServiceTest {
  public:
   void InitScopedFeatureList() override {
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        content::features::kPrefetchUseContentRefactor,
+        features::kPrefetchUseContentRefactor,
         {{"ineligible_decoy_request_probability", "0"},
          {"prefetch_container_lifetime_s", "-1"},
          {"use_streaming_url_loader", "true"}});
@@ -3052,7 +3074,7 @@ class PrefetchServiceNoVarySearchTest : public PrefetchServiceTest {
  public:
   void InitScopedFeatureList() override {
     scoped_feature_list_.InitWithFeatures(
-        {content::features::kPrefetchUseContentRefactor,
+        {features::kPrefetchUseContentRefactor,
          network::features::kPrefetchNoVarySearch},
         {});
   }
@@ -3210,11 +3232,12 @@ class PrefetchServiceNeverBlockUntilHeadTest : public PrefetchServiceTest {
  public:
   void InitScopedFeatureList() override {
     scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{content::features::kPrefetchUseContentRefactor,
+        {{features::kPrefetchUseContentRefactor,
           {{"ineligible_decoy_request_probability", "0"},
            {"prefetch_container_lifetime_s", "-1"},
            {"block_until_head_eager_prefetch", "false"},
-           {"block_until_head_default_prefetch", "false"}}}},
+           {"block_until_head_moderate_prefetch", "false"},
+           {"block_until_head_conservative_prefetch", "false"}}}},
         {network::features::kPrefetchNoVarySearch});
   }
 };
@@ -3283,15 +3306,18 @@ TEST_F(PrefetchServiceNeverBlockUntilHeadTest, MAYBE_HeadNotReceived) {
                        PreloadingFailureReason::kUnspecified);
 }
 
-class PrefetchServiceAlwaysBlockUntilHeadTest : public PrefetchServiceTest {
+class PrefetchServiceAlwaysBlockUntilHeadTest
+    : public PrefetchServiceTest,
+      public ::testing::WithParamInterface<blink::mojom::SpeculationEagerness> {
  public:
   void InitScopedFeatureList() override {
     scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{content::features::kPrefetchUseContentRefactor,
+        {{features::kPrefetchUseContentRefactor,
           {{"ineligible_decoy_request_probability", "0"},
            {"prefetch_container_lifetime_s", "-1"},
            {"block_until_head_eager_prefetch", "true"},
-           {"block_until_head_default_prefetch", "true"}}}},
+           {"block_until_head_moderate_prefetch", "true"},
+           {"block_until_head_conservative_prefetch", "true"}}}},
         {network::features::kPrefetchNoVarySearch});
   }
 };
@@ -3302,7 +3328,7 @@ class PrefetchServiceAlwaysBlockUntilHeadTest : public PrefetchServiceTest {
 #else
 #define MAYBE_BlockUntilHeadReceived BlockUntilHeadReceived
 #endif
-TEST_F(PrefetchServiceAlwaysBlockUntilHeadTest, MAYBE_BlockUntilHeadReceived) {
+TEST_P(PrefetchServiceAlwaysBlockUntilHeadTest, MAYBE_BlockUntilHeadReceived) {
   base::HistogramTester histogram_tester;
 
   MakePrefetchService(
@@ -3311,8 +3337,7 @@ TEST_F(PrefetchServiceAlwaysBlockUntilHeadTest, MAYBE_BlockUntilHeadReceived) {
   MakePrefetchOnMainFrame(
       GURL("https://example.com"),
       PrefetchType(/*use_isolated_network_context=*/true,
-                   /*use_prefetch_proxy=*/true,
-                   blink::mojom::SpeculationEagerness::kDefault));
+                   /*use_prefetch_proxy=*/true, GetParam()));
   base::RunLoop().RunUntilIdle();
 
   VerifyCommonRequestState(GURL("https://example.com"),
@@ -3395,6 +3420,12 @@ TEST_F(PrefetchServiceAlwaysBlockUntilHeadTest, MAYBE_BlockUntilHeadReceived) {
                        PreloadingTriggeringOutcome::kReady,
                        PreloadingFailureReason::kUnspecified);
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    ParametrizedTests,
+    PrefetchServiceAlwaysBlockUntilHeadTest,
+    testing::Values(blink::mojom::SpeculationEagerness::kModerate,
+                    blink::mojom::SpeculationEagerness::kConservative));
 
 }  // namespace
 }  // namespace content

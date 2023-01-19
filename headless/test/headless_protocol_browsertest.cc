@@ -14,8 +14,8 @@
 #include "base/path_service.h"
 #include "build/build_config.h"
 #include "content/public/common/content_switches.h"
-#include "headless/app/headless_shell_switches.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
+#include "headless/public/switches.h"
 #include "headless/test/headless_browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -311,6 +311,9 @@ HEADLESS_PROTOCOL_TEST(DragStarted, "input/dragIntercepted.js")
 #define MAYBE_InputClipboardOps InputClipboardOps
 #endif
 HEADLESS_PROTOCOL_TEST(MAYBE_InputClipboardOps, "input/input-clipboard-ops.js")
+
+HEADLESS_PROTOCOL_TEST(FocusBlurNotifications,
+                       "input/focus-blur-notifications.js")
 
 HEADLESS_PROTOCOL_TEST(HeadlessSessionBasicsTest,
                        "sessions/headless-session-basics.js")

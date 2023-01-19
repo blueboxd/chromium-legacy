@@ -332,7 +332,7 @@ void CertProvisioningWorkerStatic::UpdateState(
 
   if (is_continued_without_invalidation_for_uma_) {
     RecordEvent(
-        cert_scope_,
+        cert_profile_.protocol_version, cert_scope_,
         CertProvisioningEvent::kWorkerRetrySucceededWithoutInvalidation);
     is_continued_without_invalidation_for_uma_ = false;
   }
@@ -402,7 +402,8 @@ void CertProvisioningWorkerStatic::OnGenerateKeyForVaDone(
     const attestation::TpmChallengeKeyResult& result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  RecordKeypairGenerationTime(cert_scope_, base::TimeTicks::Now() - start_time);
+  RecordKeypairGenerationTime(cert_profile_.protocol_version, cert_scope_,
+                              base::TimeTicks::Now() - start_time);
 
   if (result.result_code ==
       attestation::TpmChallengeKeyResultCode::kGetCertificateFailedError) {
@@ -497,7 +498,8 @@ void CertProvisioningWorkerStatic::OnBuildVaChallengeResponseDone(
     const attestation::TpmChallengeKeyResult& challenge_result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  RecordVerifiedAccessTime(cert_scope_, base::TimeTicks::Now() - start_time);
+  RecordVerifiedAccessTime(cert_profile_.protocol_version, cert_scope_,
+                           base::TimeTicks::Now() - start_time);
 
   if (!challenge_result.IsSuccess()) {
     failure_message_ = ConstructFailureMessage(challenge_result);
@@ -601,7 +603,8 @@ void CertProvisioningWorkerStatic::OnSignCsrDone(
     chromeos::platform_keys::Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  RecordCsrSignTime(cert_scope_, base::TimeTicks::Now() - start_time);
+  RecordDataSignTime(cert_profile_.protocol_version, cert_scope_,
+                     base::TimeTicks::Now() - start_time);
 
   if (status != chromeos::platform_keys::Status::kSuccess) {
     failure_message_ =
@@ -803,10 +806,11 @@ void CertProvisioningWorkerStatic::ScheduleNextStep(base::TimeDelta delay) {
 void CertProvisioningWorkerStatic::OnShouldContinue(ContinueReason reason) {
   switch (reason) {
     case ContinueReason::kInvalidation:
-      RecordEvent(cert_scope_, CertProvisioningEvent::kInvalidationReceived);
+      RecordEvent(cert_profile_.protocol_version, cert_scope_,
+                  CertProvisioningEvent::kInvalidationReceived);
       break;
     case ContinueReason::kTimeout:
-      RecordEvent(cert_scope_,
+      RecordEvent(cert_profile_.protocol_version, cert_scope_,
                   CertProvisioningEvent::kWorkerRetryWithoutInvalidation);
       break;
   }
@@ -892,7 +896,8 @@ void CertProvisioningWorkerStatic::OnRemoveKeyDone(
 void CertProvisioningWorkerStatic::OnCleanUpDone() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  RecordResult(cert_scope_, state_, prev_state_);
+  RecordResult(cert_profile_.protocol_version, cert_scope_, state_,
+               prev_state_);
   std::move(result_callback_).Run(cert_profile_, state_);
 }
 
@@ -973,7 +978,7 @@ void CertProvisioningWorkerStatic::RegisterForInvalidationTopic() {
                           base::Unretained(this),
                           ContinueReason::kInvalidation));
 
-  RecordEvent(cert_scope_,
+  RecordEvent(cert_profile_.protocol_version, cert_scope_,
               CertProvisioningEvent::kRegisteredToInvalidationTopic);
 }
 

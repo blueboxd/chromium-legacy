@@ -63,9 +63,7 @@ class TestCastConfigController : public CastConfigController {
 class CastDetailedViewTest : public AshTestBase {
  public:
   CastDetailedViewTest() {
-    feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kQsRevamp, features::kQsRevampWip},
-        /*disabled_features=*/{});
+    feature_list_.InitAndEnableFeature(features::kQsRevamp);
   }
 
   // AshTestBase:
@@ -88,8 +86,9 @@ class CastDetailedViewTest : public AshTestBase {
 
   std::vector<views::View*> GetDeviceViews() {
     std::vector<views::View*> views;
-    for (const auto& it : detailed_view_->view_to_sink_map_)
+    for (const auto& it : detailed_view_->view_to_sink_map_) {
       views.push_back(it.first);
+    }
     return views;
   }
 
@@ -101,13 +100,11 @@ class CastDetailedViewTest : public AshTestBase {
     SinkAndRoute device1;
     device1.sink.id = "fake_sink_id_1";
     device1.sink.name = "Sink Name 1";
-    device1.sink.domain = "example.com";
     device1.sink.sink_icon_type = SinkIconType::kCast;
     devices.push_back(device1);
     SinkAndRoute device2;
     device2.sink.id = "fake_sink_id_2";
     device2.sink.name = "Sink Name 2";
-    device2.sink.domain = "example.com";
     device2.sink.sink_icon_type = SinkIconType::kCast;
     devices.push_back(device2);
     detailed_view_->OnDevicesUpdated(devices);
@@ -194,7 +191,6 @@ TEST_F(CastDetailedViewTest, StopCastingButton) {
   SinkAndRoute device;
   device.sink.id = "fake_sink_id_1";
   device.sink.name = "Sink Name 1";
-  device.sink.domain = "example.com";
   device.sink.sink_icon_type = SinkIconType::kCast;
   device.route.id = "fake_route_id_1";
   device.route.title = "Title 1";
@@ -229,7 +225,6 @@ TEST_F(CastDetailedViewTest, NoStopCastingButtonForNonLocalSource) {
   SinkAndRoute device;
   device.sink.id = "fake_sink_id_1";
   device.sink.name = "Sink Name 1";
-  device.sink.domain = "example.com";
   device.sink.sink_icon_type = SinkIconType::kCast;
   device.route.id = "fake_route_id_1";
   device.route.title = "Title 1";

@@ -5,14 +5,14 @@
 import 'chrome://webui-test/mojo_webui_test_support.js';
 import 'chrome://customize-chrome-side-panel.top-chrome/themes.js';
 
-import {BackgroundCollection, CollectionImage, CustomizeChromePageCallbackRouter, CustomizeChromePageHandlerRemote} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome.mojom-webui.js';
+import {BackgroundCollection, CollectionImage, CustomizeChromePageCallbackRouter, CustomizeChromePageHandlerRemote, CustomizeChromePageRemote} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome.mojom-webui.js';
 import {CustomizeChromeApiProxy} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome_api_proxy.js';
 import {ThemesElement} from 'chrome://customize-chrome-side-panel.top-chrome/themes.js';
 import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
-import {installMock} from './test_support.js';
+import {createTheme, installMock} from './test_support.js';
 
 function createTestCollection(name: string): BackgroundCollection {
   const testCollection: BackgroundCollection = {
@@ -39,6 +39,7 @@ function createTestImages(length: number): CollectionImage[] {
 
 suite('ThemesTest', () => {
   let themesElement: ThemesElement;
+  let callbackRouterRemote: CustomizeChromePageRemote;
   let handler: TestBrowserProxy<CustomizeChromePageHandlerRemote>;
 
   async function setCollection(collectionName: string, numImages: number) {
@@ -56,6 +57,8 @@ suite('ThemesTest', () => {
         (mock: CustomizeChromePageHandlerRemote) =>
             CustomizeChromeApiProxy.setInstance(
                 mock, new CustomizeChromePageCallbackRouter()));
+    callbackRouterRemote = CustomizeChromeApiProxy.getInstance()
+                               .callbackRouter.$.bindNewPipeAndPassRemote();
     themesElement = document.createElement('customize-chrome-themes');
     document.body.appendChild(themesElement);
   });
@@ -68,18 +71,13 @@ suite('ThemesTest', () => {
     assertTrue(!!event);
   });
 
-  test('set theme and send event on theme click', async () => {
+  test('set theme on theme click', async () => {
     await setCollection('test', 2);
 
-    // Check that clicking a theme produces a theme-select event.
-    const eventPromise = eventToPromise('theme-select', themesElement);
+    // Check that setBackgroundImage was called on click.
     const theme =
         themesElement.shadowRoot!.querySelector('.theme')! as HTMLButtonElement;
     theme.click();
-    const event = await eventPromise;
-    assertTrue(!!event);
-
-    // Check that setBackgroundImage was called on click.
     assertEquals(1, handler.getCallCount('setBackgroundImage'));
   });
 
@@ -91,17 +89,11 @@ suite('ThemesTest', () => {
     let themes = themesElement.shadowRoot!.querySelectorAll('.theme');
     assertEquals(themes.length, 3);
     assertEquals(
-        'attribution1_1', themes[0]!.querySelector('.label')!.textContent);
-    assertEquals(
         'https://preview_1.jpg',
         themes[0]!.querySelector('img')!.getAttribute('auto-src'));
     assertEquals(
-        'attribution1_2', themes[1]!.querySelector('.label')!.textContent);
-    assertEquals(
         'https://preview_2.jpg',
         themes[1]!.querySelector('img')!.getAttribute('auto-src'));
-    assertEquals(
-        'attribution1_3', themes[2]!.querySelector('.label')!.textContent);
     assertEquals(
         'https://preview_3.jpg',
         themes[2]!.querySelector('img')!.getAttribute('auto-src'));
@@ -113,29 +105,75 @@ suite('ThemesTest', () => {
     themes = themesElement.shadowRoot!.querySelectorAll('.theme');
     assertEquals(themes.length, 5);
     assertEquals(
-        'attribution1_1', themes[0]!.querySelector('.label')!.textContent);
-    assertEquals(
         'https://preview_1.jpg',
         themes[0]!.querySelector('img')!.getAttribute('auto-src'));
-    assertEquals(
-        'attribution1_2', themes[1]!.querySelector('.label')!.textContent);
     assertEquals(
         'https://preview_2.jpg',
         themes[1]!.querySelector('img')!.getAttribute('auto-src'));
     assertEquals(
-        'attribution1_3', themes[2]!.querySelector('.label')!.textContent);
-    assertEquals(
         'https://preview_3.jpg',
         themes[2]!.querySelector('img')!.getAttribute('auto-src'));
-    assertEquals(
-        'attribution1_4', themes[3]!.querySelector('.label')!.textContent);
     assertEquals(
         'https://preview_4.jpg',
         themes[3]!.querySelector('img')!.getAttribute('auto-src'));
     assertEquals(
-        'attribution1_5', themes[4]!.querySelector('.label')!.textContent);
-    assertEquals(
         'https://preview_5.jpg',
         themes[4]!.querySelector('img')!.getAttribute('auto-src'));
   });
+
+  test('set collection id on refresh daily toggle on', async () => {
+    await setCollection('test_collection', 2);
+
+    // Check that toggling on sets collection id to current collection id.
+    themesElement.$.refreshDailyToggle.click();
+    const setDailyRefreshCollectionIdCalled =
+        handler.whenCalled('setDailyRefreshCollectionId');
+    const id = await setDailyRefreshCollectionIdCalled;
+    assertEquals(id, themesElement.selectedCollection!.id);
+  });
+
+  test('set empty collection id on refresh daily toggle off', async () => {
+    await setCollection('test_collection', 2);
+
+    // Turn toggle on.
+    const theme = createTheme();
+    theme.dailyRefreshCollectionId = themesElement.selectedCollection!.id;
+    callbackRouterRemote.setTheme(theme);
+    await callbackRouterRemote.$.flushForTesting();
+    assertTrue(themesElement.$.refreshDailyToggle.checked);
+
+    // Check that toggling off sets collection id to empty string.
+    themesElement.$.refreshDailyToggle.click();
+    const setDailyRefreshCollectionIdCalled =
+        handler.whenCalled('setDailyRefreshCollectionId');
+    const id = await setDailyRefreshCollectionIdCalled;
+    assertEquals(id, '');
+  });
+
+  test(
+      'refresh daily toggle is on if current collection id matches',
+      async () => {
+        await setCollection('test_collection', 2);
+
+        // Check that toggle isn't on if refresh daily is undefined.
+        let theme = createTheme();
+        callbackRouterRemote.setTheme(theme);
+        await callbackRouterRemote.$.flushForTesting();
+        assertTrue(!themesElement.$.refreshDailyToggle.checked);
+
+        // Check that toggle isn't on if refresh daily is a different
+        // collection.
+        theme = createTheme();
+        theme.dailyRefreshCollectionId = 'different_collection';
+        callbackRouterRemote.setTheme(theme);
+        await callbackRouterRemote.$.flushForTesting();
+        assertTrue(!themesElement.$.refreshDailyToggle.checked);
+
+        // Check that toggle is on if refresh daily matches current collection.
+        theme = createTheme();
+        theme.dailyRefreshCollectionId = themesElement.selectedCollection!.id;
+        callbackRouterRemote.setTheme(theme);
+        await callbackRouterRemote.$.flushForTesting();
+        assertTrue(themesElement.$.refreshDailyToggle.checked);
+      });
 });

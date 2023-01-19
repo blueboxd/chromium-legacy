@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/component_export.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
+#include "base/functional/callback.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace apps {
@@ -50,6 +50,14 @@ struct COMPONENT_EXPORT(ICON_TYPES) IconKey {
   // grayed out), this would result in a different timeline even though the
   // app's version is unchanged.
   uint64_t timeline = 0;
+
+  // True when the raw icon is updated. After an icon update, a new IconKey can
+  // be broadcast by a Publisher. Then the AppService icon directory should be
+  // removed to fetch the new raw icon from the app.
+  //
+  // When the raw icon is updated, `timeline` should be updated, so we don't
+  // need to check `raw_icon_updated` for `operator==` and `operator!=`.
+  bool raw_icon_updated = false;
 
   // If non-zero (or equivalently, not equal to kInvalidResourceId), the
   // compressed icon is compiled into the Chromium binary as a statically

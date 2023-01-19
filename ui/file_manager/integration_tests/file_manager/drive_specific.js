@@ -339,11 +339,11 @@ testcase.drivePinMultiple = async () => {
   await remoteCall.waitForElement(appId, '#file-context-menu[hidden]');
 
   // Wait for the pinned action to finish, it's flagged in the file list by
-  // removing CSS class "dim-offline" and adding class "pinned".
+  // removing CSS class "dim-offline" and displaying the offline icon.
   await remoteCall.waitForElementLost(
       appId, '#file-list .dim-offline[file-name="world.ogv"]');
   await remoteCall.waitForElement(
-      appId, '#file-list .pinned[file-name="world.ogv"] .inline-status');
+      appId, '#file-list [file-name="world.ogv"] xf-icon[type=offline]');
 
   // Select world.ogv by itself.
   await remoteCall.waitAndClickElement(
@@ -407,15 +407,16 @@ testcase.drivePinHosted = async () => {
   await remoteCall.waitForElement(appId, '#file-context-menu[hidden]');
 
   // Wait for the pinned action to finish, it's flagged in the file list by
-  // removing CSS class "dim-offline" and adding class "pinned".
+  // removing CSS class "dim-offline" and displaying the offline icon.
   await remoteCall.waitForElementLost(
       appId, '#file-list .dim-offline[file-name="hello.txt"]');
   await remoteCall.waitForElement(
-      appId, '#file-list .pinned[file-name="hello.txt"] .inline-status');
+      appId, '#file-list [file-name="hello.txt"] xf-icon[type=offline]');
 
   // Test Document.gdoc should not be pinned however.
   await remoteCall.waitForElement(
-      appId, '#file-list [file-name="Test Document.gdoc"]:not(.pinned)');
+      appId,
+      '#file-list [file-name="Test Document.gdoc"] xf-icon:not([type=offline])');
 
 
   // Open the context menu with both files selected.
@@ -468,7 +469,7 @@ testcase.drivePinFileMobileNetwork = async () => {
   // Check: File is pinned.
   await remoteCall.waitForElement(appId, '[command="#toggle-pinned"][checked]');
   await remoteCall.waitForElement(
-      appId, '#file-list .pinned[file-name="hello.txt"] .inline-status');
+      appId, '#file-list [file-name="hello.txt"] xf-icon[type=offline]');
   await waitForNotification('disabled-mobile-sync');
   await sendTestMessage({
     name: 'clickNotificationButton',
@@ -680,7 +681,7 @@ testcase.driveAvailableOfflineActionBar = async () => {
 
   // Wait for the file to be pinned.
   await remoteCall.waitForElement(
-      appId, '#file-list .pinned[file-name="hello.txt"]');
+      appId, '#file-list [file-name="hello.txt"] xf-icon[type=offline]');
 
   // Check the "Available Offline" toggle is enabled and checked.
   await remoteCall.waitForElement(
@@ -872,23 +873,6 @@ testcase.driveOfflineInfoBanner = async () => {
 };
 
 /**
- * Tests that the Drive offline info banner does not show when the
- * DriveFsBidirectionalNativeMessaging flag is disabled.
- */
-testcase.driveOfflineInfoBannerWithoutFlag = async () => {
-  // Open Files app on Drive.
-  const appId = await setupAndWaitUntilReady(RootPath.DRIVE, []);
-
-  await remoteCall.isolateBannerForTesting(
-      appId, 'drive-offline-pinning-banner');
-  const driveOfflineInfoBannerHiddenQuery =
-      '#banners > drive-offline-pinning-banner';
-
-  // Check: the Drive Offline info banner should not appear.
-  await remoteCall.waitForElementLost(appId, driveOfflineInfoBannerHiddenQuery);
-};
-
-/**
  * Tests that the inline file sync "in progress" icon is displayed in Drive as
  * the file starts syncing then disappears as it finishes syncing.
  */
@@ -921,6 +905,12 @@ testcase.driveInlineSyncStatusSingleFile = async () => {
 
   // Verify the "sync in progress" icon is displayed.
   await remoteCall.waitForElement(appId, syncInProgressQuery);
+
+  // On `DriveFsTestVolume::SetFileSyncStatus`, the fake event setting the
+  // path's status hardcodes the progress as 50 bytes / 100 bytes transferred.
+  // Verify this data reaches the UI as a progress value of 50%.
+  await remoteCall.waitForElement(
+      appId, '[data-sync-status=in_progress] .progress[progress="0.50"]');
 
   // Fake the file finishing syncing.
   await sendTestMessage({
@@ -1169,4 +1159,41 @@ testcase.driveEnableDocsOfflineDialogDisappearsOnUnmount = async () => {
 
   // Check: the Enable Docs Offline dialog should disappear.
   await remoteCall.waitForElementLost(appId, '.cr-dialog-container.shown');
+};
+
+/**
+ * Tests that when deleting a file on Google Drive the dialog has no mention of
+ * permanent deletion (as the files aren't pemanently deleted but go to Google
+ * Drive trash instead).
+ */
+testcase.driveDeleteDialogDoesntMentionPermanentDelete = async () => {
+  // Open Files app on Drive.
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE, []);
+
+  // Wait for the "hello.txt" file to appear.
+  const helloTxtSelector = '#file-list [file-name="photos"]';
+  await remoteCall.waitAndClickElement(appId, helloTxtSelector);
+
+  // Ensure the move-to-trash command is hidden and disabled on Google Drive and
+  // then click the enabled delete button
+  await remoteCall.waitForElement(appId, '#move-to-trash[hidden][disabled]');
+  await remoteCall.waitAndClickElement(
+      appId, '#delete-button:not([hidden]):not([disabled])');
+
+  // Check: the dialog 'Cancel' button should be focused by default.
+  const dialogDefaultButton =
+      await remoteCall.waitForElement(appId, '.cr-dialog-cancel:focus');
+  chrome.test.assertEq('Cancel', dialogDefaultButton.text);
+
+  // Check: the dialog has no mention in the text of "permanent".
+  const dialogText = await remoteCall.waitForElement(appId, '.cr-dialog-text');
+  chrome.test.assertFalse(dialogText.text.toLowerCase().includes('permanent'));
+
+  // The dialog 'Delete' button should be only contain the text "Delete".
+  const dialogDeleteButton =
+      await remoteCall.waitAndClickElement(appId, '.cr-dialog-ok');
+  chrome.test.assertEq('Delete', dialogDeleteButton.text);
+
+  // Wait for completion of file deletion.
+  await remoteCall.waitForElementLost(appId, helloTxtSelector);
 };

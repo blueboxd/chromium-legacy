@@ -1097,6 +1097,14 @@ util.isFilesAppExperimental = () => {
 };
 
 /**
+ * Returns true if the conflict dialog is enabled.
+ * @return {boolean}
+ */
+util.isFilesConflictDialogEnabled = () => {
+  return loadTimeData.getBoolean('FILES_CONFLICT_DIALOG');
+};
+
+/**
  * Returns true if FuseBoxDebug flag is enabled.
  * @return {boolean}
  */
@@ -1424,11 +1432,6 @@ util.getFilesAppModalDialogInstance = () => {
   }
 
   return /** @type {!HTMLDialogElement} */ (dialogElement);
-};
-
-util.isDriveDssPinEnabled = () => {
-  return loadTimeData.valueExists('DRIVE_DSS_PIN_ENABLED') &&
-      loadTimeData.getBoolean('DRIVE_DSS_PIN_ENABLED');
 };
 
 /**

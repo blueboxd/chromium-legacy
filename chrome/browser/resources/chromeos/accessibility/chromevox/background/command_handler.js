@@ -26,6 +26,7 @@ import {ChromeVoxKbHandler} from '../common/keyboard_handler.js';
 import {LogType} from '../common/log_types.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
+import {PermissionChecker} from '../common/permission_checker.js';
 import {TreeDumper} from '../common/tree_dumper.js';
 import {Personality, QueueMode, TtsSettings, TtsSpeechProperties} from '../common/tts_types.js';
 
@@ -55,7 +56,6 @@ const AutomationNode = chrome.automation.AutomationNode;
 const Dir = constants.Dir;
 const EventType = chrome.automation.EventType;
 const RoleType = chrome.automation.RoleType;
-const SessionType = chrome.chromeosInfoPrivate.SessionType;
 
 /**
  * @typedef {{
@@ -76,12 +76,6 @@ export class CommandHandler extends CommandHandlerInterface {
     this.imageNode_;
 
     /** @private {boolean} */
-    this.isIncognito_ = Boolean(chrome.runtime.getManifest()['incognito']);
-
-    /** @private {boolean} */
-    this.isKioskSession_ = false;
-
-    /** @private {boolean} */
     this.languageLoggingEnabled_ = false;
 
     this.init_();
@@ -95,14 +89,6 @@ export class CommandHandler extends CommandHandlerInterface {
     this.languageLoggingEnabled_ |= flagEnabled;
   }
 
-  /**
-   * @param {!SessionType} sessionType
-   * @private
-   */
-  updateIsKioskSession_(sessionType) {
-    this.isKioskSession_ = (sessionType === SessionType.KIOSK);
-  }
-
   /** @private */
   init_() {
     chrome.commandLinePrivate.hasSwitch(
@@ -111,22 +97,16 @@ export class CommandHandler extends CommandHandlerInterface {
     chrome.commandLinePrivate.hasSwitch(
         'enable-experimental-accessibility-language-detection-dynamic',
         enabled => this.updateLanguageLoggingEnabled_(enabled));
-
-    chrome.chromeosInfoPrivate.get(
-        ['sessionType'],
-        result => this.updateIsKioskSession_(result['sessionType']));
   }
 
   /** @override */
   onCommand(command) {
     // Check for a command denied in incognito contexts and kiosk.
-    if (!this.isAllowed_(command)) {
+    if (!PermissionChecker.isAllowed(command)) {
       return true;
     }
 
-    // Check for loss of focus which results in us invalidating our current
-    // range. Note this call is synchronous.
-    chrome.automation.getFocus(focus => this.checkForLossOfFocus_(focus));
+    ChromeVoxRange.maybeResetFromFocus();
 
     // These commands don't require a current range.
     switch (command) {
@@ -1091,33 +1071,6 @@ export class CommandHandler extends CommandHandlerInterface {
         .go();
   }
 
-  /**
-   * @param {AutomationNode} focusedNode
-   * @private
-   */
-  checkForLossOfFocus_(focusedNode) {
-    const cur = ChromeVoxRange.current;
-    if (cur && !cur.isValid() && focusedNode) {
-      ChromeVoxRange.set(CursorRange.fromNode(focusedNode));
-    }
-
-    if (!focusedNode) {
-      ChromeVoxRange.set(null);
-      return;
-    }
-
-    // This case detects when TalkBack (in ARC++) is enabled (which also
-    // covers when the ARC++ window is active). Clear the ChromeVox range
-    // so keys get passed through for ChromeVox commands.
-    if (ChromeVoxState.instance.talkBackEnabled &&
-        // This additional check is not strictly necessary, but we use it to
-        // ensure we are never inadvertently losing focus. ARC++ windows set
-        // "focus" on a root view.
-        focusedNode.role === RoleType.CLIENT) {
-      ChromeVoxRange.set(null);
-    }
-  }
-
   /** @private */
   cycleTypingEcho_() {
     LocalStorage.set(
@@ -1420,20 +1373,6 @@ export class CommandHandler extends CommandHandlerInterface {
       current = current.parent;
     }
     return current;
-  }
-
-  /**
-   * @param {!Command} command
-   * @return {boolean}
-   * @private
-   */
-  isAllowed_(command) {
-    if (!this.isIncognito_ && !this.isKioskSession_) {
-      return true;
-    }
-
-    return !CommandStore.CMD_ALLOWLIST[command] ||
-        !CommandStore.CMD_ALLOWLIST[command].denySignedOut;
   }
 
   /**
@@ -1807,12 +1746,10 @@ export class CommandHandler extends CommandHandlerInterface {
    */
   toggleSelection_() {
     if (!ChromeVoxState.instance.pageSel) {
-      ChromeVox.earcons.playEarcon(EarconId.SELECTION);
       ChromeVoxState.instance.pageSel = ChromeVoxRange.current;
       DesktopAutomationInterface.instance.ignoreDocumentSelectionFromAction(
           true);
     } else {
-      ChromeVox.earcons.playEarcon(EarconId.SELECTION_REVERSE);
       const root = ChromeVoxRange.current.start.node.root;
       if (root && root.selectionStartObject && root.selectionEndObject &&
           !isNaN(Number(root.selectionStartOffset)) &&

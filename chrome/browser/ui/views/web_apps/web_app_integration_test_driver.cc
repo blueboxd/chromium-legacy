@@ -99,7 +99,6 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/webapps/browser/features.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
@@ -131,7 +130,6 @@
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/ui/views/apps/app_dialog/app_uninstall_dialog_view.h"
-#include "components/services/app_service/public/mojom/types.mojom-shared.h"
 #else
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #endif
@@ -1203,6 +1201,7 @@ void WebAppIntegrationTestDriver::LaunchFileExpectDialog(
       ask_again == AskAgainOptions::kRemember);
 
   base::RunLoop run_loop;
+  BrowserAddedWaiter browser_added_waiter;
 #if BUILDFLAG(IS_MAC)
   web_app::SetMacShimStartupDoneCallbackForTesting(run_loop.QuitClosure());
 #else
@@ -1229,6 +1228,17 @@ void WebAppIntegrationTestDriver::LaunchFileExpectDialog(
   widget->CloseWithReason(close_reason);
   destroyed_waiter.Wait();
   run_loop.Run();
+
+  // TODO(cliffordcheng): Wait for multiple browsers and
+  //                      support multiple client file handling.
+  DisplayMode display_mode =
+      provider()->registrar_unsafe().GetAppEffectiveDisplayMode(app_id);
+  if ((display_mode != blink::mojom::DisplayMode::kBrowser) &&
+      (allow_deny != AllowDenyOptions::kDeny)) {
+    browser_added_waiter.Wait();
+    app_browser_ = browser_added_waiter.browser_added();
+  }
+
   AfterStateChangeAction();
 }
 
@@ -1240,6 +1250,7 @@ void WebAppIntegrationTestDriver::LaunchFileExpectNoDialog(
   }
   AppId app_id = GetAppIdBySiteMode(site);
   base::RunLoop run_loop;
+  BrowserAddedWaiter browser_added_waiter;
 #if BUILDFLAG(IS_MAC)
   web_app::SetMacShimStartupDoneCallbackForTesting(run_loop.QuitClosure());
 #else
@@ -1253,6 +1264,15 @@ void WebAppIntegrationTestDriver::LaunchFileExpectNoDialog(
   // have been passed to the app. Either way, we should always wait for a
   // window / tab to be added.
   run_loop.Run();
+
+  // TODO(cliffordcheng): Wait for multiple browsers and
+  //                      support multiple client file handling.
+  DisplayMode display_mode =
+      provider()->registrar_unsafe().GetAppEffectiveDisplayMode(app_id);
+  if (display_mode != blink::mojom::DisplayMode::kBrowser) {
+    browser_added_waiter.Wait();
+    app_browser_ = browser_added_waiter.browser_added();
+  }
 
   AfterStateChangeAction();
 }
@@ -2313,6 +2333,45 @@ void WebAppIntegrationTestDriver::CheckCreateShortcutShown() {
     return;
   }
   EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, browser()), kEnabled);
+  AfterStateCheckAction();
+}
+
+void WebAppIntegrationTestDriver::CheckFilesLoadedInSite(
+    Site site,
+    FilesOptions files_options) {
+  if (!BeforeStateCheckAction(__FUNCTION__)) {
+    return;
+  }
+  AppId app_id = GetAppIdBySiteMode(site);
+
+  // TODO(cliffordcheng): Wait for multiple browsers and
+  //                      support multiple client file handling.
+  DisplayMode display_mode =
+      provider()->registrar_unsafe().GetAppEffectiveDisplayMode(app_id);
+  content::WebContents* web_contents;
+  if (display_mode == blink::mojom::DisplayMode::kBrowser) {
+    web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+  } else {
+    web_contents = app_browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  base::flat_set<std::string> expected_content_list;
+  std::vector<base::FilePath> file_paths = GetTestFilePaths(files_options);
+  for (const base::FilePath& path : file_paths) {
+    std::string content;
+    base::ScopedAllowBlockingForTesting scoped_allow_blocking;
+    base::ReadFileToString(path, &content);
+    expected_content_list.insert(content);
+  }
+
+  base::Value test_contents =
+      EvalJs(web_contents, "launchFinishedPromise").ExtractList();
+  auto& test_content_list = test_contents.GetList();
+  for (const auto& test_content : test_content_list) {
+    EXPECT_TRUE(std::find(expected_content_list.begin(),
+                          expected_content_list.end(),
+                          test_content) != expected_content_list.end());
+  }
   AfterStateCheckAction();
 }
 

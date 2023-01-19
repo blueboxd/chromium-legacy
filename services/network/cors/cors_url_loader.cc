@@ -7,10 +7,10 @@
 #include <sstream>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
@@ -934,7 +934,7 @@ void CorsURLLoader::StartNetworkRequest() {
 
 void CorsURLLoader::HandleComplete(const URLLoaderCompletionStatus& status) {
   if (request_.trust_token_params) {
-    HistogramTrustTokenOperationNetError(request_.trust_token_params->type,
+    HistogramTrustTokenOperationNetError(request_.trust_token_params->operation,
                                          status.trust_token_operation_status,
                                          status.error_code);
   }

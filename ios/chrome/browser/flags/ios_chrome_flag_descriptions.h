@@ -453,14 +453,15 @@ extern const char kModernTabStripDescription[];
 extern const char kMostVisitedTilesName[];
 extern const char kMostVisitedTilesDescription[];
 
+// Title and description of the flag to enable multiline gradient support in
+// FadeTruncatingLabel.
+extern const char kMultilineFadeTruncatingLabelName[];
+extern const char kMultilineFadeTruncatingLabelDescription[];
+
 // Title and description of the flag to enable the native Find in Page API
 // for iOS 16 and later.
 extern const char kNativeFindInPageName[];
 extern const char kNativeFindInPageDescription[];
-
-// Title and description for the flag to use the new MICe FRE.
-extern const char kNewMobileIdentityConsistencyFREName[];
-extern const char kNewMobileIdentityConsistencyFREDescription[];
 
 // Title and description for the flag to enable the new overflow menu.
 extern const char kNewOverflowMenuName[];
@@ -585,6 +586,11 @@ extern const char kOptimizationTargetPredictionName[];
 // detection.
 extern const char kPasswordReuseDetectionName[];
 extern const char kPasswordReuseDetectionDescription[];
+
+// Title and description for the flag to have the Promos Manager use the FET as
+// its impression tracking system.
+extern const char kPromosManagerUsesFETName[];
+extern const char kPromosManagerUsesFETDescription[];
 
 // Title and description for the flag to enable PriceNotifications IPH to be
 // alwayws be displayed.

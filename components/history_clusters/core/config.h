@@ -99,13 +99,13 @@ struct Config {
 
   // No effect if `persist_clusters_in_history_db` is disabled. Determines how
   // soon to update clusters after startup in minutes. E.g., by default, will
-  // update clusters 5 minutes after startup.
-  int persist_clusters_in_history_db_after_startup_delay_minutes = 5;
+  // update clusters 60 minutes minutes after startup.
+  int persist_clusters_in_history_db_after_startup_delay_minutes = 60;
 
   // No effect if `persist_clusters_in_history_db` is disabled. Determines how
   // often to update clusters in minutes. E.g., by default, will update clusters
-  // every hour.
-  int persist_clusters_in_history_db_period_minutes = 60;
+  // every 12 hours.
+  int persist_clusters_in_history_db_period_minutes = 12 * 60;
 
   // No effect if `persist_clusters_in_history_db` is disabled. If disabled,
   // persistence occurs on a timer (see the above 2 params). If enabled, will
@@ -132,7 +132,7 @@ struct Config {
   // clusters. E.g., if set to 2, and clusters up to 1/10 have been persisted,
   // then the next request will include visits from clusters from 1/8 and 1/9,
   // and unclustered visits from 1/10.
-  size_t persist_clusters_recluster_window_days = 2;
+  size_t persist_clusters_recluster_window_days = 0;
 
   // The `kOmniboxAction` feature and child params.
 
@@ -269,17 +269,6 @@ struct Config {
   // on the zero state UI).
   size_t number_interesting_visits_filter_threshold = 1;
 
-  // The `kJourneysCategoryFiltering` feature and child params.
-
-  // Whether to determine whether to show/hide clusters on prominent UI surfaces
-  // based on categories annotated for a visit.
-  bool should_use_categories_to_filter_on_prominent_ui_surfaces = false;
-
-  // The category IDs used for filtering. These should represent categories that
-  // are repesentatitive of Journeys that we think the user is likely to want to
-  // re-engage with.
-  base::flat_set<std::string> categories_for_filtering;
-
   // The `kOnDeviceClusteringContentClustering` feature and child params.
 
   // Returns whether content clustering is enabled and
@@ -331,7 +320,7 @@ struct Config {
   // The `kHistoryClustersVisitDeduping` feature and child params.
 
   // Use host instead of heavily-stripped URL as URL for deduping.
-  bool use_host_for_visit_deduping = false;
+  bool use_host_for_visit_deduping = true;
 
   // The `kOnDeviceClusteringVisitRanking` feature and child params.
 
@@ -410,10 +399,6 @@ struct Config {
 // Returns the set of collections that should not be included for content
 // clustering.
 base::flat_set<std::string> JourneysCollectionContentClusteringBlocklist();
-
-// Returns the set of categories that should be used to filter for whether a
-// user is likely to re-engage with a cluster.
-base::flat_set<std::string> JourneysCategoryFilteringAllowlist();
 
 // Returns the set of mids that should be blocked from being used by the
 // clustering backend, particularly for potential keywords used for omnibox

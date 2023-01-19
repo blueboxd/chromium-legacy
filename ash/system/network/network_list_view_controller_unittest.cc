@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -19,6 +20,7 @@
 #include "ash/system/network/network_utils.h"
 #include "ash/system/network/tray_network_state_model.h"
 #include "ash/system/tray/detailed_view_delegate.h"
+#include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/tray_info_label.h"
 #include "ash/system/tray/tri_view.h"
 #include "ash/test/ash_test_base.h"
@@ -26,11 +28,12 @@
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/ash/services/bluetooth_config/fake_adapter_state_controller.h"
 #include "chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
 #include "chromeos/ash/services/bluetooth_config/scoped_bluetooth_config_test_helper.h"
-#include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
+#include "chromeos/ash/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/cpp/fake_cros_network_config.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
@@ -68,11 +71,8 @@ using ::chromeos::network_config::mojom::PolicySource;
 using ::chromeos::network_config::mojom::SIMInfoPtr;
 using ::chromeos::network_config::mojom::VpnProviderPtr;
 using network_config::CrosNetworkConfigTestHelper;
-
-using ::testing::_;
 using ::testing::IsNull;
 using ::testing::NotNull;
-using ::testing::Return;
 
 const std::string kCellularName = "cellular";
 const std::string kCellularName2 = "cellular_2";
@@ -96,24 +96,6 @@ constexpr char kNetworkListNetworkItemView[] = "NetworkListNetworkItemView";
 
 // Delay used to simulate running process when setting device technology state.
 constexpr base::TimeDelta kInteractiveDelay = base::Milliseconds(3000);
-
-bool IsManagedIcon(views::ImageView* icon) {
-  const gfx::ImageSkia managed_icon = gfx::CreateVectorIcon(
-      kSystemTrayManagedIcon,
-      AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kIconColorPrimary));
-  return gfx::BitmapsAreEqual(*icon->GetImage().bitmap(),
-                              *managed_icon.bitmap());
-}
-
-bool IsSystemIcon(views::ImageView* icon) {
-  const gfx::ImageSkia system_icon = gfx::CreateVectorIcon(
-      kSystemMenuInfoIcon,
-      AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kIconColorPrimary));
-  return gfx::BitmapsAreEqual(*icon->GetImage().bitmap(),
-                              *system_icon.bitmap());
-}
 
 std::vector<ash::SIMInfoPtr> CellularSIMInfos(const std::string& iccid,
                                               const std::string& eid) {
@@ -200,9 +182,7 @@ class NetworkListViewControllerTest : public AshTestBase,
   void SetUp() override {
     if (IsQsRevampEnabled()) {
       feature_list_.InitWithFeatures(
-          {features::kQsRevamp, features::kQsRevampWip,
-           features::kQuickSettingsNetworkRevamp},
-          {});
+          {features::kQsRevamp, features::kQuickSettingsNetworkRevamp}, {});
     } else {
       feature_list_.InitAndEnableFeature(features::kQuickSettingsNetworkRevamp);
     }
@@ -219,21 +199,23 @@ class NetworkListViewControllerTest : public AshTestBase,
 
     detailed_view_delegate_ =
         std::make_unique<DetailedViewDelegate>(/*tray_controller=*/nullptr);
-    network_detailed_network_view_ =
+    widget_ = CreateFramelessTestWidget();
+    widget_->SetFullscreen(true);
+    network_detailed_network_view_ = widget_->SetContentsView(
         std::make_unique<NetworkDetailedNetworkViewImpl>(
             detailed_view_delegate_.get(),
-            &fake_network_detailed_network_delagte_);
+            &fake_network_detailed_network_delagte_));
 
     network_list_view_controller_impl_ =
         std::make_unique<NetworkListViewControllerImpl>(
-            network_detailed_network_view_.get());
+            network_detailed_network_view_);
   }
 
   bool IsQsRevampEnabled() { return GetParam(); }
 
   void TearDown() override {
     network_list_view_controller_impl_.reset();
-    network_detailed_network_view_.reset();
+    widget_.reset();
 
     AshTestBase::TearDown();
   }
@@ -249,6 +231,10 @@ class NetworkListViewControllerTest : public AshTestBase,
   IconButton* GetAddEsimButton() {
     return FindViewById<IconButton*>(
         NetworkListMobileHeaderViewImpl::kAddESimButtonId);
+  }
+
+  HoverHighlightView* GetAddWifiEntry() {
+    return FindViewById<HoverHighlightView*>(VIEW_ID_JOIN_NETWORK_ENTRY);
   }
 
   NetworkListMobileHeaderView* GetMobileSubHeader() {
@@ -462,8 +448,38 @@ class NetworkListViewControllerTest : public AshTestBase,
 
   views::View* network_list(NetworkType type) {
     return static_cast<NetworkDetailedNetworkView*>(
-               network_detailed_network_view_.get())
+               network_detailed_network_view_)
         ->GetNetworkList(type);
+  }
+
+  bool IsManagedIcon(views::ImageView* icon) {
+    if (icon->GetID() !=
+        static_cast<int>(NetworkListViewControllerImpl::
+                             NetworkListViewControllerViewChildId::
+                                 kConnectionWarningManagedIcon)) {
+      return false;
+    }
+    const gfx::ImageSkia managed_icon = gfx::CreateVectorIcon(
+        kSystemTrayManagedIcon,
+        AshColorProvider::Get()->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kIconColorPrimary));
+    return gfx::BitmapsAreEqual(*icon->GetImage().bitmap(),
+                                *managed_icon.bitmap());
+  }
+
+  bool IsSystemIcon(views::ImageView* icon) {
+    if (icon->GetID() !=
+        static_cast<int>(NetworkListViewControllerImpl::
+                             NetworkListViewControllerViewChildId::
+                                 kConnectionWarningSystemIcon)) {
+      return false;
+    }
+    const gfx::ImageSkia system_icon = gfx::CreateVectorIcon(
+        kSystemMenuInfoIcon,
+        AshColorProvider::Get()->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kIconColorPrimary));
+    return gfx::BitmapsAreEqual(*icon->GetImage().bitmap(),
+                                *system_icon.bitmap());
   }
 
   FakeCrosNetworkConfig* cros_network() { return cros_network_.get(); }
@@ -473,8 +489,8 @@ class NetworkListViewControllerTest : public AshTestBase,
  private:
   template <class T>
   T FindViewById(int id) {
-    return static_cast<T>(network_detailed_network_view_.get()->GetViewByID(
-        static_cast<int>(id)));
+    return static_cast<T>(
+        network_detailed_network_view_->GetViewByID(static_cast<int>(id)));
   }
 
   ScopedBluetoothConfigTestHelper* bluetooth_config_test_helper() {
@@ -485,8 +501,11 @@ class NetworkListViewControllerTest : public AshTestBase,
   std::unique_ptr<FakeCrosNetworkConfig> cros_network_;
   FakeNetworkDetailedNetworkViewDelegate fake_network_detailed_network_delagte_;
   std::unique_ptr<DetailedViewDelegate> detailed_view_delegate_;
-  std::unique_ptr<NetworkDetailedNetworkViewImpl>
-      network_detailed_network_view_;
+  std::unique_ptr<views::Widget> widget_;
+
+  // Owned by `widget_`.
+  NetworkDetailedNetworkViewImpl* network_detailed_network_view_ = nullptr;
+
   std::unique_ptr<NetworkListViewControllerImpl>
       network_list_view_controller_impl_;
 };
@@ -843,6 +862,7 @@ TEST_P(NetworkListViewControllerTest, HasCorrectWifiNetworkList) {
                   ->GetText());
     CheckNetworkListItem(NetworkType::kWiFi, /*index=*/1u,
                          /*guid=*/kWifiName);
+    EXPECT_TRUE(GetAddWifiEntry()->GetVisible());
   } else {
     // Wifi list item be at index 4 after Mobile header, Mobile network
     // item, Wifi separator and header.
@@ -872,6 +892,14 @@ TEST_P(NetworkListViewControllerTest, HasCorrectWifiNetworkList) {
                          /*guid=*/kWifiName);
     CheckNetworkListItem(NetworkType::kWiFi, /*index=*/5u,
                          /*guid=*/kWifiName2);
+  }
+  if (IsQsRevampEnabled()) {
+    base::UserActionTester user_action_tester;
+    EXPECT_EQ(
+        0, user_action_tester.GetActionCount("QS_Subpage_Network_JoinNetwork"));
+    LeftClickOn(GetAddWifiEntry());
+    EXPECT_EQ(
+        1, user_action_tester.GetActionCount("QS_Subpage_Network_JoinNetwork"));
   }
 }
 

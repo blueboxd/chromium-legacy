@@ -116,11 +116,17 @@ void WaylandBufferManagerGpu::OnSubmission(gfx::AcceleratedWidget widget,
   auto it = commit_thread_runners_.find(widget);
   if (it == commit_thread_runners_.end())
     return;
-  it->second->PostTask(
-      FROM_HERE,
-      base::BindOnce(&WaylandBufferManagerGpu::SubmitSwapResultOnOriginThread,
-                     base::Unretained(this), widget, buffer_id, swap_result,
-                     std::move(release_fence)));
+
+  if (it->second->BelongsToCurrentThread()) {
+    SubmitSwapResultOnOriginThread(widget, buffer_id, swap_result,
+                                   std::move(release_fence));
+  } else {
+    it->second->PostTask(
+        FROM_HERE,
+        base::BindOnce(&WaylandBufferManagerGpu::SubmitSwapResultOnOriginThread,
+                       base::Unretained(this), widget, buffer_id, swap_result,
+                       std::move(release_fence)));
+  }
 }
 
 void WaylandBufferManagerGpu::OnPresentation(
@@ -134,10 +140,16 @@ void WaylandBufferManagerGpu::OnPresentation(
   auto it = commit_thread_runners_.find(widget);
   if (it == commit_thread_runners_.end())
     return;
-  it->second->PostTask(
-      FROM_HERE,
-      base::BindOnce(&WaylandBufferManagerGpu::SubmitPresentationOnOriginThread,
-                     base::Unretained(this), widget, buffer_id, feedback));
+
+  if (it->second->BelongsToCurrentThread()) {
+    SubmitPresentationOnOriginThread(widget, buffer_id, feedback);
+  } else {
+    it->second->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &WaylandBufferManagerGpu::SubmitPresentationOnOriginThread,
+            base::Unretained(this), widget, buffer_id, feedback));
+  }
 }
 
 void WaylandBufferManagerGpu::RegisterSurface(gfx::AcceleratedWidget widget,

@@ -131,7 +131,7 @@
 #include "chrome/grit/oobe_unconditional_resources_map.h"
 #include "chromeos/ash/services/cellular_setup/public/mojom/esim_manager.mojom.h"
 #include "chromeos/ash/services/multidevice_setup/multidevice_setup_service.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -226,10 +226,6 @@ void AddAssistantScreensResources(content::WebUIDataSource* source) {
 }
 
 void AddMultiDeviceSetupResources(content::WebUIDataSource* source) {
-  source->AddResourcePath("multidevice_setup_light.json",
-                          IDR_MULTIDEVICE_SETUP_ANIMATION_LIGHT);
-  source->AddResourcePath("multidevice_setup_dark.json",
-                          IDR_MULTIDEVICE_SETUP_ANIMATION_DARK);
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::WorkerSrc,
       "worker-src blob: chrome://resources 'self';");

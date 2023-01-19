@@ -608,6 +608,7 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="430191667033048642">Aplikacja <ph name="MOVED_APP_NAME" /> została przeniesiona do folderu <ph name="FOLDER_NAME" />.</translation>
 <translation id="4302592941791324970">Brak dostępu</translation>
 <translation id="4303223480529385476">Rozwiń pasek stanu</translation>
+<translation id="4311195029067684288">Pełne</translation>
 <translation id="4312840429157639164">Podgląd z kamery został przyciągnięty do prawego górnego rogu. Konflikt z obszarem systemowym.</translation>
 <translation id="4316910396681052118">WSZYSTKIE APLIKACJE</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -638,6 +639,7 @@ Podłącz urządzenie do zasilania.</translation>
 <translation id="4455051983450390249">Zobacz powiadomienia z telefonu na urządzeniu <ph name="DEVICE_TYPE" /></translation>
 <translation id="445864333228800152">Dobry wieczór,</translation>
 <translation id="4458688154122353284">Zatrzymaj nagrywanie ekranu</translation>
+<translation id="445923051607553918">Połącz się z siecią Wi-Fi</translation>
 <translation id="4471354919263203780">Pobieram pliki rozpoznawania mowy... <ph name="PERCENT" />%</translation>
 <translation id="4471432286288241507">{0,plural, =0{Aktualizacja urządzenia nastąpi teraz}=1{Aktualizacja urządzenia nastąpi w ciągu 1 sekundy}few{Aktualizacja urządzenia nastąpi w ciągu # sekund}many{Aktualizacja urządzenia nastąpi w ciągu # sekund}other{Aktualizacja urządzenia nastąpi w ciągu # sekundy}}</translation>
 <translation id="4472575034687746823">Rozpocznij</translation>

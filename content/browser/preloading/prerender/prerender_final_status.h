@@ -90,7 +90,10 @@ enum class PrerenderFinalStatus {
   // difference between the two statuses below.
   kTabClosedByUserGesture = 54,
   kTabClosedWithoutUserGesture = 55,
-  kMaxValue = kTabClosedWithoutUserGesture,
+  kPrimaryMainFrameRendererProcessCrashed = 56,
+  kPrimaryMainFrameRendererProcessKilled = 57,
+  kActivationFramePolicyNotCompatible = 58,
+  kMaxValue = kActivationFramePolicyNotCompatible,
 };
 
 // Helper method to convert PrerenderFinalStatus to PreloadingFailureReason.

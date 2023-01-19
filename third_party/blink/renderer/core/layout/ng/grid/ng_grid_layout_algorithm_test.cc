@@ -27,14 +27,10 @@ namespace {
 
 }  // namespace
 
-class NGGridLayoutAlgorithmTest
-    : public NGBaseLayoutAlgorithmTest,
-      private ScopedLayoutNGBlockFragmentationForTest,
-      private ScopedLayoutNGSubgridForTest {
+class NGGridLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest,
+                                  private ScopedLayoutNGSubgridForTest {
  protected:
-  NGGridLayoutAlgorithmTest()
-      : ScopedLayoutNGBlockFragmentationForTest(true),
-        ScopedLayoutNGSubgridForTest(true) {}
+  NGGridLayoutAlgorithmTest() : ScopedLayoutNGSubgridForTest(true) {}
 
   void SetUp() override { NGBaseLayoutAlgorithmTest::SetUp(); }
 
@@ -55,8 +51,8 @@ class NGGridLayoutAlgorithmTest
   const NGGridSizingTrackCollection& TrackCollection(
       GridTrackSizingDirection track_direction) {
     const auto& track_collection = (track_direction == kForColumns)
-                                       ? *layout_data_.Columns()
-                                       : *layout_data_.Rows();
+                                       ? layout_data_.Columns()
+                                       : layout_data_.Rows();
     return To<NGGridSizingTrackCollection>(track_collection);
   }
 
@@ -67,8 +63,8 @@ class NGGridLayoutAlgorithmTest
   LayoutUnit BaseRowSizeForChild(const NGGridLayoutAlgorithm& algorithm,
                                  wtf_size_t index) {
     LayoutUnit offset, size;
-    algorithm.ComputeGridItemOffsetAndSize(
-        GridItem(index), *layout_data_.Rows(), &offset, &size);
+    algorithm.ComputeGridItemOffsetAndSize(GridItem(index), layout_data_.Rows(),
+                                           &offset, &size);
     return size;
   }
 

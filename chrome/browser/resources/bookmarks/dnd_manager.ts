@@ -10,11 +10,12 @@ import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 
 import {changeFolderOpen, deselectItems, selectItem} from './actions.js';
 import {highlightUpdatedItems, trackUpdatedItems} from './api_listener.js';
+import {BookmarkManagerApiProxyImpl} from './bookmark_manager_api_proxy.js';
 import {DropPosition, ROOT_NODE_ID} from './constants.js';
 import {Debouncer} from './debouncer.js';
 import {BookmarksFolderNodeElement} from './folder_node.js';
 import {Store} from './store.js';
-import {BookmarkElement, BookmarkNode, DragData, DropDestination, NodeMap, ObjectMap} from './types.js';
+import {BookmarkElement, BookmarkNode, DragData, DropDestination, NodeMap, ObjectMap, TimerProxy} from './types.js';
 import {canEditNode, canReorderChildren, getDisplayedList, hasChildFolders, isShowingSearch, normalizeNode} from './util.js';
 
 interface NormalizedDragData {
@@ -145,6 +146,8 @@ const EXPAND_FOLDER_DELAY: number = 400;
 class AutoExpander {
   private lastElement_: BookmarkElement|null = null;
   private debouncer_: Debouncer;
+  private lastX_: number|null = null;
+  private lastY_: number|null = null;
 
   constructor() {
     this.debouncer_ = new Debouncer(() => {
@@ -154,7 +157,11 @@ class AutoExpander {
     });
   }
 
-  update(_e: Event, overElement: BookmarkElement|null) {
+  update(
+      e: Event, overElement: BookmarkElement|null,
+      dropPosition?: DropPosition) {
+    const x = (e as DragEvent).clientX;
+    const y = (e as DragEvent).clientY;
     const itemId = overElement ? overElement.itemId : null;
     const store = Store.getInstance();
 
@@ -168,13 +175,17 @@ class AutoExpander {
     }
 
     // If dragging over the same node, reset the expander delay.
-    if (overElement && overElement === this.lastElement_) {
-      this.debouncer_.restartTimeout(EXPAND_FOLDER_DELAY);
-      return;
+    if (overElement && overElement === this.lastElement_ &&
+        dropPosition === DropPosition.ON) {
+      if (x !== this.lastX_ || y !== this.lastY_) {
+        this.debouncer_.restartTimeout(EXPAND_FOLDER_DELAY);
+      }
+    } else {
+      // Otherwise, cancel the expander.
+      this.reset();
     }
-
-    // Otherwise, cancel the expander.
-    this.reset();
+    this.lastX_ = x;
+    this.lastY_ = y;
   }
 
   reset() {
@@ -191,7 +202,7 @@ class DropIndicator {
   private removeDropIndicatorTimeoutId_: number|null;
   private lastIndicatorElement_: BookmarkElement|null;
   private lastIndicatorClassName_: string|null;
-  timerProxy: Window;
+  timerProxy: TimerProxy;
 
   constructor() {
     this.removeDropIndicatorTimeoutId_ = null;
@@ -268,7 +279,7 @@ export class DndManager {
   private dropIndicator_: DropIndicator|null;
   private eventTracker_: EventTracker = new EventTracker();
   private autoExpander_: AutoExpander|null;
-  private timerProxy_: any;
+  private timerProxy_: TimerProxy;
   private lastPointerWasTouch_: boolean;
 
   constructor() {
@@ -298,7 +309,7 @@ export class DndManager {
     this.eventTracker_.add(document, 'mousedown', () => this.onMouseDown_());
     this.eventTracker_.add(document, 'touchstart', () => this.onTouchStart_());
 
-    chrome.bookmarkManagerPrivate.onDragEnter.addListener(
+    BookmarkManagerApiProxyImpl.getInstance().onDragEnter.addListener(
         this.handleChromeDragEnter_.bind(this));
     chrome.bookmarkManagerPrivate.onDragLeave.addListener(
         this.clearDragData_.bind(this));
@@ -350,7 +361,7 @@ export class DndManager {
     const dragNodeIndex = draggedNodes.indexOf(dragElement.itemId);
     assert(dragNodeIndex !== -1);
 
-    chrome.bookmarkManagerPrivate.startDrag(
+    BookmarkManagerApiProxyImpl.getInstance().startDrag(
         draggedNodes, dragNodeIndex, this.lastPointerWasTouch_,
         (e as DragEvent).clientX, (e as DragEvent).clientY);
   }
@@ -376,7 +387,8 @@ export class DndManager {
         trackUpdatedItems();
       }
 
-      chrome.bookmarkManagerPrivate.drop(dropInfo.parentId, index)
+      BookmarkManagerApiProxyImpl.getInstance()
+          .drop(dropInfo.parentId, index)
           .then(shouldHighlight ? highlightUpdatedItems : undefined);
     }
     this.clearDragData_();
@@ -403,8 +415,8 @@ export class DndManager {
     }
 
     const overElement = getBookmarkElement(e.composedPath());
-    this.autoExpander_!.update(e, overElement);
     if (!overElement) {
+      this.autoExpander_!.update(e, overElement);
       this.dropIndicator_!.finish();
       return;
     }
@@ -414,10 +426,12 @@ export class DndManager {
     this.dropDestination_ =
         this.calculateDropDestination_((e as DragEvent).clientY, overElement);
     if (!this.dropDestination_) {
+      this.autoExpander_!.update(e, overElement);
       this.dropIndicator_!.finish();
       return;
     }
 
+    this.autoExpander_!.update(e, overElement, this.dropDestination_.position);
     this.dropIndicator_!.update(this.dropDestination_);
   }
 
@@ -663,8 +677,12 @@ export class DndManager {
         isBookmarkList(dropDestination.element);
   }
 
-  setTimerProxyForTesting(timerProxy: any) {
+  setTimerProxyForTesting(timerProxy: TimerProxy) {
     this.timerProxy_ = timerProxy;
     this.dropIndicator_!.timerProxy = timerProxy;
+  }
+
+  getDragInfoForTesting(): DragInfo|null {
+    return this.dragInfo_;
   }
 }

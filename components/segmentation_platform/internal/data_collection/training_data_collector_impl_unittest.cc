@@ -6,6 +6,7 @@
 
 #include <map>
 
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_feature_list.h"
@@ -266,7 +267,7 @@ class TrainingDataCollectorImplTest : public ::testing::Test {
   NiceMock<processing::MockFeatureListQueryProcessor> feature_list_processor_;
   NiceMock<MockHistogramSignalHandler> histogram_signal_handler_;
   raw_ptr<NiceMock<MockSignalStorageConfig>> signal_storage_config_;
-  test::TestSegmentInfoDatabase* test_segment_info_db_;
+  raw_ptr<test::TestSegmentInfoDatabase> test_segment_info_db_;
   std::unique_ptr<TrainingDataCollectorImpl> collector_;
   TestingPrefServiceSimple prefs_;
   std::vector<std::unique_ptr<Config>> configs_;
@@ -454,7 +455,7 @@ TEST_F(TrainingDataCollectorImplTest, DataCollectionWithUMATrigger) {
             {kTestOptimizationTarget0, kModelVersion,
              SegmentationUkmHelper::FloatToInt64(1.f),
              SegmentationUkmHelper::FloatToInt64(2.f),
-             SegmentationUkmHelper::FloatToInt64(3.f)});
+             SegmentationUkmHelper::FloatToInt64(3.f), kSample});
 }
 
 // A histogram interested by multiple model will trigger multiple UKM reports.

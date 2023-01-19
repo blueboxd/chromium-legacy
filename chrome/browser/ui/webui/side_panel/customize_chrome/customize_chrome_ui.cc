@@ -8,8 +8,11 @@
 #include <utility>
 
 #include "chrome/browser/cart/cart_handler.h"
+#include "chrome/browser/new_tab_page/modules/new_tab_page_modules.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/background/ntp_custom_background_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
 #include "chrome/browser/ui/webui/sanitized_image_source.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_page_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
@@ -27,6 +30,8 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
     : ui::MojoBubbleWebUIController(web_ui),
       profile_(Profile::FromWebUI(web_ui)),
       web_contents_(web_ui->GetWebContents()),
+      module_id_names_(ntp::MakeModuleIdNames(
+          NewTabPageUI::IsDriveModuleEnabledForProfile(profile_))),
       page_factory_receiver_(this) {
   content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
       profile_, chrome::kChromeUICustomizeChromeSidePanelHost);
@@ -47,6 +52,7 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
       {"classicChrome", IDS_NTP_CUSTOMIZE_NO_BACKGROUND_LABEL},
       {"colorsContainerLabel", IDS_NTP_THEMES_CONTAINER_LABEL},
       {"colorPickerLabel", IDS_NTP_CUSTOMIZE_COLOR_PICKER_LABEL},
+      {"currentTheme", IDS_NTP_CUSTOMIZE_CHROME_CURRENT_THEME_LABEL},
       {"defaultColorName", IDS_NTP_CUSTOMIZE_DEFAULT_LABEL},
       {"mainColorName", IDS_NTP_CUSTOMIZE_MAIN_COLOR_LABEL},
       {"managedColorsTitle", IDS_NTP_THEME_MANAGED_DIALOG_TITLE},
@@ -55,6 +61,7 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
       {"uploadedImage", IDS_NTP_CUSTOMIZE_UPLOADED_IMAGE_LABEL},
       {"resetToClassicChrome",
        IDS_NTP_CUSTOMIZE_CHROME_RESET_TO_CLASSIC_CHROME_LABEL},
+      {"refreshDaily", IDS_NTP_CUSTOM_BG_DAILY_REFRESH},
       // Shortcut strings.
       {"mostVisited", IDS_NTP_CUSTOMIZE_MOST_VISITED_LABEL},
       {"myShortcuts", IDS_NTP_CUSTOMIZE_MY_SHORTCUTS_LABEL},
@@ -71,6 +78,11 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
       {"ok", IDS_OK},
   };
   source->AddLocalizedStrings(kLocalizedStrings);
+
+  source->AddBoolean(
+      "modulesEnabled",
+      ntp::HasModulesEnabled(module_id_names_,
+                             IdentityManagerFactory::GetForProfile(profile_)));
 
   webui::SetupWebUIDataSource(
       source,
@@ -109,6 +121,6 @@ void CustomizeChromeUI::CreatePageHandler(
   DCHECK(pending_page.is_valid());
   customize_chrome_page_handler_ = std::make_unique<CustomizeChromePageHandler>(
       std::move(pending_page_handler), std::move(pending_page),
-      NtpCustomBackgroundServiceFactory::GetForProfile(profile_),
-      web_contents_);
+      NtpCustomBackgroundServiceFactory::GetForProfile(profile_), web_contents_,
+      module_id_names_);
 }

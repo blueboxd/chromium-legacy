@@ -611,9 +611,7 @@ TEST_F(AccessibilityTest, TreeNavigationWithContinuations) {
 
   // BlockInInline changes |ax_body| not to be ignored. See the design doc at
   // crbug.com/716930 for more details.
-  EXPECT_EQ(RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled() ? ax_body
-                                                                   : ax_root,
-            ax_link->ParentObjectUnignored());
+  EXPECT_EQ(ax_body, ax_link->ParentObjectUnignored());
   EXPECT_EQ(ax_body, ax_link->ParentObjectIncludedInTree());
 
   EXPECT_EQ(ax_link, ax_text_before->ParentObjectUnignored());
@@ -885,7 +883,7 @@ TEST_F(AccessibilityTest, AxNodeObjectInPageLinkTargetNonAscii) {
   }
 }
 
-TEST_P(ParameterizedAccessibilityTest, NextOnLine) {
+TEST_F(AccessibilityTest, NextOnLine) {
   SetBodyInnerHTML(R"HTML(
     <style>
     html {
@@ -1078,7 +1076,7 @@ TEST_F(AccessibilityTest, LineBreakInDisplayLockedIsLineBreakingObject) {
   EXPECT_TRUE(br->IsLineBreakingObject());
 }
 
-TEST_P(ParameterizedAccessibilityTest, ListMarkerIsNotLineBreakingObject) {
+TEST_F(AccessibilityTest, ListMarkerIsNotLineBreakingObject) {
   SetBodyInnerHTML(R"HTML(
       <style>
         ul li::marker {
@@ -1255,9 +1253,6 @@ TEST_F(AccessibilityTest, IsSelectedFromFocusSupported) {
 }
 
 TEST_F(AccessibilityTest, GetBoundsInFrameCoordinatesSvgText) {
-  // This test doesn't work with the legacy SVG text.
-  if (!RuntimeEnabledFeatures::SVGTextNGEnabled())
-    return;
   SetBodyInnerHTML(R"HTML(
   <svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
     <text id="t1" x="100">Text1</text>

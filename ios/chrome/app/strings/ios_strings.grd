@@ -675,6 +675,9 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_CONTENT_CONTEXT_PINTAB" desc="The iOS context menu item for pinning a tab.[iOS only]">
         Pin Tab
       </message>
+      <message name="IDS_IOS_CONTENT_CONTEXT_UNPINTAB" desc="The iOS context menu item for unpinning a tab.[iOS only]">
+        Unpin Tab
+      </message>
       <message name="IDS_IOS_CONTENT_SUGGESTIONS_ACCESSIBILITY_LABEL_SUGGESTION" desc="The accessibility label of a suggestion. Summarizes fields in the reading list entry (title, publisher informations, status and informations). Read by Text-to-Speech.">
         <ph name="TITLE"><ex>Learn about the new Chromium Projects</ex>$1</ph>, <ph name="PUBLISHER_INFORMATION"><ex>The Chromium organization</ex>$2</ph>, <ph name="PUBLICATION_DATE"><ex>January 1 2017</ex>$3</ph>
       </message>
@@ -1522,6 +1525,9 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_NEW_INCOGNITO_TAB_PAGE" desc="Label for text saying the user is on the new Incognito tab page">
         New Incognito Tab Page
       </message>
+      <message name="IDS_IOS_NEW_ITEM_ACCESSIBILITY_HINT" desc="Accessibility hint spoken by VoiceOver to let the user know there is a new item. This string will be appended to an existing accesibility label when the UI is showing a little blue dot to attract the user's attention. For example, the label 'Default Browser' would become 'Default Browser, new item', which is why the string is not capitalized at its start. [iOS/iPadOS only]">
+        new item
+      </message>
       <message name="IDS_IOS_NEW_TAB_IPH_PROMOTION_TEXT" desc="Text for the New Tab Tip in-product help promotion, explaining that new tabs can be added and switched between. [iOS only]" meaning="The user has never created a new tab, and a bubble is displayed pointing to the tab switcher to inform users how to create tabs and switch between them.">
         Add tabs and switch between pages
       </message>
@@ -1898,6 +1904,12 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT" desc="Info bar message to save a password. [Length: 60em]">
         Save password?
+      </message>
+      <message name="IDS_IOS_PASSWORD_MANAGER_ON_ACCOUNT_SAVE_SUBTITLE" desc="Infobar subtitle to save a password on account. [Length: 60em]">
+        To Google Password Manager for <ph name="EMAIL">$1<ex>johndoe@gmail.com</ex></ph>
+      </message>
+      <message name="IDS_IOS_PASSWORD_MANAGER_LOCAL_SAVE_SUBTITLE" desc="Infobar subtitle to save a password on device. [Length: 60em]">
+        To Google Password Manager on this device
       </message>
       <message name="IDS_IOS_PASSWORD_MANAGER_SAVE_PASSWORD_TITLE" desc="Infobar title to save a password. [Length: 70em]">
         Save password

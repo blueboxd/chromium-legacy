@@ -34,6 +34,7 @@
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util/launchd_util.h"
 #import "chrome/updater/util/mac_util.h"
+#include "chrome/updater/util/unittest_util.h"
 #include "chrome/updater/util/util.h"
 #include "components/crx_file/crx_verifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -321,8 +322,8 @@ void SetupFakeLegacyUpdaterData(UpdaterScope scope) {
 
 void ExpectLegacyUpdaterDataMigrated(UpdaterScope scope) {
   scoped_refptr<GlobalPrefs> global_prefs = CreateGlobalPrefs(scope);
-  auto persisted_data =
-      base::MakeRefCounted<PersistedData>(global_prefs->GetPrefService());
+  auto persisted_data = base::MakeRefCounted<PersistedData>(
+      scope, global_prefs->GetPrefService());
 
   // Keystone should not be migrated.
   EXPECT_FALSE(

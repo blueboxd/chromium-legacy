@@ -640,6 +640,10 @@ class PathVerifier {
   // steps a-b.
   void VerifyPolicyMappings(const ParsedCertificate& cert, CertErrors* errors);
 
+  // Applies policyConstraints and inhibitAnyPolicy. This corresponds with RFC
+  // 5280 section 6.1.4 steps i-j.
+  void ApplyPolicyConstraints(const ParsedCertificate& cert);
+
   // This function corresponds to RFC 5280 section 6.1.3's "Basic Certificate
   // Processing" procedure.
   void BasicCertificateProcessing(const ParsedCertificate& cert,
@@ -678,6 +682,15 @@ class PathVerifier {
                               KeyPurpose required_key_purpose,
                               CertErrors* errors,
                               bool* shortcircuit_chain_validation);
+
+  // Processes verification when the input is a single certificate. This is not
+  // defined by any standard. We attempt to match the de-facto behaviour of
+  // Operating System verifiers.
+  void ProcessSingleCertChain(const ParsedCertificate& cert,
+                              const CertificateTrust& trust,
+                              const der::GeneralizedTime& time,
+                              KeyPurpose required_key_purpose,
+                              CertErrors* errors);
 
   // Parses |spki| to an EVP_PKEY and checks whether the public key is accepted
   // by |delegate_|. On failure parsing returns nullptr. If either parsing the
@@ -940,6 +953,42 @@ void PathVerifier::VerifyPolicyMappings(const ParsedCertificate& cert,
   }
 }
 
+void PathVerifier::ApplyPolicyConstraints(const ParsedCertificate& cert) {
+  // RFC 5280 section 6.1.4 step i-j:
+  //      (i)  If a policy constraints extension is included in the
+  //           certificate, modify the explicit_policy and policy_mapping
+  //           state variables as follows:
+  if (cert.has_policy_constraints()) {
+    //         (1)  If requireExplicitPolicy is present and is less than
+    //              explicit_policy, set explicit_policy to the value of
+    //              requireExplicitPolicy.
+    if (cert.policy_constraints().require_explicit_policy &&
+        cert.policy_constraints().require_explicit_policy.value() <
+            explicit_policy_) {
+      explicit_policy_ =
+          cert.policy_constraints().require_explicit_policy.value();
+    }
+
+    //         (2)  If inhibitPolicyMapping is present and is less than
+    //              policy_mapping, set policy_mapping to the value of
+    //              inhibitPolicyMapping.
+    if (cert.policy_constraints().inhibit_policy_mapping &&
+        cert.policy_constraints().inhibit_policy_mapping.value() <
+            policy_mapping_) {
+      policy_mapping_ =
+          cert.policy_constraints().inhibit_policy_mapping.value();
+    }
+  }
+
+  //      (j)  If the inhibitAnyPolicy extension is included in the
+  //           certificate and is less than inhibit_anyPolicy, set
+  //           inhibit_anyPolicy to the value of inhibitAnyPolicy.
+  if (cert.has_inhibit_any_policy() &&
+      cert.inhibit_any_policy() < inhibit_any_policy_) {
+    inhibit_any_policy_ = cert.inhibit_any_policy();
+  }
+}
+
 void PathVerifier::BasicCertificateProcessing(
     const ParsedCertificate& cert,
     bool is_target_cert,
@@ -1056,38 +1105,8 @@ void PathVerifier::PrepareForNextCertificate(const ParsedCertificate& cert,
       inhibit_any_policy_ -= 1;
   }
 
-  //      (i)  If a policy constraints extension is included in the
-  //           certificate, modify the explicit_policy and policy_mapping
-  //           state variables as follows:
-  if (cert.has_policy_constraints()) {
-    //         (1)  If requireExplicitPolicy is present and is less than
-    //              explicit_policy, set explicit_policy to the value of
-    //              requireExplicitPolicy.
-    if (cert.policy_constraints().require_explicit_policy &&
-        cert.policy_constraints().require_explicit_policy.value() <
-            explicit_policy_) {
-      explicit_policy_ =
-          cert.policy_constraints().require_explicit_policy.value();
-    }
-
-    //         (2)  If inhibitPolicyMapping is present and is less than
-    //              policy_mapping, set policy_mapping to the value of
-    //              inhibitPolicyMapping.
-    if (cert.policy_constraints().inhibit_policy_mapping &&
-        cert.policy_constraints().inhibit_policy_mapping.value() <
-            policy_mapping_) {
-      policy_mapping_ =
-          cert.policy_constraints().inhibit_policy_mapping.value();
-    }
-  }
-
-  //      (j)  If the inhibitAnyPolicy extension is included in the
-  //           certificate and is less than inhibit_anyPolicy, set
-  //           inhibit_anyPolicy to the value of inhibitAnyPolicy.
-  if (cert.has_inhibit_any_policy() &&
-      cert.inhibit_any_policy() < inhibit_any_policy_) {
-    inhibit_any_policy_ = cert.inhibit_any_policy();
-  }
+  // RFC 5280 section 6.1.4 step i-j:
+  ApplyPolicyConstraints(cert);
 
   // From RFC 5280 section 6.1.4 step k:
   //
@@ -1235,6 +1254,30 @@ void PathVerifier::WrapUp(const ParsedCertificate& cert,
 void PathVerifier::ApplyTrustAnchorConstraints(const ParsedCertificate& cert,
                                                KeyPurpose required_key_purpose,
                                                CertErrors* errors) {
+  // If certificatePolicies is present, process the policies. This matches the
+  // handling for intermediates from RFC 5280 section 6.1.3.d (except that for
+  // intermediates it is non-optional). It intentionally deviates from RFC 5937
+  // section 3.2 which says to intersect with user-initial-policy-set, since
+  // processing as part of user-initial-policy-set has subtly different
+  // semantics from being handled as part of the chain processing (see
+  // https://crbug.com/1403258).
+  if (cert.has_policy_oids()) {
+    VerifyPolicies(cert, /*is_target_cert=*/false, errors);
+  }
+
+  // Process policyMappings, if present. This matches the handling for
+  // intermediates from RFC 5280 section 6.1.4 step a-b.
+  VerifyPolicyMappings(cert, errors);
+
+  // Process policyConstraints and inhibitAnyPolicy. This matches the
+  // handling for intermediates from RFC 5280 section 6.1.4 step i-j.
+  // This intentionally deviates from RFC 5937 section 3.2 which says to
+  // initialize the initial-any-policy-inhibit, initial-explicit-policy, and/or
+  // initial-policy-mapping-inhibit inputs to verification. Those are all
+  // bools, so they cannot properly represent the constraints encoded in the
+  // policyConstraints and inhibitAnyPolicy extensions.
+  ApplyPolicyConstraints(cert);
+
   // If keyUsage is present, verify that |cert| has correct keyUsage bits for a
   // CA. This matches the handling for intermediates from RFC 5280 section
   // 6.1.4 step n.
@@ -1254,17 +1297,6 @@ void PathVerifier::ApplyTrustAnchorConstraints(const ParsedCertificate& cert,
   // Initialize name constraints initial-permitted/excluded-subtrees.
   if (cert.has_name_constraints())
     name_constraints_list_.push_back(&cert.name_constraints());
-
-  // TODO(eroman): Initialize user-initial-policy-set based on anchor
-  // constraints.
-
-  // TODO(eroman): Initialize inhibit any policy based on anchor constraints.
-
-  // TODO(eroman): Initialize require explicit policy based on anchor
-  // constraints.
-
-  // TODO(eroman): Initialize inhibit policy mapping based on anchor
-  // constraints.
 
   if (cert.has_basic_constraints()) {
     // Enforce CA=true if basicConstraints is present. This matches behavior of
@@ -1303,6 +1335,7 @@ void PathVerifier::ProcessRootCertificate(const ParsedCertificate& cert,
   *shortcircuit_chain_validation = false;
   switch (trust.type) {
     case CertificateTrustType::UNSPECIFIED:
+    case CertificateTrustType::TRUSTED_LEAF:
       // Doesn't chain to a trust anchor - implicitly distrusted
       errors->AddError(cert_errors::kCertIsNotTrustAnchor);
       *shortcircuit_chain_validation = true;
@@ -1313,6 +1346,7 @@ void PathVerifier::ProcessRootCertificate(const ParsedCertificate& cert,
       *shortcircuit_chain_validation = true;
       break;
     case CertificateTrustType::TRUSTED_ANCHOR:
+    case CertificateTrustType::TRUSTED_ANCHOR_OR_LEAF:
       break;
   }
   if (*shortcircuit_chain_validation)
@@ -1322,12 +1356,68 @@ void PathVerifier::ProcessRootCertificate(const ParsedCertificate& cert,
     VerifyTimeValidity(cert, time, errors);
   }
   if (trust.enforce_anchor_constraints) {
+    if (trust.require_anchor_basic_constraints &&
+        !cert.has_basic_constraints()) {
+      errors->AddError(cert_errors::kMissingBasicConstraints);
+    }
     ApplyTrustAnchorConstraints(cert, required_key_purpose, errors);
   }
 
   // Use the certificate's SPKI and subject when verifying the next certificate.
   working_public_key_ = ParseAndCheckPublicKey(cert.tbs().spki_tlv, errors);
   working_normalized_issuer_name_ = cert.normalized_subject();
+}
+
+void PathVerifier::ProcessSingleCertChain(const ParsedCertificate& cert,
+                                          const CertificateTrust& trust,
+                                          const der::GeneralizedTime& time,
+                                          KeyPurpose required_key_purpose,
+                                          CertErrors* errors) {
+  switch (trust.type) {
+    case CertificateTrustType::UNSPECIFIED:
+    case CertificateTrustType::TRUSTED_ANCHOR:
+      // Target doesn't have a chain and isn't a directly trusted leaf -
+      // implicitly distrusted.
+      errors->AddError(cert_errors::kCertIsNotTrustAnchor);
+      return;
+    case CertificateTrustType::DISTRUSTED:
+      // Target is directly distrusted.
+      errors->AddError(cert_errors::kDistrustedByTrustStore);
+      return;
+    case CertificateTrustType::TRUSTED_LEAF:
+    case CertificateTrustType::TRUSTED_ANCHOR_OR_LEAF:
+      break;
+  }
+
+  // Check the public key for the target certificate regardless of whether
+  // `require_leaf_selfsigned` is true. This matches the check in WrapUp and
+  // fulfills the documented behavior of the IsPublicKeyAcceptable delegate.
+  ParseAndCheckPublicKey(cert.tbs().spki_tlv, errors);
+
+  if (trust.require_leaf_selfsigned) {
+    if (!VerifyCertificateIsSelfSigned(cert, delegate_->GetVerifyCache(),
+                                       errors)) {
+      // VerifyCertificateIsSelfSigned should have added an error, but just
+      // double check to be safe.
+      if (!errors->ContainsAnyErrorWithSeverity(CertError::SEVERITY_HIGH)) {
+        errors->AddError(cert_errors::kInternalError);
+      }
+      return;
+    }
+  }
+
+  // There is no standard for what it means to verify a directly trusted leaf
+  // certificate, so this is basically just checking common sense things that
+  // also mirror what we observed to be enforced with the Operating System
+  // native verifiers.
+  VerifyTimeValidity(cert, time, errors);
+  VerifyExtendedKeyUsage(cert, required_key_purpose, errors,
+                         /*is_target_cert=*/true,
+                         /*is_target_cert_issuer=*/false);
+
+  // Checking for unknown critical extensions matches Windows, but is stricter
+  // than the Mac verifier.
+  VerifyNoUnconsumedCriticalExtensions(cert, errors);
 }
 
 bssl::UniquePtr<EVP_PKEY> PathVerifier::ParseAndCheckPublicKey(
@@ -1372,10 +1462,11 @@ void PathVerifier::Run(
     return;
   }
 
-  // Verifying a trusted leaf certificate is not permitted. (It isn't a
-  // well-specified operation.) See https://crbug.com/814994.
+  // Verifying a trusted leaf certificate isn't a well-specified operation, so
+  // it's handled separately from the RFC 5280 defined verification process.
   if (certs.size() == 1) {
-    errors->GetOtherErrors()->AddError(cert_errors::kChainIsLength1);
+    ProcessSingleCertChain(*certs.front(), last_cert_trust, time,
+                           required_key_purpose, errors->GetErrorsForCert(0));
     return;
   }
 

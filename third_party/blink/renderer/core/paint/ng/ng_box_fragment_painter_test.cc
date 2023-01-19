@@ -36,12 +36,11 @@ void ExtractLinks(const PaintRecord& record, std::vector<GURL>* links) {
 
 }  // namespace
 
-class NGBoxFragmentPainterTest : public PaintControllerPaintTest,
-                                 private ScopedLayoutNGForTest {
+class NGBoxFragmentPainterTest : public PaintControllerPaintTest {
  public:
-  NGBoxFragmentPainterTest(LocalFrameClient* local_frame_client = nullptr)
-      : PaintControllerPaintTest(local_frame_client),
-        ScopedLayoutNGForTest(true) {}
+  explicit NGBoxFragmentPainterTest(
+      LocalFrameClient* local_frame_client = nullptr)
+      : PaintControllerPaintTest(local_frame_client) {}
 };
 
 INSTANTIATE_PAINT_TEST_SUITE_P(NGBoxFragmentPainterTest);
@@ -208,7 +207,6 @@ TEST_P(NGBoxFragmentPainterTest, ClippedText) {
 }
 
 TEST_P(NGBoxFragmentPainterTest, NodeAtPointWithSvgInline) {
-  ScopedSVGTextNGForTest enable_svg_text_ng(true);
   SetBodyInnerHTML(R"HTML(
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="900"
      viewBox="0 0 100 100" id="svg">

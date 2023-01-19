@@ -1453,29 +1453,43 @@ ServiceWorkerDatabase::DeleteAllDataForStorageKeys(
     return status;
   leveldb::WriteBatch batch;
 
-  for (const blink::StorageKey& key : keys) {
-    if (key.origin().opaque())
-      return Status::kErrorFailed;
+  std::vector<mojom::ServiceWorkerRegistrationDataPtr> registrations;
+  status = GetAllRegistrations(&registrations);
+  if (status != Status::kOk) {
+    return status;
+  }
 
-    // Delete from the unique origin list.
-    batch.Delete(CreateUniqueOriginKey(key));
+  // Filter all registrations, using the criteria in the doc comment to
+  // determine which keys match.
+  for (const mojom::ServiceWorkerRegistrationDataPtr& reg : registrations) {
+    blink::StorageKey& key = reg->key;
 
-    std::vector<mojom::ServiceWorkerRegistrationDataPtr> registrations;
-    status = GetRegistrationsForStorageKey(key, &registrations, nullptr);
-    if (status != Status::kOk)
-      return status;
+    for (const blink::StorageKey& requested_key : keys) {
+      // Only the origin of the requested key is relevant.
+      const url::Origin& requested_origin = requested_key.origin();
 
-    // Delete registrations, resource records and user data.
-    for (const auto& data : registrations) {
-      batch.Delete(CreateRegistrationKey(data->registration_id, key));
-      batch.Delete(CreateRegistrationIdToStorageKey(data->registration_id));
+      if (requested_origin.opaque()) {
+        return Status::kErrorFailed;
+      }
 
-      status = DeleteResourceRecords(data->version_id,
-                                     newly_purgeable_resources, &batch);
+      auto match = key.origin() == requested_origin;
+      match = match ||
+              (key.IsThirdPartyContext() &&
+               key.top_level_site() == net::SchemefulSite(requested_origin));
+      if (!match) {
+        continue;
+      }
+
+      batch.Delete(CreateUniqueOriginKey(key));
+      batch.Delete(CreateRegistrationKey(reg->registration_id, key));
+      batch.Delete(CreateRegistrationIdToStorageKey(reg->registration_id));
+
+      status = DeleteResourceRecords(reg->version_id, newly_purgeable_resources,
+                                     &batch);
       if (status != Status::kOk)
         return status;
 
-      status = DeleteUserDataForRegistration(data->registration_id, &batch);
+      status = DeleteUserDataForRegistration(reg->registration_id, &batch);
       if (status != Status::kOk)
         return status;
     }
@@ -2161,6 +2175,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseResourceRecord(
   (*out)->resource_id = record.resource_id();
   (*out)->url = url;
   (*out)->size_bytes = record.size_bytes();
+  (*out)->sha256_checksum = record.sha256_checksum();
   return Status::kOk;
 }
 
@@ -2185,6 +2200,7 @@ void ServiceWorkerDatabase::WriteResourceRecordInBatch(
   data.set_resource_id(resource.resource_id);
   data.set_url(resource.url.spec());
   data.set_size_bytes(resource.size_bytes);
+  data.set_sha256_checksum(resource.sha256_checksum.value());
 
   std::string value;
   bool success = data.SerializeToString(&value);

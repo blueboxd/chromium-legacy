@@ -8,8 +8,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
@@ -76,8 +76,9 @@ class MockSurfaceLayerBridge : public WebSurfaceLayerBridge {
   MOCK_METHOD0(UnregisterFrameSinkHierarchy, void());
 
   viz::FrameSinkId frame_sink_id_ = viz::FrameSinkId(1, 1);
-  viz::LocalSurfaceId local_surface_id_ =
-      viz::LocalSurfaceId(11, base::UnguessableToken::Deserialize(0x111111, 0));
+  viz::LocalSurfaceId local_surface_id_ = viz::LocalSurfaceId(
+      11,
+      base::UnguessableToken::CreateForTesting(0x111111, 0));
   viz::SurfaceId surface_id_ =
       viz::SurfaceId(frame_sink_id_, local_surface_id_);
 };

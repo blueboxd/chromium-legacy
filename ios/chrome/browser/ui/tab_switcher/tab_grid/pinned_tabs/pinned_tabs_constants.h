@@ -11,6 +11,7 @@
 extern const CGFloat kPinnedViewDragEnabledHeight;
 extern const CGFloat kPinnedViewDefaultHeight;
 extern const CGFloat kPinnedViewCornerRadius;
+extern const CGFloat kPinnedViewMaxWidthInPercent;
 
 // Pinned view constraints.
 extern const CGFloat kPinnedViewHorizontalPadding;
@@ -21,6 +22,7 @@ extern const CGFloat kPinnedViewTopPadding;
 extern const NSTimeInterval kPinnedViewFadeInTime;
 extern const NSTimeInterval kPinnedViewDragAnimationTime;
 extern const NSTimeInterval kPinnedViewMoveAnimationTime;
+extern const NSTimeInterval kPinnedViewInsetAnimationTime;
 
 // Pinned cell identifier.
 extern NSString* const kPinnedCellIdentifier;

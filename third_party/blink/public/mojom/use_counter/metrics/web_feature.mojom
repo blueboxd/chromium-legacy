@@ -3320,7 +3320,7 @@ enum WebFeature {
   kCSSCascadeLayers = 4007,
   kCanvasRenderingContext2DConicGradient = 4008,
   kCanvasRenderingContext2DCanvasFilter = 4009,
-  kHTMLParamElementURLParameter = 4010,
+  kOBSOLETE_HTMLParamElementURLParameter = 4010,
   kV8HTMLScriptElement_Supports_Method = 4011,
   kHandwritingRecognitionQueryRecognizer = 4012,
   kV8FileSystemFileHandle_CreateSyncAccessHandle_Method = 4013,
@@ -3426,8 +3426,8 @@ enum WebFeature {
   kWebNfcNdefMakeReadOnly = 4107,
   kV8Navigator_DeprecatedURNToURL_Method = 4108,
   kOBSOLETE_WebAppManifestHandleLinks = 4109,
-  kHTMLParamElementURLParameterInUsePdf = 4110,
-  kHTMLParamElementURLParameterInUseNonPdf = 4111,
+  kOBSOLETE_HTMLParamElementURLParameterInUsePdf = 4110,
+  kOBSOLETE_HTMLParamElementURLParameterInUseNonPdf = 4111,
   kWebTransportServerCertificateHashes = 4112,
   kHiddenAttribute = 4113,
   kHiddenUntilFoundAttribute = 4114,
@@ -3778,6 +3778,13 @@ enum WebFeature {
   kCSSBackgroundClipContent = 4437,
   kCSSBackgroundClipPadding = 4438,
   kDisableThirdPartySessionStoragePartitioningAfterGeneralPartitioning = 4439,
+  kCSSPseudoHasContainsMixOfValidAndInvalid = 4440,
+  kCSSPseudoIsWhereContainsMixOfValidAndInvalid = 4441,
+  kPrivateNetworkAccessFetchedSubFrame = 4442,
+  kPrivateNetworkAccessFetchedTopFrame = 4443,
+  kDisableThirdPartyStoragePartitioning = 4444,
+  kServiceWorkerFetchHandlerUpdateAfterInitialization = 4445,
+  kObsoleteCreateImageBitmapImageOrientationNone = 4446,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

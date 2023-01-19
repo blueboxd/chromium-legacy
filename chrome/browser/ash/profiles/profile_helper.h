@@ -12,37 +12,31 @@
 
 #include "base/files/file_path.h"
 #include "base/functional/callback_forward.h"
-#include "components/user_manager/user_manager.h"
 
+class AccountId;
 class IndependentOTRProfileManagerTest;
 class Profile;
 
-namespace base {
-class FilePath;
+namespace user_manager {
+class User;
 }
 
 namespace ash {
 
 // This helper class is used on Chrome OS to keep track of currently
 // active user profile.
-// Whenever active user is changed (either add another user into session or
-// switch between users), ActiveUserHashChanged() will be called thus
-// internal state |active_user_id_hash_| will be updated.
 // Typical use cases for using this class:
 // 1. Get "signin profile" which is a special type of profile that is only used
 //    during signin flow: GetSigninProfile()
-// 2. Get profile dir of an active user, used by ProfileManager:
-//    GetActiveUserProfileDir()
-// 3. Get mapping from user_id_hash to Profile instance/profile path etc.
-class ProfileHelper
-    : public user_manager::UserManager::UserSessionStateObserver {
+// 2. Get mapping from user_id_hash to Profile instance/profile path etc.
+class ProfileHelper {
  public:
   ProfileHelper();
 
   ProfileHelper(const ProfileHelper&) = delete;
   ProfileHelper& operator=(const ProfileHelper&) = delete;
 
-  ~ProfileHelper() override;
+  virtual ~ProfileHelper();
 
   // Creates and returns ProfileHelper implementation instance to
   // BrowserProcess/BrowserProcessPlatformPart.
@@ -140,12 +134,6 @@ class ProfileHelper
   // DEPRECATED. Please use ash::IsUserBrowserContextBaseName() instead.
   static bool IsUserProfilePath(const base::FilePath& profile_path);
 
-  // Returns active user profile dir in a format [u-$hash].
-  virtual base::FilePath GetActiveUserProfileDir() = 0;
-
-  // Should called once after UserManager instance has been created.
-  virtual void Initialize() = 0;
-
   // DEPRECATED: Please use
   // BrowserContextHelper::GetBrowserContextByAccountId() instead.
   // Returns profile of the user associated with |account_id| if it is created
@@ -158,6 +146,8 @@ class ProfileHelper
   // Otherwise, returns NULL.
   virtual Profile* GetProfileByUser(const user_manager::User* user) = 0;
 
+  // DEPRECATED: Please use
+  // BrowserContextHelper::GetUserByBrowserContext() instead.
   // Returns NULL if User is not created.
   virtual const user_manager::User* GetUserByProfile(
       const Profile* profile) const = 0;

@@ -465,7 +465,7 @@ class GpuSandboxedProcessLauncherDelegate
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
-  ZygoteHandle GetZygote() override {
+  ZygoteCommunication* GetZygote() override {
     if (sandbox::policy::IsUnsandboxedSandboxType(GetSandboxType()))
       return nullptr;
 
@@ -1280,7 +1280,7 @@ void GpuProcessHost::SendOutstandingReplies() {
 }
 
 void GpuProcessHost::RecordProcessCrash() {
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
   // Maximum number of times the GPU process can crash before we try something
   // different, like disabling hardware acceleration or all GL.
   constexpr int kGpuFallbackCrashCount = 3;

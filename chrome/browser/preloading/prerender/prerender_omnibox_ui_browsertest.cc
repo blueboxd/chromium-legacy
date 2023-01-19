@@ -63,6 +63,8 @@ namespace {
 using UkmEntry = ukm::TestUkmRecorder::HumanReadableUkmEntry;
 using ukm::builders::Preloading_Attempt;
 using ukm::builders::Preloading_Prediction;
+static const auto kMockElapsedTime =
+    base::ScopedMockElapsedTimersForTest::kMockElapsedTime;
 
 content::PreloadingFailureReason ToPreloadingFailureReason(
     PrerenderPredictionStatus status) {
@@ -107,10 +109,7 @@ class PrerenderOmniboxUIBrowserTest : public InProcessBrowserTest,
   PrerenderOmniboxUIBrowserTest()
       : prerender_helper_(base::BindRepeating(
             &PrerenderOmniboxUIBrowserTest::GetActiveWebContents,
-            base::Unretained(this))) {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kOmniboxTriggerForPrerender2);
-  }
+            base::Unretained(this))) {}
 
   void SetUp() override {
     prerender_helper_.SetUp(embedded_test_server());
@@ -128,6 +127,8 @@ class PrerenderOmniboxUIBrowserTest : public InProcessBrowserTest,
                 ChromePreloadingPredictor::kOmniboxDirectURLInput));
 
     ASSERT_TRUE(embedded_test_server()->Start());
+    scoped_test_timer_ =
+        std::make_unique<base::ScopedMockElapsedTimersForTest>();
   }
 
   void TearDownOnMainThread() override {
@@ -247,12 +248,12 @@ class PrerenderOmniboxUIBrowserTest : public InProcessBrowserTest,
   }
 
   content::test::PrerenderTestHelper prerender_helper_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   ui::PageTransition last_finished_page_transition_type_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
   std::unique_ptr<content::test::PreloadingAttemptUkmEntryBuilder>
       ukm_entry_builder_;
   bool is_prerendering_page_;
+  std::unique_ptr<base::ScopedMockElapsedTimersForTest> scoped_test_timer_;
 };
 
 // This test covers the path from starting a omnibox triggered prerendering
@@ -347,7 +348,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxUIBrowserTest,
             content::PreloadingHoldbackStatus::kAllowed,
             content::PreloadingTriggeringOutcome::kSuccess,
             content::PreloadingFailureReason::kUnspecified,
-            /*accurate=*/true),
+            /*accurate=*/true,
+            /*ready_time=*/kMockElapsedTime),
     };
     EXPECT_THAT(ukm_entries,
                 testing::UnorderedElementsAreArray(expected_entries))
@@ -412,7 +414,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxUIBrowserTest,
             content::PreloadingHoldbackStatus::kAllowed,
             content::PreloadingTriggeringOutcome::kReady,
             content::PreloadingFailureReason::kUnspecified,
-            /*accurate=*/false),
+            /*accurate=*/false,
+            /*ready_time=*/kMockElapsedTime),
     };
     EXPECT_THAT(ukm_entries,
                 testing::UnorderedElementsAreArray(expected_entries))
@@ -472,7 +475,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxUIBrowserTest,
             content::PreloadingHoldbackStatus::kAllowed,
             content::PreloadingTriggeringOutcome::kSuccess,
             content::PreloadingFailureReason::kUnspecified,
-            /*accurate=*/true),
+            /*accurate=*/true,
+            /*ready_time=*/kMockElapsedTime),
         ukm_entry_builder().BuildEntry(
             ukm_source_id, content::PreloadingType::kPrerender,
             content::PreloadingEligibility::kEligible,
@@ -501,8 +505,7 @@ class PrerenderPreloaderHoldbackBrowserTest
  public:
   PrerenderPreloaderHoldbackBrowserTest() {
     feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kOmniboxTriggerForPrerender2,
-                              features::kPrerender2Holdback},
+        /*enabled_features=*/{features::kPrerender2Holdback},
         /* disabled_features=*/{});
   }
   ~PrerenderPreloaderHoldbackBrowserTest() override = default;
@@ -699,6 +702,8 @@ class PrerenderOmniboxSearchSuggestionUIBrowserTest
         std::make_unique<content::test::PreloadingPredictionUkmEntryBuilder>(
             ToPreloadingPredictor(
                 ChromePreloadingPredictor::kDefaultSearchEngine));
+    scoped_test_timer_ =
+        std::make_unique<base::ScopedMockElapsedTimersForTest>();
   }
 
   void SetUp() override {
@@ -909,6 +914,7 @@ class PrerenderOmniboxSearchSuggestionUIBrowserTest
       attempt_entry_builder_;
   std::unique_ptr<content::test::PreloadingPredictionUkmEntryBuilder>
       prediction_entry_builder_;
+  std::unique_ptr<base::ScopedMockElapsedTimersForTest> scoped_test_timer_;
 };
 
 // Tests the basic functionality of prerendering a search suggestion with search
@@ -924,6 +930,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxSearchSuggestionUIBrowserTest,
   std::string search_query = "prerender2";
   GURL expected_prerender_url =
       GetSearchUrl(search_query, "prerender222", /*is_prerender=*/true);
+
+  GURL canonical_search_url;
+  HasCanoncialPreloadingOmniboxSearchURL(
+      expected_prerender_url, GetActiveWebContents()->GetBrowserContext(),
+      &canonical_search_url);
   int host_id =
       InputSearchQueryAndWaitForTrigger(search_query, expected_prerender_url);
   ASSERT_NE(host_id, content::RenderFrameHost::kNoFrameTreeNodeId);
@@ -938,7 +949,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxSearchSuggestionUIBrowserTest,
   ASSERT_NE(search_prefetch_service, nullptr);
   absl::optional<SearchPrefetchStatus> prefetch_status =
       search_prefetch_service->GetSearchPrefetchStatusForTesting(
-          u"prerender222");
+          canonical_search_url);
   EXPECT_FALSE(prefetch_status.has_value());
   histogram_tester.ExpectTotalCount(
       "Omnibox.SearchPrefetch.PrefetchEligibilityReason2.SuggestionPrefetch",
@@ -1003,7 +1014,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxSearchSuggestionUIBrowserTest,
             content::PreloadingHoldbackStatus::kAllowed,
             content::PreloadingTriggeringOutcome::kSuccess,
             content::PreloadingFailureReason::kUnspecified,
-            /*accurate=*/true),
+            /*accurate=*/true,
+            /*ready_time=*/kMockElapsedTime),
     };
     EXPECT_THAT(attempt_ukm_entries,
                 testing::UnorderedElementsAreArray(expected_attempt_entries))
@@ -1068,7 +1080,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxSearchSuggestionUIBrowserTest,
             content::PreloadingHoldbackStatus::kAllowed,
             content::PreloadingTriggeringOutcome::kReady,
             content::PreloadingFailureReason::kUnspecified,
-            /*accurate=*/false),
+            /*accurate=*/false,
+            /*ready_time=*/kMockElapsedTime),
     };
     EXPECT_THAT(ukm_entries,
                 testing::UnorderedElementsAreArray(expected_entries))
@@ -1136,7 +1149,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxSearchSuggestionUIBrowserTest,
             content::PreloadingHoldbackStatus::kAllowed,
             content::PreloadingTriggeringOutcome::kSuccess,
             content::PreloadingFailureReason::kUnspecified,
-            /*accurate=*/true),
+            /*accurate=*/true,
+            /*ready_time=*/kMockElapsedTime),
         attempt_entry_builder().BuildEntry(
             ukm_source_id, content::PreloadingType::kPrerender,
             content::PreloadingEligibility::kEligible,
@@ -1231,7 +1245,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderOmniboxSearchSuggestionUIBrowserTest,
             content::PreloadingHoldbackStatus::kAllowed,
             content::PreloadingTriggeringOutcome::kSuccess,
             content::PreloadingFailureReason::kUnspecified,
-            /*accurate=*/true),
+            /*accurate=*/true,
+            /*ready_time=*/kMockElapsedTime),
     };
     EXPECT_THAT(ukm_entries,
                 testing::UnorderedElementsAreArray(expected_entries))

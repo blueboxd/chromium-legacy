@@ -206,9 +206,13 @@ public abstract class ChromeFeatureList {
     public static final String AUTOFILL_RANKING_FORMULA_USAGE_HALF_LIFE =
             "AutofillRankingFormulaUsageHalfLife";
     public static final String AUTOFILL_REFRESH_STYLE_ANDROID = "AutofillRefreshStyleAndroid";
+    public static final String AUTOFILL_TOUCH_TO_FILL_FOR_CREDIT_CARDS_ANDROID =
+            "AutofillTouchToFillForCreditCardsAndroid";
     public static final String BACKGROUND_THREAD_POOL = "BackgroundThreadPool";
     public static final String BACK_FORWARD_CACHE = "BackForwardCache";
     public static final String BACK_GESTURE_REFACTOR = "BackGestureRefactorAndroid";
+    public static final String BACK_GESTURE_REFACTOR_ACTIVITY =
+            "BackGestureRefactorActivityAndroid";
     public static final String BASELINE_GM3_SURFACE_COLORS = "BaselineGM3SurfaceColors";
     public static final String BIOMETRIC_TOUCH_TO_FILL = "BiometricTouchToFill";
     public static final String BOOKMARKS_IMPROVED_SAVE_FLOW = "BookmarksImprovedSaveFlow";
@@ -479,7 +483,6 @@ public abstract class ChromeFeatureList {
             "SwapPixelFormatToFixConvertFromTranslucent";
     public static final String SYNC_ANDROID_LIMIT_NTP_PROMO_IMPRESSIONS =
             "SyncAndroidLimitNTPPromoImpressions";
-    public static final String SYNC_ANDROID_PROMOS_WITH_TITLE = "SyncAndroidPromosWithTitle";
     public static final String SYNC_ENABLE_HISTORY_DATA_TYPE = "SyncEnableHistoryDataType";
     public static final String TAB_ENGAGEMENT_REPORTING_ANDROID = "TabEngagementReportingAndroid";
     public static final String TAB_GRID_LAYOUT_ANDROID = "TabGridLayoutAndroid";
@@ -529,7 +532,6 @@ public abstract class ChromeFeatureList {
     public static final String VIDEO_TUTORIALS = "VideoTutorials";
     public static final String VOICE_BUTTON_IN_TOP_TOOLBAR = "VoiceButtonInTopToolbar";
     public static final String VOICE_SEARCH_AUDIO_CAPTURE_POLICY = "VoiceSearchAudioCapturePolicy";
-    public static final String VR_BROWSING_FEEDBACK = "VrBrowsingFeedback";
     public static final String WEBNOTES_DYNAMIC_TEMPLATES = "WebNotesDynamicTemplates";
     public static final String WEBNOTES_STYLIZE = "WebNotesStylize";
     public static final String WEB_APK_ALLOW_ICON_UPDATA = "WebApkAllowIconUpdate";
@@ -550,6 +552,8 @@ public abstract class ChromeFeatureList {
     /* Alphabetical: */
     public static final CachedFlag sAppMenuMobileSiteOption =
             new CachedFlag(APP_MENU_MOBILE_SITE_OPTION, false);
+    public static final CachedFlag sBackGestureRefactorActivityAndroid =
+            new CachedFlag(BACK_GESTURE_REFACTOR_ACTIVITY, false);
     public static final CachedFlag sBackGestureRefactorAndroid =
             new CachedFlag(BACK_GESTURE_REFACTOR, false);
     public static final CachedFlag sBaselineGm3SurfaceColors =
@@ -568,7 +572,7 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sCctResizable90MaximumHeight =
             new CachedFlag(CCT_RESIZABLE_90_MAXIMUM_HEIGHT, false);
     public static final CachedFlag sCctResizableForThirdParties =
-            new CachedFlag(CCT_RESIZABLE_FOR_THIRD_PARTIES, false);
+            new CachedFlag(CCT_RESIZABLE_FOR_THIRD_PARTIES, true);
     public static final CachedFlag sCctResizableSideSheet =
             new CachedFlag(CCT_RESIZABLE_SIDE_SHEET, false);
     public static final CachedFlag sCctRetainableStateInMemory =
@@ -596,6 +600,8 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sFoldableJankFix = new CachedFlag(FOLDABLE_JANK_FIX, true);
     public static final CachedFlag sGridTabSwitcherForTablets =
             new CachedFlag(GRID_TAB_SWITCHER_FOR_TABLETS, true);
+    public static final CachedFlag sHideNonDisplayableAccountEmail =
+            new CachedFlag(HIDE_NON_DISPLAYABLE_ACCOUNT_EMAIL, false);
     public static final CachedFlag sIncognitoReauthenticationForAndroid =
             new CachedFlag(INCOGNITO_REAUTHENTICATION_FOR_ANDROID, false);
     public static final CachedFlag sInstanceSwitcher = new CachedFlag(INSTANCE_SWITCHER, true);

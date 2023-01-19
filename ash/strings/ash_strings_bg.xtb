@@ -608,6 +608,7 @@
 <translation id="430191667033048642">Приложението <ph name="MOVED_APP_NAME" /> бе преместено в папката <ph name="FOLDER_NAME" />.</translation>
 <translation id="4302592941791324970">Не е налице</translation>
 <translation id="4303223480529385476">Разгъване на лентата на състоянието</translation>
+<translation id="4311195029067684288">Пълно</translation>
 <translation id="4312840429157639164">Картината от камерата е прилепена към горния десен ъгъл. Възникна конфликт с интерфейса на системата.</translation>
 <translation id="4316910396681052118">ВСИЧКИ ПРИЛОЖЕНИЯ</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -638,6 +639,7 @@
 <translation id="4455051983450390249">Преглед на известията от телефона ви на вашия <ph name="DEVICE_TYPE" /></translation>
 <translation id="445864333228800152">Добър вечер,</translation>
 <translation id="4458688154122353284">Спиране на записа на екрана</translation>
+<translation id="445923051607553918">Присъединяване към Wi-Fi мрежа</translation>
 <translation id="4471354919263203780">Файловете за разпознаване на говор се изтеглят... <ph name="PERCENT" />%</translation>
 <translation id="4471432286288241507">{0,plural, =0{Актуализирайте устройството сега}=1{Актуализирайте устройството в рамките на 1 секунда}other{Актуализирайте устройството в рамките на # секунди}}</translation>
 <translation id="4472575034687746823">Първи стъпки</translation>

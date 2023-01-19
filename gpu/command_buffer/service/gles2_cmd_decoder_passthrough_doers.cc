@@ -18,7 +18,6 @@
 #include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/gpu_fence_manager.h"
 #include "gpu/command_buffer/service/gpu_tracer.h"
-#include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/multi_draw_manager.h"
 #include "gpu/command_buffer/service/passthrough_discardable_manager.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_factory.h"
@@ -4911,8 +4910,7 @@ error::Error
 GLES2DecoderPassthroughImpl::DoBeginSharedImageAccessDirectCHROMIUM(
     GLuint client_id,
     GLenum mode) {
-  if (mode != GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM &&
-      mode != GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM &&
+  if (mode != GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM &&
       mode != GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM) {
     InsertError(GL_INVALID_ENUM, "unrecognized access mode");
     return error::kNoError;

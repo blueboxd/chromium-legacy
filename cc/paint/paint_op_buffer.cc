@@ -241,11 +241,11 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
       auto* context = canvas->recordingContext();
       const ScopedRasterFlags scoped_flags(
           &flags_op.flags, new_params.image_provider, canvas->getTotalMatrix(),
-          context ? context->maxTextureSize() : 0, iter.alpha() / 255.0f);
+          context ? context->maxTextureSize() : 0, iter.alpha());
       if (const auto* raster_flags = scoped_flags.flags())
         flags_op.RasterWithFlags(canvas, raster_flags, new_params);
     } else {
-      DCHECK_EQ(iter.alpha(), 255);
+      DCHECK_EQ(iter.alpha(), 1.0f);
       op->Raster(canvas, new_params);
     }
 
@@ -429,18 +429,6 @@ void PaintOpBuffer::UpdateSaveLayerBounds(size_t offset, const SkRect& bounds) {
     default:
       NOTREACHED();
   }
-}
-
-const PaintOp* PaintOpBuffer::GetOpAtForTesting(size_t index,
-                                                PaintOpType type) const {
-  size_t i = 0;
-  for (const auto& op : *this) {
-    if (i == index) {
-      return op.GetType() == type ? &op : nullptr;
-    }
-    i++;
-  }
-  return nullptr;
 }
 
 PaintOpBuffer::Iterator PaintOpBuffer::begin() const {

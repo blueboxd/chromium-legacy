@@ -32,9 +32,6 @@ BASE_FEATURE(kSyncAllowWalletDataInTransportModeWithCustomPassphrase,
 BASE_FEATURE(kSyncAndroidLimitNTPPromoImpressions,
              "SyncAndroidLimitNTPPromoImpressions",
              base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kSyncAndroidPromosWithTitle,
-             "SyncAndroidPromosWithTitle",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 BASE_FEATURE(kSyncAutofillWalletUsageData,
@@ -64,6 +61,10 @@ BASE_FEATURE(kSyncChromeOSExplicitPassphraseSharing,
 
 BASE_FEATURE(kSyncChromeOSAppsToggleSharing,
              "SyncChromeOSAppsToggleSharing",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kChromeOSSyncedSessionSharing,
+             "ChromeOSSyncedSessionSharing",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
@@ -116,12 +117,6 @@ BASE_FEATURE(kSyncEnableHistoryDataType,
 BASE_FEATURE(kSyncEnableContactInfoDataType,
              "SyncEnableContactInfoDataType",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Causes sync to pause fully for all persistent auth errors, instead of doing
-// this exclusively for web signouts.
-BASE_FEATURE(kSyncPauseUponAnyPersistentAuthError,
-             "SyncPauseUponAnyPersistentAuthError",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSyncEnforceBookmarksCountLimit,
              "SyncEnforceBookmarksCountLimit",

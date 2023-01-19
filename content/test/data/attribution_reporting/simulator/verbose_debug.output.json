@@ -1,22 +1,4 @@
 {
-  "rejected_triggers": [
-    {
-      "event_level_reason": "priorityTooLow",
-      "trigger": {
-        "timestamp": "1643235576000",
-        "reporting_origin": "https://r.test",
-        "destination_origin": "https://d.test",
-        "Attribution-Reporting-Register-Trigger": {
-          "debug_reporting": true,
-          "event_trigger_data": [
-            {
-              "trigger_data": "4"
-            }
-          ]
-        }
-      }
-    }
-  ],
   "verbose_debug_reports": [
     {
       "report_time": "1643235576000",
@@ -47,10 +29,7 @@
          "trigger_data": "1"
       },
       "intended_report_time": "1643411972000",
-      "report_url": "https://r.test/.well-known/attribution-reporting/report-event-attribution",
-      "test_info": {
-         "randomized_trigger": false
-      }
+      "report_url": "https://r.test/.well-known/attribution-reporting/report-event-attribution"
     },
     {
      "report": {
@@ -62,10 +41,7 @@
          "trigger_data": "2"
       },
       "intended_report_time": "1643411972000",
-      "report_url": "https://r.test/.well-known/attribution-reporting/report-event-attribution",
-      "test_info": {
-         "randomized_trigger": false
-      }
+      "report_url": "https://r.test/.well-known/attribution-reporting/report-event-attribution"
     },
     {
      "report": {
@@ -77,10 +53,7 @@
          "trigger_data": "3"
       },
       "intended_report_time": "1643411972000",
-      "report_url": "https://r.test/.well-known/attribution-reporting/report-event-attribution",
-      "test_info": {
-         "randomized_trigger": false
-      }
+      "report_url": "https://r.test/.well-known/attribution-reporting/report-event-attribution"
     }
   ]
 }

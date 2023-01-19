@@ -609,6 +609,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> áthelyezve a következő mappába: <ph name="FOLDER_NAME" />.</translation>
 <translation id="4302592941791324970">Nem áll rendelkezésre</translation>
 <translation id="4303223480529385476">Állapotsor kibontása</translation>
+<translation id="4311195029067684288">Teljes</translation>
 <translation id="4312840429157639164">Kamera a jobb felső sarokhoz igazítva. Ütközés a rendszerfelülettel.</translation>
 <translation id="4316910396681052118">MINDEN ALKALMAZÁS</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -639,6 +640,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4455051983450390249">A telefonja értesítéseinek megtekintése az Ön <ph name="DEVICE_TYPE" /> eszközén</translation>
 <translation id="445864333228800152">Jó estét!</translation>
 <translation id="4458688154122353284">Képernyőfelvétel leállítása</translation>
+<translation id="445923051607553918">Belépés Wi-Fi hálózatra</translation>
 <translation id="4471354919263203780">Beszédfelismerési fájlok letöltése… <ph name="PERCENT" />%</translation>
 <translation id="4471432286288241507">{0,plural, =0{Frissítse az eszközt most}=1{1 másodpercen belül frissítse az eszközt}other{# másodpercen belül frissítse az eszközt}}</translation>
 <translation id="4472575034687746823">Kezdő lépések</translation>

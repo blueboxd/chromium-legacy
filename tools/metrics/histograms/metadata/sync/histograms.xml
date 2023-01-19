@@ -207,7 +207,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.BookmarksGUIDDuplicates" enum="BookmarksGUIDDuplicates"
-    expires_after="2023-05-17">
+    expires_after="2023-07-16">
   <owner>mastiz@chromium.org</owner>
   <owner>rushans@google.com</owner>
   <component>Services&gt;Sync</component>
@@ -240,6 +240,17 @@ chromium-metrics-reviews@google.com.
     Records if a remote sync update for a bookmark, excluding folders, contains
     a favicon. It is recorded upon initial and incremental updates, when the
     local state is about to be modified.
+  </summary>
+</histogram>
+
+<histogram name="Sync.CommitResponseForUnknownEntity" enum="SyncModelTypes"
+    expires_after="2023-06-30">
+  <owner>treib@chromium.org</owner>
+  <owner>mastiz@chromium.org</owner>
+  <component>Services&gt;Sync</component>
+  <summary>
+    Emitted when a Commit entity response is received for an unknown entity
+    (i.e. for a client tag hash that doesn't correspond to a tracked entity).
   </summary>
 </histogram>
 
@@ -432,10 +443,8 @@ chromium-metrics-reviews@google.com.
   <summary>
     Histogram of the startup failures for the different sync datatypes. These
     are failures that occur during startup before the data type is fully loaded.
-    For USS datatypes, these errors are caused by failures in reading metadata
-    (or data) from the DB or by another failure in interaction with the model.
-    For Directory datatypes, startup errors are due to missing top level sync
-    nodes or model association. This is one of the base sync health metrics. The
+    These errors are caused by failures in reading metadata (or data) from the
+    DB or by another failure in interaction with the model. The
     Sync.ModelTypeStoreBackendError histograms may help diagnosing the problem.
   </summary>
 </histogram>
@@ -762,11 +771,9 @@ chromium-metrics-reviews@google.com.
   <owner>mastiz@chromium.org</owner>
   <component>Services&gt;Sync</component>
   <summary>
-    Counts the number of entries for each model type. For directory types, the
-    count is based on the directory contents (excl. the root node), for USS
-    types, the count is based on metadata entries for the type. Recorded after
-    sync configuration. This metric is used for monitoring general health of
-    sync client-side code.
+    Counts the number of entries for each model type. The count is based on
+    metadata entries for the type. Recorded after sync configuration. This
+    metric is used for monitoring general health of sync client-side code.
   </summary>
   <token key="SyncModelType" variants="SyncModelType"/>
 </histogram>
@@ -783,6 +790,17 @@ chromium-metrics-reviews@google.com.
     data type suffix. The base version is never recorded.
   </summary>
   <token key="SyncModelType" variants="SyncModelType"/>
+</histogram>
+
+<histogram name="Sync.ModelTypeEntityMetadataWithoutInitialSync"
+    enum="SyncModelTypes" expires_after="2023-07-05">
+  <owner>mastiz@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
+  <component>Services&gt;Sync</component>
+  <summary>
+    Records whenever ClientTagBasedModelTypeProcessor finds entity metadata
+    during ModelReadyToSync() but initial_sync_done is false.
+  </summary>
 </histogram>
 
 <histogram name="Sync.ModelTypeErrorSite{SyncModelType}"
@@ -835,8 +853,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.ModelTypeOrphanMetadata.{Operation}"
-    enum="SyncModelTypes" expires_after="2023-03-05">
+    enum="SyncModelTypes" expires_after="2023-07-05">
   <owner>mastiz@chromium.org</owner>
+  <owner>treib@chromium.org</owner>
   <component>Services&gt;Sync</component>
   <summary>
     Records whenever an orphan metadata is encountered by the

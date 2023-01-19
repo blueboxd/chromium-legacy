@@ -1740,11 +1740,10 @@ static bool ParseLABOrOKLABParameters(CSSParserTokenRange& range,
 
   absl::optional<double> alpha = ConsumeAlphaWithLeadingSlash(args, context);
 
-  if (function_id == CSSValueID::kOklab) {
-    result = Color::FromOklab(lightness, ab[0], ab[1], alpha);
-  } else {
-    result = Color::FromLab(lightness, ab[0], ab[1], alpha);
-  }
+  Color::ColorSpace color_space = (function_id == CSSValueID::kLab)
+                                      ? Color::ColorSpace::kLab
+                                      : Color::ColorSpace::kOklab;
+  result = Color::FromColorSpace(color_space, lightness, ab[0], ab[1], alpha);
   return args.AtEnd();
 }
 
@@ -1794,11 +1793,10 @@ static bool ParseLCHOrOKLCHParameters(CSSParserTokenRange& range,
 
   absl::optional<double> alpha = ConsumeAlphaWithLeadingSlash(args, context);
 
-  if (function_id == CSSValueID::kOklch) {
-    result = Color::FromOklch(lightness, chroma, hue, alpha);
-  } else {
-    result = Color::FromLch(lightness, chroma, hue, alpha);
-  }
+  Color::ColorSpace color_space = (function_id == CSSValueID::kLch)
+                                      ? Color::ColorSpace::kLch
+                                      : Color::ColorSpace::kOklch;
+  result = Color::FromColorSpace(color_space, lightness, chroma, hue, alpha);
   return args.AtEnd();
 }
 
@@ -2017,7 +2015,7 @@ static bool ParseColorFunctionParameters(CSSParserTokenRange& range,
 
   absl::optional<double> alpha = ConsumeAlphaWithLeadingSlash(args, context);
 
-  result = Color::FromColorFunction(colorspace, params[0], params[1], params[2],
+  result = Color::FromColorSpace(colorspace, params[0], params[1], params[2],
                                     alpha);
   return args.AtEnd();
 }
@@ -3350,7 +3348,6 @@ static CSSValue* ConsumeImageSet(CSSParserTokenRange& range,
   switch (range.Peek().FunctionId()) {
     case CSSValueID::kWebkitImageSet:
       context.Count(WebFeature::kWebkitImageSet);
-      image_set->MarkWebkitPrefixed();
       break;
 
     case CSSValueID::kImageSet:
@@ -4071,6 +4068,7 @@ CSSValue* ConsumeTimelineRangeName(CSSParserTokenRange& range) {
                       CSSValueID::kEnter, CSSValueID::kExit>(range);
 }
 
+// TODO(crbug.com/1407923): Support <length-percentage>.
 CSSValue* ConsumeTimelineRangeNameAndPercent(CSSParserTokenRange& range,
                                              const CSSParserContext& context) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
@@ -4091,9 +4089,14 @@ CSSValue* ConsumeTimelineRangeNameAndPercent(CSSParserTokenRange& range,
 CSSValue* ConsumeAnimationDelay(CSSParserTokenRange& range,
                                 const CSSParserContext& context) {
   DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
-  if (CSSPrimitiveValue* time =
-          ConsumeTime(range, context, CSSPrimitiveValue::ValueRange::kAll)) {
-    return time;
+  return ConsumeTime(range, context, CSSPrimitiveValue::ValueRange::kAll);
+}
+
+CSSValue* ConsumeAnimationRange(CSSParserTokenRange& range,
+                                const CSSParserContext& context) {
+  DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+  if (CSSValue* ident = ConsumeIdent<CSSValueID::kAuto>(range)) {
+    return ident;
   }
   return ConsumeTimelineRangeNameAndPercent(range, context);
 }

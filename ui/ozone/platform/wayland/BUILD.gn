@@ -234,6 +234,7 @@ source_set("wayland") {
     "//components/exo/wayland/protocol:chrome_color_management_protocol",
     "//components/exo/wayland/protocol:overlay_prioritizer_protocol",
     "//components/exo/wayland/protocol:surface_augmenter_protocol",
+    "//components/viz/common:resource_format_utils",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//skia",
@@ -664,10 +665,10 @@ fuzzer_test("wayland_buffer_fuzzer") {
 source_set("ui_test_support") {
   testonly = true
   sources = [
-    "emulate/wayland_input_emulate.cc",
-    "emulate/wayland_input_emulate.h",
-    "test/wayland_ozone_ui_controls_test_helper.cc",
-    "test/wayland_ozone_ui_controls_test_helper.h",
+    "emulate/weston_test_input_emulate.cc",
+    "emulate/weston_test_input_emulate.h",
+    "test/weston_test_ozone_ui_controls_test_helper.cc",
+    "test/weston_test_ozone_ui_controls_test_helper.h",
   ]
 
   deps = [

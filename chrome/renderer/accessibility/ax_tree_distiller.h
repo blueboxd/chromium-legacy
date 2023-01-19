@@ -43,8 +43,8 @@ class AXTreeDistiller {
 
  public:
   AXTreeDistiller(content::RenderFrame* render_frame,
-                  OnAXTreeDistilledCallback on_ax_tree_distilled_callback_);
-  ~AXTreeDistiller();
+                  OnAXTreeDistilledCallback on_ax_tree_distilled_callback);
+  virtual ~AXTreeDistiller();
   AXTreeDistiller(const AXTreeDistiller&) = delete;
   AXTreeDistiller& operator=(const AXTreeDistiller&) = delete;
 
@@ -54,25 +54,38 @@ class AXTreeDistiller {
   // When |IsReadAnythingWithScreen2xEnabled|, this operation is done in the
   // utility process by Screen2x. Otherwise, it is done by a rules-based
   // algorithm in this process.
-  void Distill(ui::AXTree* tree, const ui::AXTreeUpdate& snapshot);
+  virtual void Distill(const ui::AXTree& tree,
+                       const ui::AXTreeUpdate& snapshot);
 
+ private:
   // Distills the AXTree via a rules-based algorithm. Runs the callback on
   // completion.
-  void DistillViaAlgorithm(ui::AXTree* tree);
+  void DistillViaAlgorithm(const ui::AXTree& tree);
 
-  content::RenderFrame* render_frame_;
+  // render_frame_ is only used in the ENABLE_SCREEN_AI_SERVICE buildflag.
+  // Fuchsia does not build with that buildflag so it is throwing
+  // -Wunused-private-field errors. [[maybe_unused]] suppresses them.
+  [[maybe_unused]] content::RenderFrame* render_frame_;
+
+  // TODO(crbug.com/1266555): Ensure this is called even if ScreenAIService is
+  // disconnected.
   OnAXTreeDistilledCallback on_ax_tree_distilled_callback_;
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   // Passes |snapshot| to the Screen2x ML model, which identifes the main
   // content nodes and calls |ProcessScreen2xResult()| on completion.
-  void DistillViaScreen2x(ui::AXTree* tree, const ui::AXTreeUpdate& snapshot);
+  void DistillViaScreen2x(const ui::AXTree& tree,
+                          const ui::AXTreeUpdate& snapshot);
 
   // Called by the Screen2x service from the utility process. Runs the callback
-  // if Screen2x identifie content nodes. If not, distills via the rules-based
+  // if Screen2x identified content nodes. If not, distills via the rules-based
   // algorithm.
-  void ProcessScreen2xResult(ui::AXTree* tree,
+  void ProcessScreen2xResult(const ui::AXTree& tree,
                              const std::vector<ui::AXNodeID>& content_node_ids);
+
+  // Called when the main content extractor is disconnected. Runs the callback
+  // with an empty list of content node IDs.
+  void OnMainContentExtractorDisconnected();
 
   // The remote of the Screen2x main content extractor. The receiver lives in
   // the utility process.

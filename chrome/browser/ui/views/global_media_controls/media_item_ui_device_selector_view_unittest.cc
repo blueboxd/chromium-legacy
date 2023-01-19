@@ -156,6 +156,7 @@ class MockCastDialogController : public CastDialogController {
   MOCK_METHOD1(ClearIssue, void(const media_router::Issue::Id& issue_id));
   MOCK_METHOD0(TakeMediaRouteStarter,
                std::unique_ptr<media_router::MediaRouteStarter>());
+  MOCK_METHOD1(RegisterDestructor, void(base::OnceClosure));
 };
 
 }  // anonymous namespace
@@ -549,8 +550,7 @@ TEST_F(MediaItemUIDeviceSelectorViewTest, CastDeviceButtonClickClearsIssue) {
   // cast session.
   auto sink = CreateMediaSink();
   media_router::IssueInfo issue_info(
-      "Issue Title", media_router::IssueInfo::Action::DISMISS,
-      media_router::IssueInfo::Severity::WARNING);
+      "Issue Title", media_router::IssueInfo::Severity::WARNING);
   media_router::Issue issue(issue_info);
   sink.issue = issue;
 

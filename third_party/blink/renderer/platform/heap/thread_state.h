@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_THREAD_STATE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_HEAP_THREAD_STATE_H_
 
-#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/functional/callback_forward.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/heap/forward.h"
 #include "third_party/blink/renderer/platform/heap/thread_state_storage.h"
@@ -55,6 +55,7 @@ class PLATFORM_EXPORT ThreadState final {
 
   void AttachToIsolate(v8::Isolate* isolate, V8BuildEmbedderGraphCallback);
   void DetachFromIsolate();
+  bool IsAttachedToIsolate() const { return isolate_; }
 
   ALWAYS_INLINE cppgc::HeapHandle& heap_handle() const { return heap_handle_; }
   ALWAYS_INLINE v8::CppHeap& cpp_heap() const { return *cpp_heap_; }
@@ -97,6 +98,15 @@ class PLATFORM_EXPORT ThreadState final {
 
   static ThreadState* AttachMainThreadForTesting(v8::Platform*);
   static ThreadState* AttachCurrentThreadForTesting(v8::Platform*);
+
+  // Takes a heap snapshot that can be loaded into DevTools. Requires that
+  // `ThreadState` is attached to a `v8::Isolate`.
+  //
+  // `filename` specifies the path on the system to store the snapshot. If no
+  // filename is provided, the snapshot will be emitted to `stdout`.
+  //
+  // Writing to a file requires a disabled sandbox.
+  void TakeHeapSnapshotForTesting(const char* filename) const;
 
  private:
   explicit ThreadState(v8::Platform*);

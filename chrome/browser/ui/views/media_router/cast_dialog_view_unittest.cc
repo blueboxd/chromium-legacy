@@ -91,6 +91,7 @@ class MockCastDialogController : public CastDialogController {
   MOCK_METHOD1(StopCasting, void(const std::string& route_id));
   MOCK_METHOD1(ClearIssue, void(const Issue::Id& issue_id));
   MOCK_METHOD0(TakeMediaRouteStarter, std::unique_ptr<MediaRouteStarter>());
+  MOCK_METHOD1(RegisterDestructor, void(base::OnceClosure));
 };
 
 class CastDialogViewTest : public ChromeViewsTestBase {
@@ -190,8 +191,8 @@ TEST_F(CastDialogViewTest, StopCasting) {
 
 TEST_F(CastDialogViewTest, ClearIssue) {
   std::vector<UIMediaSink> media_sinks = {CreateAvailableSink()};
-  media_sinks[0].issue = Issue(IssueInfo("title", IssueInfo::Action::DISMISS,
-                                         IssueInfo::Severity::WARNING));
+  media_sinks[0].issue =
+      Issue(IssueInfo("title", IssueInfo::Severity::WARNING));
   CastDialogModel model = CreateModelWithSinks(std::move(media_sinks));
   InitializeDialogWithModel(model);
   // When there is an issue, clicking on an available sink should clear the

@@ -1190,6 +1190,10 @@ bool FidoDeviceAuthenticator::SupportsDevicePublicKey() const {
                         kExtensionDevicePublicKey);
 }
 
+bool FidoDeviceAuthenticator::SupportsLargeBlobs() const {
+  return options_ && options_->supports_large_blobs;
+}
+
 const absl::optional<AuthenticatorSupportedOptions>&
 FidoDeviceAuthenticator::Options() const {
   return options_;
@@ -1198,18 +1202,6 @@ FidoDeviceAuthenticator::Options() const {
 absl::optional<FidoTransportProtocol>
 FidoDeviceAuthenticator::AuthenticatorTransport() const {
   return device_->DeviceTransport();
-}
-
-bool FidoDeviceAuthenticator::IsInPairingMode() const {
-  return device_->IsInPairingMode();
-}
-
-bool FidoDeviceAuthenticator::IsPaired() const {
-  return device_->IsPaired();
-}
-
-bool FidoDeviceAuthenticator::RequiresBlePairingPin() const {
-  return device_->RequiresBlePairingPin();
 }
 
 void FidoDeviceAuthenticator::SetTaskForTesting(

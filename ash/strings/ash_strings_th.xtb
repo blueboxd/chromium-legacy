@@ -608,6 +608,7 @@
 <translation id="430191667033048642">ย้าย <ph name="MOVED_APP_NAME" /> ไปยังโฟลเดอร์ <ph name="FOLDER_NAME" /> แล้ว</translation>
 <translation id="4302592941791324970">ไม่พร้อมใช้งาน</translation>
 <translation id="4303223480529385476">ขยายพื้นที่แสดงสถานะ</translation>
+<translation id="4311195029067684288">เต็ม</translation>
 <translation id="4312840429157639164">จัดกล้องพอดีกับมุมขวาบนแล้ว เนื่องจากขัดแย้งกับแพลตฟอร์มของระบบ</translation>
 <translation id="4316910396681052118">แอปทั้งหมด</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -638,6 +639,7 @@
 <translation id="4455051983450390249">ดูการแจ้งเตือนของโทรศัพท์ใน <ph name="DEVICE_TYPE" /></translation>
 <translation id="445864333228800152">สวัสดียามเย็น</translation>
 <translation id="4458688154122353284">หยุดการอัดหน้าจอ</translation>
+<translation id="445923051607553918">เข้าร่วมเครือข่าย Wi-Fi</translation>
 <translation id="4471354919263203780">กำลังดาวน์โหลดไฟล์การจดจำคำพูด... <ph name="PERCENT" />%</translation>
 <translation id="4471432286288241507">{0,plural, =0{อัปเดตอุปกรณ์ทันที}=1{อัปเดตอุปกรณ์ภายใน 1 วินาที}other{อัปเดตอุปกรณ์ภายใน # วินาที}}</translation>
 <translation id="4472575034687746823">เริ่มต้น</translation>

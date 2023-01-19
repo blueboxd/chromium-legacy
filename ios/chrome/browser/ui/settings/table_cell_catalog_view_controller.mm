@@ -76,6 +76,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeURLWithThirdRowText,
   ItemTypeURLWithBadgeImage,
   ItemTypeTextSettingsDetail,
+  ItemTypeTableViewWithBlueDot,
   ItemTypeLinkFooter,
   ItemTypeDetailText,
   ItemTypeMultiDetailText,
@@ -140,6 +141,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
   symbolItem.iconTintColor = UIColor.whiteColor;
   symbolItem.iconCornerRadius = 7;
   [model addItem:symbolItem toSectionWithIdentifier:SectionIdentifierText];
+
+  TableViewDetailIconItem* tableViewBlueDotItem =
+      [[TableViewDetailIconItem alloc]
+          initWithType:ItemTypeTableViewWithBlueDot];
+  tableViewBlueDotItem.showNotificationDot = YES;
+  tableViewBlueDotItem.text = @"I have a blue dot badge!";
+  tableViewBlueDotItem.iconImage =
+      [UIImage imageNamed:@"default_browser_world"];
+  [model addItem:tableViewBlueDotItem
+      toSectionWithIdentifier:SectionIdentifierText];
 
   TableViewTextItem* textItem =
       [[TableViewTextItem alloc] initWithType:ItemTypeText];
@@ -308,7 +319,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   TableViewTextEditItem* textEditItem =
       [[TableViewTextEditItem alloc] initWithType:ItemTypeTextEditItem];
-  textEditItem.textFieldName = @"Edit Text Item";
+  textEditItem.fieldNameLabelText = @"Edit Text Item";
   textEditItem.textFieldValue = @" with no icons";
   textEditItem.hideIcon = YES;
   textEditItem.textFieldEnabled = YES;
@@ -316,7 +327,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   TableViewTextEditItem* textEditItemEditIcon =
       [[TableViewTextEditItem alloc] initWithType:ItemTypeTextEditItem];
-  textEditItemEditIcon.textFieldName = @"Edit Text Item";
+  textEditItemEditIcon.fieldNameLabelText = @"Edit Text Item";
   textEditItemEditIcon.textFieldValue = @" with edit icon";
   textEditItemEditIcon.textFieldEnabled = YES;
   [model addItem:textEditItemEditIcon
@@ -324,7 +335,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   TableViewTextEditItem* textEditItemBothIcons =
       [[TableViewTextEditItem alloc] initWithType:ItemTypeTextEditItem];
-  textEditItemBothIcons.textFieldName = @"Edit Text Item";
+  textEditItemBothIcons.fieldNameLabelText = @"Edit Text Item";
   textEditItemBothIcons.textFieldValue = @" with edit and custom icons";
   textEditItemBothIcons.identifyingIcon =
       [UIImage imageNamed:@"table_view_cell_check_mark"];
@@ -334,7 +345,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   TableViewTextEditItem* textEditItemIconButton =
       [[TableViewTextEditItem alloc] initWithType:ItemTypeTextEditItem];
-  textEditItemIconButton.textFieldName = @"Edit Text Item";
+  textEditItemIconButton.fieldNameLabelText = @"Edit Text Item";
   textEditItemIconButton.textFieldValue = @" icon is a button.";
   textEditItemIconButton.identifyingIcon =
       [UIImage imageNamed:@"table_view_cell_check_mark"];

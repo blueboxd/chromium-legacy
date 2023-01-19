@@ -608,6 +608,7 @@
 <translation id="430191667033048642">「<ph name="MOVED_APP_NAME" />」已經移咗去「<ph name="FOLDER_NAME" />」資料夾。</translation>
 <translation id="4302592941791324970">無法使用</translation>
 <translation id="4303223480529385476">展開狀態區</translation>
+<translation id="4311195029067684288">完整</translation>
 <translation id="4312840429157639164">攝錄機已經對齊右上角，同系統平台有衝突。</translation>
 <translation id="4316910396681052118">所有應用程式</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -638,6 +639,7 @@
 <translation id="4455051983450390249">在 <ph name="DEVICE_TYPE" /> 上查看手機的通知</translation>
 <translation id="445864333228800152">晚安，</translation>
 <translation id="4458688154122353284">停止螢幕錄影</translation>
+<translation id="445923051607553918">加入 Wi-Fi 網絡</translation>
 <translation id="4471354919263203780">正在下載語音識別檔案… <ph name="PERCENT" />%</translation>
 <translation id="4471432286288241507">{0,plural, =0{請立即更新裝置}=1{請在 1 秒內更新裝置}other{請在 # 秒內更新裝置}}</translation>
 <translation id="4472575034687746823">開始使用</translation>

@@ -124,6 +124,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
+#include "content/browser/renderer_host/view_transition_opt_in_state.h"
 #include "content/browser/runtime_feature_state/runtime_feature_state_document_data.h"
 #include "content/browser/scoped_active_url.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
@@ -434,9 +435,14 @@ base::StringPiece ReportingDestinationAsString(
   }
 }
 
+// Maximum amount of time to wait for beforeunload/unload handlers to be
+// processed by the renderer process.
+constexpr int kUnloadTimeoutInMSec = 500;
+constexpr base::TimeDelta kUnloadTimeout =
+    base::Milliseconds(kUnloadTimeoutInMSec);
+
 constexpr int kSubframeProcessShutdownDelayInMSec = 2 * 1000;
-static_assert(kSubframeProcessShutdownDelayInMSec +
-                      RenderViewHostImpl::kUnloadTimeoutInMSec <
+static_assert(kSubframeProcessShutdownDelayInMSec + kUnloadTimeoutInMSec <
                   RenderProcessHostImpl::kKeepAliveHandleFactoryTimeoutInMSec,
               "The maximum process shutdown delay should not exceed the "
               "keepalive timeout. This has security implications, see "
@@ -669,7 +675,7 @@ bool ParentNeedsTrustTokenPermissionsPolicy(
     return false;
 
   return network::DoesTrustTokenOperationRequirePermissionsPolicy(
-      begin_params.trust_token_params->type);
+      begin_params.trust_token_params->operation);
 }
 
 // Analyzes trusted sources of a frame's trust-token-redemption Permissions
@@ -1514,14 +1520,14 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       depth_(parent_ ? parent_->GetFrameDepth() + 1 : 0),
       last_committed_site_info_(site_instance_->GetBrowserContext()),
       routing_id_(routing_id),
-      beforeunload_timeout_delay_(RenderViewHostImpl::kUnloadTimeout),
+      beforeunload_timeout_delay_(kUnloadTimeout),
       frame_(std::move(frame_remote)),
       waiting_for_init_(renderer_initiated_creation_of_main_frame),
       frame_token_(frame_token),
       keep_alive_handle_factory_(
           agent_scheduling_group_->GetProcess(),
           RenderProcessHostImpl::kKeepAliveHandleFactoryTimeout),
-      subframe_unload_timeout_(RenderViewHostImpl::kUnloadTimeout),
+      subframe_unload_timeout_(kUnloadTimeout),
       media_device_id_salt_base_(
           BrowserContext::CreateRandomMediaDeviceIDSalt()),
       document_associated_data_(absl::in_place, *this, document_token),
@@ -1592,6 +1598,14 @@ RenderFrameHostImpl::RenderFrameHostImpl(
   beforeunload_timeout_ = std::make_unique<TimeoutMonitor>(
       base::BindRepeating(&RenderFrameHostImpl::BeforeUnloadTimeout,
                           weak_ptr_factory_.GetWeakPtr()));
+
+  // Only main frames have the ability to close the whole page, so we don't
+  // need this timer for subframes.
+  if (is_main_frame()) {
+    close_timeout_ = std::make_unique<TimeoutMonitor>(
+        base::BindRepeating(&RenderFrameHostImpl::ClosePageTimeout,
+                            weak_ptr_factory_.GetWeakPtr()));
+  }
 
   // Local roots are:
   // - main frames; or
@@ -1970,8 +1984,9 @@ void RenderFrameHostImpl::StartBackForwardCacheEvictionTimer() {
 }
 
 void RenderFrameHostImpl::DisableBackForwardCache(
-    BackForwardCache::DisabledReason reason) {
-  back_forward_cache_disabled_reasons_.insert(reason);
+    BackForwardCache::DisabledReason reason,
+    absl::optional<ukm::SourceId> source_id) {
+  back_forward_cache_disabled_reasons_[reason].insert(source_id);
   MaybeEvictFromBackForwardCache();
 }
 
@@ -2082,6 +2097,10 @@ RenderFrameHostImpl* RenderFrameHostImpl::GetParent() const {
 }
 
 PageImpl& RenderFrameHostImpl::GetPage() {
+  return *GetMainFrame()->document_associated_data_->owned_page();
+}
+
+const PageImpl& RenderFrameHostImpl::GetPage() const {
   return *GetMainFrame()->document_associated_data_->owned_page();
 }
 
@@ -2934,6 +2953,8 @@ void RenderFrameHostImpl::InitializePolicyContainerHost(
     return;
   }
 
+  // During initialization, a RenderFrameHost always has a non-null `owner_`.
+  // This is called from the constructor.
   CHECK(owner_);
 
   // The initial empty document inherits its policy container from its creator.
@@ -3160,7 +3181,7 @@ void RenderFrameHostImpl::RenderProcessGone(
   // If this was the current pending or speculative RFH dying, cancel and
   // destroy it.
   if (lifecycle_state_ == LifecycleStateImpl::kSpeculative) {
-    CHECK(owner_);
+    CHECK(owner_);  // See `owner_` invariants about `lifecycle_state_`.
     owner_->GetRenderFrameHostManager()
         .CleanupSpeculativeRfhForRenderProcessGone();
   }
@@ -3240,7 +3261,8 @@ bool RenderFrameHostImpl::CreateRenderFrame(
 
   bool should_clear_browsing_instance_name =
       navigation_request &&
-      (navigation_request->coop_status().require_browsing_instance_swap() ||
+      (navigation_request->browsing_context_group_swap()
+           .ShouldClearWindowName() ||
        (navigation_request->commit_params()
             .is_cross_site_cross_browsing_context_group &&
         base::FeatureList::IsEnabled(
@@ -3505,11 +3527,13 @@ RenderFrameProxyHost* RenderFrameHostImpl::GetProxyToParent() {
 }
 
 RenderFrameProxyHost* RenderFrameHostImpl::GetProxyToOuterDelegate() {
-  // Only the main frame should be able to reach the outer WebContents.
+  // Precondition:RFH in subframe, in pending deletion, speculative, or in the
+  // BFCache are not expected to access the outer WebContents.
+  CHECK(lifecycle_state_ == LifecycleStateImpl::kActive ||
+        lifecycle_state_ == LifecycleStateImpl::kPrerendering);
   DCHECK(is_main_frame());
-  // `owner_` should not be null since we don't allow to update the parent on
-  // behalf of the inactive document.
-  CHECK(owner_);
+
+  CHECK(owner_);  // See `owner_` invariants about `lifecycle_state_`.
   return owner_->GetRenderFrameHostManager().GetProxyToOuterDelegate();
 }
 
@@ -3517,8 +3541,7 @@ void RenderFrameHostImpl::DidChangeReferrerPolicy(
     network::mojom::ReferrerPolicy referrer_policy) {
   if (!IsActive())
     return;
-  // `owner_` will never be null if `IsActive()` returns true.
-  DCHECK(owner_);
+  DCHECK(owner_);  // See `owner_` invariants about `IsActive()`.
   owner_->DidChangeReferrerPolicy(referrer_policy);
 }
 
@@ -4136,7 +4159,7 @@ FrameTreeNode* RenderFrameHostImpl::AddChild(
   // about the new frame.  Create a proxy for the child frame in all
   // SiteInstances that have a proxy for the frame's parent, since all frames
   // in a frame tree should have the same set of proxies.
-  CHECK(owner_);
+  CHECK(owner_);  // See `owner_` invariants about `lifecycle_state_`.
   owner_->GetRenderFrameHostManager().CreateProxiesForChildFrame(child.get());
 
   // When the child is added, it hasn't committed any navigation yet - its
@@ -4343,7 +4366,7 @@ void RenderFrameHostImpl::DidFocusFrame() {
   if (!IsActive())
     return;
 
-  DCHECK(owner_);
+  DCHECK(owner_);  // See `owner_` invariants about `IsActive()`.
   owner_->SetFocusedFrame(GetSiteInstance()->group());
 }
 
@@ -4723,7 +4746,7 @@ void RenderFrameHostImpl::Unload(RenderFrameProxyHost* proxy, bool is_loading) {
   }
 
   if (unload_event_monitor_timeout_ && !do_not_delete_for_testing_) {
-    unload_event_monitor_timeout_->Start(RenderViewHostImpl::kUnloadTimeout);
+    unload_event_monitor_timeout_->Start(kUnloadTimeout);
   }
 
   // TODO(nasko): If the frame is not live, the RFH should just be deleted by
@@ -5016,7 +5039,7 @@ void RenderFrameHostImpl::ProcessBeforeUnloadCompletedFromFrame(
 }
 
 bool RenderFrameHostImpl::IsWaitingForUnloadACK() const {
-  return render_view_host_->is_waiting_for_page_close_completion_ ||
+  return page_close_state_ == PageCloseState::kRunningUnloadHandlers ||
          is_waiting_for_unload_ack_;
 }
 
@@ -5396,9 +5419,82 @@ void RenderFrameHostImpl::UpdateTargetURL(
 }
 
 void RenderFrameHostImpl::RequestClose() {
+  // The renderer already ensures that this can only be called on an outermost
+  // main frame - see DOMWindow::Close().  Terminate the renderer if this is
+  // not the case.
+  if (!IsOutermostMainFrame()) {
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFH_WINDOW_CLOSE_ON_NON_OUTERMOST_FRAME);
+    return;
+  }
+
   // If the renderer is telling us to close, it has already run the unload
   // events, and we can take the fast path.
-  render_view_host_->ClosePageIgnoringUnloadEvents();
+  ClosePageIgnoringUnloadEvents();
+}
+
+void RenderFrameHostImpl::ClosePage() {
+  // This path is taken when tab/window close is initiated by either the
+  // browser process or via a window.close() call through a proxy. In both
+  // cases, we need to tell the main frame's renderer process to run unload
+  // handlers and prepare for page close.
+  //
+  // This should only be called on outermost main frames. If this
+  // RenderFrameHost is no longer a primary main frame (e.g., if it was placed
+  // into back-forward cache just before getting here), we should
+  // not close the active tab, so return early in that case.
+  DCHECK(IsOutermostMainFrame());
+  if (!IsInPrimaryMainFrame()) {
+    return;
+  }
+
+  page_close_state_ = PageCloseState::kRunningUnloadHandlers;
+
+  if (IsRenderFrameLive() && !IsPageReadyToBeClosed()) {
+    close_timeout_->Start(kUnloadTimeout);
+
+    GetAssociatedLocalMainFrame()->ClosePage(
+        base::BindOnce(&RenderFrameHostImpl::ClosePageIgnoringUnloadEvents,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    // This RenderFrameHost doesn't have a live renderer (or has already run
+    // unload handlers), so just skip the close event and close the page.
+    ClosePageIgnoringUnloadEvents();
+  }
+}
+
+void RenderFrameHostImpl::ClosePageIgnoringUnloadEvents() {
+  close_timeout_->Stop();
+
+  // If this RenderFrameHost is no longer the primary main frame (e.g., if it
+  // was replaced by another frame while waiting for the ClosePage ACK or
+  // timeout), there's no need to close the active tab.
+  //
+  // TODO(crbug.com/1406023): This behavior may need to change.
+  if (!IsInPrimaryMainFrame()) {
+    page_close_state_ = PageCloseState::kNotClosing;
+    return;
+  }
+
+  page_close_state_ = PageCloseState::kReadyToBeClosed;
+  delegate_->Close();
+}
+
+bool RenderFrameHostImpl::IsPageReadyToBeClosed() {
+  DCHECK(IsInPrimaryMainFrame());
+  // If there is a JavaScript dialog up, don't bother sending the renderer the
+  // close event because it is known unresponsive, waiting for the reply from
+  // the dialog.
+  return page_close_state_ == PageCloseState::kReadyToBeClosed ||
+         delegate_->IsJavaScriptDialogShowing() || BeforeUnloadTimedOut();
+}
+
+void RenderFrameHostImpl::ClosePageTimeout() {
+  if (delegate_->ShouldIgnoreUnresponsiveRenderer()) {
+    return;
+  }
+
+  ClosePageIgnoringUnloadEvents();
 }
 
 void RenderFrameHostImpl::ShowCreatedWindow(
@@ -5559,7 +5655,7 @@ void RenderFrameHostImpl::ReportInspectorIssue(
 void RenderFrameHostImpl::WriteIntoTrace(
     perfetto::TracedProto<TraceProto> proto) const {
   proto.Set(TraceProto::kRenderFrameHostId, GetGlobalId());
-  proto->set_frame_tree_node_id(frame_tree_node_->frame_tree_node_id());
+  proto->set_frame_tree_node_id(GetFrameTreeNodeId());
   proto->set_lifecycle_state(LifecycleStateToProto());
   proto->set_frame_type(GetFrameTypeProto());
   proto->set_origin(GetLastCommittedOrigin().GetDebugString());
@@ -5610,7 +5706,7 @@ RenderFrameHostImpl::GetFrameTypeProto() const {
   if (GetParent()) {
     return RFHProto::SUBFRAME;
   }
-  if (const_cast<RenderFrameHostImpl*>(this)->GetPage().IsPrimary()) {
+  if (GetPage().IsPrimary()) {
     return RFHProto::PRIMARY_MAIN_FRAME;
   }
   if (lifecycle_state() == LifecycleStateImpl::kPrerendering) {
@@ -5784,6 +5880,7 @@ void RenderFrameHostImpl::FlushNetworkAndNavigationInterfacesForTesting(
 
 void RenderFrameHostImpl::PrepareForInnerWebContentsAttach(
     PrepareForInnerWebContentsAttachCallback callback) {
+  // TODO(https://crbug.com/1405759) Explain why `owner_` exists.
   CHECK(owner_);
   owner_->GetRenderFrameHostManager().PrepareForInnerDelegateAttach(
       std::move(callback));
@@ -6232,7 +6329,7 @@ void RenderFrameHostImpl::GoToEntryAtOffset(
     int32_t offset,
     bool has_user_gesture,
     absl::optional<blink::scheduler::TaskAttributionId>
-        soft_navigation_heuristic_task_id) {
+        soft_navigation_heuristics_task_id) {
   OPTIONAL_TRACE_EVENT2("content", "RenderFrameHostImpl::GoToEntryAtOffset",
                         "render_frame_host", this, "offset", offset);
 
@@ -6250,7 +6347,7 @@ void RenderFrameHostImpl::GoToEntryAtOffset(
   // All frames are allowed to navigate the global history.
   if (delegate_->IsAllowedToGoToEntryAtOffset(offset)) {
     frame_tree_->controller().GoToOffsetFromRenderer(
-        offset, this, soft_navigation_heuristic_task_id);
+        offset, this, soft_navigation_heuristics_task_id);
   }
 }
 
@@ -6590,7 +6687,7 @@ void RenderFrameHostImpl::EnterFullscreen(
     // Reject requests made without transient user activation or a token.
     // TODO(lanwei): Investigate whether we can terminate the renderer when
     // transient user activation and the delegated token are both inactive.
-    CHECK(owner_);
+    CHECK(owner_);  // See `owner_` invariants about `IsActive()`.
     const bool consumed_activation = owner_->UpdateUserActivationState(
         blink::mojom::UserActivationUpdateType::kConsumeTransientActivation,
         blink::mojom::UserActivationNotificationType::kNone);
@@ -6822,7 +6919,7 @@ void RenderFrameHostImpl::UpdateUserActivationState(
   if (lifecycle_state() != LifecycleStateImpl::kActive)
     return;
 
-  CHECK(owner_);
+  CHECK(owner_);  // See `owner_` invariants about `lifecycle_state_`.
   owner_->UpdateUserActivationState(update_type, notification_type);
 }
 
@@ -7312,7 +7409,8 @@ void RenderFrameHostImpl::DidStopLoading() {
   // This async Mojo method can be called from the renderer before entering
   // BFCache but the message can arrive here after it.
   if (!IsPendingDeletion() && !IsInBackForwardCache()) {
-    DCHECK(owner_);
+    DCHECK(owner_);  // See `owner_` invariants about IsPendingDeletion() and
+                     // IsInBackForwardCache().
     owner_->DidStopLoading();
   }
 }
@@ -7419,6 +7517,9 @@ void RenderFrameHostImpl::CreateNewWindow(
   // NB: This call will consume activations in the browser and the remote frame
   // proxies for this frame. The initiating renderer will consume its view of
   // the activations after we return.
+
+  // See `owner_` invariants about `IsActive()`, which is implied by
+  // `can_create_window`.
   CHECK(owner_);
   bool was_consumed = owner_->UpdateUserActivationState(
       blink::mojom::UserActivationUpdateType::kConsumeTransientActivation,
@@ -7879,6 +7980,12 @@ void RenderFrameHostImpl::CreateFencedFrame(
   DCHECK(initial_replicated_state.origin.opaque());
 }
 
+void RenderFrameHostImpl::OnViewTransitionOptInChanged(
+    blink::mojom::ViewTransitionSameOriginOptIn view_transition_opt_in) {
+  ViewTransitionOptInState::GetOrCreateForCurrentDocument(this)
+      ->set_same_origin_opt_in(view_transition_opt_in);
+}
+
 void RenderFrameHostImpl::CreateNewPopupWidget(
     mojo::PendingAssociatedReceiver<blink::mojom::PopupWidgetHost>
         blink_popup_widget_host,
@@ -7998,11 +8105,14 @@ void RenderFrameHostImpl::BeginNavigation(
     // If this is reached in case the RenderFrameHost is in BackForwardCache
     // evict the document from BackForwardCache.
     if (IsInactiveAndDisallowActivation(
-            DisallowActivationReasonId::kBeginNavigation))
+            DisallowActivationReasonId::kBeginNavigation)) {
       return;
+    }
   }
 
-  // `owner_` can not be null since the lifecycle state is checked above.
+  // See `owner_` invariants about `lifecycle_state_`.
+  // `IsInactiveAndDisallowActivation()` check cause both pending deletion and
+  // bfcached states to return early.
   DCHECK(owner_);
   if (owner_->GetRenderFrameHostManager().is_attaching_inner_delegate()) {
     // Avoid starting any new navigations since this frame is in the process of
@@ -8320,7 +8430,7 @@ void RenderFrameHostImpl::ResetWaitingState() {
     beforeunload_pending_replies_.clear();
   }
   send_before_unload_start_time_ = base::TimeTicks();
-  render_view_host_->is_waiting_for_page_close_completion_ = false;
+  page_close_state_ = PageCloseState::kNotClosing;
 }
 
 CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(
@@ -8532,10 +8642,11 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
          type == BeforeUnloadType::INNER_DELEGATE_ATTACH ||
          IsOutermostMainFrame());
 
+  CHECK(owner_);  // Only active documents are subject to BeforeUnload.
+
   if (!for_navigation) {
     // Cancel any pending navigations, to avoid their navigation commit/fail
     // event from wiping out the is_waiting_for_beforeunload_completion_ state.
-    CHECK(owner_);
     owner_->CancelNavigation();
   }
 
@@ -8551,16 +8662,11 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
     DCHECK(!for_navigation);
 
     // Dispatch the ACK to prevent re-entrancy.
-    base::OnceClosure task = base::BindOnce(
-        [](base::WeakPtr<RenderFrameHostImpl> self) {
-          if (!self)
-            return;
-          self->frame_tree_node_->render_manager()->BeforeUnloadCompleted(
-              true, base::TimeTicks::Now());
-        },
-        weak_ptr_factory_.GetWeakPtr());
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE, std::move(task));
+        FROM_HERE,
+        base::BindOnce(&RenderFrameHostManager::BeforeUnloadCompleted,
+                       owner_->GetRenderFrameHostManager().GetWeakPtr(),
+                       /*proceed=*/true, base::TimeTicks::Now()));
     return;
   }
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
@@ -8586,7 +8692,7 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
     beforeunload_dialog_request_cancels_unload_ = false;
     unload_ack_is_for_navigation_ = for_navigation;
     send_before_unload_start_time_ = base::TimeTicks::Now();
-    if (render_view_host_->GetDelegate()->IsJavaScriptDialogShowing()) {
+    if (delegate_->IsJavaScriptDialogShowing()) {
       // If there is a JavaScript dialog up, don't bother sending the renderer
       // the unload event because it is known unresponsive, waiting for the
       // reply from the dialog. If this incoming request is for a DISCARD be
@@ -11097,6 +11203,12 @@ RenderFrameHostImpl::CreateNavigationRequestForSynchronousRendererCommit(
              url, frame_tree_node_->is_on_initial_empty_document()) ||
          is_same_document);
   DCHECK(!is_same_document_history_api_navigation || is_same_document);
+  DCHECK(!IsPendingDeletion());     // IPC is filtered out by the caller.
+  DCHECK(!IsInBackForwardCache());  // A page in the BackForwardCache is fully
+                                    // loaded and has no pending navigations.
+  // See `owner_` invariants about IsPendingDeletion() and
+  // IsInBackForwardCache().
+  CHECK(owner_);
 
   net::IsolationInfo isolation_info = ComputeIsolationInfoInternal(
       origin, net::IsolationInfo::RequestType::kOther, IsCredentialless(),
@@ -11153,7 +11265,6 @@ RenderFrameHostImpl::CreateNavigationRequestForSynchronousRendererCommit(
   // last committed navigation.
   bool is_overriding_user_agent = is_same_document && is_overriding_user_agent_;
 
-  CHECK(owner_);
   return owner_->CreateNavigationRequestForSynchronousRendererCommit(
       this, is_same_document, url, origin, initiator_base_url, isolation_info,
       std::move(referrer), transition, should_replace_current_entry, method,
@@ -11164,8 +11275,9 @@ RenderFrameHostImpl::CreateNavigationRequestForSynchronousRendererCommit(
 }
 
 void RenderFrameHostImpl::BeforeUnloadTimeout() {
-  if (render_view_host_->GetDelegate()->ShouldIgnoreUnresponsiveRenderer())
+  if (delegate_->ShouldIgnoreUnresponsiveRenderer()) {
     return;
+  }
 
   SimulateBeforeUnloadCompleted(/*proceed=*/true);
 }
@@ -11459,8 +11571,9 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   // renderer before getting to NavigationController::RendererDidNavigate if
   // that happens.
   if (is_same_document_navigation) {
-    // `owner_` cannot be null when this is from a same-document navigation.
-    DCHECK(owner_);
+    // `owner_` must exist, because `DidCommitSameDocumentNavigation()` returns
+    // early for RenderFrameHost pending deletion or in the BackForwardCache.
+    CHECK(owner_);
     if (owner_->GetCurrentNavigator()
             .controller()
             .has_post_commit_error_entry()) {
@@ -11791,7 +11904,8 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     bool was_loading =
         frame_tree()->LoadingTree()->IsLoadingIncludingInnerFrameTrees();
     is_loading_ = true;
-    DCHECK(owner_);
+    // TODO(https://crbug.com/1405759): Explain why this is true.
+    CHECK(owner_);
     owner_->DidStartLoading(should_show_loading_ui, was_loading);
   }
 
@@ -12259,6 +12373,7 @@ void RenderFrameHostImpl::OnSameDocumentCommitProcessed(
   if (result == blink::mojom::CommitResult::RestartCrossDocument) {
     // The navigation could not be committed as a same-document navigation.
     // Restart the navigation cross-document.
+    // TODO(https://crbug.com/1405759): Explain why `owner_` exists.
     CHECK(owner_);
     owner_->RestartNavigationAsCrossDocument(std::move(request->second));
     return;
@@ -12918,10 +13033,13 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
 
     // Recompute the target SiteInstance to see if it matches the current
     // one at commit time.
+    BrowsingContextGroupSwap ignored_bcg_swap_info =
+        BrowsingContextGroupSwap::CreateDefault();
     scoped_refptr<SiteInstance> dest_instance =
         navigation_request->frame_tree_node()
             ->render_manager()
-            ->GetSiteInstanceForNavigationRequest(navigation_request);
+            ->GetSiteInstanceForNavigationRequest(navigation_request,
+                                                  &ignored_bcg_swap_info);
     static auto* const does_recomputed_site_instance_match_key =
         base::debug::AllocateCrashKeyString(
             "does_recomputed_site_instance_match",

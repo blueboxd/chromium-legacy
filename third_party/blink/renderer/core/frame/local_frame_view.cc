@@ -31,8 +31,8 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/functional/callback.h"
 #include "base/functional/function_ref.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
@@ -3150,7 +3150,7 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {
   if (ShouldThrottleRendering() || !frame_->GetDocument()->IsActive())
     return;
 
-  TRACE_EVENT0("blink,benchmark",
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("blink.debug"),
                "LocalFrameView::updateStyleAndLayoutIfNeededRecursive");
 
   UpdateStyleAndLayout();
@@ -3278,26 +3278,32 @@ void LocalFrameView::UpdateStyleAndLayout() {
 bool LocalFrameView::UpdateStyleAndLayoutInternal() {
   PostStyleUpdateScope post_style_update_scope(*frame_->GetDocument());
 
-  {
-    frame_->GetDocument()->UpdateStyleAndLayoutTreeForThisDocument();
+  bool layout_updated = false;
 
-    // Update style for all embedded SVG documents underneath this frame, so
-    // that intrinsic size computation for any embedded objects has up-to-date
-    // information before layout.
-    ForAllChildLocalFrameViews([](LocalFrameView& view) {
-      Document& document = *view.GetFrame().GetDocument();
-      if (document.IsSVGDocument())
-        document.UpdateStyleAndLayoutTreeForThisDocument();
-    });
-  }
+  do {
+    {
+      frame_->GetDocument()->UpdateStyleAndLayoutTreeForThisDocument();
 
-  if (NeedsLayout()) {
-    SCOPED_UMA_AND_UKM_TIMER(GetUkmAggregator(),
-                             LocalFrameUkmAggregator::kLayout);
-    UpdateLayout();
-    return true;
-  }
-  return false;
+      // Update style for all embedded SVG documents underneath this frame, so
+      // that intrinsic size computation for any embedded objects has up-to-date
+      // information before layout.
+      ForAllChildLocalFrameViews([](LocalFrameView& view) {
+        Document& document = *view.GetFrame().GetDocument();
+        if (document.IsSVGDocument()) {
+          document.UpdateStyleAndLayoutTreeForThisDocument();
+        }
+      });
+    }
+
+    if (NeedsLayout()) {
+      SCOPED_UMA_AND_UKM_TIMER(GetUkmAggregator(),
+                               LocalFrameUkmAggregator::kLayout);
+      UpdateLayout();
+      layout_updated = true;
+    }
+  } while (post_style_update_scope.Apply());
+
+  return layout_updated;
 }
 
 void LocalFrameView::EnableAutoSizeMode(const gfx::Size& min_size,

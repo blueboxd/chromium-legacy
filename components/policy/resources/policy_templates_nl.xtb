@@ -1870,15 +1870,6 @@ en 6 optionele leden:
       Als je het beleid niet toepast, blijft stroom voor piekuren uit.
 
 Als je het beleid niet instelt, staat de stroom voor piekuren aanvankelijk uit. Gebruikers kunnen deze instelling niet wijzigen.</translation>
-<translation id="2773036462435523078">Hiermee wordt een actie gestart als de computer inactief is.
-
-      Als dit beleid is ingesteld, specificeert het de tijdsduur zonder gebruikersinvoer (in minuten) voordat <ph name="PRODUCT_NAME" /> acties uitvoert die zijn ingesteld via het beleid <ph name="IDLE_TIMEOUT_ACTIONS_POLICY_NAME" />.
-
-      Als dit beleid niet is ingesteld, wordt er geen actie uitgevoerd.
-
-      De minimumdrempel is 5 minuten.
-
-      'Gebruikersinvoer' wordt gedefinieerd door API's voor het besturingssysteem en omvat bijvoorbeeld de muis bewegen of typen op het toetsenbord.</translation>
 <translation id="2773288106548584039">Ondersteuning voor oudere browsers</translation>
 <translation id="2780840673734667062">Inloggen met extra Google-accounts uitzetten</translation>
 <translation id="2784880732336446591">Browsegegevens wissen bij afsluiten</translation>
@@ -8119,21 +8110,6 @@ Dit beleid biedt een overzicht van configuratie-ID's die zijn toegewezen aan VM-
 <translation id="8882307005437314052">Schermtoetsenbord op het inlogscherm aanzetten en de gebruiker toestaan dit tijdelijk uit te zetten</translation>
 <translation id="8883577480680089760"><ph name="PRODUCT_NAME" /> V2-service uitzetten en geen extern bureau starten bij inloggen</translation>
 <translation id="8887709920496070892">De tijdsduur zonder gebruikersinvoer waarna een waarschuwingsdialoogvenster wordt getoond (in milliseconden)</translation>
-<translation id="8887847586787956456">Lijst met acties die moeten worden uitgevoerd als de time-out van het beleid <ph name="IDLE_TIMEOUT_POLICY_NAME" /> is bereikt.
-
-      Als het beleid <ph name="IDLE_TIMEOUT_POLICY_NAME" /> niet is ingesteld, heeft dit beleid geen effect.
-
-      Als de time-out van het beleid <ph name="IDLE_TIMEOUT_POLICY_NAME" /> is bereikt, voert <ph name="PRODUCT_NAME" /> de acties uit die in dit beleid zijn geconfigureerd.
-
-      Als je dit beleid leeg laat of niet instelt, heeft het beleid <ph name="IDLE_TIMEOUT_POLICY_NAME" /> geen effect.
-
-      Deze acties worden ondersteund:
-
-<ph name="CLOSE_BROWSERS_ACTION" />: alle browservensters en PWA's voor dit profiel sluiten.
-
-      <ph name="SHOW_PROFILE_PICKER_ACTION" />: het profielkiezervenster tonen.
-
-      <ph name="CLEAR_BROWSING_HISTORY_ACTION" />, <ph name="CLEAR_DOWNLOAD_HISTORY_ACTION" />, <ph name="CLEAR_COOKIES_AND_OTHER_SITE_DATA_ACTION" />, <ph name="CLEAR_CACHED_IMAGES_AND_FILES_ACTION" />, <ph name="CLEAR_PASSWORD_SIGNIN_ACTION" />, <ph name="CLEAR_AUTOFILL_ACTION" />, <ph name="CLEAR_SITE_SETTINGS_ACTION" />, <ph name="CLEAR_HOSTED_APP_DATA_ACTION" />: de bijbehorende browsegegevens wissen. Zie het beleid <ph name="CLEAR_BROWSING_DATA_ON_EXIT_LIST_POLICY_NAME" /> voor meer informatie.</translation>
 <translation id="8890438048579188548">Waarschuwingen over beëindiging van <ph name="CLOUD_PRINT_NAME" /> verbergen</translation>
 <translation id="8891334958985336685">Rapportage van systeeminformatie van apparaat uitzetten</translation>
 <translation id="8892286064305622118">Vrije schijfruimte vereist voor <ph name="PLUGIN_VM_NAME" /></translation>

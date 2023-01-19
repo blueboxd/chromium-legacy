@@ -191,6 +191,7 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
+#include "ui/base/interaction/element_identifier.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/window_open_disposition_utils.h"
@@ -713,6 +714,9 @@ void RenderViewContextMenu::AddSpellCheckServiceItem(ui::SimpleMenuModel* menu,
                               IDS_CONTENT_CONTEXT_SPELLING_ASK_GOOGLE);
   }
 }
+
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(RenderViewContextMenu,
+                                      kExitFullscreenMenuItem);
 
 RenderViewContextMenu::RenderViewContextMenu(
     content::RenderFrameHost& render_frame_host,
@@ -1709,10 +1713,17 @@ void RenderViewContextMenu::AppendSearchWebForImageItems() {
     return;
   }
 
-  menu_model_.AddItem(
-      GetSearchForImageIdc(),
+  std::u16string menu_string =
       l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_SEARCHLENSFORIMAGE,
-                                 GetImageSearchProviderName(provider)));
+                                 GetImageSearchProviderName(provider));
+
+  if (lens::features::UseLensContextMenuItemAlternateText()) {
+    menu_string = l10n_util::GetStringFUTF16(
+        IDS_CONTENT_CONTEXT_SEARCHLENSFORIMAGE_ALT_TEXT,
+        provider->short_name());
+  }
+
+  menu_model_.AddItem(GetSearchForImageIdc(), menu_string);
 }
 
 void RenderViewContextMenu::AppendAudioItems() {
@@ -1843,6 +1854,10 @@ void RenderViewContextMenu::AppendExitFullscreenItem() {
 
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN,
                                   IDS_CONTENT_CONTEXT_EXIT_FULLSCREEN);
+  menu_model_.SetElementIdentifierAt(
+      menu_model_.GetIndexOfCommandId(IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN)
+          .value(),
+      kExitFullscreenMenuItem);
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
 }
 
@@ -3606,9 +3621,7 @@ void RenderViewContextMenu::ExecSearchLensForImage() {
     return;
   core_tab_helper->SearchWithLens(
       render_frame_host, params().src_url,
-      lens::EntryPoint::CHROME_SEARCH_WITH_GOOGLE_LENS_CONTEXT_MENU_ITEM,
-      /* is_side_panel_enabled_for_feature= */
-      lens::features::IsLensSidePanelEnabled());
+      lens::EntryPoint::CHROME_SEARCH_WITH_GOOGLE_LENS_CONTEXT_MENU_ITEM);
 }
 
 void RenderViewContextMenu::ExecAddANote() {

@@ -62,15 +62,6 @@ bool IssueMatches(const Issue& issue, const UIMediaSink& ui_sink) {
           issue.info().route_id == ui_sink.route->media_route_id());
 }
 
-std::u16string GetSinkFriendlyName(const MediaSink& sink) {
-  // Use U+2010 (HYPHEN) instead of ASCII hyphen to avoid problems with RTL
-  // languages.
-  const char* separator = " \u2010 ";
-  return base::UTF8ToUTF16(sink.description() ? sink.name() + separator +
-                                                    sink.description().value()
-                                              : sink.name());
-}
-
 void MaybeReportCastingSource(MediaCastMode cast_mode,
                               const RouteRequestResult& result) {
   if (result.result_code() == mojom::RouteRequestResultCode::OK)
@@ -92,6 +83,9 @@ MediaRouterUI::MediaRouterUI(
 MediaRouterUI::~MediaRouterUI() {
   if (media_route_starter_)
     DetachFromMediaRouteStarter();
+  for (CastDialogController::Observer& observer : observers_) {
+    observer.OnControllerDestroying();
+  }
 }
 
 // static
@@ -154,9 +148,6 @@ MediaRouterUI::CreateWithMediaSessionRemotePlayback(
 }
 
 void MediaRouterUI::DetachFromMediaRouteStarter() {
-  for (CastDialogController::Observer& observer : observers_)
-    observer.OnControllerInvalidated();
-
   media_route_starter()->RemovePresentationRequestSourceObserver(this);
   media_route_starter()->RemoveMediaSinkWithCastModesObserver(this);
 }
@@ -190,8 +181,16 @@ void MediaRouterUI::ClearIssue(const Issue::Id& issue_id) {
 
 std::unique_ptr<MediaRouteStarter> MediaRouterUI::TakeMediaRouteStarter() {
   DCHECK(media_route_starter_) << "MediaRouteStarter already taken!";
-  DetachFromMediaRouteStarter();
-  return std::move(media_route_starter_);
+  auto starter = std::move(media_route_starter_);
+  if (destructor_) {
+    std::move(destructor_).Run();  // May destroy `this`.
+  }
+  return starter;
+}
+
+void MediaRouterUI::RegisterDestructor(base::OnceClosure destructor) {
+  DCHECK(!destructor_);
+  destructor_ = std::move(destructor);
 }
 
 bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
@@ -415,8 +414,7 @@ void MediaRouterUI::SendIssueForRouteTimeout(
       break;
   }
 
-  IssueInfo issue_info(issue_title, IssueInfo::Action::DISMISS,
-                       IssueInfo::Severity::NOTIFICATION);
+  IssueInfo issue_info(issue_title, IssueInfo::Severity::NOTIFICATION);
   issue_info.sink_id = sink_id;
   AddIssue(issue_info);
 }
@@ -425,7 +423,7 @@ std::u16string MediaRouterUI::GetSinkFriendlyNameFromId(
     const MediaSink::Id& sink_id) {
   for (const MediaSinkWithCastModes& sink : GetEnabledSinks()) {
     if (sink.sink.id() == sink_id) {
-      return GetSinkFriendlyName(sink.sink);
+      return base::UTF8ToUTF16(sink.sink.name());
     }
   }
   return std::u16string(u"Device");
@@ -435,8 +433,7 @@ void MediaRouterUI::SendIssueForUserNotAllowed(const MediaSink::Id& sink_id) {
   std::string issue_title = l10n_util::GetStringFUTF8(
       IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_USER_NOT_ALLOWED,
       GetSinkFriendlyNameFromId(sink_id));
-  IssueInfo issue_info(issue_title, IssueInfo::Action::DISMISS,
-                       IssueInfo::Severity::WARNING);
+  IssueInfo issue_info(issue_title, IssueInfo::Severity::WARNING);
   issue_info.sink_id = sink_id;
   AddIssue(issue_info);
 }
@@ -446,8 +443,7 @@ void MediaRouterUI::SendIssueForNotificationDisabled(
   std::string issue_title = l10n_util::GetStringFUTF8(
       IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_NOTIFICATION_DISABLED,
       GetSinkFriendlyNameFromId(sink_id));
-  IssueInfo issue_info(issue_title, IssueInfo::Action::DISMISS,
-                       IssueInfo::Severity::WARNING);
+  IssueInfo issue_info(issue_title, IssueInfo::Severity::WARNING);
   issue_info.sink_id = sink_id;
   AddIssue(issue_info);
 }
@@ -456,8 +452,7 @@ void MediaRouterUI::SendIssueForScreenPermission(const MediaSink::Id& sink_id) {
 #if BUILDFLAG(IS_MAC)
   std::string issue_title = l10n_util::GetStringUTF8(
       IDS_MEDIA_ROUTER_ISSUE_MAC_SCREEN_CAPTURE_PERMISSION_ERROR);
-  IssueInfo issue_info(issue_title, IssueInfo::Action::DISMISS,
-                       IssueInfo::Severity::WARNING);
+  IssueInfo issue_info(issue_title, IssueInfo::Severity::WARNING);
   issue_info.sink_id = sink_id;
   AddIssue(issue_info);
 #else
@@ -475,8 +470,7 @@ void MediaRouterUI::SendIssueForUnableToCast(MediaCastMode cast_mode,
                 IDS_MEDIA_ROUTER_ISSUE_UNABLE_TO_CAST_DESKTOP)
           : l10n_util::GetStringUTF8(
                 IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB);
-  IssueInfo issue_info(issue_title, IssueInfo::Action::DISMISS,
-                       IssueInfo::Severity::WARNING);
+  IssueInfo issue_info(issue_title, IssueInfo::Severity::WARNING);
   issue_info.sink_id = sink_id;
   AddIssue(issue_info);
 }
@@ -485,7 +479,7 @@ void MediaRouterUI::SendIssueForTabAudioNotSupported(
     const MediaSink::Id& sink_id) {
   IssueInfo issue_info(
       l10n_util::GetStringUTF8(IDS_MEDIA_ROUTER_ISSUE_TAB_AUDIO_NOT_SUPPORTED),
-      IssueInfo::Action::DISMISS, IssueInfo::Severity::NOTIFICATION);
+      IssueInfo::Severity::NOTIFICATION);
   issue_info.sink_id = sink_id;
   AddIssue(issue_info);
 }
@@ -600,7 +594,7 @@ UIMediaSink MediaRouterUI::ConvertToUISink(const MediaSinkWithCastModes& sink,
                                            const absl::optional<Issue>& issue) {
   UIMediaSink ui_sink{sink.sink.provider_id()};
   ui_sink.id = sink.sink.id();
-  ui_sink.friendly_name = GetSinkFriendlyName(sink.sink);
+  ui_sink.friendly_name = base::UTF8ToUTF16(sink.sink.name());
   ui_sink.icon_type = sink.sink.icon_type();
   ui_sink.cast_modes = sink.cast_modes;
 

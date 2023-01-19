@@ -111,7 +111,6 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHNewTabTipFeature,
     &kIPHNewIncognitoTabTipFeature,
     &kIPHBadgedReadingListFeature,
-    &kIPHBadgedWhatsNewFeature,
     &kIPHWhatsNewFeature,
     &kIPHReadingListMessagesFeature,
     &kIPHBadgedTranslateManualTriggerFeature,
@@ -120,6 +119,9 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHFollowWhileBrowsingFeature,
     &kIPHOverflowMenuTipFeature,
     &kIPHPriceNotificationsWhileBrowsingFeature,
+    &kIPHiOSDefaultBrowserBadgeEligibilityFeature,
+    &kIPHiOSDefaultBrowserOverflowMenuBadgeFeature,
+    &kIPHiOSDefaultBrowserSettingsBadgeFeature,
 #endif  // BUILDFLAG(IS_IOS)
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)

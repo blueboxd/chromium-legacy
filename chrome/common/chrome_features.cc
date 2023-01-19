@@ -252,12 +252,7 @@ const base::FeatureParam<OsIntegrationSubManagersStage>
 // offline if no custom page is provided by developer.
 BASE_FEATURE(kPWAsDefaultOfflinePage,
              "PWAsDefaultOfflinePage",
-#if BUILDFLAG(IS_ANDROID)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // API that allows PWAs manually minimizing, maximizing and restoring windows.
 BASE_FEATURE(kDesktopPWAsAdditionalWindowingControls,
@@ -547,7 +542,7 @@ BASE_FEATURE(kHappinessTrackingSystem,
 // survey.
 BASE_FEATURE(kHappinessTrackingSystemBluetoothRevamp,
              "HappinessTrackingSystemBluetoothRevamp",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 // Enables or disables the Happiness Tracking System for the Ent survey.
 BASE_FEATURE(kHappinessTrackingSystemEnt,
              "HappinessTrackingSystemEnt",
@@ -607,6 +602,10 @@ BASE_FEATURE(kHappinessTrackingPhotosExperience,
 // Enables the Happiness Tracking System for General Camera survey.
 BASE_FEATURE(kHappinessTrackingGeneralCamera,
              "HappinessTrackingGeneralCamera",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+// Enables the Happiness Tracking System for Privacy Hub baseline survey.
+BASE_FEATURE(kHappinessTrackingPrivacyHubBaseline,
+             "HappinessTrackingPrivacyHubBaseline",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
@@ -959,7 +958,7 @@ BASE_FEATURE(kRemoveSupervisedUsersOnStartup,
 // Enables notification permission module in Safety Check.
 BASE_FEATURE(kSafetyCheckNotificationPermissions,
              "SafetyCheckNotificationPermissions",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const base::FeatureParam<int>
     kSafetyCheckNotificationPermissionsMinEnagementLimit{
@@ -1412,11 +1411,7 @@ bool IsParentAccessCodeForOnlineLoginEnabled() {
 // Enables omnibox trigger prerendering.
 BASE_FEATURE(kOmniboxTriggerForPrerender2,
              "OmniboxTriggerForPrerender2",
-#if BUILDFLAG(IS_ANDROID)
              base::FEATURE_ENABLED_BY_DEFAULT);
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
 
 BASE_FEATURE(kSupportSearchSuggestionForPrerender2,
              "SupportSearchSuggestionForPrerender2",
@@ -1433,13 +1428,18 @@ const base::FeatureParam<SearchSuggestionPrerenderImplementationType>
         SearchSuggestionPrerenderImplementationType::kIgnorePrefetch,
         &search_suggestion_implementation_types};
 
+BASE_FEATURE(kAutocompleteActionPredictorConfidenceCutoff,
+             "AutocompleteActionPredictorConfidenceCutoff",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables omnibox trigger no state prefetch. Only one of
 // kOmniboxTriggerForPrerender2 or kOmniboxTriggerForNoStatePrefetch can be
-// enabled in the experiment.
+// enabled in the experiment. If both are enabled, only
+// kOmniboxTriggerForPrerender2 takes effect.
 // TODO(crbug.com/1267731): Remove this flag once the experiments are completed.
 BASE_FEATURE(kOmniboxTriggerForNoStatePrefetch,
              "OmniboxTriggerForNoStatePrefetch",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // A feature to indicate whether setting wake time >24hours away is supported by
@@ -1453,5 +1453,9 @@ BASE_FEATURE(kSupportsRtcWakeOver24Hours,
 BASE_FEATURE(kUseWebAppDBInsteadOfExternalPrefs,
              "UseWebAppDBInsteadOfExternalPrefs",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kWebAuthFlowInBrowserTab,
+             "WebAuthFlowInBrowserTab",
+             base::FeatureState::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

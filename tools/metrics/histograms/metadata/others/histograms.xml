@@ -2083,7 +2083,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cast.Sender.RemotePlayback.InitiationLocation"
-    enum="RemotePlaybackInitiationLocation" expires_after="2023-05-11">
+    enum="RemotePlaybackInitiationLocation" expires_after="2023-07-16">
   <owner>muyaoxu@google.com</owner>
   <owner>openscreen-eng@google.com</owner>
   <summary>
@@ -4803,32 +4803,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Dialog.Create" enum="BooleanCreated" expires_after="M85">
-  <owner>pdyson@chromium.org</owner>
-  <summary>
-    Counts the number times dialog boxes are created using a particular parent
-    class.
-  </summary>
-</histogram>
-
-<histogram name="Dialog.Creation" enum="DialogName" expires_after="M85">
-  <owner>pdyson@chromium.org</owner>
-  <summary>
-    Counts the number times various types of dialog boxes are created.
-  </summary>
-</histogram>
-
-<histogram name="Dialog.DialogDelegate.Duration" units="ms" expires_after="M77">
-  <owner>pdyson@chromium.org</owner>
-  <summary>
-    How long dialog boxes are open, for dialog boxes created using the parent
-    class DialogDelegate. This will include bubbles that use
-    BubbleDialogDelegateView as a parent class, and dialogs that use
-    DialogDelegateView as a parent class. This is logged on delegate
-    destruction.
-  </summary>
-</histogram>
-
 <histogram name="DirectSockets.PermissionDeniedFailures"
     enum="DirectSocketPermissionFailureType" expires_after="2023-09-13">
   <owner>ericwilligers@chromium.org</owner>
@@ -5414,7 +5388,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Eche.AppStream.LaunchAttempt" enum="AppStreamLaunchEntryPoint"
     expires_after="2023-05-18">
   <owner>crisrael@google.com</owner>
-  <owner>jonmann@google.com</owner>
+  <owner>jonmann@chromium.org</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
   <summary>
     This metric logs where the Eche app was launched from. The metric is emmited
@@ -5425,7 +5399,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Eche.CompleteAppList.Available.Latency" units="ms"
     expires_after="2023-05-18">
   <owner>crisrael@google.com</owner>
-  <owner>jonmann@google.com</owner>
+  <owner>jonmann@chromium.org</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
   <summary>
     This metric tracks the time it takes from the phone becoming connected to
@@ -5535,6 +5509,18 @@ chromium-metrics-reviews@google.com.
     stream is closed before the stream doesn't started. Fires during the process
     of closing Eche streaming when the stream doesn't start. It is not sent on a
     successful connection attempt.
+  </summary>
+</histogram>
+
+<histogram name="Eche.UniqueAppsStreamed.PerDay" units="count"
+    expires_after="2023-05-18">
+  <owner>crisrael@google.com</owner>
+  <owner>jonmann@chromium.org</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    This metric tracks the number of unique apps the user attempts to launch an
+    app stream. Emitted when the app stream is launched and the app has not been
+    launched in the current session.
   </summary>
 </histogram>
 
@@ -6298,7 +6284,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FirstRun.NewUserExperience.GoogleAppsInteraction"
-    enum="NuxGoogleAppsInteractions" expires_after="2023-05-14">
+    enum="NuxGoogleAppsInteractions" expires_after="2023-07-16">
   <owner>johntlee@chromium.org</owner>
   <owner>dpapad@chromium.org</owner>
   <summary>
@@ -6312,7 +6298,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FirstRun.NewUserExperience.GoogleAppsSelection"
-    enum="NuxGoogleAppsSelections" expires_after="2023-05-14">
+    enum="NuxGoogleAppsSelections" expires_after="2023-07-16">
   <owner>johntlee@chromium.org</owner>
   <owner>dpapad@chromium.org</owner>
   <summary>
@@ -6376,7 +6362,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FirstRun.NewUserExperience.SignInInterstitialInteraction"
-    enum="NuxSignInInterstitialInteractions" expires_after="2023-05-14">
+    enum="NuxSignInInterstitialInteractions" expires_after="2023-07-16">
   <owner>johntlee@chromium.org</owner>
   <owner>dpapad@chromium.org</owner>
   <summary>
@@ -6389,7 +6375,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FirstRun.Sentinel.Created" enum="FirstRunSentinelResult"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>Result of sentinel file has been written.</summary>
@@ -6414,7 +6400,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FirstRun.Stage" enum="FirstRunStageResult"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>tinazwang@chromium.org</owner>
   <owner>bling-get-started@google.com</owner>
   <summary>
@@ -7931,7 +7917,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="LoadingPredictor.PreconnectHitsPercentage" units="%"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@chromium.org</owner>
   <summary>
@@ -7943,7 +7929,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="LoadingPredictor.PreconnectLearningCount"
-    units="origins" expires_after="2023-05-14">
+    units="origins" expires_after="2023-07-16">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@chromium.org</owner>
   <summary>
@@ -7965,7 +7951,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="LoadingPredictor.PreconnectLearningRecall"
-    units="%" expires_after="2023-05-14">
+    units="%" expires_after="2023-07-16">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@chromium.org</owner>
   <summary>
@@ -8030,7 +8016,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mac.FileMenuNativeShare" enum="BooleanSuccess"
-    expires_after="2023-05-07">
+    expires_after="2023-07-16">
   <owner>nasims@google.com</owner>
   <owner>ellyjones@chromium.org</owner>
   <summary>
@@ -8380,7 +8366,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mojo.Channel.WriteQueuePendingMessages" units="count"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>amistry@chromium.org</owner>
   <owner>bgeffon@chromium.org</owner>
   <owner>rockot@google.com</owner>
@@ -9209,7 +9195,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OSCrypt.BackendUsage" enum="LinuxPasswordStoreUsage"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>cfroussios@chromium.org</owner>
   <owner>mamir@chromium.org</owner>
   <summary>
@@ -10298,39 +10284,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Process.Sandbox.Launch.Warning" enum="WinGetLastError"
-    expires_after="never">
-<!-- expires-never: metric needed for diagnosing sandbox issues. -->
-
-  <owner>forshaw@chromium.org</owner>
-  <owner>wfh@chromium.org</owner>
-  <summary>
-    Warnings returned while launching sandboxed process on Windows. For decoding
-    error code please refer to http://goo.gl/fJJiAv. This will only be logged
-    when SpawnTarget succeeds with SBOX_ALL_OK but the last warning result does
-    not equal SBOX_ALL_OK.
-
-    Warning: this histogram expired in M87, and was revived in M103; data may be
-    missing.
-  </summary>
-</histogram>
-
-<histogram name="Process.Sandbox.Launch.WarningResultCode"
-    enum="LaunchErrorCodes" expires_after="never">
-<!-- expires-never: metric needed for diagnosing sandbox issues. -->
-
-  <owner>forshaw@chromium.org</owner>
-  <owner>wfh@chromium.org</owner>
-  <summary>
-    The warning launch error returned while launching sandboxed process on
-    Windows. This will only be logged when SpawnTarget succeeds with SBOX_ALL_OK
-    but the last warning result does not equal SBOX_ALL_OK.
-
-    Warning: this histogram expired in M87, and was revived in M103; data may be
-    missing.
-  </summary>
-</histogram>
-
 <histogram name="Process.Sandbox.Lowbox.Launch.Error" enum="WinGetLastError"
     expires_after="never">
 <!-- expires-never: metric needed for diagnosing sandbox issues. -->
@@ -10713,7 +10666,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadingList.Read.AgeOnDeletion" units="hours"
-    expires_after="2023-03-15">
+    expires_after="2023-07-16">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -10732,7 +10685,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadingList.Read.Number" units="count"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>Number of read entries in reading list.</summary>
@@ -10758,7 +10711,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ReadingList.Unread.Number" units="count"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>Number of unread entries in reading list.</summary>
@@ -11523,7 +11476,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SB2.RemoteCall.CheckDelta" units="microseconds"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>vakh@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
@@ -12652,7 +12605,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Skia.SubmitRenderPasses" units="renderpasses"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>egdaniel@google.com</owner>
   <owner>bsalomon@google.com</owner>
   <summary>
@@ -12917,7 +12870,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram base="true" name="Spellcheck.Windows.ChromeLocalesSupport"
-    units="locales" expires_after="2023-05-14">
+    units="locales" expires_after="2023-07-16">
   <owner>gujen@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>
@@ -14781,7 +14734,7 @@ regressions. -->
 </histogram>
 
 <histogram name="VoiceInteraction.VoiceResultConfidenceValue" units="%"
-    expires_after="2023-07-09">
+    expires_after="2023-07-16">
   <owner>basiaz@google.com</owner>
   <owner>chrome-language@google.com</owner>
   <summary>

@@ -839,9 +839,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPaymentMethodQueryEnabled,
     payments::kCanMakePaymentEnabled,
     base::Value::Type::BOOLEAN },
-  { key::kFileSystemSyncAccessHandleAsyncInterfaceEnabled,
-    storage::kFileSystemSyncAccessHandleAsyncInterfaceEnabled,
-    base::Value::Type::BOOLEAN },
 
 #if !BUILDFLAG(IS_CHROMEOS)
   { key::kMetricsReportingEnabled,
@@ -1637,9 +1634,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDevicePolicyRefreshRate,
     prefs::kDevicePolicyRefreshRate,
     base::Value::Type::INTEGER },
-  { key::kGetDisplayMediaSetSelectAllScreensAllowedForUrls,
-    prefs::kManagedGetDisplayMediaSetSelectAllScreensAllowedForUrls,
-    base::Value::Type::LIST },
   { key::kLacrosSecondaryProfilesAllowed,
     prefs::kLacrosSecondaryProfilesAllowed,
     base::Value::Type::BOOLEAN },
@@ -1676,7 +1670,16 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kNewWindowsInKioskAllowed,
     prefs::kNewWindowsInKioskAllowed,
     base::Value::Type::BOOLEAN },
+  { key::kKioskTroubleshootingToolsEnabled,
+    prefs::kKioskTroubleshootingToolsEnabled,
+    base::Value::Type::BOOLEAN },
 #endif // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
+  { key::kGetDisplayMediaSetSelectAllScreensAllowedForUrls,
+    prefs::kManagedGetDisplayMediaSetSelectAllScreensAllowedForUrls,
+    base::Value::Type::LIST },
+#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS)
   { key::kAuthNegotiateDelegateByKdcPolicy,
@@ -1825,6 +1828,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kPPAPISharedImagesSwapChainAllowed,
     policy::policy_prefs::kPPAPISharedImagesSwapChainAllowed,
+    base::Value::Type::BOOLEAN },
+  { key::kForceEnablePepperVideoDecoderDevAPI,
+    policy::policy_prefs::kForceEnablePepperVideoDecoderDevAPI,
     base::Value::Type::BOOLEAN },
 #endif // BUILDFLAG(ENABLE_PPAPI)
 };
@@ -2035,14 +2041,6 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-  handlers->AddHandler(
-      std::make_unique<enterprise_idle::IdleTimeoutPolicyHandler>());
-  handlers->AddHandler(
-      std::make_unique<enterprise_idle::IdleTimeoutActionsPolicyHandler>(
-          chrome_schema));
-#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-
   handlers->AddHandler(std::make_unique<RestoreOnStartupPolicyHandler>());
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kSerialAllowUsbDevicesForUrls,
@@ -2062,6 +2060,16 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       key::kWebHidAllowDevicesWithHidUsagesForUrls,
       prefs::kManagedWebHidAllowDevicesWithHidUsagesForUrls, chrome_schema));
 #endif
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_ANDROID)
+  handlers->AddHandler(
+      std::make_unique<enterprise_idle::IdleTimeoutPolicyHandler>());
+  handlers->AddHandler(
+      std::make_unique<enterprise_idle::IdleTimeoutActionsPolicyHandler>(
+          chrome_schema));
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+        // BUILDFLAG(IS_ANDROID)
 
   handlers->AddHandler(
       std::make_unique<content_settings::CookieSettingsPolicyHandler>());

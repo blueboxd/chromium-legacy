@@ -27,10 +27,13 @@ absl::optional<const base::Value::Dict*> GetConfigWithEnabledLevel(
 }
 }  // namespace
 
+const char kToolsDlc[] = "termina-tools-dlc";
+
 const char kBruschettaVmName[] = "bru";
 const char kBruschettaDisplayName[] = "Bruschetta";
 
-const char kBiosPath[] = "Downloads/bios";
+const char kBiosPath[] = "Downloads/CROSVM_CODE.fd";
+const char kPflashPath[] = "Downloads/CROSVM_VARS.google.fd";
 
 const char* BruschettaResultString(const BruschettaResult res) {
 #define ENTRY(name)            \

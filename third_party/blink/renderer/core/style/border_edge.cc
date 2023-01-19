@@ -21,7 +21,9 @@ BorderEdge::BorderEdge() : is_present_(false), style_(EBorderStyle::kHidden) {}
 
 // static
 EBorderStyle BorderEdge::EffectiveStyle(EBorderStyle style, int width) {
-  if (style == EBorderStyle::kDouble && width < 3) {
+  if ((style == EBorderStyle::kDouble && width < 3) ||
+      ((style == EBorderStyle::kRidge || style == EBorderStyle::kGroove) &&
+       width <= 1)) {
     return EBorderStyle::kSolid;
   }
   return style;
@@ -79,6 +81,13 @@ int BorderEdge::GetDoubleBorderStripeWidth(DoubleBorderStripe stripe) const {
 
 bool BorderEdge::SharesColorWith(const BorderEdge& other) const {
   return color_ == other.color_;
+}
+
+void BorderEdge::ClampWidth(int max_width) {
+  if (width_ > max_width) {
+    width_ = max_width;
+    style_ = EffectiveStyle(style_, width_);
+  }
 }
 
 }  // namespace blink

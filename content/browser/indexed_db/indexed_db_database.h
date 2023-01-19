@@ -305,6 +305,8 @@ class CONTENT_EXPORT IndexedDBDatabase {
   bool IsObjectStoreIdInMetadataAndIndexNotInMetadata(int64_t object_store_id,
                                                       int64_t index_id) const;
 
+  bool IsTransactionBlockingOthers(IndexedDBTransaction* transaction) const;
+
   base::WeakPtr<IndexedDBDatabase> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
@@ -375,6 +377,16 @@ class CONTENT_EXPORT IndexedDBDatabase {
   void ConnectionClosed(IndexedDBConnection* connection);
 
   bool CanBeDestroyed();
+
+  std::vector<PartitionedLockManager::PartitionedLockRequest>
+  BuildLockRequestsFromTransaction(IndexedDBTransaction* transaction) const;
+
+  // Find the transactions that block `current_transaction` from acquiring the
+  // locks, and ensure that the clients with blocking transactions are active.
+  void RequireBlockingTransactionClientsToBeActive(
+      IndexedDBTransaction* current_transaction,
+      std::vector<PartitionedLockManager::PartitionedLockRequest>&
+          lock_requests);
 
   // Safe because the IndexedDBBackingStore is owned by the same object which
   // owns us, the IndexedDBPerBucketFactory.

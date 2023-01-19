@@ -251,7 +251,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillManagerClient {
   // Enables or disables tethering hotspot. Only supports cellular as the
   // upstream technologies and WiFi as the downstream technology.
   virtual void SetTetheringEnabled(bool enabled,
-                                   base::OnceClosure callback,
+                                   StringCallback callback,
                                    ErrorCallback error_callback) = 0;
 
   // Checks whether the upstream technology is ready to tether. Returns a status
@@ -260,6 +260,11 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillManagerClient {
   // readiness check is completed but the upstream is not ready.
   virtual void CheckTetheringReadiness(StringCallback callback,
                                        ErrorCallback error_callback) = 0;
+
+  // Enables or disables local only hotspot.
+  virtual void SetLOHSEnabled(bool enabled,
+                              base::OnceClosure callback,
+                              ErrorCallback error_callback) = 0;
 
   // Returns an interface for testing (stub only), or returns null.
   virtual TestInterface* GetTestInterface() = 0;

@@ -27,11 +27,12 @@ void BackupRefPtrImpl<AllowDangling>::AcquireInternal(uintptr_t address) {
 #endif
   uintptr_t slot_start =
       partition_alloc::PartitionAllocGetSlotStartInBRPPool(address);
-  if constexpr (AllowDangling)
+  if constexpr (AllowDangling) {
     partition_alloc::internal::PartitionRefCountPointer(slot_start)
         ->AcquireFromUnprotectedPtr();
-  else
+  } else {
     partition_alloc::internal::PartitionRefCountPointer(slot_start)->Acquire();
+  }
 }
 
 template <bool AllowDangling>
@@ -43,12 +44,14 @@ void BackupRefPtrImpl<AllowDangling>::ReleaseInternal(uintptr_t address) {
       partition_alloc::PartitionAllocGetSlotStartInBRPPool(address);
   if constexpr (AllowDangling) {
     if (partition_alloc::internal::PartitionRefCountPointer(slot_start)
-            ->ReleaseFromUnprotectedPtr())
+            ->ReleaseFromUnprotectedPtr()) {
       partition_alloc::internal::PartitionAllocFreeForRefCounting(slot_start);
+    }
   } else {
     if (partition_alloc::internal::PartitionRefCountPointer(slot_start)
-            ->Release())
+            ->Release()) {
       partition_alloc::internal::PartitionAllocFreeForRefCounting(slot_start);
+    }
   }
 }
 
@@ -148,7 +151,7 @@ bool AsanUnownedPtrImpl::EndOfAliveAllocation(const volatile void* ptr) {
 
 bool AsanUnownedPtrImpl::LikelySmuggledScalar(const volatile void* ptr) {
   intptr_t address = reinterpret_cast<intptr_t>(ptr);
-  return address < 0x100;  // Negative or small positive.
+  return address < 0x4000;  // Negative or small positive.
 }
 
 }  // namespace base::internal

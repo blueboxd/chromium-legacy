@@ -25,6 +25,7 @@
       # Name is vr_*, but actually has AR tests.
       'vr_android_unittests': {},
     },
+
     'android_ddready_vr_gtests': {
       'chrome_public_test_vr_apk-ddready-cardboard': {
         'args': [
@@ -218,6 +219,20 @@
       },
       'mojo_test_apk': {},
       'ui_android_unittests': {},
+      'webview_instrumentation_test_apk': {
+        'swarming': {
+          'shards': 7,
+        },
+      },
+    },
+
+    'android_specific_coverage_java_tests': {
+      'content_shell_test_apk': {
+        'swarming': {
+          'shards': 3,
+        },
+      },
+      'mojo_test_apk': {},
       'webview_instrumentation_test_apk': {
         'swarming': {
           'shards': 7,
@@ -1496,78 +1511,6 @@
     # ensure are still working.
     'chromium_tracing_gtests': {
       'services_unittests': {},
-    },
-
-    'chromium_web_tests_and_wpt_webdriver_isolated_scripts': {
-      'blink_web_tests': {
-        # layout test failures are retried 3 times when '--test-list' is not
-        # passed, but 0 times when '--test-list' is passed. We want to always
-        # retry 3 times, so we explicitly specify it.
-        'args': [
-          '--num-retries=3',
-        ],
-        'isolate_name': 'blink_web_tests',
-        'merge': {
-          'args': [
-            '--verbose',
-          ],
-          'script': '//third_party/blink/tools/merge_web_test_results.py',
-        },
-        'mixins': [
-          'blink_tests_write_run_histories',
-           # TODO(crbug.com/1327314): Enable for blink web tests.
-          'disable_check_flakiness_web_tests',
-          'skia_gold_test',
-        ],
-        'resultdb': {
-          'enable': True,
-        },
-        'results_handler': 'layout tests',
-        'swarming': {
-          'shards': 5,
-        },
-      },
-      'blink_wpt_tests': {
-        # layout test failures are retried 3 times when '--test-list' is not
-        # passed, but 0 times when '--test-list' is passed. We want to always
-        # retry 3 times, so we explicitly specify it.
-        'args': [
-          '--num-retries=3',
-          '--step-name=blink-wpt-tests',
-        ],
-        'isolate_name': 'blink_wpt_tests',
-        'merge': {
-          'args': [
-            '--verbose',
-          ],
-          'script': '//third_party/blink/tools/merge_web_test_results.py',
-        },
-        'mixins': [
-          'blink_tests_write_run_histories',
-          # TODO(crbug.com/1327314): Enable for blink web tests.
-          'disable_check_flakiness_web_tests',
-          'skia_gold_test',
-        ],
-        'resultdb': {
-          'enable': True,
-        },
-        'results_handler': 'layout tests',
-        'swarming': {
-          'shards': 7,
-        },
-      },
-      'webdriver_tests_suite': {
-        'isolate_name': 'webdriver_wpt_tests',
-         'merge': {
-          'args': [
-            '--verbose',
-          ],
-          'script': '//third_party/blink/tools/merge_web_test_results.py',
-        },
-        'swarming': {
-          'shards': 4,
-        },
-      },
     },
 
     'chromium_web_tests_high_dpi_isolated_scripts': {
@@ -4081,7 +4024,7 @@
     },
 
     'lacros_skylab': {
-      'lacros_tast_tests': {
+      'lacros_all_tast_tests': {
         'tast_expr': '("group:mainline" && "dep:lacros" && !informational)',
         'timeout_sec': 10800,
       },
@@ -4162,15 +4105,6 @@
 
     'lacros_vm_gtests': {
       'base_unittests': {},
-    },
-
-    'layout_ng_gtests': {
-      'webkit_unit_tests_ng': {
-        'args': [
-          '--disable-blink-features=LayoutNG,LayoutNGBlockFragmentation'
-        ],
-        'test': 'blink_unittests',
-      },
     },
 
     'leak_detection_isolated_scripts': {
@@ -5125,7 +5059,6 @@
       # Only run on platforms that intend to support WebVR in the near
       # future.
       'vr_common_unittests': {},
-      'vr_pixeltests': {},
     },
 
     'vulkan_swiftshader_isolated_scripts': {
@@ -5487,6 +5420,28 @@
       },
     },
 
+    'wpt_web_tests_enable_leak_detection': {
+      'wpt_tests_suite': {
+        'args': [
+          '--log-wptreport',
+          '--xvfb',
+          '--enable-leak-detection',
+        ],
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'isolate_name': 'wpt_tests_isolate_content_shell',
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 15,
+        },
+        'experiment_percentage': 100,
+      },
+    },
+
     'wpt_web_tests_highdpi': {
       'wpt_tests_suite_highdpi': {
         'args': [
@@ -5575,29 +5530,6 @@
       },
     },
 
-    'wpt_web_tests_layout_ng_disabled': {
-      'wpt_tests_suite_layout_ng_disabled': {
-        'args': [
-          '--log-wptreport',
-          '--xvfb',
-          '--flag-specific',
-          'disable-layout-ng',
-        ],
-        'merge': {
-          'args': [
-            '--verbose',
-          ],
-          'script': '//third_party/blink/tools/merge_web_test_results.py',
-        },
-        'isolate_name': 'wpt_tests_isolate_content_shell',
-        'results_handler': 'layout tests',
-        'swarming': {
-          'shards': 12,
-        },
-        'experiment_percentage': 100,
-      },
-    },
-
     'wpt_web_tests_not_site_per_process': {
       'wpt_tests_suite_not_site_per_process': {
         'args': [
@@ -5680,20 +5612,12 @@
       'android_smoke_tests',
     ],
 
-    # This is the same as 'chromium_android_gtests'
-    # with the addition of 'android_modern_smoke_tests',
-    # 'webview_cts_tests_gtest', and 'webview_ui_instrumentation_tests',
-    'android_pie_coverage_gtests': [
+    'android_pie_coverage_instrumentation_tests': [
       'android_modern_smoke_tests',
       'android_smoke_tests',
-      'android_specific_chromium_gtests',  # Already includes gl_gtests.
-      'chromium_gtests',
-      'chromium_gtests_for_devices_with_graphical_output',
+      'android_specific_coverage_java_tests',
       'chrome_public_tests',
-      'linux_flavor_specific_chromium_gtests',
       'vr_android_specific_chromium_tests',
-      'vr_platform_specific_chromium_gtests',
-      'webview_cts_tests_gtest',
       'webview_ui_instrumentation_tests',
     ],
 
@@ -5847,6 +5771,13 @@
       'non_android_and_cast_and_chromeos_chromium_gtests',
       'non_android_chromium_gtests',
       'vr_platform_specific_chromium_gtests',
+    ],
+
+    'chromium_linux_blink_rel_isolated_scripts': [
+      'chromium_webkit_isolated_scripts',
+      'linux_specific_chromium_isolated_scripts',
+      'vulkan_swiftshader_isolated_scripts',
+      'chromium_web_tests_high_dpi_isolated_scripts',
     ],
 
     'chromium_linux_cast_audio_gtests': [
@@ -6519,7 +6450,6 @@
     'wpt_web_tests_content_shell_multiple_flags': [
       'wpt_web_tests_content_shell',
       'wpt_web_tests_not_site_per_process',
-      'wpt_web_tests_layout_ng_disabled',
       'wpt_web_tests_highdpi',
     ],
   },
@@ -7142,6 +7072,14 @@
       },
     },
 
+    'lacros_arm_generic_rel_skylab_fyi': {
+      'lacros_skylab': {
+        'variants': [
+          'CROS_JACUZZI_PUBLIC',
+          'CROS_KEVIN_PUBLIC',
+        ]
+      },
+    },
 
     'lacros_device_arm_tests': {
       'lacros_all_tast_tests': {

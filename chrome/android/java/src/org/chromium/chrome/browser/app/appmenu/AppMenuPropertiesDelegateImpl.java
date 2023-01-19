@@ -27,7 +27,6 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.graphics.drawable.DrawableCompat;
 
 import org.chromium.base.CallbackController;
-import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplier;
@@ -45,7 +44,6 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.device.DeviceConditions;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.image_descriptions.ImageDescriptionsController;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthController;
@@ -82,7 +80,6 @@ import org.chromium.components.commerce.core.ShoppingService;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
-import org.chromium.components.power_bookmarks.PowerBookmarkMeta;
 import org.chromium.components.webapk.lib.client.WebApkValidator;
 import org.chromium.components.webapps.AppBannerManager;
 import org.chromium.components.webapps.WebappsUtils;
@@ -553,9 +550,6 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         menu.findItem(R.id.reader_mode_prefs_id)
                 .setVisible(isCurrentTabNotNull && shouldShowReaderModePrefs(currentTab));
 
-        // Only display the Enter VR button if VR Shell Dev environment is enabled.
-        menu.findItem(R.id.enter_vr_id).setVisible(isCurrentTabNotNull && shouldShowEnterVr());
-
         updateManagedByMenuItem(menu, currentTab);
     }
 
@@ -832,13 +826,6 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      */
     protected boolean shouldShowWebContentsDependentMenuItem(@NonNull Tab currentTab) {
         return !currentTab.isNativePage() && currentTab.getWebContents() != null;
-    }
-
-    /**
-     * @return Whether the enter VR menu item should be displayed.
-     */
-    protected boolean shouldShowEnterVr() {
-        return CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_VR_SHELL_DEV);
     }
 
     /**
@@ -1170,14 +1157,6 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         if (!ShoppingFeatures.isShoppingListEnabled()
                 || !PowerBookmarkUtils.isPriceTrackingEligible(currentTab)
                 || mIsTypeSpecificBookmarkItemRowPresent || !mBookmarkModelSupplier.hasValue()) {
-            startPriceTrackingMenuItem.setVisible(false);
-            stopPriceTrackingMenuItem.setVisible(false);
-            return;
-        }
-
-        PowerBookmarkMeta existingBookmarkMeta = PowerBookmarkUtils.getBookmarkBookmarkMetaForTab(
-                mBookmarkModelSupplier.get(), currentTab);
-        if (existingBookmarkMeta != null && !existingBookmarkMeta.hasShoppingSpecifics()) {
             startPriceTrackingMenuItem.setVisible(false);
             stopPriceTrackingMenuItem.setVisible(false);
             return;

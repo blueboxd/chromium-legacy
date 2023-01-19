@@ -20,6 +20,7 @@
 #include "base/test/bind.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/platform_thread.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
@@ -309,6 +310,7 @@ class NoStatePrefetchBrowserTest
     link_rel_attempt_entry_builder_ =
         std::make_unique<content::test::PreloadingAttemptUkmEntryBuilder>(
             content::PreloadingPredictor::kLinkRel);
+    test_timer_ = std::make_unique<base::ScopedMockElapsedTimersForTest>();
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
@@ -470,6 +472,7 @@ class NoStatePrefetchBrowserTest
       omnibox_attempt_entry_builder_;
   std::unique_ptr<content::test::PreloadingAttemptUkmEntryBuilder>
       link_rel_attempt_entry_builder_;
+  std::unique_ptr<base::ScopedMockElapsedTimersForTest> test_timer_;
 };
 
 class NoStatePrefetchBrowserTestHttpCache
@@ -562,7 +565,9 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchSimple) {
             content::PreloadingHoldbackStatus::kAllowed,
             content::PreloadingTriggeringOutcome::kReady,
             content::PreloadingFailureReason::kUnspecified,
-            /*accurate=*/true),
+            /*accurate=*/true,
+            /*ready_time=*/
+            base::ScopedMockElapsedTimersForTest::kMockElapsedTime),
     };
     EXPECT_THAT(attempt_ukm_entries,
                 testing::UnorderedElementsAreArray(expected_attempt_entries))
@@ -1773,12 +1778,11 @@ class NoStatePrefetchOmniboxBrowserTest : public NoStatePrefetchBrowserTest {
 
  protected:
   void SetUp() override {
-    // kOmniboxTriggerForPrerender2 or kOmniboxTriggerForNoStatePrefetch can be
-    // enabled in the experiment. Explicitly disable
-    // kOmniboxTriggerForPrerender2 as fieldtrial tests run with a config to
-    // enable it by default.
-    feature_list_.InitWithFeatures({},
-                                   {features::kOmniboxTriggerForPrerender2});
+    // kOmniboxTriggerForNoStatePrefetch or kOmniboxTriggerForPrerender2 can be
+    // enabled in the experiment. Explicitly enable and disable these flags.
+    feature_list_.InitWithFeatures(
+        {features::kOmniboxTriggerForNoStatePrefetch},
+        {features::kOmniboxTriggerForPrerender2});
 
     NoStatePrefetchBrowserTest::SetUp();
   }

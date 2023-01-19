@@ -89,7 +89,7 @@ class CORE_EXPORT ViewTransition : public ScriptWrappable,
   void skipTransition();
   ScriptPromise finished() const;
   ScriptPromise ready() const;
-  ScriptPromise domUpdated() const;
+  ScriptPromise updateCallbackDone() const;
 
   // GC functionality.
   void Trace(Visitor* visitor) const override;
@@ -180,6 +180,12 @@ class CORE_EXPORT ViewTransition : public ScriptWrappable,
   // Document via document.startViewTransition(...).
   bool IsCreatedViaScriptAPI() const {
     return creation_type_ == CreationType::kScript;
+  }
+
+  // Returns true if this object was created for a navigation initiated
+  // transition on the new Document.
+  bool IsForNavigationOnNewDocument() const {
+    return creation_type_ == CreationType::kFromSnapshot;
   }
 
   // Notifies before the compositor associated with this frame will initiate a

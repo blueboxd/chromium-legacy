@@ -451,7 +451,6 @@ VISIT_PROTO_FIELDS(const sync_pb::DataTypeProgressMarker& proto) {
 
 VISIT_PROTO_FIELDS(const sync_pb::GarbageCollectionDirective& proto) {
   VISIT(version_watermark);
-  VISIT(age_watermark_in_days);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::DebugEventInfo& proto) {
@@ -1278,7 +1277,6 @@ VISIT_PROTO_FIELDS(const sync_pb::UserConsentSpecifics& proto) {
   VISIT(arc_play_terms_of_service_consent);
   VISIT(assistant_activity_control_consent);
   VISIT(account_passwords_consent);
-  VISIT(autofill_assistant_consent);
 }
 
 VISIT_PROTO_FIELDS(
@@ -1322,13 +1320,6 @@ VISIT_PROTO_FIELDS(const sync_pb::UserConsentTypes::UnifiedConsent& proto) {
 
 VISIT_PROTO_FIELDS(
     const sync_pb::UserConsentTypes::AccountPasswordsConsent& proto) {
-  VISIT_REP(description_grd_ids);
-  VISIT(confirmation_grd_id);
-  VISIT_ENUM(status);
-}
-
-VISIT_PROTO_FIELDS(
-    const sync_pb::UserConsentTypes::AutofillAssistantConsent& proto) {
   VISIT_REP(description_grd_ids);
   VISIT(confirmation_grd_id);
   VISIT_ENUM(status);

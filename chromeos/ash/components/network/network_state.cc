@@ -29,7 +29,13 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
+namespace ash {
+
 namespace {
+
+namespace network_config {
+namespace mojom = ::chromeos::network_config::mojom;
+}
 
 // TODO(tbarzic): Add payment portal method values to shill/dbus-constants.
 constexpr char kPaymentPortalMethodPost[] = "POST";
@@ -51,20 +57,10 @@ bool IsValidConnectionState(const std::string& connection_state) {
          connection_state == shill::kStatePortalSuspected ||
          connection_state == shill::kStateOnline ||
          connection_state == shill::kStateFailure ||
-         connection_state == shill::kStateDisconnect ||
-         // TODO(b/260792466): Empty should not be a valid state,
-         // but e.g. new tether NetworkStates and unit tests use it currently.
-         connection_state.empty();
+         connection_state == shill::kStateDisconnect;
 }
 
 }  // namespace
-
-namespace ash {
-
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
-namespace network_config {
-namespace mojom = ::chromeos::network_config::mojom;
-}
 
 NetworkState::NetworkState(const std::string& path)
     : ManagedState(MANAGED_TYPE_NETWORK, path) {}

@@ -610,26 +610,11 @@ void CompositorImpl::SetNeedsRedraw() {
   host_->SetNeedsRedrawRect(host_->device_viewport_rect());
 }
 
-void CompositorImpl::DidUpdateLayers() {
-  // Dump property trees and layers if run with:
-  //   --vmodule=compositor_impl_android=3
-  VLOG(3) << "After updating layers:\n"
-          << "property trees:\n"
-          << host_->property_trees()->ToString() << "\n"
-          << "cc::Layers:\n"
-          << host_->LayersAsString();
-}
-
 void CompositorImpl::BeginMainFrame(const viz::BeginFrameArgs& args) {
-  latest_frame_time_ = args.frame_time;
-}
-
-void CompositorImpl::UpdateLayerTreeHost() {
-  DCHECK(!latest_frame_time_.is_null());
   client_->UpdateLayerTreeHost();
   if (needs_animate_) {
     needs_animate_ = false;
-    root_window_->Animate(latest_frame_time_);
+    root_window_->Animate(args.frame_time);
   }
 }
 

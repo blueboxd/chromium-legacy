@@ -153,6 +153,7 @@ public class InstantStartTabSwitcherTest {
     @Before
     public void setUp() {
         mJniMocker.mock(JankMetricUMARecorderJni.TEST_HOOKS, mJankRecorderNativeMock);
+        ReturnToChromeUtil.setSkipInitializationCheckForTesting(true);
     }
 
     @After

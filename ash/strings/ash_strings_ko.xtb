@@ -608,6 +608,7 @@
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> 앱이 <ph name="FOLDER_NAME" /> 폴더로 이동했습니다.</translation>
 <translation id="4302592941791324970">사용할 수 없음</translation>
 <translation id="4303223480529385476">상태 영역 확장</translation>
+<translation id="4311195029067684288">전체화면</translation>
 <translation id="4312840429157639164">카메라 미리보기가 오른쪽 상단으로 맞춰졌습니다. 시스템 표시 경로와 충돌합니다.</translation>
 <translation id="4316910396681052118">모든 앱</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -638,6 +639,7 @@
 <translation id="4455051983450390249"><ph name="DEVICE_TYPE" />에서 휴대전화의 알림을 봅니다.</translation>
 <translation id="445864333228800152">편안한 저녁 보내세요</translation>
 <translation id="4458688154122353284">화면 녹화 중지</translation>
+<translation id="445923051607553918">WiFi 네트워크 연결</translation>
 <translation id="4471354919263203780">음성 인식 파일 다운로드 중... <ph name="PERCENT" />%</translation>
 <translation id="4471432286288241507">{0,plural, =0{지금 기기 업데이트}=1{1초 이내에 기기 업데이트}other{#초 이내에 기기 업데이트}}</translation>
 <translation id="4472575034687746823">시작하기</translation>

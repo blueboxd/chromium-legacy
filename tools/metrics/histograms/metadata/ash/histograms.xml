@@ -141,7 +141,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Accelerators.WindowSnap"
-    enum="WindowSnapAcceleratorAction" expires_after="2023-02-19">
+    enum="WindowSnapAcceleratorAction" expires_after="2023-11-20">
   <owner>amusbach@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
   <summary>Captures usage of Alt+[ and Alt+].</summary>
@@ -3253,7 +3253,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Notification.SwipeControl.FadeIn.AnimationSmoothness"
-    units="%" expires_after="2023-02-07">
+    units="%" expires_after="2024-01-28">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -3294,7 +3294,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Ash.NotificationView.ExpandButton.BoundsChange.AnimationSmoothness"
-    units="%" expires_after="2023-02-09">
+    units="%" expires_after="2024-01-28">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -3334,7 +3334,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Ash.NotificationView.ImageContainerView.ScaleDown.AnimationSmoothness"
-    units="%" expires_after="2023-02-17">
+    units="%" expires_after="2024-01-28">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -3355,7 +3355,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.NotificationView.{ChildView}.FadeIn.AnimationSmoothness"
-    units="%" expires_after="2023-01-28">
+    units="%" expires_after="2024-01-28">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -3380,7 +3380,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.NotificationView.{ChildView}.FadeOut.AnimationSmoothness"
-    units="%" expires_after="2023-02-17">
+    units="%" expires_after="2024-01-28">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -3404,7 +3404,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Ash.NotificationView.{ChildView}.ScaleAndTranslate.AnimationSmoothness"
-    units="%" expires_after="2023-02-09">
+    units="%" expires_after="2024-01-28">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -3560,9 +3560,9 @@ chromium-metrics-reviews@google.com.
   <owner>cros-lurs@google.com</owner>
   <summary>
     The number of incorrect passwords entered in Chrome OS
-    {AuthenticationSurface} screen until a successful/failed attempt. For
-    previous data (grouped for login and lock screen together) see
-    &quot;Ash.Login.Lock.NbPasswordAttempts.{AuthenticationOutcome}&quot;.
+    {AuthenticationSurface} screen until the &quot;{AuthenticationOutcome}&quot;
+    outcome. For previous data (grouped for login and lock screen together) see
+    &quot;Ash.Login.Lock.NbPasswordAttempts.*&quot;.
   </summary>
   <token key="AuthenticationSurface">
     <variant name="Lock"/>
@@ -3570,6 +3570,7 @@ chromium-metrics-reviews@google.com.
   </token>
   <token key="AuthenticationOutcome">
     <variant name="UntilFailure"/>
+    <variant name="UntilRecovery"/>
     <variant name="UntilSuccess"/>
   </token>
 </histogram>
@@ -3767,7 +3768,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Overview.WindowDrag.Workflow" enum="OverviewDragAction"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>amusbach@chromium.org</owner>
   <owner>xdai@chromium.org</owner>
   <summary>
@@ -4365,7 +4366,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Shelf.NumberOfItems" units="Icons"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>anasalazar@chromium.org</owner>
   <owner>mmourgos@google.com</owner>
   <summary>
@@ -4567,7 +4568,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Shelf.ShutdownConfirmationBubble.Action"
-    enum="ShutdownConfirmationBubbleAction" expires_after="2023-05-14">
+    enum="ShutdownConfirmationBubbleAction" expires_after="2023-07-16">
   <owner>sherrilin@google.com</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>
@@ -5070,7 +5071,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.TabDrag.PresentationTime.MaxLatency" units="ms"
-    expires_after="2023-02-22">
+    expires_after="2024-01-12">
 <!-- Name completed by histogram_suffixes
      name="TabletOrClamshellMode" -->
 
@@ -5653,7 +5654,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Window.PartialSplitDuration" units="minutes"
-    expires_after="2023-06-25">
+    expires_after="2023-11-20">
   <owner>nupurjain@chromium.org</owner>
   <owner>sophiewen@chromium.org</owner>
   <summary>

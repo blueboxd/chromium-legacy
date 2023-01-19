@@ -10,6 +10,7 @@
 #import "base/mac/foundation_util.h"
 #import "base/notreached.h"
 #import "base/numerics/safe_conversions.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_handler.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_cell.h"
@@ -29,6 +30,9 @@ namespace {
 
 // The number of sections for the pinned collection view.
 NSInteger kNumberOfSectionsInPinnedCollection = 1;
+
+// Pinned cell identifier.
+NSString* const kCellIdentifier = @"PinnedCellIdentifier";
 
 // Creates an NSIndexPath with `index` in section 0.
 NSIndexPath* CreateIndexPath(NSInteger index) {
@@ -69,7 +73,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   BOOL _visible;
 
   // Tracks if a drag action is in progress.
-  BOOL _isDragActionInProgress;
+  BOOL _dragActionInProgress;
 }
 
 - (instancetype)init {
@@ -86,7 +90,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   _available = YES;
   _visible = YES;
-  _isDragActionInProgress = NO;
+  _dragActionInProgress = NO;
+  _dropAnimationInProgress = NO;
 
   [self configureCollectionView];
   [self configureEmptyCollectionViewLabel];
@@ -99,19 +104,35 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 #pragma mark - Public
 
+- (void)contentWillAppearAnimated:(BOOL)animated {
+  [self.collectionView reloadData];
+  [self updateEmptyCollectionViewLabelVisibility];
+
+  [self scrollCollectionViewToSelectedItem];
+
+  // Update the delegate, in case it wasn't set when `items` was populated.
+  [self.delegate pinnedTabsViewController:self didChangeItemCount:_items.count];
+}
+
+- (void)contentWillDisappear {
+}
+
 - (void)dragSessionEnabled:(BOOL)enabled {
-  _isDragActionInProgress = enabled;
+  if (_dropAnimationInProgress) {
+    return;
+  }
+
+  _dragActionInProgress = enabled;
 
   [UIView animateWithDuration:kPinnedViewDragAnimationTime
                    animations:^{
                      self->_dragEnabledConstraint.active = enabled;
                      self->_defaultConstraint.active = !enabled;
+
+                     [self resetCollectionViewBackground];
                      [self.view.superview layoutIfNeeded];
                    }
                    completion:nil];
-
-  self.collectionView.backgroundColor = _backgroundColor;
-  self.collectionView.backgroundView.hidden = NO;
 }
 
 - (void)pinnedTabsAvailable:(BOOL)available {
@@ -119,7 +140,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   // The view is visible if `_items` is not empty or if a drag action is in
   // progress.
-  bool visible = _available && (_items.count || _isDragActionInProgress);
+  bool visible = _available && (_items.count || _dragActionInProgress);
   if (visible == _visible) {
     return;
   }
@@ -137,6 +158,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
       completion:^(BOOL finished) {
         [weakSelf updatePinnedTabsVisibilityAfterAnimation:visible];
       }];
+}
+
+- (void)dropAnimationDidEnd {
+  _dropAnimationInProgress = NO;
+  [self dragSessionEnabled:NO];
 }
 
 #pragma mark - TabCollectionConsumer
@@ -341,15 +367,17 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (void)collectionView:(UICollectionView*)collectionView
      dragSessionDidEnd:(id<UIDragSession>)session {
+  [self.dragDropHandler dragSessionDidEnd];
   [self dragSessionEnabled:NO];
 }
 
 - (NSArray<UIDragItem*>*)collectionView:(UICollectionView*)collectionView
            itemsForBeginningDragSession:(id<UIDragSession>)session
                             atIndexPath:(NSIndexPath*)indexPath {
-  // TODO(crbug.com/1382015): Implement this.
-  return @[ [[UIDragItem alloc]
-      initWithItemProvider:[[NSItemProvider alloc] initWithObject:@""]] ];
+  TabSwitcherItem* item = _items[indexPath.item];
+  UIDragItem* dragItem =
+      [self.dragDropHandler dragItemForItemWithID:item.identifier];
+  return [NSArray arrayWithObjects:dragItem, nil];
 }
 
 - (NSArray<UIDragItem*>*)collectionView:(UICollectionView*)collectionView
@@ -377,23 +405,23 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (void)collectionView:(UICollectionView*)collectionView
     dropSessionDidExit:(id<UIDropSession>)session {
-  self.collectionView.backgroundColor = _backgroundColor;
-  self.collectionView.backgroundView.hidden = NO;
+  [self resetCollectionViewBackground];
 }
 
 - (void)collectionView:(UICollectionView*)collectionView
      dropSessionDidEnd:(id<UIDropSession>)session {
   // Reset the background if the drop cames from another app.
-  self.collectionView.backgroundColor = _backgroundColor;
-  self.collectionView.backgroundView.hidden = NO;
+  [self resetCollectionViewBackground];
 }
 
 - (UICollectionViewDropProposal*)
               collectionView:(UICollectionView*)collectionView
         dropSessionDidUpdate:(id<UIDropSession>)session
     withDestinationIndexPath:(NSIndexPath*)destinationIndexPath {
+  UIDropOperation dropOperation =
+      [self.dragDropHandler dropOperationForDropSession:session];
   return [[UICollectionViewDropProposal alloc]
-      initWithDropOperation:UIDropOperationMove
+      initWithDropOperation:dropOperation
                      intent:
                          UICollectionViewDropIntentInsertAtDestinationIndexPath];
 }
@@ -401,7 +429,54 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (void)collectionView:(UICollectionView*)collectionView
     performDropWithCoordinator:
         (id<UICollectionViewDropCoordinator>)coordinator {
-  // TODO(crbug.com/1382015): Implement this.
+  NSArray<id<UICollectionViewDropItem>>* items = coordinator.items;
+  for (id<UICollectionViewDropItem> item in items) {
+    // Append to the end of the collection, unless drop index is specified.
+    // The sourceIndexPath is nil if the drop item is not from the same
+    // collection view. Set the destinationIndex to reflect the addition of an
+    // item.
+    NSUInteger destinationIndex =
+        item.sourceIndexPath ? _items.count - 1 : _items.count;
+    if (coordinator.destinationIndexPath) {
+      destinationIndex =
+          base::checked_cast<NSUInteger>(coordinator.destinationIndexPath.item);
+    }
+
+    NSIndexPath* dropIndexPath = CreateIndexPath(destinationIndex);
+    // Drop synchronously if local object is available.
+    __weak __typeof(self) weakSelf = self;
+    if (item.dragItem.localObject) {
+      _dropAnimationInProgress = YES;
+      [[coordinator dropItem:item.dragItem toItemAtIndexPath:dropIndexPath]
+          addCompletion:^(UIViewAnimatingPosition finalPosition) {
+            [weakSelf dropAnimationDidEnd];
+          }];
+
+      // The sourceIndexPath is non-nil if the drop item is from this same
+      // collection view.
+      [self.dragDropHandler dropItem:item.dragItem
+                             toIndex:destinationIndex
+                  fromSameCollection:(item.sourceIndexPath != nil)];
+    } else {
+      // Drop asynchronously if local object is not available.
+      UICollectionViewDropPlaceholder* placeholder =
+          [[UICollectionViewDropPlaceholder alloc]
+              initWithInsertionIndexPath:dropIndexPath
+                         reuseIdentifier:kCellIdentifier];
+      placeholder.previewParametersProvider =
+          ^UIDragPreviewParameters*(UICollectionViewCell* placeholderCell) {
+        PinnedCell* pinnedCell =
+            base::mac::ObjCCastStrict<PinnedCell>(placeholderCell);
+        return pinnedCell.dragPreviewParameters;
+      };
+
+      id<UICollectionViewDropPlaceholderContext> context =
+          [coordinator dropItem:item.dragItem toPlaceholder:placeholder];
+      [self.dragDropHandler dropItemFromProvider:item.dragItem.itemProvider
+                                         toIndex:destinationIndex
+                              placeholderContext:context];
+    }
+  }
 }
 
 - (BOOL)collectionView:(UICollectionView*)collectionView
@@ -458,13 +533,17 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   [self.delegate pinnedTabsViewController:self didChangeItemCount:_items.count];
 }
 
-// Notifies the ViewController that its content is being displayed.
-- (void)contentWillAppearAnimated:(BOOL)animated {
-  [self.collectionView reloadData];
-  [self updateEmptyCollectionViewLabelVisibility];
+// Scrolls collection view to make the selected item visible.
+- (void)scrollCollectionViewToSelectedItem {
+  NSUInteger selectedIndex = self.selectedIndex;
 
-  // Update the delegate, in case it wasn't set when `items` was populated.
-  [self.delegate pinnedTabsViewController:self didChangeItemCount:_items.count];
+  if (selectedIndex != NSNotFound && selectedIndex < _items.count) {
+    [self.collectionView
+        selectItemAtIndexPath:CreateIndexPath(selectedIndex)
+                     animated:NO
+               scrollPosition:
+                   UICollectionViewScrollPositionCenteredHorizontally];
+  }
 }
 
 // Configures the collectionView.
@@ -533,19 +612,19 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 // Configures `cell`'s title synchronously, and favicon asynchronously with
-// information from `item`. Updates the `cell`'s theme to this view controller's
-// theme.
+// information from `item`. Updates the `cell`'s theme to this view
+// controller's theme.
 - (void)configureCell:(PinnedCell*)cell withItem:(TabSwitcherItem*)item {
   if (item) {
     cell.itemIdentifier = item.identifier;
-    cell.titleLabel.text = item.title;
+    cell.title = item.title;
     NSString* itemIdentifier = item.identifier;
     [self.imageDataSource faviconForIdentifier:itemIdentifier
                                     completion:^(UIImage* icon) {
                                       // Only update the icon if the cell is not
                                       // already reused for another item.
                                       if ([cell hasIdentifier:itemIdentifier]) {
-                                        cell.faviconView.image = icon;
+                                        cell.icon = icon;
                                       }
                                     }];
   }
@@ -566,6 +645,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   _visible = visible;
   if (!visible) {
     self.view.hidden = YES;
+    [self.delegate pinnedTabsViewControllerDidHide];
   }
 }
 
@@ -605,7 +685,6 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 // Updates the collection view after moving an item to the given `index`.
 - (void)updateCollectionViewAfterMovingItemToIndex:(NSUInteger)index {
-  // TODO(crbug.com/1382015): Implement selected halo.
   // Bring back selected halo only for the moved cell, which lost it during
   // the move (drag & drop).
   if (self.selectedIndex != index) {
@@ -635,6 +714,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   NSString* itemID = _items[index].identifier;
   [self.delegate pinnedTabsViewController:self didSelectItemWithID:itemID];
+}
+
+// Resets the `collectionView` background.
+- (void)resetCollectionViewBackground {
+  self.collectionView.backgroundColor = _backgroundColor;
+  self.collectionView.backgroundView.hidden = NO;
 }
 
 @end

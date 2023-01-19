@@ -53,10 +53,10 @@ void SessionSyncTestHelper::VerifySyncedSession(
     const std::string& tag,
     const std::vector<std::vector<SessionID>>& windows,
     const SyncedSession& session) {
-  ASSERT_EQ(tag, session.session_tag);
+  ASSERT_EQ(tag, session.GetSessionTag());
   ASSERT_EQ(syncer::DeviceInfo::FormFactor::kDesktop,
             session.GetDeviceFormFactor());
-  ASSERT_EQ(kClientName, session.session_name);
+  ASSERT_EQ(kClientName, session.GetSessionName());
   ASSERT_EQ(windows.size(), session.windows.size());
 
   // We assume the window id's are in increasing order.

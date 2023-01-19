@@ -14,6 +14,7 @@ import org.chromium.components.external_intents.ExternalNavigationHandler.Overri
 import org.chromium.components.external_intents.InterceptNavigationDelegateClient;
 import org.chromium.components.external_intents.InterceptNavigationDelegateImpl;
 import org.chromium.components.external_intents.RedirectHandler;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
@@ -26,6 +27,10 @@ public class InterceptNavigationDelegateClientImpl implements InterceptNavigatio
     private TabImpl mTab;
     private final TabObserver mTabObserver;
     private InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
+
+    public static InterceptNavigationDelegateClientImpl createForTesting(Tab tab) {
+        return new InterceptNavigationDelegateClientImpl(tab);
+    }
 
     InterceptNavigationDelegateClientImpl(Tab tab) {
         mTab = (TabImpl) tab;
@@ -134,5 +139,11 @@ public class InterceptNavigationDelegateClientImpl implements InterceptNavigatio
         assert mInterceptNavigationDelegate != null;
         mTab.removeObserver(mTabObserver);
         mInterceptNavigationDelegate = null;
+    }
+
+    @Override
+    public void loadUrlIfPossible(LoadUrlParams loadUrlParams) {
+        if (mTab.isDestroyed() || mTab.isClosing()) return;
+        mTab.loadUrl(loadUrlParams);
     }
 }

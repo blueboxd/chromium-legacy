@@ -7,7 +7,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -18,10 +17,6 @@
 #include "net/base/host_port_pair.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/size.h"
-
-#if BUILDFLAG(IS_WIN)
-#include "sandbox/win/src/sandbox_types.h"
-#endif
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -146,14 +141,11 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   // (experimental).
   bool enable_begin_frame_control = false;
 
-  // Minidump crash reporter settings. Crash reporting is disabled by default.
-  // By default crash dumps are written to the directory containing the
-  // executable.
-  bool enable_crash_reporter = false;
-  base::FilePath crash_dumps_dir;
-
   // Font render hinting value to override any default settings
   gfx::FontRenderParams::Hinting font_render_hinting;
+
+  // Whether lazy loading of images and frames is enabled.
+  bool lazy_load_enabled = true;
 
   // Reminder: when adding a new field here, do not forget to add it to
   // HeadlessBrowserContextOptions (where appropriate).
@@ -174,8 +166,10 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
 
   Builder& EnableDevToolsServer(const net::HostPortPair& endpoint);
   Builder& EnableDevToolsPipe();
-  Builder& SetGLImplementation(const std::string& implementation);
-  Builder& SetANGLEImplementation(const std::string& implementation);
+
+  // Settings that are currently browser-wide, but could be per-context if
+  // needed.
+  Builder& SetEnableLazyLoading(bool enable);
 
   // Per-context settings.
 
@@ -190,7 +184,6 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
   Builder& SetCrashReporterEnabled(bool enabled);
   Builder& SetCrashDumpsDir(const base::FilePath& dir);
   Builder& SetFontRenderHinting(gfx::FontRenderParams::Hinting hinting);
-
   Options Build();
 
  private:

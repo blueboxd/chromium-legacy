@@ -148,6 +148,10 @@
     "META": {"sizes": {"includes": [50]}},
     "includes": [1380],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/supervision/resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
+    "includes": [1383],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/profile_internals/resources.grd": {
     "META": {"sizes": {"includes": [10],}},
     "includes": [1385],
@@ -336,7 +340,7 @@
     "includes": [2000],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/support_tool/resources.grd": {
-    "META": {"sizes": {"includes": [20]}},
+    "META": {"sizes": {"includes": [30]}},
     "includes": [2010],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/tab_search/resources.grd": {

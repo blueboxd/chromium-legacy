@@ -8,10 +8,12 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/extensions/extensions_container.h"
-#include "chrome/browser/ui/views/controls/page_switcher_view.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_main_page_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_page_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_site_permissions_page_view.h"
+#include "content/public/browser/web_contents.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 
@@ -36,10 +38,12 @@ std::vector<std::string> SortExtensionsByName(
 ExtensionsMenuViewController::ExtensionsMenuViewController(
     Browser* browser,
     ExtensionsContainer* extensions_container,
-    PageSwitcherView* contents_view)
+    views::View* bubble_contents,
+    views::BubbleDialogDelegate* bubble_delegate)
     : browser_(browser),
       extensions_container_(extensions_container),
-      contents_view_(contents_view),
+      bubble_contents_(bubble_contents),
+      bubble_delegate_(bubble_delegate),
       toolbar_model_(ToolbarActionsModel::Get(browser_->profile())) {
   browser_->tab_strip_model()->AddObserver(this);
 }
@@ -61,37 +65,37 @@ void ExtensionsMenuViewController::OpenMainPage() {
                                        allow_pinning, i);
   }
 
-  contents_view_->SwitchToPage(std::move(main_page));
+  SwitchToPage(std::move(main_page));
 }
 
 void ExtensionsMenuViewController::OpenSitePermissionsPage() {
   auto site_permissions_page =
       std::make_unique<ExtensionsMenuSitePermissionsPage>(this);
-  contents_view_->SwitchToPage(std::move(site_permissions_page));
+  SwitchToPage(std::move(site_permissions_page));
 }
 
 void ExtensionsMenuViewController::CloseBubble() {
-  contents_view_->GetWidget()->CloseWithReason(
+  bubble_contents_->GetWidget()->CloseWithReason(
       views::Widget::ClosedReason::kCloseButtonClicked);
 }
 
 void ExtensionsMenuViewController::TabChangedAt(content::WebContents* contents,
                                                 int index,
                                                 TabChangeType change_type) {
-  auto* current_page = views::AsViewClass<ExtensionsMenuPageView>(
-      contents_view_->GetCurrentPage());
-  DCHECK(current_page);
-  current_page->Update();
+  DCHECK(current_page_);
+  current_page_->Update(contents);
 }
 
 void ExtensionsMenuViewController::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
-  auto* current_page = views::AsViewClass<ExtensionsMenuPageView>(
-      contents_view_->GetCurrentPage());
-  DCHECK(current_page);
-  current_page->Update();
+  content::WebContents* web_contents = tab_strip_model->GetActiveWebContents();
+  if (!selection.active_tab_changed() || !web_contents) {
+    return;
+  }
+
+  current_page_->Update(browser_->tab_strip_model()->GetActiveWebContents());
 }
 
 // TODO(crbug.com/1390952): Listen for "toolbar pinned actions changed" to
@@ -100,6 +104,20 @@ void ExtensionsMenuViewController::OnTabStripModelChanged(
 
 ExtensionsMenuMainPageView*
 ExtensionsMenuViewController::GetMainPageViewForTesting() {
-  return views::AsViewClass<ExtensionsMenuMainPageView>(
-      contents_view_->GetCurrentPage());
+  DCHECK(current_page_);
+  return views::AsViewClass<ExtensionsMenuMainPageView>(current_page_);
+}
+
+void ExtensionsMenuViewController::SwitchToPage(
+    std::unique_ptr<ExtensionsMenuPageView> page) {
+  if (current_page_) {
+    bubble_contents_->RemoveChildViewT(current_page_.get());
+  }
+  current_page_ = bubble_contents_->AddChildView(std::move(page));
+
+  // Only resize the menu if the bubble is created, since page could be added to
+  // the menu beforehand and delegate wouldn't know the bubble bounds.
+  if (bubble_delegate_->GetBubbleFrameView()) {
+    bubble_delegate_->SizeToContents();
+  }
 }

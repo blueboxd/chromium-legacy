@@ -942,31 +942,15 @@
           'cronet_test_instrumentation_apk',
           'chrome_nocompile_tests',
         ],
+        'args': [
+          '--use-persistent-shell',
+        ],
         'os_type': 'android',
         'test_suites': {
           'gtest_tests': 'android_nougat_emulator_gtests',
           'isolated_scripts': 'nougat_isolated_scripts',
           'scripts': 'chromium_android_scripts',
         },
-      },
-      'android-pie-arm64-coverage-experimental-rel': {
-        'mixins': [
-          'has_native_resultdb_integration',
-          'isolate_profile_data',
-          'pie_fleet',
-          'walleye',
-        ],
-        'additional_compile_targets': [
-          'monochrome_static_initializers',
-          'validate_expectations',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_android_gtests',
-          # TODO(crbug.com/1111436): Re-enable this if/when additional capacity
-          # has been deployed.
-          #'isolated_scripts': 'marshmallow_nougat_pie_isolated_scripts_with_proguard',
-        },
-        'os_type': 'android',
       },
       'android-pie-arm64-dbg': {
         'mixins': [
@@ -1281,7 +1265,7 @@
         }
       },
 
-      # Mirrors Mac Builder and Mac 12 Tests, except that we don't run
+      # Mirrors Mac Builder and Mac12 Tests, except that we don't run
       # 'mac_signing_tests' (it is removed in test_suite_exceptions.pyl),
       # which doesn't exist in the CfT config.
       'mac-rel-cft': {
@@ -1300,6 +1284,7 @@
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests_no_nacl',
           'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
+          'scripts': 'chromium_mac_scripts',
         },
       },
 
@@ -2998,7 +2983,7 @@
           'walleye',
         ],
         'test_suites': {
-          'gtest_tests': 'android_pie_coverage_gtests',
+          'gtest_tests': 'android_pie_coverage_instrumentation_tests',
           'junit_tests': 'chromium_junit_tests_no_swarming',
         },
         'os_type': 'android',
@@ -3325,6 +3310,15 @@
         },
         'os_type': 'chromeos'
       },
+      'lacros-arm-generic-rel-skylab-fyi': {
+        'additional_compile_targets': [
+          'chrome',
+        ],
+        'test_suites': {
+          'skylab_tests': 'lacros_arm_generic_rel_skylab_fyi',
+        },
+        'os_type': 'chromeos',
+      },
       'lacros-arm64-generic-rel-skylab-fyi': {
         'additional_compile_targets': [
           'chrome',
@@ -3546,6 +3540,15 @@
           'isolated_scripts': 'wpt_web_tests_content_shell_multiple_flags',
         },
       },
+      'linux-wpt-content-shell-leak-detection': {
+        'mixins': [
+          'has_native_resultdb_integration',
+          'linux-bionic',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'wpt_web_tests_enable_leak_detection',
+        },
+      },
       'linux-wpt-fyi-rel': {
         'mixins': [
           'has_native_resultdb_integration',
@@ -3684,7 +3687,7 @@
       },
       'win-fieldtrial-rel': {
         'mixins': [
-            'win10-20h2',
+            'win10',
             'finch-chromium-swarming-pool',
         ],
         'test_suites': {
@@ -3718,7 +3721,7 @@
       'win10-rel-no-external-ip': {
         'mixins': [
           'x86-64',
-          'win10-20h2',
+          'win10',
           'isolate_profile_data',
         ],
         'swarming': {
@@ -6647,7 +6650,7 @@
           'linux-bionic',
         ],
         'test_suites': {
-          'isolated_scripts': 'chromium_web_tests_and_wpt_webdriver_isolated_scripts',
+          'isolated_scripts': 'chromium_linux_blink_rel_isolated_scripts',
         },
       },
       'mac10.13-blink-rel': {
@@ -6816,21 +6819,6 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
-      'linux_layout_tests_layout_ng_disabled': {
-        'mixins': [
-          'linux-bionic',
-        ],
-        'additional_compile_targets': [
-          'blink_tests',
-        ],
-        'swarming': {
-          'hard_timeout': 900,
-        },
-        'test_suites': {
-          'gtest_tests': 'layout_ng_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
       'linux_optional_gpu_tests_rel': {
         'os_type': 'linux',
         'browser_config': 'release',
@@ -6913,7 +6901,7 @@
           'linux-bionic',
         ],
         'test_suites': {
-          'isolated_scripts': 'chromium_web_tests_and_wpt_webdriver_isolated_scripts',
+          'isolated_scripts': 'chromium_linux_blink_rel_isolated_scripts',
         },
       },
     },

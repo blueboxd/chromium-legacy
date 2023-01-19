@@ -16,6 +16,7 @@
 #include "ash/components/arc/mojom/intent_helper.mojom.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/components/arc/session/arc_service_manager.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_menu_constants.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
@@ -32,6 +33,8 @@
 #include "chrome/browser/apps/app_service/intent_util.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
+#include "chrome/browser/apps/app_service/package_id.h"
+#include "chrome/browser/apps/app_service/promise_apps/promise_apps.h"
 #include "chrome/browser/apps/app_service/publishers/arc_apps_factory.h"
 #include "chrome/browser/apps/app_service/webapk/webapk_manager.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_icon.h"
@@ -50,6 +53,7 @@
 #include "components/app_restore/full_restore_utils.h"
 #include "components/arc/common/intent_helper/arc_intent_helper_package.h"
 #include "components/arc/intent_helper/intent_constants.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/capability_access.h"
 #include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
@@ -595,7 +599,9 @@ ArcApps::ArcApps(AppServiceProxy* proxy)
       profile_(proxy->profile()),
       arc_icon_once_loader_(profile_) {}
 
-ArcApps::~ArcApps() = default;
+ArcApps::~ArcApps() {
+  proxy()->UnregisterPublisher(AppType::kArc);
+}
 
 void ArcApps::Initialize() {
   if (!arc::IsArcAllowedForProfile(profile_) ||
@@ -1149,7 +1155,14 @@ void ArcApps::OnAppRemoved(const std::string& app_id) {
 
 void ArcApps::OnAppIconUpdated(const std::string& app_id,
                                const ArcAppIconDescriptor& descriptor) {
-  SetIconEffect(app_id);
+  if (!base::FeatureList::IsEnabled(apps::kUnifiedAppServiceIconLoading)) {
+    // OnAppIconUpdated is called when ArcAppListPrefs installs icon files in
+    // the ARC directory. When the flag kUnifiedAppServiceIconLoading is
+    // enabled, we no longer depend on the icon files in the ARC directory. So
+    // we don't need to update icon effects and reload icons when
+    // ArcAppListPrefs installs icon files.
+    SetIconEffect(app_id);
+  }
 }
 
 void ArcApps::OnAppNameUpdated(const std::string& app_id,
@@ -1455,7 +1468,8 @@ void ArcApps::LoadPlayStoreIcon(apps::IconType icon_type,
 AppPtr ArcApps::CreateApp(ArcAppListPrefs* prefs,
                           const std::string& app_id,
                           const ArcAppListPrefs::AppInfo& app_info,
-                          bool update_icon) {
+                          bool update_icon,
+                          bool raw_icon_updated) {
   auto install_reason = GetInstallReason(prefs, app_id, app_info);
   auto app = AppPublisher::MakeApp(
       AppType::kArc, app_id,
@@ -1470,6 +1484,9 @@ AppPtr ArcApps::CreateApp(ArcAppListPrefs* prefs,
   if (update_icon) {
     app->icon_key = std::move(
         *icon_key_factory_.CreateIconKey(GetIconEffects(app_id, app_info)));
+    if (raw_icon_updated) {
+      app->icon_key->raw_icon_updated = true;
+    }
   }
 
   app->version = app_info.version_name;
@@ -1534,12 +1551,23 @@ void ArcApps::ConvertAndPublishPackageApps(
     const arc::mojom::ArcPackageInfo& package_info,
     bool update_icon) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
-  if (prefs) {
-    for (const auto& app_id :
-         prefs->GetAppsForPackage(package_info.package_name)) {
-      std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-          prefs->GetApp(app_id);
-      if (app_info && !IsWebAppShellPackage(profile_, *app_info)) {
+  if (!prefs) {
+    return;
+  }
+
+  for (const auto& app_id :
+       prefs->GetAppsForPackage(package_info.package_name)) {
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
+    if (app_info && !IsWebAppShellPackage(profile_, *app_info)) {
+      if (base::FeatureList::IsEnabled(apps::kUnifiedAppServiceIconLoading)) {
+        // When the flag kUnifiedAppServiceIconLoading is enabled, if the
+        // package is added or modified, the app icon files might be modified,
+        // so set `update_icon` and `raw_icon_updated` as true to update icon
+        // files in the icon folders.
+        AppPublisher::Publish(CreateApp(prefs, app_id, *app_info,
+                                        /*update_icon=*/true,
+                                        /*raw_icon_updated=*/true));
+      } else {
         AppPublisher::Publish(CreateApp(prefs, app_id, *app_info, update_icon));
       }
     }
@@ -1638,6 +1666,14 @@ void ArcApps::OnGetAppShortcutItems(
 
   UMA_HISTOGRAM_TIMES("Arc.AppShortcuts.BuildMenuTime",
                       base::TimeTicks::Now() - start_time);
+}
+
+void ArcApps::OnInstallationStarted(const std::string& package_name) {
+  if (ash::features::ArePromiseIconsEnabled()) {
+    PromiseAppPtr app =
+        AppPublisher::MakePromiseApp(PackageId(AppType::kArc, package_name));
+    AppPublisher::PublishPromiseApp(std::move(app));
+  }
 }
 
 }  // namespace apps

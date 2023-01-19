@@ -97,6 +97,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillEnableUpdateVirtualCardEnrollment,
     &autofill::features::kAutofillEnableVirtualCardMetadata,
     &autofill::features::kAutofillEnableCardProductName,
+    &autofill::features::kAutofillTouchToFillForCreditCardsAndroid,
     &blink::features::kForceWebContentsDarkMode,
     &blink::features::kOSKResizesVisualViewportByDefault,
     &blink::features::kPrerender2,
@@ -239,6 +240,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kPageAnnotationsService,
     &kBookmarksImprovedSaveFlow,
     &kBookmarksRefresh,
+    &kBackGestureRefactorActivityAndroid,
     &kBackGestureRefactorAndroid,
     &kOmahaMinSdkVersionAndroid,
     &kOmniboxModernizeVisualUpdate,
@@ -301,7 +303,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kUseLibunwindstackNativeUnwinderAndroid,
     &kVoiceSearchAudioCapturePolicy,
     &kVoiceButtonInTopToolbar,
-    &kVrBrowsingFeedback,
     &kWebOtpCrossDeviceSimpleString,
     &content_creation::kWebNotesDynamicTemplates,
     &content_creation::kWebNotesStylizeEnabled,
@@ -373,7 +374,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &switches::kTangibleSync,
     &syncer::kSyncEnableHistoryDataType,
     &syncer::kSyncAndroidLimitNTPPromoImpressions,
-    &syncer::kSyncAndroidPromosWithTitle,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
     &video_tutorials::features::kVideoTutorials,
     &webapps::features::kInstallableAmbientBadgeInfoBar,
@@ -747,6 +747,10 @@ BASE_FEATURE(kBookmarksRefresh,
              "BookmarksRefresh",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kBackGestureRefactorActivityAndroid,
+             "BackGestureRefactorActivityAndroid",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kBackGestureRefactorAndroid,
              "BackGestureRefactorAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1004,10 +1008,6 @@ BASE_FEATURE(kVoiceSearchAudioCapturePolicy,
 BASE_FEATURE(kVoiceButtonInTopToolbar,
              "VoiceButtonInTopToolbar",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kVrBrowsingFeedback,
-             "VrBrowsingFeedback",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Shows only the remote device name on the Android notification instead of
 // a descriptive text.

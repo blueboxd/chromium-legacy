@@ -11,15 +11,31 @@
 
 namespace bruschetta {
 
+enum class BruschettaInstallError {
+  kUnknown,
+  kInstallationProhibited,
+  kDlcInstallError,
+  kDownloadError,
+  kInvalidFirmware,
+  kInvalidBootDisk,
+  kInvalidPflash,
+  kUnableToOpenImages,
+  kCreateDiskError,
+  kStartVmFailed,
+};
+
+// Returns the string name of the BruschettaResult.
+const char16_t* BruschettaInstallErrorString(
+    const BruschettaInstallError error);
+
 class BruschettaInstaller {
  public:
   enum class State {
     kInstallStarted,
     kDlcInstall,
     kFirmwareDownload,
-    kFirmwareMount,
     kBootDiskDownload,
-    kBootDiskMount,
+    kPflashDownload,
     kOpenFiles,
     kCreateVmDisk,
     kStartVm,
@@ -29,7 +45,7 @@ class BruschettaInstaller {
   class Observer {
    public:
     virtual void StateChanged(State state) = 0;
-    virtual void Error() = 0;
+    virtual void Error(BruschettaInstallError error) = 0;
   };
 
   virtual ~BruschettaInstaller() = default;

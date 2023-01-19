@@ -4,6 +4,7 @@
 
 #include "ash/system/privacy_hub/privacy_hub_notification_controller.h"
 
+#include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/sensor_disabled_notification_delegate.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/shell.h"
@@ -24,18 +25,23 @@ void SetAndLogMicrophoneMute(const bool muted) {
   privacy_hub_metrics::LogMicrophoneEnabledFromNotification(!muted);
 }
 
+constexpr char kLearnMoreUrl[] =
+    "https://support.google.com/chromebook/?p=privacy_hub";
+
 }  // namespace
 
 PrivacyHubNotificationController::PrivacyHubNotificationController() {
   sw_notifications_.emplace(
       Sensor::kCamera,
-      PrivacyHubNotification(
+      std::make_unique<PrivacyHubNotification>(
           kPrivacyHubCameraOffNotificationId,
           IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_TITLE,
-          {IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_MESSAGE,
-           IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_ONE_APP_NAME,
-           IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES},
-          {SensorDisabledNotificationDelegate::Sensor::kCamera},
+          PrivacyHubNotification::MessageIds{
+              IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_MESSAGE,
+              IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_ONE_APP_NAME,
+              IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES},
+          PrivacyHubNotification::SensorSet{
+              SensorDisabledNotificationDelegate::Sensor::kCamera},
           base::MakeRefCounted<PrivacyHubNotificationClickDelegate>(
               base::BindRepeating([]() {
                 CameraPrivacySwitchController::
@@ -46,13 +52,15 @@ PrivacyHubNotificationController::PrivacyHubNotificationController() {
 
   sw_notifications_.emplace(
       Sensor::kMicrophone,
-      PrivacyHubNotification(
+      std::make_unique<PrivacyHubNotification>(
           MicrophonePrivacySwitchController::kNotificationId,
           IDS_MICROPHONE_MUTED_BY_SW_SWITCH_NOTIFICATION_TITLE,
-          {IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE,
-           IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE_WITH_ONE_APP_NAME,
-           IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES},
-          {SensorDisabledNotificationDelegate::Sensor::kMicrophone},
+          PrivacyHubNotification::MessageIds{
+              IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE,
+              IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE_WITH_ONE_APP_NAME,
+              IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES},
+          PrivacyHubNotification::SensorSet{
+              SensorDisabledNotificationDelegate::Sensor::kMicrophone},
           base::MakeRefCounted<PrivacyHubNotificationClickDelegate>(
               base::BindRepeating([]() { SetAndLogMicrophoneMute(false); })),
           ash::NotificationCatalogName::kMicrophoneMute,
@@ -107,6 +115,12 @@ void PrivacyHubNotificationController::OpenPrivacyHubSettingsPage() {
   Shell::Get()->system_tray_model()->client()->ShowPrivacyHubSettings();
 }
 
+void PrivacyHubNotificationController::OpenSupportUrl() {
+  NewWindowDelegate::GetPrimary()->OpenUrl(
+      GURL(kLearnMoreUrl), NewWindowDelegate::OpenUrlFrom::kUserInteraction,
+      NewWindowDelegate::Disposition::kNewForegroundTab);
+}
+
 void PrivacyHubNotificationController::ShowAllActiveNotifications(
     const Sensor changed_sensor) {
   message_center::MessageCenter* message_center =
@@ -121,7 +135,7 @@ void PrivacyHubNotificationController::ShowAllActiveNotifications(
 
     if (sensors_.HasAll(combinable_sensors_)) {
       for (Sensor sensor : combinable_sensors_) {
-        sw_notifications_.at(sensor).Hide();
+        sw_notifications_.at(sensor)->Hide();
       }
 
       combined_notification_->Show();
@@ -135,10 +149,10 @@ void PrivacyHubNotificationController::ShowAllActiveNotifications(
   // The other case where the sensor is added (again) to the set this
   // (re)surfaces the notification, e.g. because a different app now wants to
   // access the sensor.
-  sw_notifications_.at(changed_sensor).Hide();
+  sw_notifications_.at(changed_sensor)->Hide();
 
   for (const Sensor active_sensor : sensors_) {
-    sw_notifications_.at(active_sensor).Show();
+    sw_notifications_.at(active_sensor)->Show();
   }
 }
 

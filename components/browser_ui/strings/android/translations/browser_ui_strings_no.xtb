@@ -13,7 +13,6 @@
 <translation id="1289742167380433257">For å spare data er bildene på denne siden optimalisert av Google.</translation>
 <translation id="129382876167171263">Filer som nettsteder har lagret, vises her</translation>
 <translation id="1317194122196776028">Glem dette nettstedet</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Nettstedet <ph name="SITE_NAME" /> er lagt til</translation>
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1384959399684842514">Nedlastingen er satt på pause</translation>
@@ -22,6 +21,7 @@
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1446450296470737166">Full kontroll over MIDI-enheter</translation>
 <translation id="1448064542941920355">Zoom ut</translation>
+<translation id="1547123415014299762">Informasjonskapsler fra tredjeparter tillates</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1633720957382884102">Relaterte nettsteder</translation>
 <translation id="1644574205037202324">Logg</translation>
@@ -59,6 +59,7 @@
 <translation id="2238944249568001759">Foreslåtte søk basert på den siste fanen din</translation>
 <translation id="2241634353105152135">Bare én gang</translation>
 <translation id="2253414712144136228">Fjern <ph name="NAME_OF_LIST_ITEM" /></translation>
+<translation id="228293613124499805">De fleste nettsteder du besøker, lagrer sannsynligvis data på enheten din. Ofte gjøres dette for å gi deg en bedre opplevelse, ved at preferansene dine eller informasjonen du deler med nettstedet, blir lagret. Vi anbefaler at du lar denne innstillingen være på.</translation>
 <translation id="2289270750774289114">Spør når nettsteder vil oppdage Bluetooth-enheter i nærheten (anbefales)</translation>
 <translation id="2315043854645842844">Operativsystemet har ikke støtte for sertifikatvalg på klientsiden.</translation>
 <translation id="2321958826496381788">Dra glidebryteren til du kan lese dette uten problemer. Når du har dobbelttrykket på et avsnitt, bør teksten være minst like stor som dette.</translation>
@@ -351,6 +352,7 @@
 <translation id="8042586301629853791">Sorter etter:</translation>
 <translation id="8067883171444229417">Spill av videoen</translation>
 <translation id="8068648041423924542">Kan ikke velge sertifikat.</translation>
+<translation id="8077120325605624147">Alle nettsteder du besøker, kan vise deg alle slags annonser</translation>
 <translation id="8087000398470557479">Dette innholdet er fra <ph name="DOMAIN_NAME" /> og er levert av Google.</translation>
 <translation id="8116925261070264013">Kuttet lyd</translation>
 <translation id="813082847718468539">Vis nettstedsinformasjon</translation>
@@ -388,6 +390,7 @@
 <translation id="857943718398505171">Tillatt (anbefales)</translation>
 <translation id="8609465669617005112">Flytt opp</translation>
 <translation id="8676374126336081632">Slett teksten</translation>
+<translation id="8681886425883659911">Annonser blokkeres på nettsteder som er kjent for å vise forstyrrende eller villedende annonser</translation>
 <translation id="868929229000858085">Søk i kontaktene dine</translation>
 <translation id="8702612070107455751">Eventuelle frakoblede data blir slettet.</translation>
 <translation id="8712637175834984815">Skjønner</translation>
@@ -400,6 +403,7 @@
 <translation id="8816026460808729765">Blokkér nettsteder fra å få tilgang til sensorer</translation>
 <translation id="8823559166155093873">Blokkering av informasjonskapsler</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8899807382908246773">Forstyrrende annonser</translation>
 <translation id="8903921497873541725">Zoom inn</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC er av for denne enheten. Slå det på i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>

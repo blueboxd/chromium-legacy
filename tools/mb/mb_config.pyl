@@ -110,9 +110,6 @@
       'android-cronet-x86-dbg': 'android_cronet_debug_static_bot_x86_reclient',
       'android-cronet-x86-rel': 'android_cronet_release_bot_minimal_symbols_x86_reclient',
       'android-nougat-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient',
-      # TODO(crbug/1182468) Remove android coverage bots after coverage is
-      # running on CQ.
-      'android-pie-arm64-coverage-experimental-rel': 'android_release_bot_arm64_webview_monochrome_expectations_reclient',
       'android-pie-arm64-rel': 'android_release_bot_minimal_symbols_arm64_webview_monochrome_reclient',
       'android-pie-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient',
       'android-weblayer-with-aosp-webview-x86-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_allowlisting_disable_proguard_chrome_google',
@@ -244,19 +241,19 @@
 
     'chromium.dev': {
       # This should be the same with 'android-pie-arm64-rel'.
-      'android-pie-arm64-rel-swarming':  'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild',
+      'android-pie-arm64-rel-swarming':  'android_release_bot_minimal_symbols_arm64_webview_monochrome_reclient',
 
       # These should be the same with 'Linux Builder'.
-      'linux-rel-swarming': 'gpu_tests_release_bot',
-      'linux-ssd-rel-swarming': 'gpu_tests_release_bot',
+      'linux-rel-swarming': 'gpu_tests_release_bot_do_typecheck_reclient',
+      'linux-ssd-rel-swarming': 'gpu_tests_release_bot_do_typecheck_reclient',
 
       # This should be the same with 'Mac Builder'.
-      'mac-arm-rel-swarming': 'gpu_tests_release_bot_minimal_symbols',
-      'mac-rel-swarming': 'gpu_tests_release_bot_minimal_symbols',
+      'mac-arm-rel-swarming': 'gpu_tests_release_bot_minimal_symbols_no_nacl_reclient',
+      'mac-rel-swarming': 'gpu_tests_release_bot_minimal_symbols_no_nacl_reclient',
 
       # This should be the same with 'Win x64 Builder'.
-      'win-rel-swarming': 'gpu_tests_release_bot_minimal_symbols',
-      'win11-rel-swarming': 'gpu_tests_release_bot_minimal_symbols',
+      'win-rel-swarming': 'gpu_tests_release_bot_minimal_symbols_reclient',
+      'win11-rel-swarming': 'gpu_tests_release_bot_minimal_symbols_reclient',
     },
 
     'chromium.devtools-frontend': {
@@ -420,6 +417,7 @@
       'lacros-amd64-generic-rel (reclient)': 'chromeos_amd64-generic-vm_lacros_rel_reclient',
       'lacros-amd64-generic-rel-fyi': 'chromeos_amd64-generic_lacros_rel_reclient',
       'lacros-amd64-generic-rel-skylab-fyi': 'chromeos_amd64-generic_lacros_rel_skylab_reclient',
+      'lacros-arm-generic-rel-skylab-fyi': 'chromeos_arm-generic_lacros_rel_skylab_reclient',
       'lacros-arm64-generic-rel-skylab-fyi': 'chromeos_arm64-generic_lacros_rel_skylab_reclient',
       'linux-annotator-rel': 'release_bot_reclient',
       'linux-backuprefptr-x64-fyi-rel': 'release_trybot_backuprefptr_x64_reclient',
@@ -445,6 +443,7 @@
       'linux-upload-perfetto': 'release_bot_perfetto_zlib_reclient',
       'linux-wpt-content-shell-asan-fyi-rel': 'asan_lsan_release_trybot_reclient',
       'linux-wpt-content-shell-fyi-rel': 'release_trybot_minimal_symbols_reclient',
+      'linux-wpt-content-shell-leak-detection': 'release_trybot_minimal_symbols_reclient',
       'linux-wpt-fyi-rel': 'release_trybot_minimal_symbols_reclient',
       'linux-wpt-identity-fyi-rel': 'release_bot_minimal_symbols_reclient',
       'linux-wpt-input-fyi-rel': 'release_bot_minimal_symbols_reclient',
@@ -1004,10 +1003,6 @@
       'android-nougat-x86-rel-inverse-fyi': 'android_release_trybot_x86_fastbuild_webview_monochrome_coverage',
       'android-oreo-arm64-dbg': 'android_debug_trybot_arm64_reclient',
       'android-perfetto-rel': 'perfetto_release_trybot_android',
-      # TODO(crbug/1182468) Remove android coverage bots after coverage is
-      # running on CQ.
-      'android-pie-arm64-coverage-experimental-rel': 'android_release_trybot_arm64_webview_monochrome_expectations_native_coverage_reclient',
-      'android-pie-arm64-coverage-rel': 'android_release_trybot_arm64_webview_monochrome_native_coverage_reclient',
       'android-pie-arm64-dbg': 'android_debug_trybot_arm64_reclient',
       # TODO(crbug.com/1367393): Remove after android-arm64-rel is fully enabled.
       'android-pie-arm64-wpt-rel-non-cq': 'android_release_trybot_arm64_webview_monochrome',
@@ -1047,7 +1042,7 @@
       'fuchsia-angle-try': 'angle_deqp_release_trybot_fuchsia_reclient',
       'ios-angle-try-intel': 'angle_deqp_release_trybot_ios',
       'linux-angle-chromium-try': 'gpu_tests_release_trybot_reclient',
-      'mac-angle-chromium-try': 'gpu_tests_release_trybot',
+      'mac-angle-chromium-try': 'gpu_tests_release_trybot_reclient',
       'win-angle-chromium-x64-try': 'gpu_tests_release_trybot_reclient',
       'win-angle-chromium-x86-try': 'gpu_tests_release_trybot_x86_reclient',
     },
@@ -1109,7 +1104,7 @@
       'android-dawn-arm-rel': 'dawn_tests_android_release_trybot',
       'dawn-android-arm-deps-rel': 'dawn_tests_android_release_trybot',
       'dawn-linux-x64-deps-rel': 'dawn_tests_with_desktop_gl_release_trybot_reclient',
-      'dawn-mac-x64-deps-rel': 'dawn_tests_release_trybot_alloc_none',
+      'dawn-mac-x64-deps-rel': 'dawn_tests_release_trybot_alloc_none_reclient',
       'dawn-try-mac-amd-exp': 'dawn_tests_release_trybot_alloc_none',
       'dawn-try-mac-intel-exp': 'dawn_tests_release_trybot_alloc_none',
       'dawn-try-win-x64-intel-exp': 'dawn_tests_release_trybot_reclient',
@@ -1189,6 +1184,7 @@
       'linux-wayland-rel': 'gpu_tests_wayland_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_reclient',
       'linux-webkit-msan-rel': 'msan_release_bot_reclient',
       'linux-wpt-content-shell-fyi-rel': 'release_trybot',
+      'linux-wpt-content-shell-leak-detection': 'release_trybot',
       'linux-wpt-fyi-rel': 'release_trybot_reclient',
       'linux-wpt-identity-fyi-rel': 'release_trybot_reclient',
       'linux-wpt-input-fyi-rel': 'release_trybot_reclient',
@@ -1217,7 +1213,6 @@
       # the CI configuration, where no debug builder exists.
       'linux_chromium_ubsan_rel_ng': 'ubsan_vptr_release_bot_reclient',
 
-      'linux_layout_tests_layout_ng_disabled': 'release_trybot_reclient',
       'linux_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot_reclient',
       'linux_upload_clang': 'release_bot',
       'linux_vr': 'vr_release_trybot_reclient',
@@ -1233,7 +1228,7 @@
       'gpu-fyi-try-mac-arm64-apple-m1-exp': 'gpu_fyi_tests_release_trybot_arm64',
       'gpu-fyi-try-mac-arm64-apple-m1-rel': 'gpu_fyi_tests_release_trybot_arm64',
       'gpu-fyi-try-mac-intel-asan': 'gpu_fyi_tests_release_trybot_asan',
-      'gpu-fyi-try-mac-intel-dbg': 'gpu_fyi_tests_debug_trybot',
+      'gpu-fyi-try-mac-intel-dbg': 'gpu_fyi_tests_debug_trybot_reclient',
       'gpu-fyi-try-mac-intel-exp': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-mac-intel-rel': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-mac-nvidia-retina-exp': 'gpu_fyi_tests_release_trybot',
@@ -1280,7 +1275,7 @@
       'mac_chromium_compile_dbg_ng': 'gpu_tests_debug_bot',
       'mac_chromium_compile_rel_ng': 'gpu_tests_release_trybot',
       'mac_chromium_dbg_ng': 'gpu_tests_debug_bot',
-      'mac_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot',
+      'mac_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot_reclient',
       'mac_upload_clang': 'release_bot',
       'mac_upload_clang_arm': 'release_bot',
     },
@@ -1601,13 +1596,6 @@
       'official_optimize_reclient_trybot', 'android_without_codecs',
     ],
 
-    # TODO(crbug/1182468) Remove these android coverage expectations after
-    # existing CQ bot is running them.
-    'android_release_bot_arm64_webview_monochrome_expectations_reclient': [
-      'android', 'release_bot_reclient', 'arm64', 'strip_debug_info',
-      'webview_monochrome', 'fail_on_android_expectations',
-    ],
-
     'android_release_bot_minimal_symbols': [
       'android', 'release_bot', 'minimal_symbols', 'strip_debug_info',
     ],
@@ -1704,20 +1692,6 @@
       'android', 'release_trybot', 'arm64', 'strip_debug_info',
       'android_fastbuild', 'webview_monochrome', 'fail_on_android_expectations',
       'no_secondary_abi', 'no_goma', 'no_reclient',
-    ],
-
-    # TODO(crbug/1182468) Remove these android coverage expectations after
-    # existing CQ bot is running them.
-    'android_release_trybot_arm64_webview_monochrome_expectations_native_coverage_reclient': [
-      'android', 'release_trybot_reclient', 'arm64', 'strip_debug_info',
-      'webview_monochrome', 'fail_on_android_expectations',
-      'use_clang_coverage', 'partial_code_coverage_instrumentation',
-    ],
-
-    'android_release_trybot_arm64_webview_monochrome_native_coverage_reclient': [
-      'android', 'release_trybot_reclient', 'arm64', 'strip_debug_info',
-      'webview_monochrome',
-      'use_clang_coverage', 'partial_code_coverage_instrumentation',
     ],
 
     'android_release_trybot_arm64_webview_monochrome_reclient': [
@@ -2106,6 +2080,10 @@
       'chromeos_arm-generic-crostoolchain_reclient', 'lacros', 'release',
     ],
 
+    'chromeos_arm-generic_lacros_rel_skylab_reclient': [
+      'chromeos_arm-generic-crostoolchain_reclient', 'lacros', 'release','is_skylab',
+    ],
+
     'chromeos_arm-generic_reclient': [
       'chromeos_device_reclient', 'arm-generic',
     ],
@@ -2468,6 +2446,13 @@
       'dawn_tests', 'release_trybot', 'padisabled',
     ],
 
+    # https://crbug.com/dawn/1200: temporarily avoid using partition alloc
+    # while we investigate a crash in the mac AMD shader compiler.
+    'dawn_tests_release_trybot_alloc_none_reclient': [
+      'dawn_tests', 'release_trybot_reclient', 'padisabled',
+    ],
+
+
     'dawn_tests_release_trybot_reclient': [
       'dawn_tests', 'release_trybot_reclient',
     ],
@@ -2609,12 +2594,6 @@
     'gpu_tests_android_release_bot_dcheck_always_on_arm64_fastbuild_reclient': [
       'gpu_tests', 'android', 'release_trybot_minimal_symbols_reclient', 'arm64', 'static_angle',
       'android_fastbuild',
-    ],
-
-    'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild': [
-      'gpu_tests', 'android', 'release_bot', 'minimal_symbols', 'arm64',
-      'resource_allowlisting', 'static_angle', 'android_fastbuild',
-      'webview_google',
     ],
 
     'gpu_tests_android_release_bot_minimal_symbols_arm64_fastbuild_java_coverage_reclient': [
@@ -2901,7 +2880,7 @@
 
     'gpu_tests_wayland_release_trybot_no_symbols_use_dummy_lastchange_code_coverage_reclient': [
       'gpu_tests', 'release_trybot_reclient', 'no_symbols', 'use_dummy_lastchange',
-      'linux_wayland', 'ozone_headless', 'remoting_use_wayland',
+      'linux_wayland', 'ozone_headless',
     ],
 
     'headless_shell_release_bot_reclient': [
@@ -3915,7 +3894,7 @@
     },
 
     'chrome_for_testing': {
-      'gn_args': 'is_chrome_for_testing_branded=true'
+      'gn_args': 'is_chrome_for_testing=true'
     },
 
     'chrome_google': {
@@ -4558,7 +4537,7 @@
 
     # experiment windows cross. crbug.com/1213717
     'reclient_win_cross': {
-      'gn_args': 'use_remoteexec=true rbe_cfg_dir="../../buildtools/reclient_cfgs/win-cross-experiments"',
+      'gn_args': 'use_remoteexec=true rbe_cfg_dir="../../buildtools/reclient_cfgs/win-cross"',
     },
 
     # Historically, a 'release' bot had DCHECKs turned off. DCHECKs are now
@@ -4625,10 +4604,6 @@
 
     'release_trybot_reclient': {
       'mixins': ['release_bot_reclient', 'no_symbols', 'dcheck_always_on'],
-    },
-
-    'remoting_use_wayland': {
-      'gn_args': 'remoting_use_wayland=true',
     },
 
     'resource_allowlisting': {

@@ -56,12 +56,6 @@ consoles.console_view(
     },
 )
 
-def fyi_coverage_builder(*, name, **kwargs):
-    kwargs.setdefault("cores", 32)
-    kwargs.setdefault("execution_timeout", 20 * time.hour)
-    kwargs.setdefault("ssd", True)
-    return ci.builder(name = name, **kwargs)
-
 def fyi_ios_builder(*, name, **kwargs):
     kwargs.setdefault("cores", None)
     if kwargs.get("builderless", False):
@@ -334,6 +328,35 @@ ci.builder(
 )
 
 ci.builder(
+    name = "lacros-arm-generic-rel-skylab-fyi",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chromeos",
+                "checkout_lacros_sdk",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            target_bits = 32,
+            target_platform = "chromeos",
+            target_cros_boards = "kevin:jacuzzi:arm-generic",
+        ),
+        build_gs_bucket = "chromium-fyi-archive",
+        skylab_upload_location = builder_config.skylab_upload_location(
+            gs_bucket = "lacros-arm-generic-rel-skylab-try",
+        ),
+    ),
+    os = os.LINUX_DEFAULT,
+    console_view_entry = consoles.console_view_entry(
+        category = "lacros",
+        short_name = "arm",
+    ),
+)
+
+ci.builder(
     name = "lacros-arm64-generic-rel-skylab-fyi",
     # Some tests on this bot depend on being unauthenticated with GS, so
     # don't run the tests inside a luci-auth context to avoid having the
@@ -352,7 +375,7 @@ ci.builder(
             apply_configs = ["mb", "mb_no_luci_auth"],
             target_bits = 64,
             target_platform = "chromeos",
-            target_cros_boards = "kevin",
+            target_cros_boards = "kevin:jacuzzi",
             cros_boards_with_qemu_images = "arm64-generic",
         ),
         build_gs_bucket = "chromium-fyi-archive",
@@ -767,6 +790,26 @@ ci.builder(
 
 ci.builder(
     name = "linux-wpt-content-shell-fyi-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+    ),
+    os = os.LINUX_DEFAULT,
+    console_view_entry = consoles.console_view_entry(
+        category = "linux",
+    ),
+    experimental = True,
+)
+
+ci.builder(
+    name = "linux-wpt-content-shell-leak-detection",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
@@ -1919,7 +1962,7 @@ fyi_mac_builder(
     ),
     triggered_by = [],
     builderless = False,
-    os = os.MAC_12,
+    os = os.MAC_ANY,
     cores = None,
     console_view_entry = consoles.console_view_entry(
         category = "mac",
@@ -2057,312 +2100,6 @@ ci.builder(
     },
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CI,
     schedule = "0 0,6,12,18 * * *",
-)
-
-fyi_coverage_builder(
-    name = "android-code-coverage",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = ["android"],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "android",
-            apply_configs = [
-                "download_vr_test_apks",
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.ANDROID,
-        ),
-        android_config = builder_config.android_config(config = "main_builder"),
-        build_gs_bucket = "chromium-fyi-archive",
-    ),
-    triggered_by = [],
-    os = os.LINUX_DEFAULT,
-    console_view_entry = consoles.console_view_entry(
-        category = "code_coverage",
-        short_name = "and",
-    ),
-    coverage_test_types = ["overall", "unit"],
-    export_coverage_to_zoss = True,
-    generate_blame_list = True,
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
-    schedule = "triggered",
-    use_java_coverage = True,
-)
-
-fyi_coverage_builder(
-    name = "android-code-coverage-native",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "android",
-                "use_clang_coverage",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "android",
-            apply_configs = [
-                "download_vr_test_apks",
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.ANDROID,
-        ),
-        android_config = builder_config.android_config(config = "main_builder"),
-        build_gs_bucket = "chromium-fyi-archive",
-    ),
-    os = os.LINUX_DEFAULT,
-    console_view_entry = consoles.console_view_entry(
-        category = "code_coverage",
-        short_name = "ann",
-    ),
-    coverage_test_types = ["overall", "unit"],
-    export_coverage_to_zoss = True,
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
-    use_clang_coverage = True,
-)
-
-fyi_coverage_builder(
-    name = "fuchsia-code-coverage",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "fuchsia_x64",
-                "use_clang_coverage",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = ["mb"],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.FUCHSIA,
-        ),
-        build_gs_bucket = "chromium-fyi-archive",
-    ),
-    triggered_by = [],
-    os = os.LINUX_DEFAULT,
-    console_view_entry = [
-        consoles.console_view_entry(
-            category = "code_coverage",
-            short_name = "fx",
-        ),
-        consoles.console_view_entry(
-            branch_selector = branches.MAIN,
-            console_view = "sheriff.fuchsia",
-            category = "fyi|x64",
-            short_name = "cov",
-        ),
-    ],
-    coverage_test_types = ["overall", "unit"],
-    schedule = "triggered",
-    use_clang_coverage = True,
-)
-
-fyi_coverage_builder(
-    name = "ios-simulator-code-coverage",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "ios",
-            apply_configs = ["use_clang_coverage"],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-                "mac_toolchain",
-            ],
-            build_config = builder_config.build_config.DEBUG,
-            target_bits = 64,
-            target_platform = builder_config.target_platform.IOS,
-        ),
-        build_gs_bucket = "chromium-fyi-archive",
-    ),
-    cores = None,
-    os = os.MAC_DEFAULT,
-    xcode = xcode.x14main,
-    console_view_entry = consoles.console_view_entry(
-        category = "code_coverage",
-        short_name = "ios",
-    ),
-    coverage_exclude_sources = "ios_test_files_and_test_utils",
-    coverage_test_types = ["overall", "unit"],
-    export_coverage_to_zoss = True,
-    use_clang_coverage = True,
-)
-
-fyi_coverage_builder(
-    name = "linux-chromeos-code-coverage",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "chromeos",
-                "use_clang_coverage",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = ["mb"],
-            build_config = builder_config.build_config.RELEASE,
-            target_arch = builder_config.target_arch.INTEL,
-            target_bits = 64,
-        ),
-        build_gs_bucket = "chromium-fyi-archive",
-    ),
-    triggered_by = [],
-    os = os.LINUX_DEFAULT,
-    console_view_entry = consoles.console_view_entry(
-        category = "code_coverage",
-        short_name = "lcr",
-    ),
-    coverage_test_types = ["overall", "unit"],
-    export_coverage_to_zoss = True,
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
-    schedule = "triggered",
-    use_clang_coverage = True,
-)
-
-fyi_coverage_builder(
-    name = "linux-js-code-coverage",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_arch = builder_config.target_arch.INTEL,
-            target_bits = 64,
-        ),
-        build_gs_bucket = "chromium-fyi-archive",
-    ),
-    triggered_by = [],
-    os = os.LINUX_DEFAULT,
-    console_view_entry = consoles.console_view_entry(
-        category = "code_coverage",
-        short_name = "jcr",
-    ),
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
-    schedule = "triggered",
-    use_javascript_coverage = True,
-)
-
-fyi_coverage_builder(
-    name = "linux-code-coverage",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = ["use_clang_coverage"],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = ["mb"],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-        ),
-        build_gs_bucket = "chromium-fyi-archive",
-    ),
-    triggered_by = [],
-    os = os.LINUX_DEFAULT,
-    console_view_entry = consoles.console_view_entry(
-        category = "code_coverage",
-        short_name = "lnx",
-    ),
-    coverage_test_types = ["overall", "unit"],
-    export_coverage_to_zoss = True,
-    use_clang_coverage = True,
-)
-
-fyi_coverage_builder(
-    name = "linux-lacros-code-coverage",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "chromeos",
-                "use_clang_coverage",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = ["mb"],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-        ),
-        build_gs_bucket = "chromium-fyi-archive",
-    ),
-    os = os.LINUX_DEFAULT,
-    console_view_entry = consoles.console_view_entry(
-        category = "code_coverage",
-        short_name = "lac",
-    ),
-    coverage_test_types = ["overall", "unit"],
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
-    use_clang_coverage = True,
-)
-
-fyi_coverage_builder(
-    name = "mac-code-coverage",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = ["use_clang_coverage"],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = ["mb"],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-        ),
-        build_gs_bucket = "chromium-fyi-archive",
-    ),
-    builderless = True,
-    cores = 24,
-    os = os.MAC_ANY,
-    console_view_entry = consoles.console_view_entry(
-        category = "code_coverage",
-        short_name = "mac",
-    ),
-    coverage_test_types = ["overall", "unit"],
-    export_coverage_to_zoss = True,
-    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
-    use_clang_coverage = True,
-)
-
-fyi_coverage_builder(
-    name = "win10-code-coverage",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = ["use_clang_coverage"],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = ["mb"],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-        ),
-        build_gs_bucket = "chromium-fyi-archive",
-    ),
-    builderless = True,
-    os = os.WINDOWS_DEFAULT,
-    console_view_entry = consoles.console_view_entry(
-        category = "code_coverage",
-        short_name = "win",
-    ),
-    coverage_test_types = ["overall", "unit"],
-    export_coverage_to_zoss = True,
-    use_clang_coverage = True,
 )
 
 fyi_ios_builder(

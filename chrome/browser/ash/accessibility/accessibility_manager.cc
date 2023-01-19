@@ -52,7 +52,6 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_requisition_manager.h"
-#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/braille_display_private/stub_braille_controller.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -70,6 +69,8 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/audio/sounds.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
 #include "chromeos/ash/components/dbus/upstart/upstart_client.h"
 #include "chromeos/constants/devicetype.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -634,7 +635,7 @@ void AccessibilityManager::OnSpokenFeedbackChanged() {
   const bool enabled = profile_->GetPrefs()->GetBoolean(
       prefs::kAccessibilitySpokenFeedbackEnabled);
 
-  if (ProfileHelper::IsUserProfile(profile_)) {
+  if (IsUserBrowserContext(profile_)) {
     user_manager::KnownUser known_user(g_browser_process->local_state());
     known_user.SetBooleanPref(
         multi_user_util::GetAccountIdFromProfile(profile_),
@@ -647,10 +648,10 @@ void AccessibilityManager::OnSpokenFeedbackChanged() {
   // of the flag. That class will own both the loaders and the
   // AccessibilityServiceClient.
   if (enabled) {
-    chromevox_loader_->SetProfile(
+    chromevox_loader_->SetBrowserContext(
         profile_,
-        base::BindRepeating(&AccessibilityManager::PostSwitchChromeVoxProfile,
-                            weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&AccessibilityManager::PostSwitchChromeVoxProfile,
+                       weak_ptr_factory_.GetWeakPtr()));
     if (accessibility_service_client_)
       accessibility_service_client_->SetProfile(profile_);
   }
@@ -829,7 +830,7 @@ void AccessibilityManager::OnAccessibilityCommonChanged(
 
   const bool enabled = profile_->GetPrefs()->GetBoolean(pref_name);
   if (enabled) {
-    accessibility_common_extension_loader_->SetProfile(
+    accessibility_common_extension_loader_->SetBrowserContext(
         profile_, base::OnceClosure() /* done_callback */);
     if (accessibility_service_client_)
       accessibility_service_client_->SetProfile(profile_);
@@ -1225,7 +1226,7 @@ void AccessibilityManager::OnSelectToSpeakChanged() {
   const bool enabled = profile_->GetPrefs()->GetBoolean(
       prefs::kAccessibilitySelectToSpeakEnabled);
   if (enabled) {
-    select_to_speak_loader_->SetProfile(profile_, base::OnceClosure());
+    select_to_speak_loader_->SetBrowserContext(profile_, base::OnceClosure());
     if (accessibility_service_client_)
       accessibility_service_client_->SetProfile(profile_);
   }
@@ -1280,13 +1281,13 @@ void AccessibilityManager::OnSwitchAccessChanged() {
   if (enabled) {
     // Only update |was_vk_enabled_before_switch_access_| if the profile
     // changed.
-    if (profile_ != switch_access_loader_->profile()) {
+    if (profile_ != switch_access_loader_->browser_context()) {
       was_vk_enabled_before_switch_access_ =
           ChromeKeyboardControllerClient::Get()->IsEnableFlagSet(
               keyboard::KeyboardEnableFlag::kExtensionEnabled);
     }
 
-    switch_access_loader_->SetProfile(profile_, base::OnceClosure());
+    switch_access_loader_->SetBrowserContext(profile_, base::OnceClosure());
 
     if (accessibility_service_client_)
       accessibility_service_client_->SetProfile(profile_);
@@ -1565,7 +1566,8 @@ void AccessibilityManager::SetProfile(Profile* profile) {
 }
 
 void AccessibilityManager::SetProfileByUser(const user_manager::User* user) {
-  Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
+  Profile* profile = Profile::FromBrowserContext(
+      BrowserContextHelper::Get()->GetBrowserContextByUser(user));
   DCHECK(profile);
   SetProfile(profile);
 }
@@ -1691,8 +1693,9 @@ void AccessibilityManager::OnLoginOrLockScreenVisible() {
 
 void AccessibilityManager::SetActiveProfile() {
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  if (ProfileHelper::IsSigninProfile(profile))
+  if (IsSigninBrowserContext(profile)) {
     SetProfile(profile);
+  }
 }
 
 void AccessibilityManager::OnFocusChangedInPage(

@@ -14,8 +14,10 @@
 # https://ci.chromium.org/ui/p/chromium/builders/ci/linux-rel-cft/2321
 -BrowserFocusTest.AppLocationBar
 -BrowserFocusTest.PopupLocationBar
+-CaptionBubbleControllerViewsTest.BubblePositioning
 -PopupBlockerBrowserTest.WindowFeatures
 -SadTabViewInteractiveUITest.SadTabKeyboardAccessibility
 -SitePerProcessInteractiveBrowserTest.FullscreenElementInABAAndExitViaEscapeKey
 -SitePerProcessInteractiveBrowserTest.FullscreenElementInSubframe
 -WebContentsInteractionTestUtilInteractiveUiTest.NavigateMenuAndBringUpDownloadsPageThenOpenMoreActionsMenu
+-WebContentsInteractionTestUtilInteractiveUiTest.UseElementBoundsInScreenToSendInput

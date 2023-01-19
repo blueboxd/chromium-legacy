@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
-#include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_utils.h"
+#include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
 namespace blink {
 namespace {
@@ -17,7 +17,7 @@ namespace {
 // Both have layout initially performed on them, however the "src" will have a
 // different |NGConstraintSpace| which is then used to test either a cache hit
 // or miss.
-class NGLayoutResultCachingTest : public NGLayoutTest {
+class NGLayoutResultCachingTest : public RenderingTest {
  protected:
   NGLayoutResultCachingTest() {}
 
@@ -2040,8 +2040,6 @@ TEST_F(NGLayoutResultCachingTest, HitTableSectionRemove) {
 }
 
 TEST_F(NGLayoutResultCachingTest, FragmentainerSizeChange) {
-  ScopedLayoutNGBlockFragmentationForTest block_frag(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       .multicol { columns:2; column-fill:auto; }
@@ -2115,8 +2113,6 @@ TEST_F(NGLayoutResultCachingTest, FragmentainerSizeChange) {
 }
 
 TEST_F(NGLayoutResultCachingTest, BlockOffsetChangeInFragmentainer) {
-  ScopedLayoutNGBlockFragmentationForTest block_frag(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       .multicol { columns:2; column-fill:auto; height:100px; }
@@ -2166,8 +2162,6 @@ TEST_F(NGLayoutResultCachingTest, BlockOffsetChangeInFragmentainer) {
 }
 
 TEST_F(NGLayoutResultCachingTest, BfcRootBlockOffsetChangeInFragmentainer) {
-  ScopedLayoutNGBlockFragmentationForTest block_frag(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       .multicol { columns:2; column-fill:auto; height:100px; }
@@ -2217,8 +2211,6 @@ TEST_F(NGLayoutResultCachingTest, BfcRootBlockOffsetChangeInFragmentainer) {
 }
 
 TEST_F(NGLayoutResultCachingTest, HitBlockOffsetUnchangedInFragmentainer) {
-  ScopedLayoutNGBlockFragmentationForTest block_frag(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       .multicol { columns:2; column-fill:auto; height:100px; }
@@ -2253,8 +2245,6 @@ TEST_F(NGLayoutResultCachingTest, HitBlockOffsetUnchangedInFragmentainer) {
 }
 
 TEST_F(NGLayoutResultCachingTest, HitNewFormattingContextInFragmentainer) {
-  ScopedLayoutNGBlockFragmentationForTest block_frag(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       .multicol { columns:2; }
@@ -2288,8 +2278,6 @@ TEST_F(NGLayoutResultCachingTest, HitNewFormattingContextInFragmentainer) {
 }
 
 TEST_F(NGLayoutResultCachingTest, MissMonolithicChangeInFragmentainer) {
-  ScopedLayoutNGBlockFragmentationForTest block_frag(true);
-
   SetBodyInnerHTML(R"HTML(
     <style>
       .multicol { columns:2; column-fill:auto; height:100px; }

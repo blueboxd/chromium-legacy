@@ -1153,6 +1153,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="3872834068356954457">Vitenskap</translation>
 <translation id="3875783148670536197">Vis meg hvordan</translation>
 <translation id="3881478300875776315">Vis færre linjer</translation>
+<translation id="3883500545751229739">forstyrrende annonser</translation>
 <translation id="3884278016824448484">Motstridende enhetsidentifikator</translation>
 <translation id="388632593194507180">Overvåking er oppdaget</translation>
 <translation id="3886948180919384617">Hylle 3</translation>
@@ -1714,7 +1715,6 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="5284295735376057059">Dokumentegenskaper</translation>
 <translation id="528468243742722775">Avslutt</translation>
 <translation id="5285570108065881030">Vis alle lagrede passord</translation>
-<translation id="5287240709317226393">Vis informasjonskapsler</translation>
 <translation id="5287456746628258573">Dette nettstedet bruker en utdatert sikkerhetskonfigurasjon, som betyr at informasjonen din (for eksempel passord eller kredittkortnumre) kan bli avslørt når den sendes til dette nettstedet.</translation>
 <translation id="5288108484102287882">Det har oppstått advarsler under validering av regelverdier</translation>
 <translation id="5288393065350884210">Regnskap og revisjon</translation>
@@ -3117,6 +3117,7 @@ Mer informasjon:
 <translation id="8891727572606052622">Ugyldig modus for proxy-tjener.</translation>
 <translation id="8894794286471754040">Langsiden først</translation>
 <translation id="8897428486789851669">Svømming</translation>
+<translation id="8899807382908246773">Forstyrrende annonser</translation>
 <translation id="8903921497873541725">Zoom inn</translation>
 <translation id="890493561996401738">Knapp for å fjerne forslag – trykk på Enter for å fjerne. <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8912362522468806198">Google-konto</translation>
@@ -3194,7 +3195,6 @@ Mer informasjon:
 <translation id="9096425087209440047"><ph name="SET_CHROME_AS_DEFAULT_BROWSER_FOCUSED_FRIENDLY_MATCH_TEXT" /> – trykk på Tab og deretter på Enter for å angi Chrome som systemets standardnettleser i iOS-innstillingene</translation>
 <translation id="9096679202588811390">TV-programmer og -serier</translation>
 <translation id="9101630580131696064">Skuff 1</translation>
-<translation id="9102081333385212048">Filer du kopierer eller flytter, blir sendt til Google Cloud eller tredjeparter for analyse. De kan for eksempel bli skannet for sensitive data eller skadelig programvare.</translation>
 <translation id="9103537084693478942">Videoprogramvare</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> bruker vanligvis kryptering for å beskytte informasjonen din. Da Chromium prøvde å koble til <ph name="SITE" /> denne gangen, sendte nettstedet tilbake uvanlig og feil legitimasjon. Dette kan skje hvis en angriper prøver å utgi seg for å være <ph name="SITE" />, eller hvis en Wifi-påloggingsskjerm har avbrutt tilkoblingen. Informasjonen din er likevel sikker fordi Chromium stoppet tilkoblingen før det ble utvekslet noen data.</translation>
 <translation id="9106062320799175032">Legg til faktureringsadresse</translation>

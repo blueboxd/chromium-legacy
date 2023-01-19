@@ -48,7 +48,7 @@ void PageImpl::GetManifest(GetManifestCallback callback) {
   manifest_manager_host->GetManifest(std::move(callback));
 }
 
-bool PageImpl::IsPrimary() {
+bool PageImpl::IsPrimary() const {
   // TODO(1244137): Check for portals as well, once they are migrated to MPArch.
   if (main_document_->IsFencedFrameRoot())
     return false;
@@ -305,6 +305,11 @@ base::flat_map<std::string, std::string> PageImpl::GetKeyboardLayoutMap() {
 }
 
 bool PageImpl::IsSelectURLAllowed(const url::Origin& origin) {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kSharedStorageSelectURLLimit)) {
+    return true;
+  }
+
   int& count = select_url_count_[origin];
   if (count >=
       blink::features::

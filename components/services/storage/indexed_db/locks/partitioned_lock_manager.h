@@ -7,6 +7,8 @@
 
 #include <iosfwd>
 #include <list>
+#include <memory>
+#include <set>
 #include <vector>
 
 #include "base/component_export.h"
@@ -95,9 +97,19 @@ class COMPONENT_EXPORT(LOCK_MANAGER) PartitionedLockManager {
   // Tests to see if the given lock request can be acquired.
   TestLockResult TestLock(PartitionedLockRequest lock_requests);
 
+  // Filter out the list of `PartitionedLockId`s that cannot be acquired given
+  // the list of `PartitionedLockRequest`.
+  // See `Lock::CanBeAcquired()`.
+  std::vector<PartitionedLockId> GetUnacquirableLocks(
+      std::vector<PartitionedLockRequest>& lock_requests);
+
   // Remove the given lock lock_id. The lock lock_id must not be in use. Call
   // this if the lock will never be used again.
   void RemoveLockId(const PartitionedLockId& lock_id);
+
+  // Returns 0 if the lock is not found, or the number of other active
+  // requests queued if the lock is held.
+  int64_t GetQueuedLockRequestCount(const PartitionedLockId& lock_id) const;
 
  private:
   struct LockRequest {

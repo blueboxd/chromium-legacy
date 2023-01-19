@@ -35,6 +35,15 @@ enum class PasswordCheckState {
   kSignedOut,
 };
 
+// Enum which represents possible warnings of Password Checkup on UI.
+enum class WarningType {
+  kCompromisedPasswordsWarning,
+  kReusedPasswordsWarning,
+  kWeakPasswordsWarning,
+  kDismissedWarningsWarning,
+  kNoInsecurePasswordsWarning,
+};
+
 // This class handles the bulk password check feature.
 class IOSChromePasswordCheckManager
     : public base::SupportsWeakPtr<IOSChromePasswordCheckManager>,
@@ -61,10 +70,18 @@ class IOSChromePasswordCheckManager
   // The elapsed time since the last full password check was performed.
   base::Time GetLastPasswordCheckTime() const;
 
-  // Obtains all unmuted compromised credentials that are present in the
-  // password store.
-  std::vector<password_manager::CredentialUIEntry>
-  GetUnmutedCompromisedCredentials() const;
+  // Obtains all insecure credentials that are present in the password store.
+  std::vector<password_manager::CredentialUIEntry> GetInsecureCredentials()
+      const;
+
+  // Returns the type of warning with the highest priority, the descending order
+  // of priority being:
+  //  1. Compromised password warnings
+  //  2. Reused password warnings
+  //  3. Weak password warnings
+  //  4. Muted warnings warning
+  //  5. No insecure password warning
+  WarningType GetWarningOfHighestPriority() const;
 
   void AddObserver(Observer* observer) { observers_.AddObserver(observer); }
   void RemoveObserver(Observer* observer) {

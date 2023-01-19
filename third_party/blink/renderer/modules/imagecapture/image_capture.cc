@@ -7,9 +7,10 @@
 #include <memory>
 #include <utility>
 
-#include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/functional/callback_helpers.h"
 #include "base/trace_event/trace_event.h"
+#include "base/types/strong_alias.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
@@ -55,6 +56,97 @@ const char kNoServiceError[] = "ImageCapture service unavailable.";
 
 const char kInvalidStateTrackError[] =
     "The associated Track is in an invalid state";
+
+using CopyPanTiltZoom = base::StrongAlias<class CopyPanTiltZoomTag, bool>;
+
+template <typename T>
+void CopyCommonMembers(const T* source,
+                       T* destination,
+                       CopyPanTiltZoom copy_pan_tilt_zoom) {
+  DCHECK(source);
+  DCHECK(destination);
+  // Merge any present |source| common members into |destination|.
+  if (source->hasWhiteBalanceMode()) {
+    destination->setWhiteBalanceMode(source->whiteBalanceMode());
+  }
+  if (source->hasExposureMode()) {
+    destination->setExposureMode(source->exposureMode());
+  }
+  if (source->hasFocusMode()) {
+    destination->setFocusMode(source->focusMode());
+  }
+  if (source->hasExposureCompensation()) {
+    destination->setExposureCompensation(source->exposureCompensation());
+  }
+  if (source->hasExposureTime()) {
+    destination->setExposureTime(source->exposureTime());
+  }
+  if (source->hasColorTemperature()) {
+    destination->setColorTemperature(source->colorTemperature());
+  }
+  if (source->hasIso()) {
+    destination->setIso(source->iso());
+  }
+  if (source->hasBrightness()) {
+    destination->setBrightness(source->brightness());
+  }
+  if (source->hasContrast()) {
+    destination->setContrast(source->contrast());
+  }
+  if (source->hasSaturation()) {
+    destination->setSaturation(source->saturation());
+  }
+  if (source->hasSharpness()) {
+    destination->setSharpness(source->sharpness());
+  }
+  if (source->hasFocusDistance()) {
+    destination->setFocusDistance(source->focusDistance());
+  }
+  if (copy_pan_tilt_zoom) {
+    if (source->hasPan()) {
+      destination->setPan(source->pan());
+    }
+    if (source->hasTilt()) {
+      destination->setTilt(source->tilt());
+    }
+    if (source->hasZoom()) {
+      destination->setZoom(source->zoom());
+    }
+  }
+  if (source->hasTorch()) {
+    destination->setTorch(source->torch());
+  }
+  if (source->hasBackgroundBlur()) {
+    destination->setBackgroundBlur(source->backgroundBlur());
+  }
+}
+
+void CopyCapabilities(const MediaTrackCapabilities* source,
+                      MediaTrackCapabilities* destination,
+                      CopyPanTiltZoom copy_pan_tilt_zoom) {
+  // Merge any present |source| members into |destination|.
+  CopyCommonMembers(source, destination, copy_pan_tilt_zoom);
+}
+
+void CopyConstraintSet(const MediaTrackConstraintSet* source,
+                       MediaTrackConstraintSet* destination,
+                       CopyPanTiltZoom copy_pan_tilt_zoom) {
+  // Merge any present |source| members into |destination|.
+  CopyCommonMembers(source, destination, copy_pan_tilt_zoom);
+  if (source->hasPointsOfInterest()) {
+    destination->setPointsOfInterest(source->pointsOfInterest());
+  }
+}
+
+void CopySettings(const MediaTrackSettings* source,
+                  MediaTrackSettings* destination,
+                  CopyPanTiltZoom copy_pan_tilt_zoom) {
+  // Merge any present |source| members into |destination|.
+  CopyCommonMembers(source, destination, copy_pan_tilt_zoom);
+  if (source->hasPointsOfInterest() && !source->pointsOfInterest().empty()) {
+    destination->setPointsOfInterest(source->pointsOfInterest());
+  }
+}
 
 bool TrackIsInactive(const MediaStreamTrack& track) {
   // Spec instructs to return an exception if the Track's readyState() is not
@@ -187,67 +279,15 @@ void ImageCapture::ContextDestroyed() {
 }
 
 ScriptPromise ImageCapture::getPhotoCapabilities(ScriptState* script_state) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
-
-  if (TrackIsInactive(*stream_track_)) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kInvalidStateError, kInvalidStateTrackError));
-    return promise;
-  }
-
-  if (!service_.is_bound()) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotFoundError, kNoServiceError));
-    return promise;
-  }
-  service_requests_.insert(resolver);
-
-  auto resolver_cb = WTF::BindOnce(&ImageCapture::ResolveWithPhotoCapabilities,
-                                   WrapPersistent(this));
-
-  // m_streamTrack->component()->source()->id() is the renderer "name" of the
-  // camera;
-  // TODO(mcasas) consider sending the security origin as well:
-  // scriptState->getExecutionContext()->getSecurityOrigin()->toString()
-  service_->GetPhotoState(
-      stream_track_->Component()->Source()->Id(),
-      WTF::BindOnce(&ImageCapture::OnMojoGetPhotoState, WrapPersistent(this),
-                    WrapPersistent(resolver), std::move(resolver_cb),
-                    false /* trigger_take_photo */));
-  return promise;
+  return GetMojoPhotoState(
+      script_state, WTF::BindOnce(&ImageCapture::ResolveWithPhotoCapabilities,
+                                  WrapPersistent(this)));
 }
 
 ScriptPromise ImageCapture::getPhotoSettings(ScriptState* script_state) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
-
-  if (TrackIsInactive(*stream_track_)) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kInvalidStateError, kInvalidStateTrackError));
-    return promise;
-  }
-
-  if (!service_.is_bound()) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotFoundError, kNoServiceError));
-    return promise;
-  }
-  service_requests_.insert(resolver);
-
-  auto resolver_cb = WTF::BindOnce(&ImageCapture::ResolveWithPhotoSettings,
-                                   WrapPersistent(this));
-
-  // m_streamTrack->component()->source()->id() is the renderer "name" of the
-  // camera;
-  // TODO(mcasas) consider sending the security origin as well:
-  // scriptState->getExecutionContext()->getSecurityOrigin()->toString()
-  service_->GetPhotoState(
-      stream_track_->Component()->Source()->Id(),
-      WTF::BindOnce(&ImageCapture::OnMojoGetPhotoState, WrapPersistent(this),
-                    WrapPersistent(resolver), std::move(resolver_cb),
-                    false /* trigger_take_photo */));
-  return promise;
+  return GetMojoPhotoState(
+      script_state, WTF::BindOnce(&ImageCapture::ResolveWithPhotoSettings,
+                                  WrapPersistent(this)));
 }
 
 ScriptPromise ImageCapture::setOptions(ScriptState* script_state,
@@ -378,51 +418,8 @@ ScriptPromise ImageCapture::grabFrame(ScriptState* script_state) {
 void ImageCapture::GetMediaTrackCapabilities(
     MediaTrackCapabilities* capabilities) const {
   // Merge any present |capabilities_| members into |capabilities|.
-
-  if (capabilities_->hasWhiteBalanceMode())
-    capabilities->setWhiteBalanceMode(capabilities_->whiteBalanceMode());
-  if (capabilities_->hasExposureMode())
-    capabilities->setExposureMode(capabilities_->exposureMode());
-  if (capabilities_->hasFocusMode())
-    capabilities->setFocusMode(capabilities_->focusMode());
-  if (capabilities_->hasExposureCompensation()) {
-    capabilities->setExposureCompensation(
-        capabilities_->exposureCompensation());
-  }
-  if (capabilities_->hasExposureTime())
-    capabilities->setExposureTime(capabilities_->exposureTime());
-
-  if (capabilities_->hasColorTemperature())
-    capabilities->setColorTemperature(capabilities_->colorTemperature());
-  if (capabilities_->hasIso())
-    capabilities->setIso(capabilities_->iso());
-
-  if (capabilities_->hasBrightness())
-    capabilities->setBrightness(capabilities_->brightness());
-  if (capabilities_->hasContrast())
-    capabilities->setContrast(capabilities_->contrast());
-  if (capabilities_->hasSaturation())
-    capabilities->setSaturation(capabilities_->saturation());
-  if (capabilities_->hasSharpness())
-    capabilities->setSharpness(capabilities_->sharpness());
-
-  if (capabilities_->hasFocusDistance())
-    capabilities->setFocusDistance(capabilities_->focusDistance());
-
-  if (HasPanTiltZoomPermissionGranted()) {
-    if (capabilities_->hasPan())
-      capabilities->setPan(capabilities_->pan());
-    if (capabilities_->hasTilt())
-      capabilities->setTilt(capabilities_->tilt());
-    if (capabilities_->hasZoom())
-      capabilities->setZoom(capabilities_->zoom());
-  }
-
-  if (capabilities_->hasTorch())
-    capabilities->setTorch(capabilities_->torch());
-
-  if (capabilities_->hasBackgroundBlur())
-    capabilities->setBackgroundBlur(capabilities_->backgroundBlur());
+  CopyCapabilities(capabilities_, capabilities,
+                   CopyPanTiltZoom(HasPanTiltZoomPermissionGranted()));
 }
 
 // TODO(mcasas): make the implementation fully Spec compliant, see the TODOs
@@ -872,54 +869,8 @@ void ImageCapture::ClearMediaTrackConstraints() {
 
 void ImageCapture::GetMediaTrackSettings(MediaTrackSettings* settings) const {
   // Merge any present |settings_| members into |settings|.
-
-  if (settings_->hasWhiteBalanceMode())
-    settings->setWhiteBalanceMode(settings_->whiteBalanceMode());
-  if (settings_->hasExposureMode())
-    settings->setExposureMode(settings_->exposureMode());
-  if (settings_->hasFocusMode())
-    settings->setFocusMode(settings_->focusMode());
-
-  if (settings_->hasPointsOfInterest() &&
-      !settings_->pointsOfInterest().empty()) {
-    settings->setPointsOfInterest(settings_->pointsOfInterest());
-  }
-
-  if (settings_->hasExposureCompensation())
-    settings->setExposureCompensation(settings_->exposureCompensation());
-  if (settings_->hasExposureTime())
-    settings->setExposureTime(settings_->exposureTime());
-  if (settings_->hasColorTemperature())
-    settings->setColorTemperature(settings_->colorTemperature());
-  if (settings_->hasIso())
-    settings->setIso(settings_->iso());
-
-  if (settings_->hasBrightness())
-    settings->setBrightness(settings_->brightness());
-  if (settings_->hasContrast())
-    settings->setContrast(settings_->contrast());
-  if (settings_->hasSaturation())
-    settings->setSaturation(settings_->saturation());
-  if (settings_->hasSharpness())
-    settings->setSharpness(settings_->sharpness());
-
-  if (settings_->hasFocusDistance())
-    settings->setFocusDistance(settings_->focusDistance());
-
-  if (HasPanTiltZoomPermissionGranted()) {
-    if (settings_->hasPan())
-      settings->setPan(settings_->pan());
-    if (settings_->hasTilt())
-      settings->setTilt(settings_->tilt());
-    if (settings_->hasZoom())
-      settings->setZoom(settings_->zoom());
-  }
-
-  if (settings_->hasTorch())
-    settings->setTorch(settings_->torch());
-
-  if (settings_->hasBackgroundBlur())
-    settings->setBackgroundBlur(settings_->backgroundBlur());
+  CopySettings(settings_, settings,
+               CopyPanTiltZoom(HasPanTiltZoomPermissionGranted()));
 }
 
 ImageCapture::ImageCapture(ExecutionContext* context,
@@ -980,6 +931,37 @@ void ImageCapture::OnPermissionStatusChange(
 
 bool ImageCapture::HasPanTiltZoomPermissionGranted() const {
   return pan_tilt_zoom_permission_ == mojom::blink::PermissionStatus::GRANTED;
+}
+
+ScriptPromise ImageCapture::GetMojoPhotoState(
+    ScriptState* script_state,
+    PromiseResolverFunction resolver_cb) {
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  if (TrackIsInactive(*stream_track_)) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kInvalidStateError, kInvalidStateTrackError));
+    return promise;
+  }
+
+  if (!service_.is_bound()) {
+    resolver->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotFoundError, kNoServiceError));
+    return promise;
+  }
+  service_requests_.insert(resolver);
+
+  // m_streamTrack->component()->source()->id() is the renderer "name" of the
+  // camera;
+  // TODO(mcasas) consider sending the security origin as well:
+  // scriptState->getExecutionContext()->getSecurityOrigin()->toString()
+  service_->GetPhotoState(
+      stream_track_->Component()->Source()->Id(),
+      WTF::BindOnce(&ImageCapture::OnMojoGetPhotoState, WrapPersistent(this),
+                    WrapPersistent(resolver), std::move(resolver_cb),
+                    false /* trigger_take_photo */));
+  return promise;
 }
 
 void ImageCapture::OnMojoGetPhotoState(
@@ -1256,153 +1238,16 @@ ImageCapture* ImageCapture::Clone() const {
       /*callback=*/base::DoNothing());
 
   // Copy capabilities.
-  if (capabilities_->hasWhiteBalanceMode()) {
-    clone->capabilities_->setWhiteBalanceMode(
-        capabilities_->whiteBalanceMode());
-  }
-  if (capabilities_->hasExposureMode())
-    clone->capabilities_->setExposureMode(capabilities_->exposureMode());
-  if (capabilities_->hasFocusMode())
-    clone->capabilities_->setFocusMode(capabilities_->focusMode());
-  if (capabilities_->hasExposureCompensation()) {
-    clone->capabilities_->setExposureCompensation(
-        capabilities_->exposureCompensation());
-  }
-  if (capabilities_->hasExposureTime())
-    clone->capabilities_->setExposureTime(capabilities_->exposureTime());
-  if (capabilities_->hasColorTemperature()) {
-    clone->capabilities_->setColorTemperature(
-        capabilities_->colorTemperature());
-  }
-  if (capabilities_->hasIso())
-    clone->capabilities_->setIso(capabilities_->iso());
-  if (capabilities_->hasBrightness())
-    clone->capabilities_->setBrightness(capabilities_->brightness());
-  if (capabilities_->hasContrast())
-    clone->capabilities_->setContrast(capabilities_->contrast());
-  if (capabilities_->hasSaturation())
-    clone->capabilities_->setSaturation(capabilities_->saturation());
-  if (capabilities_->hasSharpness())
-    clone->capabilities_->setSharpness(capabilities_->sharpness());
-  if (capabilities_->hasFocusDistance())
-    clone->capabilities_->setFocusDistance(capabilities_->focusDistance());
-  if (capabilities_->hasPan())
-    clone->capabilities_->setPan(capabilities_->pan());
-  if (capabilities_->hasTilt())
-    clone->capabilities_->setTilt(capabilities_->tilt());
-  if (capabilities_->hasZoom())
-    clone->capabilities_->setZoom(capabilities_->zoom());
-  if (capabilities_->hasTorch())
-    clone->capabilities_->setTorch(capabilities_->torch());
-  if (capabilities_->hasBackgroundBlur())
-    clone->capabilities_->setBackgroundBlur(capabilities_->backgroundBlur());
+  CopyCapabilities(capabilities_, clone->capabilities_, CopyPanTiltZoom(true));
 
   // Copy settings.
-  if (settings_->hasWhiteBalanceMode())
-    clone->settings_->setWhiteBalanceMode(settings_->whiteBalanceMode());
-  if (settings_->hasExposureMode())
-    clone->settings_->setExposureMode(settings_->exposureMode());
-  if (settings_->hasFocusMode())
-    clone->settings_->setFocusMode(settings_->focusMode());
-  if (settings_->hasPointsOfInterest() &&
-      !settings_->pointsOfInterest().empty()) {
-    clone->settings_->setPointsOfInterest(settings_->pointsOfInterest());
-  }
-  if (settings_->hasExposureCompensation()) {
-    clone->settings_->setExposureCompensation(
-        settings_->exposureCompensation());
-  }
-  if (settings_->hasExposureTime())
-    clone->settings_->setExposureTime(settings_->exposureTime());
-  if (settings_->hasColorTemperature())
-    clone->settings_->setColorTemperature(settings_->colorTemperature());
-  if (settings_->hasIso())
-    clone->settings_->setIso(settings_->iso());
-  if (settings_->hasBrightness())
-    clone->settings_->setBrightness(settings_->brightness());
-  if (settings_->hasContrast())
-    clone->settings_->setContrast(settings_->contrast());
-  if (settings_->hasSaturation())
-    clone->settings_->setSaturation(settings_->saturation());
-  if (settings_->hasSharpness())
-    clone->settings_->setSharpness(settings_->sharpness());
-  if (settings_->hasFocusDistance())
-    clone->settings_->setFocusDistance(settings_->focusDistance());
-  if (settings_->hasPan())
-    clone->settings_->setPan(settings_->pan());
-  if (settings_->hasTilt())
-    clone->settings_->setTilt(settings_->tilt());
-  if (settings_->hasZoom())
-    clone->settings_->setZoom(settings_->zoom());
-  if (settings_->hasTorch())
-    clone->settings_->setTorch(settings_->torch());
-  if (settings_->hasBackgroundBlur())
-    clone->settings_->setBackgroundBlur(settings_->backgroundBlur());
-
-  if (!current_constraints_)
-    return clone;
+  CopySettings(settings_, clone->settings_, CopyPanTiltZoom(true));
 
   // Copy current constraints.
-  clone->current_constraints_ = MediaTrackConstraintSet::Create();
-  if (current_constraints_->hasWhiteBalanceMode()) {
-    clone->current_constraints_->setWhiteBalanceMode(
-        current_constraints_->whiteBalanceMode());
-  }
-  if (current_constraints_->hasExposureMode()) {
-    clone->current_constraints_->setExposureMode(
-        current_constraints_->exposureMode());
-  }
-  if (current_constraints_->hasFocusMode()) {
-    clone->current_constraints_->setFocusMode(
-        current_constraints_->focusMode());
-  }
-  if (current_constraints_->hasPointsOfInterest()) {
-    clone->current_constraints_->setPointsOfInterest(
-        current_constraints_->pointsOfInterest());
-  }
-  if (current_constraints_->hasExposureCompensation()) {
-    clone->current_constraints_->setExposureCompensation(
-        current_constraints_->exposureCompensation());
-  }
-  if (current_constraints_->hasExposureTime()) {
-    clone->current_constraints_->setExposureTime(
-        current_constraints_->exposureTime());
-  }
-  if (current_constraints_->hasColorTemperature()) {
-    clone->current_constraints_->setColorTemperature(
-        current_constraints_->colorTemperature());
-  }
-  if (current_constraints_->hasIso())
-    clone->current_constraints_->setIso(current_constraints_->iso());
-  if (current_constraints_->hasBrightness()) {
-    clone->current_constraints_->setBrightness(
-        current_constraints_->brightness());
-  }
-  if (current_constraints_->hasContrast())
-    clone->current_constraints_->setContrast(current_constraints_->contrast());
-  if (current_constraints_->hasSaturation()) {
-    clone->current_constraints_->setSaturation(
-        current_constraints_->saturation());
-  }
-  if (current_constraints_->hasSharpness()) {
-    clone->current_constraints_->setSharpness(
-        current_constraints_->sharpness());
-  }
-  if (current_constraints_->hasFocusDistance()) {
-    clone->current_constraints_->setFocusDistance(
-        current_constraints_->focusDistance());
-  }
-  if (current_constraints_->hasPan())
-    clone->current_constraints_->setPan(current_constraints_->pan());
-  if (current_constraints_->hasTilt())
-    clone->current_constraints_->setTilt(current_constraints_->tilt());
-  if (current_constraints_->hasZoom())
-    clone->current_constraints_->setZoom(current_constraints_->zoom());
-  if (current_constraints_->hasTorch())
-    clone->current_constraints_->setTorch(current_constraints_->torch());
-  if (current_constraints_->hasBackgroundBlur()) {
-    clone->current_constraints_->setBackgroundBlur(
-        current_constraints_->backgroundBlur());
+  if (current_constraints_) {
+    clone->current_constraints_ = MediaTrackConstraintSet::Create();
+    CopyConstraintSet(current_constraints_, clone->current_constraints_,
+                      CopyPanTiltZoom(true));
   }
 
   return clone;

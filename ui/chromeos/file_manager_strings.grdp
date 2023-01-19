@@ -441,11 +441,17 @@
   <message name="IDS_FILE_BROWSER_CONFLICT_DIALOG_KEEP_BOTH" desc="Label of a button to keep both entries after the file transfer operation.">
     Keep both
   </message>
-  <message name="IDS_FILE_BROWSER_CONFLICT_DIALOG_REPLACE" desc="Label of a button to replace the old entry with the new entry.">
+  <message name="IDS_FILE_BROWSER_CONFLICT_DIALOG_REPLACE" desc="Label of a button to replace an entry with the source entry.">
     Replace
   </message>
   <message name="IDS_FILE_BROWSER_CONFLICT_DIALOG_APPLY_TO_ALL" desc="Label of checkbox in the conflict dialog box to apply the user selection to all entries.">
     Apply to all
+  </message>
+  <message name="IDS_FILE_BROWSER_CONFLICT_DIALOG_KEEP_ALL" desc="Label of a button to keep all entries after the file transfer operation. The 'Apply to all' checkbox is selected.">
+    Keep all
+  </message>
+  <message name="IDS_FILE_BROWSER_CONFLICT_DIALOG_REPLACE_ALL" desc="Label of a button to replace all entries with the source entries. The 'Apply to all' checkbox is selected.">
+    Replace all
   </message>
 
   <message name="IDS_FILE_BROWSER_CONFIRM_OVERWRITE_FILE" desc="Asks the user if they are sure they want to overwrite an existing file with another one.">
@@ -885,6 +891,21 @@
     Move items you don't need to trash
   </message>
 
+ <message name="IDS_FILE_BROWSER_CONFIRM_PERMANENTLY_DELETE_ONE_TITLE" desc="Asks the user if they are sure they want to permanently delete a single file.">
+   Permanently delete this file?
+ </message>
+ <message name="IDS_FILE_BROWSER_CONFIRM_PERMANENTLY_DELETE_SOME_TITLE" desc="Asks the user if they are sure they want to permanently delete multiple files/directories.">
+   Permanently delete these files?
+ </message>
+ <message name="IDS_FILE_BROWSER_CONFIRM_PERMANENTLY_DELETE_ONE_DESC" desc="Asks the user if they are sure they want to permanently delete a single file.">
+   "<ph name="FILE_NAME">$1<ex>file.txt</ex></ph>" will be deleted and you won't be able to restore it.
+ </message>
+ <message name="IDS_FILE_BROWSER_CONFIRM_PERMANENTLY_DELETE_SOME_DESC" desc="Asks the user if they are sure they want to permanently delete multiple files/directories.">
+   <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items will be deleted and you won't be able to restore them.
+ </message>
+ <message name="IDS_FILE_BROWSER_PERMANENTLY_DELETE_FOREVER" desc="Button label the users confirms permanently deleting files forever">
+  Delete forever
+ </message>
  <message name="IDS_FILE_BROWSER_CONFIRM_DELETE_ONE" desc="Asks the user if they are sure they want to delete a single file.">
    Are you sure you want to delete "<ph name="FILE_NAME">$1<ex>file.txt</ex></ph>"?
  </message>

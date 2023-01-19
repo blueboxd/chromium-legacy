@@ -608,6 +608,7 @@
 <translation id="430191667033048642">ຍ້າຍ <ph name="MOVED_APP_NAME" /> ໄປຫາໂຟນເດີ <ph name="FOLDER_NAME" /> ແລ້ວ.</translation>
 <translation id="4302592941791324970">ບໍ່ສາມາດໃຊ້ໄດ້</translation>
 <translation id="4303223480529385476">ຂະຫຍາຍພື້ນທີ່ສະແດງສະຖານະ</translation>
+<translation id="4311195029067684288">ເຕັມ</translation>
 <translation id="4312840429157639164">ແນບກ້ອງຖ່າຍຮູບໄປໃສ່ມຸມຂວາເທິງແລ້ວ. ຂັດແຍ້ງກັບພື້ນຜິວຂອງລະບົບ.</translation>
 <translation id="4316910396681052118">ທຸກແອັບ</translation>
 <translation id="4321179778687042513">Ctrl</translation>
@@ -638,6 +639,7 @@
 <translation id="4455051983450390249">ເບິ່ງການແຈ້ງເຕືອນຂອງໂທລະສັບທ່ານຢູ່ <ph name="DEVICE_TYPE" /> ຂອງທ່ານ</translation>
 <translation id="445864333228800152">ສະບາຍດີຕອນແລງ,</translation>
 <translation id="4458688154122353284">ຢຸດການບັນທຶກໜ້າຈໍ</translation>
+<translation id="445923051607553918">ເຂົ້າຮ່ວມເຄືອຂ່າຍ Wi-Fi</translation>
 <translation id="4471354919263203780">ກຳລັງດາວໂຫຼດໄຟລ໌ການຈຳແນກສຽງເວົ້າ... <ph name="PERCENT" />%</translation>
 <translation id="4471432286288241507">{0,plural, =0{ອັບເດດອຸປະກອນຕອນນີ້}=1{ອັບເດດອຸປະກອນພາຍໃນ 1 ວິນາທີ}other{ອັບເດດອຸປະກອນພາຍໃນ # ວິນາທີ}}</translation>
 <translation id="4472575034687746823">ເລີ່ມຕົ້ນ</translation>

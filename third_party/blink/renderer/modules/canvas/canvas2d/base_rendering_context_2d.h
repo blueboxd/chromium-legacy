@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_BASE_RENDERING_CONTEXT_2D_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_BASE_RENDERING_CONTEXT_2D_H_
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/notreached.h"
 #include "base/task/single_thread_task_runner.h"
 #include "cc/paint/record_paint_canvas.h"
@@ -829,7 +829,7 @@ void BaseRenderingContext2D::CompositedDraw(
           canvas_filter));
       // Resetting the alpha of the shadow layer, to avoid the alpha being
       // applied twice.
-      shadow_flags.setAlpha(255);
+      shadow_flags.setAlphaf(1.0f);
       // Saving the shadow layer before setting the matrix, so the shadow offset
       // does not get modified by the transformation matrix
       shadow_flags.setBlendMode(state.GlobalComposite());
@@ -917,7 +917,7 @@ ALWAYS_INLINE bool BaseRenderingContext2D::ComputeDirtyRect(
   const CanvasRenderingContext2DState& state = GetState();
   gfx::RectF canvas_rect = state.GetTransform().MapRect(local_rect);
 
-  if (UNLIKELY(SkColorGetA(state.ShadowColor()))) {
+  if (UNLIKELY(!state.ShadowColor().IsTransparent())) {
     gfx::RectF shadow_rect(canvas_rect);
     shadow_rect.Offset(state.ShadowOffset());
     shadow_rect.Outset(ClampTo<float>(state.ShadowBlur()));

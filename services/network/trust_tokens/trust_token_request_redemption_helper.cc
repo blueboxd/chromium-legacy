@@ -7,8 +7,8 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/metrics/histogram_functions.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -300,7 +300,7 @@ TrustTokenRequestRedemptionHelper::CollectOperationResultWithStatus(
   mojom::TrustTokenOperationResultPtr operation_result =
       mojom::TrustTokenOperationResult::New();
   operation_result->status = status;
-  operation_result->type = mojom::TrustTokenOperationType::kRedemption;
+  operation_result->operation = mojom::TrustTokenOperationType::kRedemption;
   operation_result->top_level_origin = top_level_origin_;
   if (issuer_) {
     operation_result->issuer = *issuer_;

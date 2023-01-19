@@ -21,7 +21,8 @@
 
   cr-grid {
     --cr-column-width: 1fr;
-    --cr-grid-gap: 16px 11px;
+    --cr-grid-gap: 16px 12px;
+    --cr-grid-width: 100%;
     display: block;
     margin: 16px 16px 32px;
   }
@@ -50,8 +51,7 @@
     }
   }
 
-  .image-container img,
-  .image-container div {
+  .image-container img {
     position: absolute;
   }
 
@@ -62,16 +62,19 @@
     transform: translateX(-50%);
   }
 
-  .label {
-    color: var(--cr-primary-text-color);
-    font-size: 11px;
-    line-height: 16px;
-    padding-top: 7px;
-    text-align: center;
-  }
-
   .image-container {
     border-radius: 12px;
+  }
+
+  #refreshDailyToggleContainer {
+    display: flex;
+    justify-content: space-between;
+    margin: 8px 16px 32px;
+  }
+
+  #refreshDailyToggleTitle {
+    font-size: 13px;
+    line-height: 20px;
   }
 </style>
 <div id="headerContainer">
@@ -80,17 +83,23 @@
   </cr-icon-button>
   <h1 id="header">[[header_]]</h1>
 </div>
+<div id="refreshDailyToggleContainer">
+  <div id="refreshDailyToggleTitle">$i18n{refreshDaily}</div>
+  <cr-toggle id="refreshDailyToggle" title="$i18n{refreshDaily}"
+      checked="[[isRefreshToggleChecked_]]"
+      on-change="onRefreshDailyToggleChange_">
+  </cr-toggle>
+</div>
 <cr-grid columns="3">
   <template is="dom-repeat" id="themesRepeat" items="[[themes_]]">
     <div class="tile theme" tabindex="0" role="button"
-        on-click="onSelectTheme_">
+        on-click="onSelectTheme_" title="[[item.attribution1]]">
       <div class="image-container">
         <img is="cr-auto-img"
             auto-src="[[item.previewImageUrl.url]]"
             draggable="false">
         </img>
       </div>
-      <div class="label">[[item.attribution1]]</div>
     </div>
   </template>
 </cr-grid>

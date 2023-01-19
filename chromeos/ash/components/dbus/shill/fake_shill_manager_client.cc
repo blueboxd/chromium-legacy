@@ -504,17 +504,17 @@ void FakeShillManagerClient::RemovePasspointCredentials(
     ErrorCallback error_callback) {}
 
 void FakeShillManagerClient::SetTetheringEnabled(bool enabled,
-                                                 base::OnceClosure callback,
+                                                 StringCallback callback,
                                                  ErrorCallback error_callback) {
   switch (simulate_tethering_enable_result_) {
     case FakeShillSimulatedResult::kSuccess:
       base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-          FROM_HERE, std::move(callback));
+          FROM_HERE, base::BindOnce(std::move(callback),
+                                    simulate_enable_tethering_result_string_));
       return;
     case FakeShillSimulatedResult::kFailure:
       base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(error_callback),
-                                    simulate_enable_tethering_error_,
+          FROM_HERE, base::BindOnce(std::move(error_callback), "Error",
                                     "Simulated failure"));
       return;
     case FakeShillSimulatedResult::kTimeout:
@@ -541,6 +541,15 @@ void FakeShillManagerClient::CheckTetheringReadiness(
       // No callbacks get executed and the caller should eventually timeout.
       return;
   }
+}
+
+void FakeShillManagerClient::SetLOHSEnabled(bool enabled,
+                                            base::OnceClosure callback,
+                                            ErrorCallback error_callback) {
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(error_callback), "Error", "Fake failure"));
+  return;
 }
 
 ShillManagerClient::TestInterface* FakeShillManagerClient::GetTestInterface() {
@@ -829,9 +838,10 @@ void FakeShillManagerClient::SetNetworkThrottlingStatus(
 }
 
 bool FakeShillManagerClient::GetFastTransitionStatus() {
-  base::Value* fast_transition_status = stub_properties_.FindKey(
-      base::StringPiece(shill::kWifiGlobalFTEnabledProperty));
-  return fast_transition_status && fast_transition_status->GetBool();
+  absl::optional<bool> fast_transition_status =
+      stub_properties_.GetDict().FindBool(
+          base::StringPiece(shill::kWifiGlobalFTEnabledProperty));
+  return fast_transition_status && fast_transition_status.value();
 }
 
 void FakeShillManagerClient::SetSimulateConfigurationResult(
@@ -841,10 +851,10 @@ void FakeShillManagerClient::SetSimulateConfigurationResult(
 
 void FakeShillManagerClient::SetSimulateTetheringEnableResult(
     FakeShillSimulatedResult tethering_enable_result,
-    const std::string& tethering_enable_error) {
+    const std::string& result_string) {
   simulate_tethering_enable_result_ = tethering_enable_result;
-  if (simulate_tethering_enable_result_ == FakeShillSimulatedResult::kFailure) {
-    simulate_enable_tethering_error_ = tethering_enable_error;
+  if (simulate_tethering_enable_result_ == FakeShillSimulatedResult::kSuccess) {
+    simulate_enable_tethering_result_string_ = result_string;
   }
 }
 
@@ -1196,7 +1206,7 @@ void FakeShillManagerClient::CallNotifyObserversPropertyChanged(
 void FakeShillManagerClient::NotifyObserversPropertyChanged(
     const std::string& property) {
   VLOG(1) << "NotifyObserversPropertyChanged: " << property;
-  base::Value* value = stub_properties_.FindKey(property);
+  base::Value* value = stub_properties_.GetDict().Find(property);
   if (!value) {
     LOG(ERROR) << "Notify for unknown property: " << property;
     return;

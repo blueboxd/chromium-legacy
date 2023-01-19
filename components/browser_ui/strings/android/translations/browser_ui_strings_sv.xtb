@@ -13,7 +13,6 @@
 <translation id="1289742167380433257">Bilderna på den här sidan har optimerats av Google så att du sparar data.</translation>
 <translation id="129382876167171263">Filer som webbplatser har sparat visas här</translation>
 <translation id="1317194122196776028">Glöm den här webbplatsen</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" />–<ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Webbplatsen <ph name="SITE_NAME" /> har lagts till</translation>
 <translation id="1383876407941801731">Sök</translation>
 <translation id="1384959399684842514">Nedladdningen har pausats</translation>
@@ -22,6 +21,7 @@
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1446450296470737166">Tillåt fullst. kontroll av MIDI</translation>
 <translation id="1448064542941920355">Minska zoom</translation>
+<translation id="1547123415014299762">Tredjepartscookies tillåts</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1633720957382884102">Relaterade webbplatser</translation>
 <translation id="1644574205037202324">Historik</translation>
@@ -59,6 +59,7 @@
 <translation id="2238944249568001759">Föreslagna sökningar utifrån din senaste flik</translation>
 <translation id="2241634353105152135">Bara en gång</translation>
 <translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> Ta bort</translation>
+<translation id="228293613124499805">De flesta webbplatser du besöker sparar troligen data på enheten, oftast för att förbättra upplevelsen genom att spara dina inställningar eller information som du delar med webbplatsen. Vi rekommenderar att du låter den här inställningen vara aktiverad.</translation>
 <translation id="2289270750774289114">Fråga när en webbplats försöker söka efter Bluetooth-enheter i närheten (rekommenderas)</translation>
 <translation id="2315043854645842844">Val av certifikat på klienten stöds inte av operativsystemet.</translation>
 <translation id="2321958826496381788">Flytta reglaget tills du kan läsa texten ordentligt. Texten bör bli åtminstone så här stor när du trycker två gånger på ett stycke.</translation>
@@ -136,6 +137,7 @@
 <translation id="3744111561329211289">Synkronisering i bakgrunden</translation>
 <translation id="3763247130972274048">Hoppa över 10 s genom att trycka två gånger till vänster/höger på videon</translation>
 <translation id="3797520601150691162">Använd inte mörkt tema för en viss webbplats</translation>
+<translation id="3803367742635802571">Webbplatser du besöker kan sluta fungera som avsett</translation>
 <translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
 <translation id="381841723434055211">Telefonnummer</translation>
 <translation id="3826050100957962900">Inloggning hos tredje part</translation>
@@ -175,6 +177,7 @@
 <translation id="4534723447064627427">Om du vill ge <ph name="APP_NAME" /> åtkomst till mikrofonen måste du även aktivera mikrofonen i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>
 <translation id="4566417217121906555">Stäng av mikrofonen</translation>
 <translation id="4570913071927164677">Information</translation>
+<translation id="4598549027014564149">I inkognitoläget kan webbplatser inte använda cookies för att se din webbaktivitet på olika webbplatser – inte ens relaterade webbplatser. Din webbaktivitet används inte för sådant som annonsanpassning. Vissa webbplatsers funktioner kanske inte fungerar.</translation>
 <translation id="4645575059429386691">Hanteras av din förälder</translation>
 <translation id="4670064810192446073">Virtuell verklighet</translation>
 <translation id="4751476147751820511">Rörelse- eller ljussensorer</translation>
@@ -304,6 +307,7 @@
 <translation id="7141896414559753902">Blockera webbplatser från att visa popup-fönster (rekommenderas)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7180611975245234373">Uppdatera</translation>
+<translation id="7188508872042490670">Webbplatsdata på enheten</translation>
 <translation id="7203150201908454328">Utökat</translation>
 <translation id="723171743924126238">Välj bilder</translation>
 <translation id="7243308994586599757">Alternativ visas nära skärmens nedre kant</translation>
@@ -348,6 +352,7 @@
 <translation id="8042586301629853791">Sortera efter:</translation>
 <translation id="8067883171444229417">Spela upp video</translation>
 <translation id="8068648041423924542">Det går inte att välja certifikat.</translation>
+<translation id="8077120325605624147">Alla webbplatser du besöker kan visa alla annonser för dig</translation>
 <translation id="8087000398470557479">Innehållet kommer från <ph name="DOMAIN_NAME" /> via Google.</translation>
 <translation id="8116925261070264013">Ljudet avstängt</translation>
 <translation id="813082847718468539">Visa information om webbplatsen</translation>
@@ -378,12 +383,14 @@
 <translation id="8487700953926739672">Tillgänglig offline</translation>
 <translation id="848952951823693243">Begär alltid mobilversionen</translation>
 <translation id="8499083585497694743">Slå på mikrofonen</translation>
+<translation id="8514955299594277296">Tillåt inte att webbplatser sparar data på din enhet (rekommenderas inte)</translation>
 <translation id="851751545965956758">Förhindra att webbplatser ansluter till enheter</translation>
 <translation id="8525306231823319788">Helskärm</translation>
 <translation id="8564613706851221529">{COUNT,plural, =1{Cookies tillåts för webbplatsen <ph name="FPS_MEMBERS_COUNT" /> <ph name="FPS_OWNER" />-webbplats}other{Cookies tillåts för <ph name="FPS_MEMBERS_COUNT" /> <ph name="FPS_OWNER" />-webbplatser}}</translation>
 <translation id="857943718398505171">Tillåten (rekommenderas)</translation>
 <translation id="8609465669617005112">Flytta upp</translation>
 <translation id="8676374126336081632">Radera inmatning</translation>
+<translation id="8681886425883659911">Annonser blockeras på webbplatser som är kända för att visa påträngande eller vilseledande annonser</translation>
 <translation id="868929229000858085">Sök bland kontakterna</translation>
 <translation id="8702612070107455751">All offlinedata raderas.</translation>
 <translation id="8712637175834984815">Uppfattat</translation>
@@ -396,6 +403,7 @@
 <translation id="8816026460808729765">Blockera webbplatser från att använda enhetens sensorer</translation>
 <translation id="8823559166155093873">Blockera cookies</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8899807382908246773">Påträngande annonser</translation>
 <translation id="8903921497873541725">Zooma in</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC är inte aktiverat på enheten. Aktivera det i <ph name="BEGIN_LINK" />Android-inställningarna<ph name="END_LINK" />.</translation>

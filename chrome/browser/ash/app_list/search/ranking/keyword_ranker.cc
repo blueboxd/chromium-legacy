@@ -16,25 +16,29 @@ KeywordRanker::~KeywordRanker() = default;
 void KeywordRanker::Start(const std::u16string& query,
                           ResultsMap& results,
                           CategoriesList& categories) {
-  // TODO(b/263059094): when the user start input, this function will
-  // be called.
+  // When the user start input, this function will be called.
   last_query_ = query;
 
-  // TODO(b/263816068): Use real keyword extraction function when ready.
-
   // Stores the providers that match with the keyword within the input query.
-  matched_providers_ = ExtractKeyword(last_query_).second;
+
+  // TODO(b/262623111): Type which ExtractKeyword() will return is a struct
+  // containing {keyword string, score, Search Providers}
+  KeywordToProvidersPairs extracted_keywords_to_providers =
+      ExtractKeyword(last_query_);
+
+  if (!extracted_keywords_to_providers.empty()) {
+    // TODO(b/262623111): To iterate through the extracted keywords to providers
+    // to place the Search Providers into the vector matched_providers_
+    matched_providers_ = extracted_keywords_to_providers[0].second;
+  }
 }
 
 void KeywordRanker::UpdateResultRanks(ResultsMap& results,
                                       ProviderType provider) {
-  // TODO(b/263059094): update the result by boost the scores that
-  // match certain keywords, the rest remain unchanged.
-
-  // Return if the given provider matched a keyword in the query
+  // Return if the given provider does not matched a keyword in the query
   // as this does not require modification of results.
   if (std::find(matched_providers_.begin(), matched_providers_.end(),
-                provider) != matched_providers_.end()) {
+                provider) == matched_providers_.end()) {
     return;
   }
 
@@ -44,7 +48,7 @@ void KeywordRanker::UpdateResultRanks(ResultsMap& results,
   }
 
   for (auto& result : it->second) {
-    result->scoring().set_keyword_multiplier(0.9);
+    result->scoring().set_keyword_multiplier(1.2);
   }
 }
 

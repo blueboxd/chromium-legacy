@@ -1,0 +1,14 @@
+{
+  "short_name": "Google Password Manager",
+  "name": "Google Password Manager",
+  "icons": [
+    {
+      "src": "chrome://password-manager/images/password_manager_pwa_icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ],
+  "start_url": "/?source=pwa",
+  "display": "standalone",
+  "scope": "chrome://password-manager/"
+}

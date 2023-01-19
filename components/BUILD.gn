@@ -413,6 +413,7 @@ test("components_unittests") {
       "//components/safe_browsing/content/browser/triggers:unit_tests",
       "//components/safe_browsing/content/browser/web_ui:unit_tests",
       "//components/safe_browsing/core/browser:token_fetcher_unit_tests",
+      "//components/safe_browsing/core/browser/hashprefix_realtime:unit_tests",
       "//components/safe_browsing/core/browser/realtime:unit_tests",
       "//components/safe_browsing/core/browser/tailored_security_service:unit_tests",
       "//components/safe_browsing/core/browser/utils:unit_tests",
@@ -481,6 +482,7 @@ test("components_unittests") {
       "//base:base_java_unittest_support",
       "//components/android_autofill/browser:unit_tests",
       "//components/browser_ui/accessibility/android:unit_tests",
+      "//components/browser_ui/site_settings/android:unit_tests",
       "//components/browser_ui/sms/android:unit_tests",
       "//components/cdm/browser:unit_tests",
       "//components/component_updater/android:embedded_component_loader_java",
@@ -580,6 +582,7 @@ test("components_unittests") {
       "//components/metrics/structured/mojom:unit_tests",
       "//components/ownership:unit_tests",
       "//components/user_manager:unit_tests",
+      "//components/variations/cros:unit_tests",
     ]
   }
 

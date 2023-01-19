@@ -581,6 +581,7 @@ Cihazınızı enerji mənbəyinə qoşun.</translation>
 <translation id="4177913004758410636">{0,plural, =1{Cihazı bir gün ərzində güncəlləyin}other{Cihazı # gün ərzində güncəlləyin}}</translation>
 <translation id="4181841719683918333">Dillər</translation>
 <translation id="4192112279662688596">Və ya</translation>
+<translation id="4193857202545160520">Klikləri və açarları göstərin</translation>
 <translation id="4195814663415092787">Qaldığınız yerdən davam edin</translation>
 <translation id="4195877955194704651">Avtomatik klik düyməsi</translation>
 <translation id="4197790712631116042">Deaktiv</translation>
@@ -608,6 +609,7 @@ Cihazınızı enerji mənbəyinə qoşun.</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> <ph name="FOLDER_NAME" /> qovluğuna köçürülüb.</translation>
 <translation id="4302592941791324970">Əlçatan deyil</translation>
 <translation id="4303223480529385476">Status sahəsini genişləndirin</translation>
+<translation id="4311195029067684288">Tam</translation>
 <translation id="4312840429157639164">Kamera yuxarı sağ küncə çəkildi. Sistem səthi ilə ziddiyyət yarandı.</translation>
 <translation id="4316910396681052118">BÜTÜN TƏTBİQLƏR</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -638,6 +640,7 @@ Cihazınızı enerji mənbəyinə qoşun.</translation>
 <translation id="4455051983450390249"><ph name="DEVICE_TYPE" /> cihazında telefonunuzun bildirişlərinə baxın</translation>
 <translation id="445864333228800152">Axşamınız xeyir,</translation>
 <translation id="4458688154122353284">Ekran çəkilişini dayandırın</translation>
+<translation id="445923051607553918">Wi-Fi şəbəkəsinə qoşulun</translation>
 <translation id="4471354919263203780">Nitq tanıma faylları endirilir... <ph name="PERCENT" />%</translation>
 <translation id="4471432286288241507">{0,plural, =0{Cihazı indi güncəlləyin}=1{Cihazı 1 saniyə ərzində güncəlləyin}other{Cihazı # saniyə ərzində güncəlləyin}}</translation>
 <translation id="4472575034687746823">Başlayın</translation>
@@ -761,6 +764,7 @@ Cihazınızı enerji mənbəyinə qoşun.</translation>
 <translation id="5107522548814527560">Veb</translation>
 <translation id="5111318697104479778"><ph name="DESC" />, <ph name="STRENGTH" /></translation>
 <translation id="5117590920725113268">Gələn ayı göstərin</translation>
+<translation id="5127986747308934633">Administratorunuz cihazınıza nəzarət edir</translation>
 <translation id="5136175204352732067">Fərqli klaviatura qoşuldu</translation>
 <translation id="5147567197700016471">Kiliddən çıxarılmış</translation>
 <translation id="5150070631291639005">Məxfilik ayarları</translation>
@@ -989,6 +993,7 @@ Cihazınızı enerji mənbəyinə qoşun.</translation>
 <translation id="639644700271529076">LOCK off CAPS</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
+<translation id="641867537956679916">Administratorunuz problemi araşdırmaq üçün daxil olub. Administrator nəzarəti sizə qaytardıqdan sonra cihazdan istifadə etməyə davam edə bilərsiniz.</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Bütün bildirişləri silin</translation>
 <translation id="643147933154517414">Tamamlandı</translation>

@@ -88,6 +88,8 @@ build_webui("build") {
     "autofill_page/avatar_icon.ts",
     "autofill_page/credit_card_edit_dialog.ts",
     "autofill_page/credit_card_list_entry.ts",
+    "autofill_page/iban_edit_dialog.ts",
+    "autofill_page/iban_list_entry.ts",
     "autofill_page/password_check_edit_disclaimer_dialog.ts",
     "autofill_page/password_check_list_item.ts",
     "autofill_page/password_check.ts",
@@ -453,11 +455,6 @@ build_webui("build") {
     optimize_webui_in_files = [
       "settings.js",
       "lazy_load.js",
-    ]
-    optimize_webui_out_files = [
-      "settings.rollup.js",
-      "lazy_load.rollup.js",
-      "shared.rollup.js",
     ]
     optimize_webui_excludes = [
       "chrome://resources/js/cr.js",

@@ -378,13 +378,14 @@ BASE_FEATURE(kExtraSafelistedRequestHeadersForOutOfBlinkCors,
 // We enable it here by default to support use in origin trials.
 BASE_FEATURE(kFedCm, "FedCm", base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Field trial boolean parameter which indicates whether FedCM auto
-// sign-in is enabled.
-const char kFedCmAutoSigninFieldTrialParamName[] = "AutoSignin";
-
 // Field trial boolean parameter which indicates whether FedCM IDP sign-out
 // is enabled.
 const char kFedCmIdpSignoutFieldTrialParamName[] = "IdpSignout";
+
+// Enables usage of the FedCM API with auto sign-in.
+BASE_FEATURE(kFedCmAutoSignin,
+             "FedCmAutoSignin",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM API with iframe support.
 BASE_FEATURE(kFedCmIframeSupport,
@@ -734,10 +735,6 @@ BASE_FEATURE(kNetworkServiceInProcess,
 #endif
 );
 
-BASE_FEATURE(kNeverSlowMode,
-             "NeverSlowMode",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Kill switch for Web Notification content images.
 BASE_FEATURE(kNotificationContentImage,
              "NotificationContentImage",
@@ -1025,6 +1022,13 @@ BASE_FEATURE(kSecurePaymentConfirmationDebug,
              "SecurePaymentConfirmationDebug",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Remove the 'rp' field from the output SPC
+// CollectedClientAdditionalPaymentData dictionary. See
+// https://crbug.com/1356224 .
+BASE_FEATURE(kSecurePaymentConfirmationRemoveRpField,
+             "SecurePaymentConfirmationRemoveRpField",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Make sendBeacon throw for a Blob with a non simple type.
 BASE_FEATURE(kSendBeaconThrowForBlobWithNonSimpleType,
              "SendBeaconThrowForBlobWithNonSimpleType",
@@ -1036,12 +1040,6 @@ BASE_FEATURE(kSendBeaconThrowForBlobWithNonSimpleType,
 BASE_FEATURE(kServiceWorkerPaymentApps,
              "ServiceWorkerPaymentApps",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Use this feature to experiment terminating a service worker when it doesn't
-// control any clients: https://crbug.com/1043845.
-BASE_FEATURE(kServiceWorkerTerminationOnNoControllee,
-             "ServiceWorkerTerminationOnNoControllee",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // http://tc39.github.io/ecmascript_sharedmem/shmem.html
 // This feature is also enabled independently of this flag for cross-origin

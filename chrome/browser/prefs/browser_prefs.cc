@@ -399,6 +399,7 @@
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
+#include "chrome/browser/metrics/structured/chrome_structured_metrics_recorder.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/webui/ash/login/enable_debugging_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/signin_screen_handler.h"
@@ -812,6 +813,18 @@ const char kAutofillAssistantTriggerScriptsIsFirstTimeUser[] =
 const char kAutofillWalletImportStorageCheckboxState[] =
     "autofill.wallet_import_storage_checkbox_state";
 
+// Deprecated 01/2023
+const char kSendDownloadToCloudPref[] =
+    "enterprise_connectors.send_download_to_cloud";
+#if BUILDFLAG(IS_MAC)
+const char kDeviceTrustDisableKeyCreationPref[] =
+    "enterprise_connectors.device_trust.disable_key_creation";
+#endif  // BUILDFLAG(IS_MAC)
+
+// Deprecated 01/2023.
+const char kFileSystemSyncAccessHandleAsyncInterfaceEnabled[] =
+    "policy.file_system_sync_access_handle_async_interface_enabled";
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -880,6 +893,12 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
 
   // Deprecated 11/2022.
   registry->RegisterDictionaryPref(kLocalConsentsDictionary);
+
+  // Deprecated 01/2023
+  registry->RegisterListPref(kSendDownloadToCloudPref);
+#if BUILDFLAG(IS_MAC)
+  registry->RegisterBooleanPref(kDeviceTrustDisableKeyCreationPref, false);
+#endif  // BUILDFLAG(IS_MAC)
 }
 
 // Register prefs used only for migration (clearing or moving to a new key).
@@ -1082,6 +1101,10 @@ void RegisterProfilePrefsForMigration(
   // Deprecated 12/2022.
   registry->RegisterBooleanPref(kAutofillWalletImportStorageCheckboxState,
                                 true);
+
+  // Deprecated 01/2023.
+  registry->RegisterBooleanPref(
+      kFileSystemSyncAccessHandleAsyncInterfaceEnabled, false);
 }
 
 }  // namespace
@@ -1249,6 +1272,8 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
       registry);
   extensions::login_api::RegisterLocalStatePrefs(registry);
   ::onc::RegisterPrefs(registry);
+  metrics::structured::ChromeStructuredMetricsRecorder::RegisterLocalStatePrefs(
+      registry);
   policy::ActiveDirectoryDeviceStateUploader::RegisterLocalStatePrefs(registry);
   policy::ActiveDirectoryMigrationManager::RegisterLocalStatePrefs(registry);
   policy::AdbSideloadingAllowanceModePolicyHandler::RegisterPrefs(registry);
@@ -1277,7 +1302,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 #if BUILDFLAG(IS_MAC)
   confirm_quit::RegisterLocalState(registry);
   QuitWithAppsController::RegisterPrefs(registry);
-  enterprise_connectors::RegisterLocalPrefs(registry);
   system_media_permissions::RegisterSystemMediaPermissionStatesPrefs(registry);
   AppShimRegistry::Get()->RegisterLocalPrefs(registry);
 #endif
@@ -1830,6 +1854,12 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
   // Added 11/2022.
   local_state->ClearPref(kLocalConsentsDictionary);
 
+  // Added 01/2023
+  local_state->ClearPref(kSendDownloadToCloudPref);
+#if BUILDFLAG(IS_MAC)
+  local_state->ClearPref(kDeviceTrustDisableKeyCreationPref);
+#endif  // BUILDFLAG(IS_MAC)
+
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS
 
@@ -2126,6 +2156,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 12/2022.
   profile_prefs->ClearPref(kAutofillWalletImportStorageCheckboxState);
+
+  // Added 01/2023.
+  profile_prefs->ClearPref(kFileSystemSyncAccessHandleAsyncInterfaceEnabled);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

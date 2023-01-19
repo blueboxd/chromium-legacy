@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.test;
 
 import org.junit.rules.ExternalResource;
 
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 
 /** JUnit test rule which enables tests to force certificate verification results. */
@@ -23,26 +24,29 @@ public class MockCertVerifierRuleAndroid extends ExternalResource {
     @Override
     protected void before() {
         NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
-        mNativePtr = nativeInit();
-        nativeSetResult(mNativePtr, mResult);
-        nativeSetUp(mNativePtr);
+        mNativePtr = MockCertVerifierRuleAndroidJni.get().init();
+        MockCertVerifierRuleAndroidJni.get().setResult(mNativePtr, mResult);
+        MockCertVerifierRuleAndroidJni.get().setUp(mNativePtr);
     }
 
     public void setResult(int result) {
         mResult = result;
         if (mNativePtr != 0) {
-            nativeSetResult(mNativePtr, result);
+            MockCertVerifierRuleAndroidJni.get().setResult(mNativePtr, result);
         }
     }
 
     @Override
     protected void after() {
-        nativeTearDown(mNativePtr);
+        MockCertVerifierRuleAndroidJni.get().tearDown(mNativePtr);
         mNativePtr = 0;
     }
 
-    private static native long nativeInit();
-    private native void nativeSetUp(long nativeMockCertVerifierRuleAndroid);
-    private native void nativeSetResult(long nativeMockCertVerifierRuleAndroid, int result);
-    private native void nativeTearDown(long nativeMockCertVerifierRuleAndroid);
+    @NativeMethods
+    interface Natives {
+        long init();
+        void setUp(long nativeMockCertVerifierRuleAndroid);
+        void setResult(long nativeMockCertVerifierRuleAndroid, int result);
+        void tearDown(long nativeMockCertVerifierRuleAndroid);
+    }
 }

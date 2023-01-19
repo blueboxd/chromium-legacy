@@ -28,11 +28,11 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "headless/app/headless_shell_switches.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_devtools_manager_delegate.h"
+#include "headless/public/switches.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -123,7 +123,9 @@ HeadlessContentBrowserClient::CreateBrowserMainParts(
 
 void HeadlessContentBrowserClient::OverrideWebkitPrefs(
     content::WebContents* web_contents,
-    blink::web_pref::WebPreferences* prefs) {}
+    blink::web_pref::WebPreferences* prefs) {
+  prefs->lazy_load_enabled = browser_->options()->lazy_load_enabled;
+}
 
 void HeadlessContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
     content::RenderFrameHost* render_frame_host,

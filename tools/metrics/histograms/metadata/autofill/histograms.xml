@@ -866,7 +866,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.CardholderNameFixFlowPrompt.Events"
-    enum="AutofillCardholderNameFixFlowPromptEvent" expires_after="2023-04-23">
+    enum="AutofillCardholderNameFixFlowPromptEvent" expires_after="2023-07-16">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <owner>payments-autofill-team@google.com</owner>
@@ -1407,6 +1407,29 @@ chromium-metrics-reviews@google.com.
 
     The metric takes into account every comparison of FormData structs in
     UpdateFormCache().
+  </summary>
+</histogram>
+
+<histogram
+    name="Autofill.FastCheckout.CapabilitiesFetcher.CacheStateForIsTriggerFormSupported"
+    enum="FastCheckoutCacheStateForIsTriggerFormSupported"
+    expires_after="2023-08-15">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <summary>
+    Cache state for when a given origin and form signature are checked for their
+    Fast Checkout trigger form capability.
+  </summary>
+</histogram>
+
+<histogram name="Autofill.FastCheckout.CapabilitiesFetcher.ParsingResult"
+    enum="FastCheckoutCapabilitiesParsingResult" expires_after="2023-08-15">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <summary>
+    Parsing result of the response body of a Fast Checkout capabilities fetch.
   </summary>
 </histogram>
 
@@ -4037,6 +4060,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Autofill.TouchToFill.CreditCard.PerfectFilling" enum="Boolean"
+    expires_after="2023-06-01">
+  <owner>atsvirhckova@google.com</owner>
+  <owner>izuzic@google.com</owner>
+  <owner>chrome-autofill-team@google.com</owner>
+  <summary>
+    For credit card forms, logs at submission time if the filling experience was
+    perfect or not. In a perfect filling experience, all non-empty fields have
+    been autofilled without subsequent corrections. The metric is logged only if
+    the filled suggestion comes from the payments bottom sheet.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.TouchToFill.CreditCard.SelectedIndex" units="index"
     expires_after="2023-06-01">
   <owner>atsvirhckova@google.com</owner>
@@ -4105,7 +4141,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.UnmaskPrompt.GetRealPanDuration" units="ms"
-    expires_after="2023-07-09">
+    expires_after="2023-07-16">
   <owner>jsaul@google.com</owner>
   <owner>siyua@chromium.org</owner>
   <summary>

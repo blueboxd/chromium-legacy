@@ -800,6 +800,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="2986368408720340940">El método de retiro no está disponible. Prueba otro método.</translation>
 <translation id="2987034854559945715">No hay funciones que coincidan</translation>
 <translation id="2989742184762224133">Grapas dobles en la parte superior</translation>
+<translation id="2990882401221831923">La lista de tarjetas de crédito está cerrada.</translation>
 <translation id="2991174974383378012">Compartir con los sitios web</translation>
 <translation id="299122504639061328">Administra el motor de búsqueda predeterminado y las búsquedas en sitios</translation>
 <translation id="2991571918955627853">No puedes visitar <ph name="SITE" /> ahora porque el sitio web usa HSTS. Los ataques y errores de red suelen ser temporales, por lo que es posible que esta página funcione más tarde.</translation>
@@ -1585,6 +1586,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="4976702386844183910">Última visita: <ph name="DATE" /></translation>
 <translation id="498323057460789381">Error de validación del esquema: <ph name="ERROR" /></translation>
 <translation id="4984088539114770594">¿Permitir el uso del micrófono?</translation>
+<translation id="4988822846878841743">La lista de tarjetas de crédito que se debe tocar para completar está abierta a media altura.</translation>
 <translation id="4989163558385430922">Ver todo</translation>
 <translation id="4989542687859782284">No disponible</translation>
 <translation id="4989809363548539747">Este complemento no es compatible</translation>
@@ -1713,7 +1715,6 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="5284295735376057059">Propiedades del documento</translation>
 <translation id="528468243742722775">Finalizar</translation>
 <translation id="5285570108065881030">Mostrar todas las contraseñas guardadas</translation>
-<translation id="5287240709317226393">Mostrar cookies</translation>
 <translation id="5287456746628258573">Este sitio usa una configuración de seguridad obsoleta. Si envías información (p. ej., contraseñas o números de tarjetas de crédito) a este sitio, es posible que quede expuesta.</translation>
 <translation id="5288108484102287882">La validación de los valores de la política generó advertencias</translation>
 <translation id="5288393065350884210">Contabilidad y auditoría</translation>
@@ -1933,6 +1934,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="5863847714970149516">Es posible que la página siguiente intente cobrarte dinero</translation>
 <translation id="5866257070973731571">Agregar número de teléfono</translation>
 <translation id="5866898949289125849">Estás viendo una página de herramientas para desarrolladores</translation>
+<translation id="5868548454963263350">La lista de tarjetas de crédito que se debe tocar para completar está totalmente abierta.</translation>
 <translation id="5869405914158311789">No se puede acceder a este sitio</translation>
 <translation id="5869522115854928033">Contraseñas almacenadas</translation>
 <translation id="5873013647450402046">El banco desea confirmar tu identidad.</translation>
@@ -2645,6 +2647,7 @@ Detalles adicionales:
 <translation id="7653957176542370971">La hoja del controlador de pagos está cerrada</translation>
 <translation id="7654909834015434372">Cuando edites anotaciones, se mostrará este documento en su rotación original</translation>
 <translation id="765676359832457558">Ocultar configuración avanzada...</translation>
+<translation id="7656935528854393684">Lista de tarjetas de crédito que se debe tocar para completar.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7659327900411729175">Sobre Kaku n.º 8</translation>
 <translation id="7659878911471462949">Lágrimas de felicidad</translation>
@@ -3193,7 +3196,6 @@ Detalles adicionales:
 <translation id="9096425087209440047"><ph name="SET_CHROME_AS_DEFAULT_BROWSER_FOCUSED_FRIENDLY_MATCH_TEXT" />, presiona Tab y luego Intro para establecer Chrome como el navegador predeterminado del sistema en la configuración de iOS</translation>
 <translation id="9096679202588811390">Programas de TV</translation>
 <translation id="9101630580131696064">Bandeja 1</translation>
-<translation id="9102081333385212048">Los archivos que copias o mueves se envían a Google Cloud o a terceros para su análisis. Por ejemplo, es posible que se analicen para detectar datos sensibles o software malicioso.</translation>
 <translation id="9103537084693478942">Software de video</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> suele utilizar la encriptación para proteger la información. Cuando Chromium intentó conectarse a <ph name="SITE" />, el sitio web devolvió credenciales incorrectas y poco comunes. Es posible que un atacante quiera suplantar a <ph name="SITE" /> o que una pantalla de acceso Wi-Fi haya interrumpido la conexión. Tu información permanece segura porque Chromium detuvo la conexión para evitar el intercambio de datos.</translation>
 <translation id="9106062320799175032">Agregar dirección de facturación</translation>

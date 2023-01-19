@@ -15,7 +15,6 @@
 #include "content/public/test/prerender_test_util.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -43,12 +42,13 @@ class IndexedDBClientStateCheckerFactoryTest
   // with callback.
   void TestRequireClientToBeActive(
       storage::mojom::IndexedDBClientStateChecker* checker,
+      storage::mojom::DisallowClientActivationReason reason,
       bool expected_was_active) {
     mojo::Remote<storage::mojom::IndexedDBClientKeepActive> test_remote_;
     base::RunLoop run_loop;
     base::OnceClosure quit_closure = run_loop.QuitClosure();
-    checker->RequireClientToBeActive(
-        test_remote_.BindNewPipeAndPassReceiver(),
+    checker->RequireClientToBeActiveAndKeepActive(
+        reason, test_remote_.BindNewPipeAndPassReceiver(),
         base::BindOnce(
             [](base::OnceClosure closure, bool expected_was_active,
                bool was_active) {
@@ -75,7 +75,10 @@ TEST_F(IndexedDBClientStateCheckerFactoryTest,
   EXPECT_EQ(rfh->GetLifecycleState(), RenderFrameHost::LifecycleState::kActive);
   // For the active document, the client state checker should claim that it's
   // active.
-  TestRequireClientToBeActive(checker, /*expected_was_active=*/true);
+  TestRequireClientToBeActive(
+      checker,
+      storage::mojom::DisallowClientActivationReason::kClientEventIsTriggered,
+      /*expected_was_active=*/true);
   // There is no side effect to the active document.
   EXPECT_EQ(rfh->GetLifecycleState(),
             RenderFrameHostImpl::LifecycleState::kActive);
@@ -84,7 +87,10 @@ TEST_F(IndexedDBClientStateCheckerFactoryTest,
   rfh->SetLifecycleState(
       RenderFrameHostImpl::LifecycleStateImpl::kInBackForwardCache);
   // Now the client state check should report that the document is not active.
-  TestRequireClientToBeActive(checker, /*expected_was_active=*/false);
+  TestRequireClientToBeActive(
+      checker,
+      storage::mojom::DisallowClientActivationReason::kClientEventIsTriggered,
+      /*expected_was_active=*/false);
   // The page will be evicted from back/forward cache as the side effect.
   EXPECT_TRUE(rfh->is_evicted_from_back_forward_cache());
 }
@@ -106,7 +112,10 @@ TEST_F(IndexedDBClientStateCheckerFactoryTest,
           GetOrCreateIndexedDBClientStateCheckerForTesting(rfh->GetGlobalId());
   // For prerendering case, the client state checker should claim it as
   // active, since IndexedDB is supported in prerendering page.
-  TestRequireClientToBeActive(checker, /*expected_was_active=*/true);
+  TestRequireClientToBeActive(
+      checker,
+      storage::mojom::DisallowClientActivationReason::kClientEventIsTriggered,
+      /*expected_was_active=*/true);
   EXPECT_EQ(rfh->GetLifecycleState(),
             RenderFrameHost::LifecycleState::kPrerendering);
 }

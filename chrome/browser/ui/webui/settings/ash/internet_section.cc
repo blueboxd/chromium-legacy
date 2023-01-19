@@ -33,7 +33,6 @@
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "ui/chromeos/strings/network/network_element_localized_strings_provider.h"
 
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
 namespace ash::network_config {
 namespace mojom = chromeos::network_config::mojom;
 }
@@ -993,8 +992,6 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
           features::kCellularBypassESimInstallationConnectivityCheck));
   html_source->AddBoolean("showTechnologyBadge",
                           !ash::features::IsSeparateNetworkIconsEnabled());
-  html_source->AddBoolean("captivePortalUI2022",
-                          ash::features::IsCaptivePortalUI2022Enabled());
   html_source->AddBoolean(
       "showMeteredToggle",
       base::FeatureList::IsEnabled(::features::kMeteredShowToggle));

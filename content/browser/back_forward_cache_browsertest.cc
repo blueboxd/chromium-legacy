@@ -29,8 +29,10 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/renderer_host/back_forward_cache_can_store_document_result.h"
+#include "content/browser/renderer_host/back_forward_cache_disable.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/should_swap_browsing_instance.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_navigation_policy.h"
@@ -66,6 +68,8 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
@@ -391,11 +395,35 @@ void BackForwardCacheBrowserTest::NavigateAndBlock(GURL url,
 
 ReasonsMatcher BackForwardCacheBrowserTest::MatchesNotRestoredReasons(
     const testing::Matcher<blink::mojom::BFCacheBlocked>& blocked,
+    const absl::optional<testing::Matcher<std::string>>& id,
+    const absl::optional<testing::Matcher<std::string>>& name,
+    const absl::optional<testing::Matcher<std::string>>& src,
     const absl::optional<SameOriginMatcher>& same_origin_details) {
   return testing::Pointee(testing::AllOf(
       testing::Field("blocked",
                      &blink::mojom::BackForwardCacheNotRestoredReasons::blocked,
                      blocked),
+      id.has_value()
+          ? testing::Field(
+                "id", &blink::mojom::BackForwardCacheNotRestoredReasons::id,
+                testing::Optional(id.value()))
+          : testing::Field(
+                "id", &blink::mojom::BackForwardCacheNotRestoredReasons::id,
+                absl::optional<std::string>(absl::nullopt)),
+      name.has_value()
+          ? testing::Field(
+                "name", &blink::mojom::BackForwardCacheNotRestoredReasons::name,
+                testing::Optional(name.value()))
+          : testing::Field(
+                "name", &blink::mojom::BackForwardCacheNotRestoredReasons::name,
+                absl::optional<std::string>(absl::nullopt)),
+      src.has_value()
+          ? testing::Field(
+                "src", &blink::mojom::BackForwardCacheNotRestoredReasons::src,
+                testing::Optional(src.value()))
+          : testing::Field(
+                "src", &blink::mojom::BackForwardCacheNotRestoredReasons::src,
+                absl::optional<std::string>(absl::nullopt)),
       testing::Field(
           "same_origin_details",
           &blink::mojom::BackForwardCacheNotRestoredReasons::
@@ -410,20 +438,10 @@ ReasonsMatcher BackForwardCacheBrowserTest::MatchesNotRestoredReasons(
 }
 
 SameOriginMatcher BackForwardCacheBrowserTest::MatchesSameOriginDetails(
-    const testing::Matcher<std::string>& id,
-    const testing::Matcher<std::string>& name,
-    const testing::Matcher<std::string>& src,
     const testing::Matcher<std::string>& url,
     const std::vector<testing::Matcher<std::string>>& reasons,
     const std::vector<ReasonsMatcher>& children) {
   return testing::Pointee(testing::AllOf(
-      testing::Field(
-          "id", &blink::mojom::SameOriginBfcacheNotRestoredDetails::id, id),
-      testing::Field("name",
-                     &blink::mojom::SameOriginBfcacheNotRestoredDetails::name,
-                     name),
-      testing::Field(
-          "src", &blink::mojom::SameOriginBfcacheNotRestoredDetails::src, src),
       testing::Field(
           "url", &blink::mojom::SameOriginBfcacheNotRestoredDetails::url, url),
       testing::Field(
@@ -2331,7 +2349,7 @@ BackForwardCacheBrowserTest::MatchesDocumentResult(
       testing::Property(
           "disabled_reasons",
           &BackForwardCacheCanStoreDocumentResult::disabled_reasons,
-          std::set<BackForwardCache::DisabledReason>()),
+          BackForwardCacheCanStoreDocumentResult::DisabledReasonsMap()),
       testing::Property(
           "disallow_activation_reasons",
           &BackForwardCacheCanStoreDocumentResult::disallow_activation_reasons,
@@ -2708,6 +2726,46 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   ASSERT_TRUE(HistoryGoForward(web_contents()));
 
   ExpectRestored(FROM_HERE);
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DisableForRenderFrameHost) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostWrapper rfh_wrapper_a(current_frame_host());
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostWrapper rfh_wrapper_b(current_frame_host());
+
+  // Regardless of whether the source Id is set or not, it shouldn't affect the
+  // result of the BFCache eviction.
+  BackForwardCache::DisabledReason test_reason =
+      BackForwardCacheDisable::DisabledReason(
+          BackForwardCacheDisable::DisabledReasonId::kUnknown);
+
+  // 3) Disable BFCache for A with UKM source Id and go back.
+  BackForwardCache::DisableForRenderFrameHost(
+      rfh_wrapper_a.get(), test_reason, ukm::UkmRecorder::GetNewSourceID());
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
+  ASSERT_TRUE(rfh_wrapper_a.WaitUntilRenderFrameDeleted());
+  // Page A should be evicted properly.
+  ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::
+                         kDisableForRenderFrameHostCalled},
+                    {}, {}, {test_reason}, {}, FROM_HERE);
+
+  // 4) Disable BFCache for B without UKM source Id and go forward.
+  BackForwardCache::DisableForRenderFrameHost(rfh_wrapper_b.get(), test_reason);
+  ASSERT_TRUE(HistoryGoForward(web_contents()));
+  ASSERT_TRUE(rfh_wrapper_b.WaitUntilRenderFrameDeleted());
+  // Page B should be evicted properly.
+  ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::
+                         kDisableForRenderFrameHostCalled},
+                    {}, {}, {test_reason}, {}, FROM_HERE);
 }
 
 namespace {

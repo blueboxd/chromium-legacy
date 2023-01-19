@@ -68,7 +68,6 @@ ChromeVoxBackgroundTest = class extends ChromeVoxE2ETest {
     await importModule('KeyCode', '/common/key_code.js');
     await importModule('LocalStorage', '/common/local_storage.js');
 
-
     globalThis.simulateHitTestResult = this.simulateHitTestResult;
     globalThis.press = this.press;
     globalThis.doDefault = this.doDefault;
@@ -263,7 +262,7 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'ClassicNamespaces', function() {
 
 /** Tests that ChromeVox's background object is not available globally. */
 AX_TEST_F('ChromeVoxBackgroundTest', 'NextNamespaces', function() {
-  assertEquals(undefined, window.Background);
+  assertEquals(undefined, globalThis.Background);
 });
 
 /** Tests consistency of navigating forward and backward. */
@@ -723,13 +722,11 @@ AX_TEST_F(
       };
 
       const rootNode = await this.runWithLoadedTree(this.iframesDoc);
-      chrome.automation.getDesktop(function(desktopNode) {
-        runTestIfIframeIsLoaded(rootNode);
+      runTestIfIframeIsLoaded(rootNode);
 
-        desktopNode.addEventListener('loadComplete', function(evt) {
-          runTestIfIframeIsLoaded(rootNode);
-        }, true);
-      });
+      this.desktop_.addEventListener('loadComplete', function(evt) {
+        runTestIfIframeIsLoaded(rootNode);
+      }, true);
     });
 
 /** Tests navigating into and out of iframes using nextObject */
@@ -775,13 +772,11 @@ AX_TEST_F(
       };
 
       const rootNode = await this.runWithLoadedTree(this.iframesDoc);
-      chrome.automation.getDesktop(function(desktopNode) {
-        runTestIfIframeIsLoaded(rootNode);
+      runTestIfIframeIsLoaded(rootNode);
 
-        desktopNode.addEventListener('loadComplete', function(evt) {
-          runTestIfIframeIsLoaded(rootNode);
-        }, true);
-      });
+      this.desktop_.addEventListener('loadComplete', function(evt) {
+        runTestIfIframeIsLoaded(rootNode);
+      }, true);
     });
 
 AX_TEST_F('ChromeVoxBackgroundTest', 'SelectOptionSelected', async function() {
@@ -2639,7 +2634,7 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'OutputEmptyQueueMode', async function() {
   const root = await this.runWithLoadedTree('<p>unused</p>');
   const output = new Output();
   Output.forceModeForNextSpeechUtterance(QueueMode.CATEGORY_FLUSH);
-  output.append_(
+  output.append(
       output.speechBuffer_, new Spannable(''),
       {annotation: [new OutputAction()]});
   output.withString('test');

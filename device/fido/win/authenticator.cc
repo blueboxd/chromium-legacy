@@ -36,7 +36,8 @@ namespace device {
 namespace {
 
 struct PlatformCredentialListDeleter {
-  PlatformCredentialListDeleter(WinWebAuthnApi* win_api) : win_api_(win_api) {}
+  explicit PlatformCredentialListDeleter(WinWebAuthnApi* win_api)
+      : win_api_(win_api) {}
   inline void operator()(PWEBAUTHN_CREDENTIAL_DETAILS_LIST ptr) const {
     win_api_->FreePlatformCredentialList(ptr);
   }
@@ -318,18 +319,6 @@ std::string WinWebAuthnApiAuthenticator::GetId() const {
   return "WinWebAuthnApiAuthenticator";
 }
 
-bool WinWebAuthnApiAuthenticator::IsInPairingMode() const {
-  return false;
-}
-
-bool WinWebAuthnApiAuthenticator::IsPaired() const {
-  return false;
-}
-
-bool WinWebAuthnApiAuthenticator::RequiresBlePairingPin() const {
-  return false;
-}
-
 absl::optional<FidoTransportProtocol>
 WinWebAuthnApiAuthenticator::AuthenticatorTransport() const {
   // The Windows API could potentially use any external or
@@ -352,6 +341,10 @@ bool WinWebAuthnApiAuthenticator::SupportsEnterpriseAttestation() const {
 bool WinWebAuthnApiAuthenticator::SupportsCredBlobOfSize(
     size_t num_bytes) const {
   return win_api_->Version() >= WEBAUTHN_API_VERSION_3;
+}
+
+bool WinWebAuthnApiAuthenticator::SupportsLargeBlobs() const {
+  return win_api_->SupportsLargeBlobs();
 }
 
 const absl::optional<AuthenticatorSupportedOptions>&

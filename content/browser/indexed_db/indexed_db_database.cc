@@ -7,11 +7,11 @@
 #include <math.h>
 #include <algorithm>
 #include <cstddef>
-#include <set>
 #include <utility>
 
 #include "base/auto_reset.h"
 #include "base/containers/contains.h"
+#include "base/containers/flat_set.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
@@ -22,6 +22,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/base_tracing.h"
 #include "components/services/storage/indexed_db/locks/partitioned_lock.h"
+#include "components/services/storage/indexed_db/locks/partitioned_lock_id.h"
 #include "components/services/storage/indexed_db/locks/partitioned_lock_manager.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scope.h"
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes.h"
@@ -174,10 +175,9 @@ IndexedDBDatabase::IndexedDBDatabase(
 
 IndexedDBDatabase::~IndexedDBDatabase() = default;
 
-void IndexedDBDatabase::RegisterAndScheduleTransaction(
-    IndexedDBTransaction* transaction) {
-  TRACE_EVENT1("IndexedDB", "IndexedDBDatabase::RegisterAndScheduleTransaction",
-               "txn.id", transaction->id());
+std::vector<PartitionedLockManager::PartitionedLockRequest>
+IndexedDBDatabase::BuildLockRequestsFromTransaction(
+    IndexedDBTransaction* transaction) const {
   std::vector<PartitionedLockManager::PartitionedLockRequest> lock_requests;
   lock_requests.reserve(1 + transaction->scope().size());
   lock_requests.emplace_back(
@@ -193,9 +193,59 @@ void IndexedDBDatabase::RegisterAndScheduleTransaction(
     lock_requests.emplace_back(GetObjectStoreLockId(id(), object_store),
                                lock_type);
   }
+  return lock_requests;
+}
+
+void IndexedDBDatabase::RequireBlockingTransactionClientsToBeActive(
+    IndexedDBTransaction* current_transaction,
+    std::vector<PartitionedLockManager::PartitionedLockRequest>&
+        lock_requests) {
+  std::vector<PartitionedLockId> blocked_lock_ids =
+      lock_manager_->GetUnacquirableLocks(lock_requests);
+
+  if (blocked_lock_ids.empty()) {
+    return;
+  }
+
+  for (IndexedDBConnection* connection : connections_) {
+    bool should_require_connection_to_be_active = false;
+    for (const auto& [existing_transaction_id, existing_transaction] :
+         connection->transactions()) {
+      if (connection->id() == current_transaction->connection()->id() &&
+          existing_transaction_id == current_transaction->id()) {
+        // This is the current transaction itself, we skip the check.
+        continue;
+      }
+      for (PartitionedLockId blocked_lock_id : blocked_lock_ids) {
+        if (existing_transaction->lock_ids().contains(blocked_lock_id)) {
+          should_require_connection_to_be_active = true;
+          break;
+        }
+      }
+    }
+    if (should_require_connection_to_be_active) {
+      connection->RequireClientToBeActive(
+          storage::mojom::DisallowClientActivationReason::
+              kTransactionIsBlockingOthers);
+    }
+  }
+}
+
+void IndexedDBDatabase::RegisterAndScheduleTransaction(
+    IndexedDBTransaction* transaction) {
+  TRACE_EVENT1("IndexedDB", "IndexedDBDatabase::RegisterAndScheduleTransaction",
+               "txn.id", transaction->id());
+  std::vector<PartitionedLockManager::PartitionedLockRequest> lock_requests =
+      BuildLockRequestsFromTransaction(transaction);
+
+  if (blink::features::
+          IsAllowPageWithIDBConnectionAndTransactionInBFCacheEnabled()) {
+    RequireBlockingTransactionClientsToBeActive(transaction, lock_requests);
+  }
+
   lock_manager_->AcquireLocks(
       std::move(lock_requests),
-      transaction->mutable_locks_receiver()->weak_factory.GetWeakPtr(),
+      transaction->mutable_locks_receiver()->AsWeakPtr(),
       base::BindOnce(&IndexedDBTransaction::Start, transaction->AsWeakPtr()));
 }
 
@@ -1768,15 +1818,20 @@ void IndexedDBDatabase::SendVersionChangeToAllConnections(int64_t old_version,
     // method is executed asynchronously.
     if (base::FeatureList::IsEnabled(
             blink::features::kAllowPageWithIDBConnectionInBFCache)) {
-      connection->RequireClientToBeActive(base::BindOnce(
-          [](base::WeakPtr<IndexedDBConnection> connection, int64_t old_version,
-             int64_t new_version, bool was_client_active) {
-            if (connection && connection->IsConnected() && was_client_active) {
-              connection->callbacks()->OnVersionChange(old_version,
-                                                       new_version);
-            }
-          },
-          connection->GetWeakPtr(), old_version, new_version));
+      connection->RequireClientToBeActiveAndKeepActive(
+          storage::mojom::DisallowClientActivationReason::
+              kClientEventIsTriggered,
+          base::BindOnce(
+              [](base::WeakPtr<IndexedDBConnection> connection,
+                 int64_t old_version, int64_t new_version,
+                 bool was_client_active) {
+                if (connection && connection->IsConnected() &&
+                    was_client_active) {
+                  connection->callbacks()->OnVersionChange(old_version,
+                                                           new_version);
+                }
+              },
+              connection->GetWeakPtr(), old_version, new_version));
     } else {
       connection->callbacks()->OnVersionChange(old_version, new_version);
     }
@@ -1798,6 +1853,18 @@ void IndexedDBDatabase::ConnectionClosed(IndexedDBConnection* connection) {
 
 bool IndexedDBDatabase::CanBeDestroyed() {
   return !connection_coordinator_.HasTasks() && connections_.empty();
+}
+
+bool IndexedDBDatabase::IsTransactionBlockingOthers(
+    IndexedDBTransaction* transaction) const {
+  base::flat_set<PartitionedLockId> lock_ids = transaction->lock_ids();
+  for (const auto& lock_id : lock_ids) {
+    if (lock_manager_->GetQueuedLockRequestCount(lock_id) > 0) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace content

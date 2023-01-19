@@ -21,10 +21,20 @@ struct BackgroundImage {
   skia.mojom.SkColor? main_color;
 };
 
+// Additional info for third-party themes.
+struct ThirdPartyThemeInfo {
+  // ID in the Chrome Web Store.
+  string id;
+  // Human-readable theme name.
+  string name;
+};
+
 // A generic theme.
 struct Theme {
   // The background image.
   BackgroundImage? background_image;
+  // Whether the user is using a third party theme.
+  ThirdPartyThemeInfo? third_party_theme_info;
   // Whether the OS is in dark mode.
   bool system_dark_mode;
   // The color this theme was calculated from.
@@ -37,6 +47,8 @@ struct Theme {
   skia.mojom.SkColor color_picker_icon_color;
   // True if the colors are managed by a policy.
   bool colors_managed_by_policy;
+  // Selected collection for daily refresh.
+  string? daily_refresh_collection_id;
 };
 
 struct ChromeColor {
@@ -131,8 +143,15 @@ interface CustomizeChromePageHandler {
       url.mojom.Url attribution_url, url.mojom.Url image_url,
       url.mojom.Url thumbnail_url);
 
-  // Open Chrome Web Store in a new tab.
+  // Sets collection id for daily refresh. When |collection_id| is empty, the
+  // daily refresh is turned off.
+  SetDailyRefreshCollectionId(string collection_id);
+
+  // Open Chrome Web Store's theme page in a new tab.
   OpenChromeWebStore();
+
+  // Opens link to Chrome Web Store theme in a new tab.
+  OpenThirdPartyThemePage(string theme_id);
 
   // If |visible| the modules will be shown.
   SetModulesVisible(bool visible);

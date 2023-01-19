@@ -5,8 +5,8 @@
 #ifndef SERVICES_METRICS_PUBLIC_CPP_UKM_RECORDER_H_
 #define SERVICES_METRICS_PUBLIC_CPP_UKM_RECORDER_H_
 
-#include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/functional/callback.h"
 #include "base/threading/thread_checker.h"
 #include "base/types/pass_key.h"
 #include "services/metrics/public/cpp/metrics_export.h"
@@ -35,6 +35,10 @@ class RenderFrameHostImpl;
 
 namespace web_app {
 class DesktopWebAppUkmRecorder;
+}
+
+namespace extensions {
+class ExtensionMessagePort;
 }
 
 namespace weblayer {
@@ -146,6 +150,9 @@ class METRICS_EXPORT UkmRecorder {
   friend metrics::UkmRecorderInterface;
   friend PermissionUmaUtil;
   friend content::RenderFrameHostImpl;
+  // `extensions::ExtensionMessagePort` is marked as friend to allow it to
+  // associate an extension URL with a new source Id.
+  friend extensions::ExtensionMessagePort;
 
   // Associates the SourceId with a URL. Most UKM recording code should prefer
   // to use a shared SourceId that is already associated with a URL, rather

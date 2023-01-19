@@ -1155,6 +1155,7 @@
 <translation id="3872834068356954457">سائنس</translation>
 <translation id="3875783148670536197">مجھے طریقہ دکھائیں</translation>
 <translation id="3881478300875776315">قدرے کم لائنز دکھائیں</translation>
+<translation id="3883500545751229739">دخل انداز اشتہارات</translation>
 <translation id="3884278016824448484">متنازع آلہ شناخت کنندہ</translation>
 <translation id="388632593194507180">مانیٹر کرنے کا پتہ چلا</translation>
 <translation id="3886948180919384617">اسٹیکر 3</translation>
@@ -1716,7 +1717,6 @@
 <translation id="5284295735376057059">دستاویز کی خصوصیات</translation>
 <translation id="528468243742722775">اختتام</translation>
 <translation id="5285570108065881030">سبھی محفوظ پاسورڈز دکھائيں</translation>
-<translation id="5287240709317226393">کوکیز دکھائیں</translation>
 <translation id="5287456746628258573">یہ سائٹ پرانی سیکیورٹی کنفیگریشن کو استعمال کر رہی ہے جو اس سائٹ پر بھیجے جانے پر آپ کی معلومات (مثلاً، پاس ورڈز یا کریڈٹ کارڈ نمبرز) کو ظاہر کر سکتی ہے۔</translation>
 <translation id="5288108484102287882">پالیسی کی اقدار کی تصدیق نے واننگز ظاہر کی ہیں</translation>
 <translation id="5288393065350884210">اکاؤنٹنگ اور آڈٹنگ</translation>
@@ -3121,6 +3121,7 @@
 <translation id="8891727572606052622">پراکسی کی غلط وضع۔</translation>
 <translation id="8894794286471754040">طویل کنارہ پہلے</translation>
 <translation id="8897428486789851669">تیراکی</translation>
+<translation id="8899807382908246773">دخل انداز اشتہارات</translation>
 <translation id="8903921497873541725">زوم ان کریں</translation>
 <translation id="890493561996401738">‏تجویز کا بٹن ہٹائیں، ہٹانے کے لیے Enter دبائیں، <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8912362522468806198">‏Google اکاؤنٹ</translation>
@@ -3198,7 +3199,6 @@
 <translation id="9096425087209440047">‏<ph name="SET_CHROME_AS_DEFAULT_BROWSER_FOCUSED_FRIENDLY_MATCH_TEXT" />، iOS کی ترتیبات میں Chrome کو سسٹم کے ڈیفالٹ براؤزر کے بطور سیٹ کرنے کے لیے ٹیب پھر Enter دبائیں</translation>
 <translation id="9096679202588811390">‏TV شوز اور پروگرامز</translation>
 <translation id="9101630580131696064">ٹرے 1</translation>
-<translation id="9102081333385212048">‏جن فائلز کو آپ کاپی یا منتقل کرتے ہیں وہ Google کلاؤڈ یا فریقین ثالث کو تجزیے کیلئے بھیجی جاتی ہیں۔ مثال کے طور پر، انہیں حساس ڈیٹا یا میلوئیر کیلئے اسکین کیا جا سکتا ہے۔</translation>
 <translation id="9103537084693478942">ویڈیو سافٹ ویئر</translation>
 <translation id="9103872766612412690">‏<ph name="SITE" /> عام طور پر آپ کی معلومات کے تحفظ کیلئے مرموز کاری کا استعمال کرتی ہے۔ اس بار جب Chromium نے <ph name="SITE" /> سے منسلک ہونے کی کوشش کی تو ویب سائٹ
 نے خلاف معمول اور غلط اسناد واپس بھیجے۔ یہ اس وقت ہو سکتا ہے جب کوئی حملہ آور <ph name="SITE" /> بننے کا بھیس بنا رہا ہو یا ایک Wi-Fi سائن ان اسکرین نے کنکشن میں خلل ڈالا ہو۔ آپ کی معلومات اب بھی محفوظ ہے کیونکہ Chromium نے کسی ڈیٹا کا تبادلہ ہونے سے پہلے کنکشن روک دیا۔</translation>

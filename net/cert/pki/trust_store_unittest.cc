@@ -16,12 +16,51 @@ namespace net {
 // unique string value.
 TEST(CertificateTrustTest, ToDebugStringUniqueness) {
   std::vector<CertificateTrust> trust_settings = {
+      // Meaningful combinations with trust anchor
       CertificateTrust::ForTrustAnchor(),
       CertificateTrust::ForTrustAnchor().WithEnforceAnchorConstraints(),
       CertificateTrust::ForTrustAnchor().WithEnforceAnchorExpiry(),
+      CertificateTrust::ForTrustAnchor().WithRequireAnchorBasicConstraints(),
       CertificateTrust::ForTrustAnchor()
           .WithEnforceAnchorConstraints()
           .WithEnforceAnchorExpiry(),
+      CertificateTrust::ForTrustAnchor()
+          .WithEnforceAnchorConstraints()
+          .WithEnforceAnchorExpiry()
+          .WithRequireAnchorBasicConstraints(),
+
+      // Meaningful combinations with trust anchor or leaf
+      CertificateTrust::ForTrustAnchorOrLeaf(),
+
+      CertificateTrust::ForTrustAnchorOrLeaf().WithEnforceAnchorConstraints(),
+      CertificateTrust::ForTrustAnchorOrLeaf().WithEnforceAnchorExpiry(),
+      CertificateTrust::ForTrustAnchorOrLeaf().WithRequireLeafSelfSigned(),
+
+      CertificateTrust::ForTrustAnchorOrLeaf()
+          .WithEnforceAnchorConstraints()
+          .WithEnforceAnchorExpiry(),
+      CertificateTrust::ForTrustAnchorOrLeaf()
+          .WithEnforceAnchorConstraints()
+          .WithRequireLeafSelfSigned(),
+      CertificateTrust::ForTrustAnchorOrLeaf()
+          .WithEnforceAnchorExpiry()
+          .WithRequireLeafSelfSigned(),
+
+      CertificateTrust::ForTrustAnchorOrLeaf()
+          .WithEnforceAnchorConstraints()
+          .WithEnforceAnchorExpiry()
+          .WithRequireLeafSelfSigned(),
+
+      CertificateTrust::ForTrustAnchorOrLeaf()
+          .WithEnforceAnchorConstraints()
+          .WithEnforceAnchorExpiry()
+          .WithRequireAnchorBasicConstraints()
+          .WithRequireLeafSelfSigned(),
+
+      // Meaningful combinations with trusted leaf
+      CertificateTrust::ForTrustedLeaf(),
+      CertificateTrust::ForTrustedLeaf().WithRequireLeafSelfSigned(),
+
       CertificateTrust::ForUnspecified(),
       CertificateTrust::ForDistrusted(),
   };

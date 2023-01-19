@@ -29,7 +29,6 @@ BASE_DECLARE_FEATURE(kBiometricAuthenticationForFilling);
 BASE_DECLARE_FEATURE(kBiometricAuthenticationInSettings);
 #endif
 BASE_DECLARE_FEATURE(kBiometricTouchToFill);
-BASE_DECLARE_FEATURE(kDetectFormSubmissionOnFormClear);
 BASE_DECLARE_FEATURE(kEnableOverwritingPlaceholderUsernames);
 BASE_DECLARE_FEATURE(kEnablePasswordsAccountStorage);
 BASE_DECLARE_FEATURE(kEnablePasswordGenerationForClearTextFields);
@@ -44,6 +43,7 @@ BASE_DECLARE_FEATURE(kInferConfirmationPasswordField);
 BASE_DECLARE_FEATURE(kIOSPasswordUISplit);
 BASE_DECLARE_FEATURE(kIOSPasswordManagerCrossOriginIframeSupport);
 BASE_DECLARE_FEATURE(kIOSPasswordCheckup);
+BASE_DECLARE_FEATURE(kIOSShowPasswordStorageInSaveInfobar);
 #endif  // IS_IOS
 BASE_DECLARE_FEATURE(kMuteCompromisedPasswords);
 BASE_DECLARE_FEATURE(kNewRegexForOtpFields);

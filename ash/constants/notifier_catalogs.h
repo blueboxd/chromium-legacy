@@ -192,7 +192,8 @@ enum class NudgeCatalogName {
   kDarkLightMode = 3,
   kAutozoom = 4,
   kAdaptiveCharging = 5,
-  kMaxValue = kAdaptiveCharging,
+  kPhoneHub = 6,
+  kMaxValue = kPhoneHub,
 };
 
 // A living catalog that registers toasts.
@@ -240,7 +241,9 @@ enum class ToastCatalogName {
   kEcheTrayCopyPasteNotImplemented = 37,
   kEcheTrayTabletModeNotSupported = 38,
   kNotificationCenterTrayNoNotifications = 39,
-  kMaxValue = kNotificationCenterTrayNoNotifications,
+  kCopyToClipboardAction = 40,
+  kVideoConferenceTraySpeakOnMuteDetected = 41,
+  kMaxValue = kVideoConferenceTraySpeakOnMuteDetected,
 };
 
 }  // namespace ash

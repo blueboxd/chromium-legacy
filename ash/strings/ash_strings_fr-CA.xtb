@@ -608,6 +608,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="430191667033048642">L'application <ph name="MOVED_APP_NAME" /> a été déplacée dans le dossier <ph name="FOLDER_NAME" />.</translation>
 <translation id="4302592941791324970">Non accessible</translation>
 <translation id="4303223480529385476">Développer la zone de notifications</translation>
+<translation id="4311195029067684288">Complet</translation>
 <translation id="4312840429157639164">Caméra alignée sur le coin supérieur droit. Conflit avec la surface du système.</translation>
 <translation id="4316910396681052118">TOUTES LES APPLICATIONS</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -638,6 +639,7 @@ Branchez votre appareil sur une source d'alimentation.</translation>
 <translation id="4455051983450390249">Affichez les notifications de votre téléphone sur votre <ph name="DEVICE_TYPE" /></translation>
 <translation id="445864333228800152">Bonsoir,</translation>
 <translation id="4458688154122353284">Arrêter l'enregistrement de l'écran</translation>
+<translation id="445923051607553918">Connexion à un réseau Wi-Fi</translation>
 <translation id="4471354919263203780">Téléchargement des fichiers de reconnaissance vocale en cours… <ph name="PERCENT" /> %</translation>
 <translation id="4471432286288241507">{0,plural, =0{Mettez à jour l'appareil maintenant}=1{Mettez à jour l'appareil d'ici 1 seconde}one{Mettez à jour l'appareil d'ici # seconde}other{Mettez à jour l'appareil d'ici # secondes}}</translation>
 <translation id="4472575034687746823">Premiers pas</translation>

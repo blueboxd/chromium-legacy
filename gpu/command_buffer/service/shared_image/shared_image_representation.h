@@ -109,6 +109,9 @@ class GPU_GLES2_EXPORT SharedImageRepresentation {
     backing_->OnContextLost();
   }
 
+  // Returns the number of image planes expected based on the backing format.
+  size_t NumPlanesExpected() const;
+
  protected:
   SharedImageManager* manager() const { return manager_; }
   SharedImageBacking* backing() const { return backing_; }
@@ -230,7 +233,6 @@ class GPU_GLES2_EXPORT GLTextureImageRepresentation
                                MemoryTypeTracker* tracker)
       : GLTextureImageRepresentationBase(manager, backing, tracker) {}
 
-  // TODO(ericrk): Move this to the ScopedAccess object. crbug.com/1003686
   // Gets the texture associated with the `plane_index` for SharedImageFormat.
   virtual gles2::Texture* GetTexture(int plane_index) = 0;
   // Calls GetTexture with `plane_index` = 0 for single planar formats eg. RGB.
@@ -253,7 +255,6 @@ class GPU_GLES2_EXPORT GLTexturePassthroughImageRepresentation
                                           MemoryTypeTracker* tracker)
       : GLTextureImageRepresentationBase(manager, backing, tracker) {}
 
-  // TODO(ericrk): Move this to the ScopedAccess object. crbug.com/1003686
   // Gets the passthrough texture associated with the `plane_index` for
   // SharedImageFormat.
   virtual const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough(

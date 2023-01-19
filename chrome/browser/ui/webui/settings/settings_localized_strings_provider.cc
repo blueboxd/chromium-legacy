@@ -32,6 +32,7 @@
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_consistency_mode_manager_factory.h"
+#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -72,6 +73,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
@@ -274,8 +276,10 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
       "showFocusHighlightOption",
       base::FeatureList::IsEnabled(features::kAccessibilityFocusHighlight));
 #endif
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   html_source->AddBoolean("pdfOcrEnabled",
                           base::FeatureList::IsEnabled(features::kPdfOcr));
+#endif
 
   AddCaptionSubpageStrings(html_source);
 }
@@ -316,14 +320,6 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
 #endif
 
   std::u16string browser_version = VersionUI::GetAnnotatedVersionStringForUi();
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // Lacros is in development so we don't worry about l10n for now. This message
-  // will not be shown for the full release.
-  browser_version += u". ";
-  browser_version +=
-      l10n_util::GetStringUTF16(IDS_EXPERIMENTAL_LACROS_WARNING_MESSAGE);
-#endif
 
   html_source->AddString("aboutBrowserVersion", browser_version);
   html_source->AddString(
@@ -513,40 +509,12 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"downloadsPageTitle", IDS_SETTINGS_DOWNLOADS},
       {"downloadLocation", IDS_SETTINGS_DOWNLOAD_LOCATION},
-      {"downloadLocalLocation", IDS_SETTINGS_DOWNLOAD_LOCAL_LOCATION},
-      {"downloadConnectionAccountTitle",
-       IDS_SETTINGS_DOWNLOAD_CONNECTION_ACCOUNT_TITLE},
-      {"downloadConnectionLearnMore",
-       IDS_SETTINGS_DOWNLOAD_CONNECTION_LEARN_MORE},
       {"changeDownloadLocation", IDS_SETTINGS_CHANGE_DOWNLOAD_LOCATION},
       {"promptForDownload", IDS_SETTINGS_PROMPT_FOR_DOWNLOAD},
       {"openFileTypesAutomatically",
        IDS_SETTINGS_OPEN_FILE_TYPES_AUTOMATICALLY},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
-  const std::u16string kBox =
-      l10n_util::GetStringUTF16(IDS_FILE_SYSTEM_CONNECTOR_BOX);
-  html_source->AddString(
-      "downloadsConnectionTitle",
-      l10n_util::GetStringFUTF16(IDS_SETTINGS_DOWNLOAD_CONNECTION_TITLE, kBox));
-  html_source->AddString(
-      "downloadsConnectionUnlinkedMessage",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_DOWNLOAD_CONNECTION_UNLINKED_MESSAGE, kBox));
-  html_source->AddString(
-      "downloadsConnectionLinkButton",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_DOWNLOAD_CONNECTION_SIGN_IN_BUTTON, kBox));
-  html_source->AddString(
-      "downloadsConnectionLinkedMessage",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_DOWNLOAD_CONNECTION_LINKED_MESSAGE, kBox));
-  html_source->AddString("downloadsConnectionUnlinkButton",
-                         l10n_util::GetStringUTF16(
-                             IDS_SETTINGS_DOWNLOAD_CONNECTION_SIGN_OUT_BUTTON));
-  html_source->AddString("downloadConnectionLinkedFolder",
-                         l10n_util::GetStringFUTF16(
-                             IDS_SETTINGS_DOWNLOAD_WEB_DRIVE_LOCATION, kBox));
 }
 
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -1048,6 +1016,10 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"addPaymentMethodCreditOrDebitCard",
      IDS_SETTINGS_ADD_PAYMENT_METHOD_CREDIT_OR_DEBIT_CARD},
     {"addPaymentMethodIban", IDS_SETTINGS_ADD_PAYMENT_METHOD_IBAN},
+    {"ibanSavedToThisDeviceOnly", IDS_SETTINGS_IBAN_SAVED_TO_THIS_DEVICE_ONLY},
+    {"addIbanTitle", IDS_SETTINGS_ADD_IBAN_TITLE},
+    {"editIbanTitle", IDS_SETTINGS_EDIT_IBAN_TITLE},
+    {"ibanNickname", IDS_IBAN_NICKNAME},
     {"migrateCreditCardsLabel", IDS_SETTINGS_MIGRATABLE_CARDS_LABEL},
     {"migratableCardsInfoSingle", IDS_SETTINGS_SINGLE_MIGRATABLE_CARD_INFO},
     {"migratableCardsInfoMultiple",
@@ -1375,6 +1347,11 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       l10n_util::GetStringFUTF16(IDS_UNDO_DESCRIPTION,
                                  undo_accelerator.GetShortcutText()));
 
+  html_source->AddBoolean(
+      "removeCardExpirationAndTypeTitles",
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillRemoveCardExpirationAndTypeTitles));
+
   html_source->AddBoolean("showUpiIdSettings",
                           base::FeatureList::IsEnabled(
                               autofill::features::kAutofillSaveAndFillVPA));
@@ -1468,8 +1445,10 @@ void AddSignOutDialogStrings(content::WebUIDataSource* html_source,
   html_source->AddString(
       "syncDisconnectManagedProfileExplanation",
       l10n_util::GetStringFUTF8(
-          IDS_SETTINGS_SYNC_DISCONNECT_MANAGED_PROFILE_EXPLANATION, u"$1",
-          base::ASCIIToUTF16(sync_dashboard_url)));
+          base::FeatureList::IsEnabled(kDisallowManagedProfileSignout)
+              ? IDS_SETTINGS_TURN_OFF_SYNC_MANAGED_PROFILE_EXPLANATION
+              : IDS_SETTINGS_SYNC_DISCONNECT_MANAGED_PROFILE_EXPLANATION,
+          u"$1", base::ASCIIToUTF16(sync_dashboard_url)));
 #endif
 }
 
@@ -1675,10 +1654,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
 }
 
 bool ShouldLinkSecureDnsOsSettings() {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  return base::FeatureList::IsEnabled(ash::features::kEnableDnsProxy) &&
-         base::FeatureList::IsEnabled(::features::kDnsProxyEnableDOH);
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   return true;
 #else
   return false;
@@ -2045,6 +2021,8 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_DESCRIPTION},
       {"topicsPageCurrentTopicsDescriptionLearnMoreLink",
        IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_DESCRIPTION_LEARN_MORE_LINK},
+      {"topicsPageCurrentTopicsRegionA11yDescription",
+       IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_REGION_A11Y_DESCRIPTION},
       {"topicsPageLearnMoreHeading",
        IDS_SETTINGS_TOPICS_PAGE_LEARN_MORE_HEADING},
       {"topicsPageLearnMoreBullet1",
@@ -2066,6 +2044,8 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION},
       {"topicsPageBlockedTopicsDescriptionEmpty",
        IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_DESCRIPTION_EMPTY},
+      {"topicsPageBlockedTopicsRegionA11yDescription",
+       IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_REGION_A11Y_DESCRIPTION},
       {"topicsPageAllowTopic", IDS_SETTINGS_TOPICS_PAGE_ALLOW_TOPIC},
       {"topicsPageAllowTopicA11yLabel",
        IDS_SETTINGS_TOPICS_PAGE_ALLOW_TOPIC_A11Y_LABEL},
@@ -2084,6 +2064,8 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_FLEDGE_PAGE_CURRENT_SITES_DESCRIPTION_DISABLED},
       {"fledgePageCurrentSitesDescriptionEmpty",
        IDS_SETTINGS_FLEDGE_PAGE_CURRENT_SITES_DESCRIPTION_EMPTY},
+      {"fledgePageCurrentSitesRegionA11yDescription",
+       IDS_SETTINGS_FLEDGE_PAGE_CURRENT_SITES_REGION_A11Y_DESCRIPTION},
       {"fledgePageSeeAllSitesLabel",
        IDS_SETTINGS_FLEDGE_PAGE_SEE_ALL_SITES_LABEL},
       {"fledgePageBlockSite", IDS_SETTINGS_FLEDGE_PAGE_BLOCK_SITE},
@@ -2095,6 +2077,8 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_FLEDGE_PAGE_BLOCKED_SITES_DESCRIPTION},
       {"fledgePageBlockedSitesDescriptionEmpty",
        IDS_SETTINGS_FLEDGE_PAGE_BLOCKED_SITES_DESCRIPTION_EMPTY},
+      {"fledgePageBlockedSitesRegionA11yDescription",
+       IDS_SETTINGS_FLEDGE_PAGE_BLOCKED_SITES_REGION_A11Y_DESCRIPTION},
       {"fledgePageAllowSite", IDS_SETTINGS_FLEDGE_PAGE_ALLOW_SITE},
       {"fledgePageAllowSiteA11yLabel",
        IDS_SETTINGS_FLEDGE_PAGE_ALLOW_SITE_A11Y_LABEL},
@@ -2133,6 +2117,11 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
+  html_source->AddString("adPrivacyLearnMoreURL",
+                         google_util::AppendGoogleLocaleParam(
+                             GURL(chrome::kAdPrivacyLearnMoreURL),
+                             g_browser_process->GetApplicationLocale())
+                             .spec());
   html_source->AddString(
       "privacySandboxAdMeasurementDialogControlMeasurement",
       l10n_util::GetStringFUTF16(
@@ -2509,6 +2498,7 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_RECENT_ACTIVITY},
     {"siteSettingsCategoryCamera", IDS_SITE_SETTINGS_TYPE_CAMERA},
     {"siteSettingsCameraLabel", IDS_SITE_SETTINGS_TYPE_CAMERA},
+    {"thirdPartyCookiesPageTitle", IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_TITLE},
     {"thirdPartyCookiesLinkRowLabel",
      IDS_SETTINGS_THIRD_PARTY_COOKIES_LINK_ROW_LABEL},
     {"thirdPartyCookiesLinkRowSublabelEnabled",
@@ -2517,6 +2507,43 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_THIRD_PARTY_COOKIES_LINK_ROW_SUB_LABEL_DISABLED_INCOGNITO},
     {"thirdPartyCookiesLinkRowSublabelDisabled",
      IDS_SETTINGS_THIRD_PARTY_COOKIES_LINK_ROW_SUB_LABEL_DISABLED},
+    {"thirdPartyCookiesPageAllowRadioLabel",
+     IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ALLOW_RADIO_LABEL},
+    {"thirdPartyCookiesPageAllowExpandA11yLabel",
+     IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ALLOW_EXPAND_A11Y_LABEL},
+    {"thirdPartyCookiesPageAllowBulOne",
+     IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ALLOW_BULLET_1},
+    {"thirdPartyCookiesPageAllowBulTwo",
+     IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ALLOW_BULLET_2},
+    {"thirdPartyCookiesPageBlockIncognitoRadioLabel",
+     IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_INCOGNITO_RADIO_LABEL},
+    {"thirdPartyCookiesPageBlockIncognitoExpandA11yLabel",
+     IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_INCOGNITO_EXPAND_A11Y_LABEL},
+    {"thirdPartyCookiesPageBlockIncognitoBulOne",
+     IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_INCOGNITO_BULLET_1},
+    {"thirdPartyCookiesPageBlockIncognitoBulTwo",
+     IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_INCOGNITO_BULLET_2},
+    {"thirdPartyCookiesPageBlockRadioLabel",
+     IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_RADIO_LABEL},
+    {"thirdPartyCookiesPageBlockExpandA11yLabel",
+     IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_EXPAND_A11Y_LABEL},
+    {"thirdPartyCookiesPageBlockBulOne",
+     IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_BULLET_1},
+    {"thirdPartyCookiesPageBlockBulTwo",
+     IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_BULLET_2},
+
+    {"thirdPartyCookiesPageDescription",
+     IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_DESCRIPTION},
+    {"thirdPartyCookiesPageDefaultBehaviorHeading",
+     IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_DEFAULT_BEHAVIOR_HEADING},
+    {"thirdPartyCookiesPageDefaultBehaviorDescription",
+     IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_DEFAULT_BEHAVIOR_DESCRIPTION},
+    {"thirdPartyCookiesPageCustomizedBehaviorHeading",
+     IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_CUSTOMIZED_BEHAVIOR_HEADING},
+    {"thirdPartyCookiesPageCustomizedBehaviorDescription",
+     IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_CUSTOMIZED_BEHAVIOR_DESCRIPTION},
+    {"thirdPartyCookiesPageAllowExceptionsSubHeading",
+     IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ALLOW_EXCEPTIONS_SUB_HEADING},
     {"cookiePageTitle", IDS_SETTINGS_COOKIES_PAGE},
     {"cookiePageGeneralControls", IDS_SETTINGS_COOKIES_CONTROLS},
     {"cookiePageAllowAll", IDS_SETTINGS_COOKIES_ALLOW_ALL},

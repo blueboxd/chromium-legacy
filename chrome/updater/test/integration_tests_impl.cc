@@ -41,7 +41,6 @@
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/test_timeouts.h"
-#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -443,7 +442,7 @@ void SetExistenceCheckerPath(UpdaterScope scope,
                              const std::string& app_id,
                              const base::FilePath& path) {
   scoped_refptr<GlobalPrefs> global_prefs = CreateGlobalPrefs(scope);
-  base::MakeRefCounted<PersistedData>(global_prefs->GetPrefService())
+  base::MakeRefCounted<PersistedData>(scope, global_prefs->GetPrefService())
       ->SetExistenceCheckerPath(app_id, path);
   PrefsCommitPendingWrites(global_prefs->GetPrefService());
 }
@@ -475,17 +474,19 @@ void ExpectLogRotated(UpdaterScope scope) {
 }
 
 void ExpectRegistered(UpdaterScope scope, const std::string& app_id) {
-  ASSERT_TRUE(base::Contains(base::MakeRefCounted<PersistedData>(
-                                 CreateGlobalPrefs(scope)->GetPrefService())
-                                 ->GetAppIds(),
-                             app_id));
+  ASSERT_TRUE(
+      base::Contains(base::MakeRefCounted<PersistedData>(
+                         scope, CreateGlobalPrefs(scope)->GetPrefService())
+                         ->GetAppIds(),
+                     app_id));
 }
 
 void ExpectNotRegistered(UpdaterScope scope, const std::string& app_id) {
-  ASSERT_FALSE(base::Contains(base::MakeRefCounted<PersistedData>(
-                                  CreateGlobalPrefs(scope)->GetPrefService())
-                                  ->GetAppIds(),
-                              app_id));
+  ASSERT_FALSE(
+      base::Contains(base::MakeRefCounted<PersistedData>(
+                         scope, CreateGlobalPrefs(scope)->GetPrefService())
+                         ->GetAppIds(),
+                     app_id));
 }
 
 void ExpectAppVersion(UpdaterScope scope,
@@ -493,9 +494,10 @@ void ExpectAppVersion(UpdaterScope scope,
                       const base::Version& version) {
   const base::Version app_version =
       base::MakeRefCounted<PersistedData>(
-          CreateGlobalPrefs(scope)->GetPrefService())
+          scope, CreateGlobalPrefs(scope)->GetPrefService())
           ->GetProductVersion(app_id);
-  EXPECT_TRUE(app_version.IsValid() && version == app_version);
+  EXPECT_TRUE(app_version.IsValid());
+  EXPECT_EQ(version, app_version);
 }
 
 void Run(UpdaterScope scope, base::CommandLine command_line, int* exit_code) {
@@ -517,24 +519,6 @@ void Run(UpdaterScope scope, base::CommandLine command_line, int* exit_code) {
       2 * TestTimeouts::action_max_timeout(), exit_code);
   VPLOG_IF(0, !succeeded);
   ASSERT_TRUE(succeeded);
-}
-
-bool WaitFor(base::RepeatingCallback<bool()> predicate,
-             base::RepeatingClosure still_waiting) {
-  constexpr base::TimeDelta kOutputInterval = base::Seconds(10);
-  auto notify_next = base::TimeTicks::Now() + kOutputInterval;
-  const auto deadline = base::TimeTicks::Now() + TestTimeouts::action_timeout();
-  while (base::TimeTicks::Now() < deadline) {
-    if (predicate.Run()) {
-      return true;
-    }
-    if (notify_next < base::TimeTicks::Now()) {
-      still_waiting.Run();
-      notify_next += kOutputInterval;
-    }
-    base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
-  }
-  return false;
 }
 
 bool RequestMatcherRegex(const std::string& request_body_regex,
@@ -712,17 +696,19 @@ void RunRecoveryComponent(UpdaterScope scope,
 }
 
 void ExpectLastChecked(UpdaterScope updater_scope) {
-  EXPECT_FALSE(base::MakeRefCounted<PersistedData>(
-                   CreateGlobalPrefs(updater_scope)->GetPrefService())
-                   ->GetLastChecked()
-                   .is_null());
+  EXPECT_FALSE(
+      base::MakeRefCounted<PersistedData>(
+          updater_scope, CreateGlobalPrefs(updater_scope)->GetPrefService())
+          ->GetLastChecked()
+          .is_null());
 }
 
 void ExpectLastStarted(UpdaterScope updater_scope) {
-  EXPECT_FALSE(base::MakeRefCounted<PersistedData>(
-                   CreateGlobalPrefs(updater_scope)->GetPrefService())
-                   ->GetLastStarted()
-                   .is_null());
+  EXPECT_FALSE(
+      base::MakeRefCounted<PersistedData>(
+          updater_scope, CreateGlobalPrefs(updater_scope)->GetPrefService())
+          ->GetLastStarted()
+          .is_null());
 }
 
 std::set<base::FilePath::StringType> GetTestProcessNames() {

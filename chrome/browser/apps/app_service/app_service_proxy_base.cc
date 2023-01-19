@@ -88,8 +88,8 @@ AppServiceProxyBase::InnerIconLoader::LoadIconFromIconKey(
   }
 
   if (host_->ShouldReadIcons()) {
-    host_->ReadIcons(app_type, app_id, size_hint_in_dip, icon_key, icon_type,
-                     std::move(callback));
+    host_->ReadIcons(app_type, app_id, size_hint_in_dip, icon_key.Clone(),
+                     icon_type, std::move(callback));
     return nullptr;
   }
 
@@ -190,6 +190,10 @@ apps::PreferredAppsListHandle& AppServiceProxyBase::PreferredAppsList() {
 void AppServiceProxyBase::RegisterPublisher(AppType app_type,
                                             AppPublisher* publisher) {
   publishers_[app_type] = publisher;
+}
+
+void AppServiceProxyBase::UnregisterPublisher(AppType app_type) {
+  publishers_.erase(app_type);
 }
 
 void AppServiceProxyBase::InitializePreferredAppsForAllSubscribers() {

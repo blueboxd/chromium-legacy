@@ -181,6 +181,7 @@ absl::optional<cryptohome::KeyData> FakeAuthFactorToKeyData(
             data.set_label(std::move(label));
             data.add_challenge_response_key()->set_public_key_spki_der(
                 smart_card.public_key_spki_der);
+            // TODO (b/241259026): populate algorithms.
             return data;
           },
           [&](const KioskFactor& kiosk) {
@@ -229,8 +230,7 @@ absl::optional<user_data_auth::AuthFactor> FakeAuthFactorToAuthFactor(
           [&](const SmartCardFactor& smart_card) {
             user_data_auth::AuthFactor result;
             result.set_label(std::move(label));
-            result.set_type(
-                user_data_auth::AUTH_FACTOR_TYPE_CRYPTOHOME_RECOVERY);
+            result.set_type(user_data_auth::AUTH_FACTOR_TYPE_SMART_CARD);
             result.mutable_smart_card_metadata()->set_public_key_spki_der(
                 smart_card.public_key_spki_der);
             return result;
@@ -299,8 +299,8 @@ std::pair<std::string, FakeAuthFactor> AuthFactorWithInputToFakeAuthFactor(
     case user_data_auth::AUTH_FACTOR_TYPE_CRYPTOHOME_RECOVERY:
       return {label, RecoveryFactor{}};
     case user_data_auth::AUTH_FACTOR_TYPE_SMART_CARD: {
-      std::string t = factor.smart_card_metadata().public_key_spki_der();
-      return {label, SmartCardFactor{.public_key_spki_der = t}};
+      std::string key = factor.smart_card_metadata().public_key_spki_der();
+      return {label, SmartCardFactor{.public_key_spki_der = key}};
     }
     default:
       NOTREACHED();
@@ -934,12 +934,6 @@ void FakeUserDataAuthClient::StartAuthSession(
     for (const auto& [label, factor] : user_state.auth_factors) {
       absl::optional<cryptohome::KeyData> key_data =
           FakeAuthFactorToKeyData(label, factor);
-      if (key_data) {
-        reply.mutable_key_label_data()->insert({label, std::move(*key_data)});
-      } else {
-        LOG(WARNING) << "Ignoring auth factor incompatible with legacy API: "
-                     << label;
-      }
       absl::optional<user_data_auth::AuthFactor> auth_factor =
           FakeAuthFactorToAuthFactor(label, factor);
       if (key_data) {
@@ -949,32 +943,6 @@ void FakeUserDataAuthClient::StartAuthSession(
             << "Ignoring auth factor incompatible with AuthFactor API: "
             << label;
       }
-    }
-  }
-
-  // TODO(crbug.com/1334538): Some tests expect that kiosk or gaia keys exist
-  // for existing users, but don't set those keys up. Until those tests are
-  // fixed, we explicitly add keys here.
-  if (user_exists) {
-    if (is_kiosk) {
-      // See kCryptohomePublicMountLabel.
-      std::string kiosk_label = "publicmount";
-      cryptohome::KeyData kiosk_key;
-      kiosk_key.set_label(kiosk_label);
-      kiosk_key.set_type(cryptohome::KeyData::KEY_TYPE_KIOSK);
-      const auto [_, was_inserted] = reply.mutable_key_label_data()->insert(
-          {std::move(kiosk_label), std::move(kiosk_key)});
-      LOG_IF(ERROR, was_inserted)
-          << "Listing kiosk key even though it was not set up";
-    } else {
-      std::string gaia_label = kCryptohomeGaiaKeyLabel;
-      cryptohome::KeyData gaia_key;
-      gaia_key.set_label(gaia_label);
-      gaia_key.set_type(cryptohome::KeyData::KEY_TYPE_PASSWORD);
-      const auto [_, was_inserted] = reply.mutable_key_label_data()->insert(
-          {std::move(gaia_label), std::move(gaia_key)});
-      LOG_IF(ERROR, was_inserted)
-          << "Listing gaia key even though it was not set up";
     }
   }
 }

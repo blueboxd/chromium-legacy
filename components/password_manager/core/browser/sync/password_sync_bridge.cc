@@ -952,7 +952,8 @@ void PasswordSyncBridge::ApplyStopSyncChanges(
   sync_enabled_or_disabled_cb_.Run();
 }
 
-sync_pb::EntitySpecifics PasswordSyncBridge::TrimRemoteSpecificsForCaching(
+sync_pb::EntitySpecifics
+PasswordSyncBridge::TrimAllSupportedFieldsFromRemoteSpecifics(
     const sync_pb::EntitySpecifics& entity_specifics) const {
   DCHECK(entity_specifics.has_password());
 
@@ -978,6 +979,7 @@ PasswordSyncBridge::GetPossiblyTrimmedPasswordSpecificsData(
       .client_only_encrypted_data();
 }
 
+// TODO(crbug.com/1407925): Consider moving this logic to processor.
 bool PasswordSyncBridge::SyncMetadataCacheContainsSupportedFields(
     const syncer::EntityMetadataMap& metadata_map) const {
   for (const auto& metadata_entry : metadata_map) {
@@ -991,7 +993,8 @@ bool PasswordSyncBridge::SyncMetadataCacheContainsSupportedFields(
     parsed_specifics.ParseFromString(serialized_specifics);
 
     // Skip entities without a `password` field to avoid failing the
-    // precondition in the `TrimRemoteSpecificsForCaching` function below.
+    // precondition in the `TrimAllSupportedFieldsFromRemoteSpecifics` function
+    // below.
     if (!parsed_specifics.has_password()) {
       continue;
     }
@@ -999,7 +1002,8 @@ bool PasswordSyncBridge::SyncMetadataCacheContainsSupportedFields(
     // If `parsed_specifics` contain any supported fields, they would be cleared
     // by the trimming function.
     if (parsed_specifics.ByteSizeLong() !=
-        TrimRemoteSpecificsForCaching(parsed_specifics).ByteSizeLong()) {
+        TrimAllSupportedFieldsFromRemoteSpecifics(parsed_specifics)
+            .ByteSizeLong()) {
       return true;
     }
   }

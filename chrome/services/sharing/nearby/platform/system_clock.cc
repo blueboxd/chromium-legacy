@@ -24,7 +24,6 @@
 #include "base/system/sys_info.h"
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_POSIX)
 
-namespace location {
 namespace nearby {
 
 void SystemClock::Init() {}
@@ -74,4 +73,3 @@ Exception SystemClock::Sleep(absl::Duration duration) {
 }
 
 }  // namespace nearby
-}  // namespace location

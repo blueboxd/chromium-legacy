@@ -609,6 +609,7 @@
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" />-г <ph name="FOLDER_NAME" /> фолдерт зөөсөн.</translation>
 <translation id="4302592941791324970">Боломжгүй</translation>
 <translation id="4303223480529385476">Төлөв байдал илэрхийлэгчийг дэлгэх</translation>
+<translation id="4311195029067684288">Бүтэн</translation>
 <translation id="4312840429157639164">Камерыг баруун дээд булан руу зэрэгцүүлсэн. Системийн гадаргуутай зөрчилдсөн.</translation>
 <translation id="4316910396681052118">БҮХ АПП</translation>
 <translation id="4321179778687042513">Ctrl</translation>
@@ -639,6 +640,7 @@
 <translation id="4455051983450390249"><ph name="DEVICE_TYPE" /> дээрээ утасныхаа мэдэгдлийг харна уу</translation>
 <translation id="445864333228800152">Оройн мэнд,</translation>
 <translation id="4458688154122353284">Дэлгэцийн үйлдэл бичихийг зогсоох</translation>
+<translation id="445923051607553918">Wi-Fi сүлжээнд холбогдох</translation>
 <translation id="4471354919263203780">Яриа таних файлыг татаж байна... <ph name="PERCENT" />%</translation>
 <translation id="4471432286288241507">{0,plural, =0{Төхөөрөмжийг одоо шинэчилнэ үү}=1{Төхөөрөмжийг 1 секундийн дотор шинэчилнэ үү}other{Төхөөрөмжийг # секундийн дотор шинэчилнэ үү}}</translation>
 <translation id="4472575034687746823">Эхлүүлэх</translation>

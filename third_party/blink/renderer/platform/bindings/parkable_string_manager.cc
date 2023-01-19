@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/single_thread_task_runner.h"
@@ -81,26 +81,6 @@ void MoveString(ParkableStringImpl* string,
 
 const char* ParkableStringManager::kAllocatorDumpName = "parkable_strings";
 const base::TimeDelta ParkableStringManager::kFirstParkingDelay;
-
-// Compares not the pointers, but the arrays. Uses pointers to save space.
-struct ParkableStringManager::SecureDigestHash {
-  STATIC_ONLY(SecureDigestHash);
-
-  static unsigned GetHash(
-      const ParkableStringImpl::SecureDigest* const digest) {
-    // The first bytes of the hash are as good as anything else.
-    return *reinterpret_cast<const unsigned*>(digest->data());
-  }
-
-  static inline bool Equal(const ParkableStringImpl::SecureDigest* const a,
-                           const ParkableStringImpl::SecureDigest* const b) {
-    return a == b ||
-           std::equal(a->data(), a->data() + ParkableStringImpl::kDigestSize,
-                      b->data());
-  }
-
-  static constexpr bool safe_to_compare_to_empty_or_deleted = false;
-};
 
 // static
 ParkableStringManagerDumpProvider*
@@ -218,8 +198,7 @@ scoped_refptr<ParkableStringImpl> ParkableStringManager::Add(
   return new_parkable;
 }
 
-void ParkableStringManager::RemoveOnMainThread(
-    MayBeDangling<ParkableStringImpl> string) {
+void ParkableStringManager::RemoveOnMainThread(ParkableStringImpl* string) {
   DCHECK(IsMainThread());
   DCHECK(string->may_be_parked());
   DCHECK(string->digest());
@@ -262,7 +241,7 @@ void ParkableStringManager::Remove(ParkableStringImpl* string) {
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&ParkableStringManager::RemoveOnMainThread,
-                     base::Unretained(this), base::UnsafeDangling(string)));
+                     base::Unretained(this), base::Unretained(string)));
 }
 
 void ParkableStringManager::CompleteUnparkOnMainThread(

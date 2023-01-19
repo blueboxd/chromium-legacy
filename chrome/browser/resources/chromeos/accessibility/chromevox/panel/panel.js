@@ -31,20 +31,13 @@ import {PanelInterface} from './panel_interface.js';
 import {PanelMenu, PanelNodeMenu, PanelSearchMenu} from './panel_menu.js';
 import {PanelMode, PanelModeInfo} from './panel_mode.js';
 
+const $ = (id) => document.getElementById(id);
+
 /** Class to manage the panel. */
 export class Panel extends PanelInterface {
   /** @private */
   constructor() {
     super();
-    /**
-     * The currently active menu, if any.
-     * @private {?PanelMenu}
-     */
-    this.activeMenu_ = null;
-
-    /** @private {string} */
-    this.lastMenu_ = '';
-
     /** @private {!PanelMode} */
     this.mode_ = PanelMode.COLLAPSED;
 
@@ -226,7 +219,7 @@ export class Panel extends PanelInterface {
         this.onOpenMenus_(undefined, String(command.data));
         break;
       case PanelCommandType.OPEN_MENUS_MOST_RECENT:
-        this.onOpenMenus_(undefined, this.lastMenu_);
+        this.onOpenMenus_(undefined, this.menuManager_.lastMenu);
         break;
       case PanelCommandType.SEARCH:
         this.onSearch_();
@@ -317,7 +310,7 @@ export class Panel extends PanelInterface {
     const onFocusDo = async () => {
       window.removeEventListener('focus', onFocusDo);
       // Clear any existing menus and clear the callback.
-      this.clearMenus_();
+      this.menuManager_.clearMenus();
       this.pendingCallback_ = null;
 
       const eventSource = await BackgroundBridge.EventSource.get();
@@ -537,27 +530,10 @@ export class Panel extends PanelInterface {
    */
   async onSearch_() {
     this.setMode_(PanelMode.SEARCH);
-    this.clearMenus_();
+    this.menuManager_.clearMenus();
     this.pendingCallback_ = null;
     this.updateFromPrefs_();
     await ISearchUI.init(this.searchInput_);
-  }
-
-  /**
-   * Clear any previous menus. The menus are all regenerated each time the
-   * menus are opened.
-   * @private
-   */
-  clearMenus_() {
-    while (this.menuManager_.menus.length) {
-      const menu = this.menuManager_.menus.pop();
-      $('menu-bar').removeChild(menu.menuBarItemElement);
-      $('menus_background').removeChild(menu.menuContainerElement);
-    }
-    if (this.activeMenu_) {
-      this.lastMenu_ = this.activeMenu_.menuMsg;
-    }
-    this.activeMenu_ = null;
   }
 
   /**
@@ -791,20 +767,20 @@ export class Panel extends PanelInterface {
    * @private
    */
   activateMenu_(menu, activateFirstItem) {
-    if (menu === this.activeMenu_) {
+    if (menu === this.menuManager_.activeMenu) {
       return;
     }
 
-    if (this.activeMenu_) {
-      this.activeMenu_.deactivate();
-      this.activeMenu_ = null;
+    if (this.menuManager_.activeMenu) {
+      this.menuManager_.activeMenu.deactivate();
+      this.menuManager_.activeMenu = null;
     }
 
-    this.activeMenu_ = menu;
+    this.menuManager_.activeMenu = menu;
     this.pendingCallback_ = null;
 
-    if (this.activeMenu_) {
-      this.activeMenu_.activate(activateFirstItem);
+    if (this.menuManager_.activeMenu) {
+      this.menuManager_.activeMenu.activate(activateFirstItem);
     }
   }
 
@@ -813,7 +789,7 @@ export class Panel extends PanelInterface {
    * @private
    */
   scrollToTop_() {
-    this.activeMenu_.scrollToTop();
+    this.menuManager_.activeMenu.scrollToTop();
   }
 
   /**
@@ -821,7 +797,7 @@ export class Panel extends PanelInterface {
    * @private
    */
   scrollToBottom_() {
-    this.activeMenu_.scrollToBottom();
+    this.menuManager_.activeMenu.scrollToBottom();
   }
 
   /**
@@ -832,7 +808,7 @@ export class Panel extends PanelInterface {
   advanceActiveMenuBy_(delta) {
     let activeIndex = -1;
     for (let i = 0; i < this.menuManager_.menus.length; i++) {
-      if (this.activeMenu_ === this.menuManager_.menus[i]) {
+      if (this.menuManager_.activeMenu === this.menuManager_.menus[i]) {
         activeIndex = i;
         break;
       }
@@ -883,8 +859,8 @@ export class Panel extends PanelInterface {
    * @private
    */
   advanceItemBy_(delta) {
-    if (this.activeMenu_) {
-      this.activeMenu_.advanceItemBy(delta);
+    if (this.menuManager_.activeMenu) {
+      this.menuManager_.activeMenu.advanceItemBy(delta);
     }
   }
 
@@ -897,7 +873,7 @@ export class Panel extends PanelInterface {
    * @private
    */
   onMouseUp_(event) {
-    if (!this.activeMenu_) {
+    if (!this.menuManager_.activeMenu) {
       return;
     }
 
@@ -912,8 +888,9 @@ export class Panel extends PanelInterface {
       target = target.parentElement;
     }
 
-    if (target && this.activeMenu_) {
-      this.pendingCallback_ = this.activeMenu_.getCallbackForElement(target);
+    if (target && this.menuManager_.activeMenu) {
+      this.pendingCallback_ =
+          this.menuManager_.activeMenu.getCallbackForElement(target);
     }
     this.closeMenusAndRestoreFocus();
   }
@@ -944,7 +921,7 @@ export class Panel extends PanelInterface {
       return;
     }
 
-    if (!this.activeMenu_) {
+    if (!this.menuManager_.activeMenu) {
       return;
     }
 
@@ -1043,8 +1020,8 @@ export class Panel extends PanelInterface {
    * @private
    */
   getCallbackForCurrentItem_() {
-    if (this.activeMenu_) {
-      return this.activeMenu_.getCallbackForCurrentItem();
+    if (this.menuManager_.activeMenu) {
+      return this.menuManager_.activeMenu.getCallbackForCurrentItem();
     }
     return null;
   }
@@ -1059,12 +1036,12 @@ export class Panel extends PanelInterface {
     await BackgroundBridge.PanelBackground.setPanelCollapseWatcher;
 
     // Make sure all menus are cleared to avoid bogus output when we re-open.
-    this.clearMenus_();
+    this.menuManager_.clearMenus();
 
     // Make sure we're not in full-screen mode.
     this.setMode_(PanelMode.COLLAPSED);
 
-    this.activeMenu_ = null;
+    this.menuManager_.activeMenu = null;
 
     await BackgroundBridge.PanelBackground.waitForPanelCollapse();
 
@@ -1327,15 +1304,6 @@ Panel.ACTION_TO_MSG_ID = {
   showContextMenu: 'show_context_menu',
   longClick: 'force_long_click_on_current_item',
 };
-
-/**
- * Shortcut for document.getElementById.
- * @param {string} id of the element.
- * @return {Element} with the id.
- */
-function $(id) {
-  return document.getElementById(id);
-}
 
 window.addEventListener('load', async () => await Panel.init(), false);
 

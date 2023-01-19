@@ -1622,7 +1622,7 @@ void WebContentsImpl::CancelActiveAndPendingDialogs() {
 
 void WebContentsImpl::ClosePage() {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::ClosePage");
-  GetRenderViewHost()->ClosePage();
+  GetPrimaryMainFrame()->ClosePage();
 }
 
 RenderWidgetHostView* WebContentsImpl::GetRenderWidgetHostView() {
@@ -2194,6 +2194,11 @@ void WebContentsImpl::SetHasPictureInPictureCommon(
   NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
   observers_.NotifyObservers(&WebContentsObserver::MediaPictureInPictureChanged,
                              has_picture_in_picture);
+  if (has_picture_in_picture) {
+    pip_capture_handle_ = IncrementCapturerCount({}, true, false);
+  } else {
+    pip_capture_handle_.RunAndReset();
+  }
 
   // Picture-in-picture state can affect how we notify visibility for non-
   // visible pages.
@@ -2454,11 +2459,12 @@ bool WebContentsImpl::NeedToFireBeforeUnloadOrUnloadEvents() {
   if (!notify_disconnection_)
     return false;
 
-  // Don't fire if the main frame's RenderViewHost indicates that beforeunload
-  // and unload have already executed (e.g., after receiving a ClosePage ACK)
-  // or should be ignored.
-  if (GetRenderViewHost()->SuddenTerminationAllowed())
+  // Don't fire if the main frame indicates that beforeunload and unload have
+  // already executed (e.g., after receiving a ClosePage ACK) or should be
+  // ignored.
+  if (GetPrimaryMainFrame()->IsPageReadyToBeClosed()) {
     return false;
+  }
 
   // Check whether any frame in the frame tree needs to run beforeunload or
   // unload-time event handlers.
@@ -3687,8 +3693,7 @@ PageVisibilityState WebContentsImpl::CalculatePageVisibilityState(
   if (visibility == Visibility::VISIBLE || visible_capturer_count_ > 0 ||
       web_contents_visible_in_vr) {
     return PageVisibilityState::kVisible;
-  } else if (hidden_capturer_count_ > 0 || has_picture_in_picture_video_ ||
-             has_picture_in_picture_document_) {
+  } else if (hidden_capturer_count_ > 0) {
     return PageVisibilityState::kHiddenButPainting;
   }
   return PageVisibilityState::kHidden;
@@ -5288,11 +5293,6 @@ const std::string& WebContentsImpl::GetContentsMimeType() {
 
 blink::RendererPreferences* WebContentsImpl::GetMutableRendererPrefs() {
   return &renderer_preferences_;
-}
-
-void WebContentsImpl::Close() {
-  OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::Close");
-  Close(GetRenderViewHost());
 }
 
 void WebContentsImpl::DragSourceEndedAt(float client_x,
@@ -7499,9 +7499,9 @@ void WebContentsImpl::ClearTargetURL() {
     delegate_->UpdateTargetURL(this, GURL());
 }
 
-void WebContentsImpl::Close(RenderViewHost* rvh) {
-  OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::Close", "render_view_host",
-                        rvh);
+void WebContentsImpl::Close() {
+  OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::Close",
+                        "render_frame_host", GetPrimaryMainFrame());
 #if BUILDFLAG(IS_MAC)
   // The UI may be in an event-tracking loop, such as between the
   // mouse-down and mouse-up in text selection or a button click.
@@ -7514,9 +7514,9 @@ void WebContentsImpl::Close(RenderViewHost* rvh) {
     return;
 #endif
 
-  // Ignore this if it comes from a RenderViewHost that we aren't showing.
-  if (delegate_ && rvh == GetRenderViewHost())
+  if (delegate_) {
     delegate_->CloseContents(this);
+  }
 }
 
 void WebContentsImpl::SetWindowRect(const gfx::Rect& new_bounds) {

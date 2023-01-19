@@ -303,8 +303,8 @@ static_library("backend_cdp_bindings") {
 # Code that is not needed in a renderer process.
 component("headless_non_renderer") {
   sources = [
-    "app/headless_shell_switches.cc",
-    "app/headless_shell_switches.h",
+    "lib/browser/command_line_handler.cc",
+    "lib/browser/command_line_handler.h",
     "lib/browser/directory_enumerator.cc",
     "lib/browser/directory_enumerator.h",
     "lib/browser/headless_browser_context_impl.cc",
@@ -351,9 +351,9 @@ component("headless_non_renderer") {
     "lib/headless_content_main_delegate.h",
     "lib/renderer/headless_content_renderer_client.cc",
     "lib/renderer/headless_content_renderer_client.h",
+    "lib/switches.cc",
     "lib/utility/headless_content_utility_client.cc",
     "lib/utility/headless_content_utility_client.h",
-    "public/headless_browser.cc",
     "public/headless_browser.h",
     "public/headless_browser_context.h",
     "public/headless_devtools_channel.h",
@@ -363,6 +363,7 @@ component("headless_non_renderer") {
     "public/headless_web_contents.h",
     "public/internal/message_dispatcher.h",
     "public/internal/value_conversions.h",
+    "public/switches.h",
     "public/util/error_reporter.cc",
     "public/util/error_reporter.h",
     "public/util/user_agent.cc",
@@ -721,10 +722,7 @@ test("headless_browsertests") {
   }
 
   if (headless_use_policy) {
-    sources += [
-      "test/headless_policy_browsertest.cc",
-      "test/headless_policy_browsertest.h",
-    ]
+    sources += [ "test/headless_policy_browsertest.cc" ]
   }
 
   if (headless_enable_commands) {
@@ -835,9 +833,6 @@ if (is_win) {
   static_library("headless_shell_browser_lib") {
     sources = [
       "app/headless_shell.cc",
-      "app/headless_shell_command_line.cc",
-      "app/headless_shell_command_line.h",
-      "app/headless_shell_switches.h",
       "public/headless_shell.h",
     ]
     deps = [
@@ -874,9 +869,6 @@ if (is_win) {
 static_library("headless_shell_lib") {
   sources = [
     "app/headless_shell.cc",
-    "app/headless_shell_command_line.cc",
-    "app/headless_shell_command_line.h",
-    "app/headless_shell_switches.h",
     "public/headless_shell.h",
   ]
   defines = []

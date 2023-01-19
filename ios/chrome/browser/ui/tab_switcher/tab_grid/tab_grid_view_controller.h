@@ -132,9 +132,12 @@ enum class TabGridPageConfiguration {
     regularTabsDragDropHandler;
 @property(nonatomic, weak) id<TabCollectionDragDropHandler>
     incognitoTabsDragDropHandler;
+@property(nonatomic, weak) id<TabCollectionDragDropHandler>
+    pinnedTabsDragDropHandler;
 
 // Data sources provide lazy access to heavy-weight resources.
 @property(nonatomic, weak) id<GridImageDataSource> regularTabsImageDataSource;
+@property(nonatomic, weak) id<GridImageDataSource> pinnedTabsImageDataSource;
 @property(nonatomic, weak) id<GridImageDataSource> incognitoTabsImageDataSource;
 
 // Data source for acquiring data which power the PriceCardView
@@ -198,9 +201,6 @@ enum class TabGridPageConfiguration {
 // Sets both the current page and page control's selected page to `page`.
 // Animation is used if `animated` is YES.
 - (void)setCurrentPageAndPageControl:(TabGridPage)page animated:(BOOL)animated;
-
-// YES if it is possible to undo the close all conditions.
-@property(nonatomic, assign) BOOL undoCloseAllAvailable;
 
 @end
 

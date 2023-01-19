@@ -608,6 +608,7 @@
 <translation id="430191667033048642">Η εφαρμογή <ph name="MOVED_APP_NAME" /> μεταφέρθηκε στον φάκελο <ph name="FOLDER_NAME" />.</translation>
 <translation id="4302592941791324970">Μη διαθέσιμη</translation>
 <translation id="4303223480529385476">Ανάπτυξη περιοχής κατάστασης</translation>
+<translation id="4311195029067684288">Πλήρης</translation>
 <translation id="4312840429157639164">Η προεπισκόπηση κάμερας τοποθετήθηκε στην επάνω δεξιά γωνία. Διένεξη με επιφάνεια συστήματος.</translation>
 <translation id="4316910396681052118">ΟΛΕΣ ΟΙ ΕΦΑΡΜΟΓΕΣ</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -638,6 +639,7 @@
 <translation id="4455051983450390249">Δείτε τις ειδοποιήσεις του τηλεφώνου σας στη συσκευή <ph name="DEVICE_TYPE" /></translation>
 <translation id="445864333228800152">Καλησπέρα,</translation>
 <translation id="4458688154122353284">Διακοπή εγγραφής οθόνης</translation>
+<translation id="445923051607553918">Σύνδεση με δίκτυο Wi-Fi</translation>
 <translation id="4471354919263203780">Πραγματοποιείται λήψη των αρχείων αναγνώρισης ομιλίας… <ph name="PERCENT" />%</translation>
 <translation id="4471432286288241507">{0,plural, =0{Ενημέρωση συσκευής τώρα}=1{Ενημέρωση συσκευής εντός 1 δευτερολέπτου}other{Ενημέρωση συσκευής εντός # δευτερολέπτων}}</translation>
 <translation id="4472575034687746823">Έναρξη</translation>

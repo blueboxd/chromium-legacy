@@ -74,10 +74,9 @@ class StyleResolverTest : public PageTestBase {
   }
 };
 
-class StyleResolverTestCQ : public StyleResolverTest,
-                            public ScopedLayoutNGForTest {
+class StyleResolverTestCQ : public StyleResolverTest {
  protected:
-  StyleResolverTestCQ() : ScopedLayoutNGForTest(true) {}
+  StyleResolverTestCQ() = default;
 };
 
 TEST_F(StyleResolverTest, StyleForTextInDisplayNone) {
@@ -572,6 +571,7 @@ TEST_F(StyleResolverTest, NoFetchForHighlightPseudoElements) {
   StyleRequest pseudo_style_request;
   pseudo_style_request.parent_override = element_style;
   pseudo_style_request.layout_parent_override = element_style;
+  pseudo_style_request.originating_element_style = element_style;
 
   StyleRequest target_text_style_request = pseudo_style_request;
   target_text_style_request.pseudo_id = kPseudoIdTargetText;
@@ -591,13 +591,15 @@ TEST_F(StyleResolverTest, NoFetchForHighlightPseudoElements) {
           selection_style_style_request);
   ASSERT_TRUE(selection_style);
 
+  // Check that the cursor does not apply to ::selection.
+  ASSERT_FALSE(selection_style->Cursors());
+
+  // Check that the cursor does not apply to ::target-text.
+  ASSERT_FALSE(target_text_style->Cursors());
+
   // Check that we don't fetch the cursor url() for ::target-text.
   CursorList* cursor_list = target_text_style->Cursors();
-  ASSERT_TRUE(cursor_list->size());
-  CursorData& current_cursor = cursor_list->at(0);
-  StyleImage* image = current_cursor.GetImage();
-  ASSERT_TRUE(image);
-  EXPECT_TRUE(image->IsPendingImage());
+  ASSERT_FALSE(cursor_list);
 
   for (const auto* pseudo_style :
        {target_text_style.get(), selection_style.get()}) {
@@ -1218,6 +1220,7 @@ TEST_F(StyleResolverTest, TextShadowInHighlightPseudoNotCounted1) {
   StyleRequest pseudo_style_request;
   pseudo_style_request.parent_override = element_style;
   pseudo_style_request.layout_parent_override = element_style;
+  pseudo_style_request.originating_element_style = element_style;
   pseudo_style_request.pseudo_id = kPseudoIdSelection;
   scoped_refptr<ComputedStyle> selection_style =
       GetDocument().GetStyleResolver().ResolveStyle(
@@ -1258,6 +1261,7 @@ TEST_F(StyleResolverTest, TextShadowInHighlightPseudoNotCounted2) {
   StyleRequest pseudo_style_request;
   pseudo_style_request.parent_override = element_style;
   pseudo_style_request.layout_parent_override = element_style;
+  pseudo_style_request.originating_element_style = element_style;
   pseudo_style_request.pseudo_id = kPseudoIdSelection;
   scoped_refptr<ComputedStyle> selection_style =
       GetDocument().GetStyleResolver().ResolveStyle(
@@ -1297,6 +1301,7 @@ TEST_F(StyleResolverTest, TextShadowInHighlightPseudotNone) {
   StyleRequest pseudo_style_request;
   pseudo_style_request.parent_override = element_style;
   pseudo_style_request.layout_parent_override = element_style;
+  pseudo_style_request.originating_element_style = element_style;
   pseudo_style_request.pseudo_id = kPseudoIdSelection;
   scoped_refptr<ComputedStyle> selection_style =
       GetDocument().GetStyleResolver().ResolveStyle(
@@ -1333,6 +1338,7 @@ TEST_F(StyleResolverTest, TextShadowInHighlightPseudoNotNone1) {
   StyleRequest pseudo_style_request;
   pseudo_style_request.parent_override = element_style;
   pseudo_style_request.layout_parent_override = element_style;
+  pseudo_style_request.originating_element_style = element_style;
   pseudo_style_request.pseudo_id = kPseudoIdSelection;
   scoped_refptr<ComputedStyle> selection_style =
       GetDocument().GetStyleResolver().ResolveStyle(
@@ -1372,6 +1378,7 @@ TEST_F(StyleResolverTest, TextShadowInHighlightPseudoNotNone2) {
   StyleRequest pseudo_style_request;
   pseudo_style_request.parent_override = element_style;
   pseudo_style_request.layout_parent_override = element_style;
+  pseudo_style_request.originating_element_style = element_style;
   pseudo_style_request.pseudo_id = kPseudoIdSelection;
   scoped_refptr<ComputedStyle> selection_style =
       GetDocument().GetStyleResolver().ResolveStyle(

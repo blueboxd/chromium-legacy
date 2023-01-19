@@ -279,7 +279,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.Clients.Ads.AllPages.PercentNetworkBytesAds"
-    units="%" expires_after="2022-10-09">
+    units="%" expires_after="2024-01-17">
   <owner>alexmt@chromium.org</owner>
   <owner>johnidel@chromium.org</owner>
   <summary>
@@ -733,7 +733,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.FencedFrames.PaintTiming.NavigationToFirstContentfulPaint"
-    units="ms" expires_after="2023-05-14">
+    units="ms" expires_after="2023-07-16">
   <owner>toyoshim@chromium.org</owner>
   <owner>mparch-dev@chromium.org</owner>
   <summary>
@@ -771,7 +771,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.FencedFrames.PaintTiming.NavigationToLargestContentfulPaint2"
-    units="ms" expires_after="2023-05-14">
+    units="ms" expires_after="2023-07-16">
   <owner>toyoshim@chromium.org</owner>
   <owner>mparch-dev@chromium.org</owner>
   <summary>
@@ -992,6 +992,21 @@ chromium-metrics-reviews@google.com.
     start of activation navigation. This corresponds to the activationStart
     attribute of PerformanceNavigationTiming. Recorded when a prerendered page
     is activated.
+  </summary>
+<!-- PrerenderTriggerType variant is defined in
+  tools/metrics/histograms/metadata/navigation/histograms.xml.
+-->
+
+  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+</histogram>
+
+<histogram
+    name="PageLoad.Clients.Prerender.PageEndReason{PrerenderTriggerType}"
+    enum="PageEndReason" expires_after="2023-04-27">
+  <owner>asamidoi@chromium.org</owner>
+  <owner>src/content/browser/preloading/prerender/OWNERS</owner>
+  <summary>
+    The reason how the page load ended on the prerender's activation.
   </summary>
 <!-- PrerenderTriggerType variant is defined in
   tools/metrics/histograms/metadata/navigation/histograms.xml.
@@ -2301,39 +2316,29 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="PageLoad.Internal.NavigationStartedInForeground"
-    enum="BooleanForeground" expires_after="2021-10-10">
-  <owner>bmcquade@chromium.org</owner>
-  <summary>Whether a navigation started in the foreground.</summary>
-</histogram>
-
-<histogram name="PageLoad.Internal.PageLoadCompleted.AfterAppBackground"
-    enum="BooleanStartedCompleted" expires_after="M81">
-  <owner>bmcquade@chromium.org</owner>
+<histogram name="PageLoad.Internal.PageLoadTimingStatus{Condition}"
+    enum="PageLoadTimingStatus" expires_after="2023-07-13">
+  <owner>toyoshim@chromium.org</owner>
+  <owner>src/components/page_load_metrics/OWNERS</owner>
+  <owner>src/content/browser/preloading/prerender/OWNERS</owner>
   <summary>
-    Whether a page load completed after the app entered the background. We log a
-    'Started' value for each PageLoadTracker that is active when the app enters
-    the background, and a 'Completed' value for each of those PageLoadTrackers
-    that successfully runs its destructor. This helps to understand how many
-    trackers are destroyed while the app is in the background before they are
-    able to run their destructor. This metric is only intended to help in
-    understanding how often app background leads to data loss, and will be
-    deprecated in a subsequent release. Please contact bmcquade@chromium.org
-    before using this metric.
+    The status of validity check of PageLoadTiming structs received from the
+    render process over IPC. Recorded when timing information is {Condition}.
+    Warning: this histogram was expired from 2021-01-31 to 2023-01-13; data may
+    be missing.
   </summary>
-</histogram>
-
-<histogram name="PageLoad.Internal.PageLoadTimingStatus"
-    enum="PageLoadTimingStatus" expires_after="2021-01-31">
-  <owner>bmcquade@chromium.org</owner>
-  <summary>
-    The status of PageLoadTiming structs received from the render process over
-    IPC.
-  </summary>
+  <token key="Condition">
+    <variant name="" summary="received on any page load"/>
+    <variant name=".AtTimingCallbackDispatch"
+        summary="dispatched on any page load"/>
+    <variant name=".OnFencedFramesPage"
+        summary="received on fenced frames pages"/>
+    <variant name=".OnPrerenderPage" summary="received on prerender pages"/>
+  </token>
 </histogram>
 
 <histogram name="PageLoad.Internal.PageType" enum="PageLoadTrackerPageType"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>toyoshim@chromium.org</owner>
   <owner>mparch-dev@chromium.org</owner>
   <summary>
@@ -2381,7 +2386,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.Internal.Prerender2.Event"
-    enum="PageLoadPrerenderEvent" expires_after="2023-05-14">
+    enum="PageLoadPrerenderEvent" expires_after="2023-07-16">
   <owner>asamidoi@chromium.org</owner>
   <owner>src/content/browser/preloading/prerender/OWNERS</owner>
   <summary>
@@ -2677,7 +2682,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.PageTiming.NavigationToFirstForeground" units="ms"
-    expires_after="2023-05-07">
+    expires_after="2023-07-16">
   <owner>bmcquade@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>
   <summary>

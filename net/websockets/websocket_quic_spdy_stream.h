@@ -7,7 +7,6 @@
 
 #include "net/quic/quic_chromium_client_stream.h"
 #include "net/third_party/quiche/src/quiche/quic/core/http/quic_spdy_client_session_base.h"
-#include "net/third_party/quiche/src/quiche/quic/core/http/quic_spdy_stream.h"
 
 namespace net {
 class NET_EXPORT_PRIVATE WebSocketQuicSpdyStream : public quic::QuicSpdyStream {
@@ -17,6 +16,10 @@ class NET_EXPORT_PRIVATE WebSocketQuicSpdyStream : public quic::QuicSpdyStream {
     Delegate() = default;
     Delegate(const Delegate&) = delete;
     Delegate& operator=(const Delegate&) = delete;
+    virtual void OnInitialHeadersComplete(
+        bool fin,
+        size_t frame_len,
+        const quic::QuicHeaderList& header_list) = 0;
     virtual void OnBodyAvailable() = 0;
     virtual void ClearStream() = 0;
 
@@ -33,6 +36,10 @@ class NET_EXPORT_PRIVATE WebSocketQuicSpdyStream : public quic::QuicSpdyStream {
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
+  void OnInitialHeadersComplete(
+      bool fin,
+      size_t frame_len,
+      const quic::QuicHeaderList& header_list) override;
   void OnBodyAvailable() override;
 
  private:

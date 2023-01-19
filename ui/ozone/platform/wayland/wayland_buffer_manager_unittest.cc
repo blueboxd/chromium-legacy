@@ -133,9 +133,6 @@ class WaylandBufferManagerTest : public WaylandTest {
     buffer_manager_gpu_->Initialize(std::move(interface_ptr), {}, false, true,
                                     false,
                                     kAugmentedSurfaceNotSupportedVersion);
-
-    window_->set_update_visual_size_immediately_for_testing(false);
-    window_->set_apply_pending_state_on_update_visual_size_for_testing(false);
     surface_id_ = window_->root_surface()->get_surface_id();
   }
 
@@ -480,7 +477,7 @@ TEST_P(WaylandBufferManagerTest, CreateAndDestroyBuffer) {
     CommitBuffer(widget, kBufferId1, kBufferId1,
                  gfx::FrameData(delegate_.viz_seq()),
                  window_->GetBoundsInPixels(), gfx::RoundedCornersF(),
-                 kDefaultScale, gfx::Rect(window_->size_px()));
+                 kDefaultScale, gfx::Rect(window_->applied_state().size_px));
 
     CreateDmabufBasedBufferAndSetTerminateExpectation(true /*fail*/,
                                                       kBufferId1);
@@ -507,7 +504,7 @@ TEST_P(WaylandBufferManagerTest, CreateAndDestroyBuffer) {
     CommitBuffer(widget, kBufferId1, kBufferId1,
                  gfx::FrameData(delegate_.viz_seq()),
                  window_->GetBoundsInPixels(), gfx::RoundedCornersF(),
-                 kDefaultScale, gfx::Rect(window_->size_px()));
+                 kDefaultScale, gfx::Rect(window_->applied_state().size_px));
 
     DestroyBufferAndSetTerminateExpectation(kBufferId1, false /*fail*/);
   }
@@ -536,7 +533,7 @@ TEST_P(WaylandBufferManagerTest, CreateAndDestroyBuffer) {
     CommitBuffer(widget, kBufferId1, kBufferId1,
                  gfx::FrameData(delegate_.viz_seq()),
                  window_->GetBoundsInPixels(), gfx::RoundedCornersF(),
-                 kDefaultScale, gfx::Rect(window_->size_px()));
+                 kDefaultScale, gfx::Rect(window_->applied_state().size_px));
 
     // Created non-attached buffer as well.
     CreateDmabufBasedBufferAndSetTerminateExpectation(false /*fail*/,
@@ -580,7 +577,7 @@ TEST_P(WaylandBufferManagerTest, CommitBufferNonExistingBufferId) {
   CommitBuffer(window_->GetWidget(), 1u, 5u,
                gfx::FrameData(delegate_.viz_seq()),
                window_->GetBoundsInPixels(), gfx::RoundedCornersF(),
-               kDefaultScale, gfx::Rect(window_->size_px()));
+               kDefaultScale, gfx::Rect(window_->applied_state().size_px));
 
   // Let the mojo call to go through.
   base::RunLoop().RunUntilIdle();
@@ -669,7 +666,7 @@ TEST_P(WaylandBufferManagerTest, CommitBufferNullWidget) {
   CommitBuffer(gfx::kNullAcceleratedWidget, 1u, kBufferId,
                gfx::FrameData(delegate_.viz_seq()),
                window_->GetBoundsInPixels(), gfx::RoundedCornersF(),
-               kDefaultScale, gfx::Rect(window_->size_px()));
+               kDefaultScale, gfx::Rect(window_->applied_state().size_px));
 
   // Let the mojo call to go through.
   base::RunLoop().RunUntilIdle();
@@ -1254,7 +1251,7 @@ TEST_P(WaylandBufferManagerTest, TestCommitBufferConditions) {
   CommitBuffer(widget, kDmabufBufferId, kDmabufBufferId,
                gfx::FrameData(delegate_.viz_seq()),
                window_->GetBoundsInPixels(), gfx::RoundedCornersF(),
-               kDefaultScale, gfx::Rect(window_->size_px()));
+               kDefaultScale, gfx::Rect(window_->applied_state().size_px));
 
   PostToServerAndWait([id = surface_id_](wl::TestWaylandServerThread* server) {
     auto* mock_surface = server->GetObject<wl::MockSurface>(id);
@@ -1296,7 +1293,7 @@ TEST_P(WaylandBufferManagerTest, TestCommitBufferConditions) {
   CommitBuffer(widget, kDmabufBufferId2, kDmabufBufferId2,
                gfx::FrameData(delegate_.viz_seq()),
                window_->GetBoundsInPixels(), gfx::RoundedCornersF(),
-               kDefaultScale, gfx::Rect(window_->size_px()));
+               kDefaultScale, gfx::Rect(window_->applied_state().size_px));
 
   PostToServerAndWait([id = surface_id_](wl::TestWaylandServerThread* server) {
     auto* mock_surface = server->GetObject<wl::MockSurface>(id);
@@ -1430,13 +1427,7 @@ TEST_P(WaylandBufferManagerTest,
   // order to force WaylandWindow::ProcessPendingBoundsDip() to defer the very
   // first configure ack to be done in the subsequent UpdateVisualSize() call.
   window->SetRestoredBoundsInDIP(kRestoredBounds);
-
-  // Disable auto immediate visual size update (when, for example, calling into
-  // WaylandWindow::SetBoundsInPixels) so that we can emulate deferred call to
-  // WaylandToplevelWindow::UpdateVisualSize() with mismatching parameters, when
-  // processing initial frame sent by the GPU.
-  window->set_update_visual_size_immediately_for_testing(false);
-  window->set_apply_pending_state_on_update_visual_size_for_testing(false);
+  wl::SyncDisplay(connection_->display_wrapper(), *connection_->display());
 
   gfx::Insets insets;
   window->SetDecorationInsets(&insets);

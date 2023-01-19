@@ -1904,15 +1904,6 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
       Jika kebijakan disetel ke Nonaktif, pengaktifan daya baterai akan tetap nonaktif.
 
       Jika tidak disetel, pengaktifan daya baterai akan nonaktif terlebih dahulu. Pengguna tidak dapat mengubah setelan ini.</translation>
-<translation id="2773036462435523078">Memicu tindakan saat komputer sedang tidak ada aktivitas.
-
-      Jika disetel, kebijakan ini akan menentukan durasi waktu tanpa input pengguna (dalam menit) sebelum <ph name="PRODUCT_NAME" /> menjalankan tindakan yang dikonfigurasi melalui kebijakan <ph name="IDLE_TIMEOUT_ACTIONS_POLICY_NAME" />.
-
-      Jika kebijakan ini tidak disetel, tidak ada tindakan yang akan dijalankan.
-
-      Batas minimum adalah 5 menit.
-
-      "Input pengguna" ditentukan oleh Operating System API, dan menyertakan hal-hal seperti menggerakkan mouse atau mengetik di keyboard.</translation>
 <translation id="2773288106548584039">Dukungan Browser Lama</translation>
 <translation id="2780840673734667062">Nonaktifkan login dengan Akun Google tambahan</translation>
 <translation id="2784880732336446591">Menghapus Data Penjelajahan saat Keluar</translation>
@@ -8293,21 +8284,6 @@ VM tersebut. Beberapa VM dapat diinstal dari konfigurasi yang sama di perangkat 
 <translation id="8882307005437314052">Aktifkan keyboard virtual di layar login dan izinkan pengguna menonaktifkannya untuk sementara</translation>
 <translation id="8883577480680089760">Nonaktifkan Layanan <ph name="PRODUCT_NAME" /> V2 dan jangan luncurkan desktop jarak jauh saat login</translation>
 <translation id="8887709920496070892">Durasi waktu tanpa input pengguna sebelum dialog peringatan ditampilkan, dalam milidetik.</translation>
-<translation id="8887847586787956456">Daftar tindakan yang akan dijalankan saat waktu tunggu dari kebijakan <ph name="IDLE_TIMEOUT_POLICY_NAME" /> tercapai.
-
-      Jika kebijakan <ph name="IDLE_TIMEOUT_POLICY_NAME" /> tidak disetel, kebijakan ini tidak akan berpengaruh.
-
-      Saat waktu tunggu dari kebijakan <ph name="IDLE_TIMEOUT_POLICY_NAME" /> tercapai, <ph name="PRODUCT_NAME" /> akan menjalankan tindakan yang dikonfigurasi di kebijakan ini.
-
-      Jika kebijakan ini disetel ke kosong atau tidak disetel, kebijakan <ph name="IDLE_TIMEOUT_POLICY_NAME" /> tidak akan berpengaruh.
-
-      Tindakan yang didukung adalah:
-
-      '<ph name="CLOSE_BROWSERS_ACTION" />': menutup semua jendela browser dan PWA untuk profil ini.
-
-      '<ph name="SHOW_PROFILE_PICKER_ACTION" />': menampilkan jendela Pemilih Profil.
-
-      '<ph name="CLEAR_BROWSING_HISTORY_ACTION" />', '<ph name="CLEAR_DOWNLOAD_HISTORY_ACTION" />', '<ph name="CLEAR_COOKIES_AND_OTHER_SITE_DATA_ACTION" />', '<ph name="CLEAR_CACHED_IMAGES_AND_FILES_ACTION" />', '<ph name="CLEAR_PASSWORD_SIGNIN_ACTION" />', '<ph name="CLEAR_AUTOFILL_ACTION" />', '<ph name="CLEAR_SITE_SETTINGS_ACTION" />', '<ph name="CLEAR_HOSTED_APP_DATA_ACTION" />': menghapus data penjelajahan yang sesuai. Lihat kebijakan <ph name="CLEAR_BROWSING_DATA_ON_EXIT_LIST_POLICY_NAME" /> untuk detail selengkapnya.</translation>
 <translation id="8890438048579188548">Sembunyikan peringatan <ph name="CLOUD_PRINT_NAME" /> tidak digunakan lagi</translation>
 <translation id="8891334958985336685">Nonaktifkan pelaporan info sistem perangkat</translation>
 <translation id="8892286064305622118">Perlu ruang disk kosong untuk <ph name="PLUGIN_VM_NAME" /></translation>

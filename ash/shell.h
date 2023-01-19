@@ -158,7 +158,7 @@ class LockStateController;
 class LogoutConfirmationController;
 class LoginScreenController;
 class LoginUnlockThroughputRecorder;
-class MediaNotificationProviderImpl;
+class MediaNotificationProvider;
 class TabClusterUIController;
 class TabletModeController;
 class MediaControllerImpl;
@@ -245,7 +245,7 @@ class DiagnosticsLogController;
 }  // namespace diagnostics
 
 namespace federated {
-class FederatedServiceController;
+class FederatedServiceControllerImpl;
 }  // namespace federated
 
 namespace quick_pair {
@@ -481,7 +481,7 @@ class ASH_EXPORT Shell : public SessionObserver,
     return event_transformation_handler_.get();
   }
 
-  federated::FederatedServiceController* federated_service_controller() {
+  federated::FederatedServiceControllerImpl* federated_service_controller() {
     return federated_service_controller_.get();
   }
 
@@ -550,7 +550,7 @@ class ASH_EXPORT Shell : public SessionObserver,
     return logout_confirmation_controller_.get();
   }
   MediaControllerImpl* media_controller() { return media_controller_.get(); }
-  MediaNotificationProviderImpl* media_notification_provider() {
+  MediaNotificationProvider* media_notification_provider() {
     return media_notification_provider_.get();
   }
   MessageCenterAshImpl* message_center_ash_impl() {
@@ -917,7 +917,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<TabletModeController> tablet_mode_controller_;
   std::unique_ptr<MessageCenterAshImpl> message_center_ash_impl_;
   std::unique_ptr<MediaControllerImpl> media_controller_;
-  std::unique_ptr<MediaNotificationProviderImpl> media_notification_provider_;
+  std::unique_ptr<MediaNotificationProvider> media_notification_provider_;
   std::unique_ptr<MicrophonePrivacySwitchController>
       microphone_privacy_switch_controller_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
@@ -1100,7 +1100,7 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   std::unique_ptr<MultiCaptureServiceClient> multi_capture_service_client_;
 
-  std::unique_ptr<federated::FederatedServiceController>
+  std::unique_ptr<federated::FederatedServiceControllerImpl>
       federated_service_controller_;
 
   std::unique_ptr<quick_pair::Mediator> quick_pair_mediator_;

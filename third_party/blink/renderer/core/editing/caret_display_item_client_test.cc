@@ -421,10 +421,6 @@ TEST_P(CaretDisplayItemClientTest, CompositingChange) {
 }
 
 TEST_P(CaretDisplayItemClientTest, PlainTextRTLCaretPosition) {
-  // LayoutNG-only test
-  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
-    return;
-
   LoadNoto();
   SetBodyInnerHTML(
       "<style>"
@@ -565,12 +561,9 @@ TEST_P(CaretDisplayItemClientTest, CaretAtStartInWhiteSpacePreWrapRTL) {
   EXPECT_EQ(94, rect.X());
 }
 
-class ParameterizedComputeCaretRectTest
-    : public EditingTestBase,
-      private ScopedLayoutNGForTest,
-      public testing::WithParamInterface<bool> {
+class ComputeCaretRectTest : public EditingTestBase {
  public:
-  ParameterizedComputeCaretRectTest() : ScopedLayoutNGForTest(GetParam()) {}
+  ComputeCaretRectTest() = default;
 
  protected:
   PhysicalRect ComputeCaretRect(const PositionWithAffinity& position) const {
@@ -614,11 +607,7 @@ TEST_P(CaretDisplayItemClientTest, FullDocumentPaintingWithCaret) {
                                    DisplayItem::kCaret)));
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         ParameterizedComputeCaretRectTest,
-                         testing::Bool());
-
-TEST_P(ParameterizedComputeCaretRectTest, CaretRectAfterEllipsisNoCrash) {
+TEST_F(ComputeCaretRectTest, CaretRectAfterEllipsisNoCrash) {
   SetBodyInnerHTML(
       "<style>pre{width:30px; overflow:hidden; text-overflow:ellipsis}</style>"
       "<pre id=target>long long long long long long text</pre>");
@@ -628,7 +617,7 @@ TEST_P(ParameterizedComputeCaretRectTest, CaretRectAfterEllipsisNoCrash) {
   ComputeCaretRect(PositionWithAffinity(position));
 }
 
-TEST_P(ParameterizedComputeCaretRectTest, CaretRectAvoidNonEditable) {
+TEST_F(ComputeCaretRectTest, CaretRectAvoidNonEditable) {
   LoadAhem();
   InsertStyleElement(
       "body { margin: 0; padding: 0; font: 10px/10px Ahem; }"
@@ -645,15 +634,7 @@ TEST_P(ParameterizedComputeCaretRectTest, CaretRectAvoidNonEditable) {
   const PositionWithAffinity& caret_position2 =
       HitTestResultAtLocation(60, 5).GetPosition();
   const PhysicalRect& rect2 = ComputeCaretRect(caret_position2);
-  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
-    EXPECT_EQ(PhysicalRect(69, 0, 1, 10), rect2);
-  } else {
-    // TODO(jfernandez): It should be 89, but LayoutBox::LocalCaretRect is buggy
-    // and it adds the padding-left twice.
-    // TODO(jfernandez): As a matter of fact, 69 would be better result IMHO,
-    // positioning the caret at the end of the non-editable area.
-    EXPECT_EQ(PhysicalRect(99, 0, 1, 10), rect2);
-  }
+  EXPECT_EQ(PhysicalRect(69, 0, 1, 10), rect2);
 }
 
 }  // namespace blink

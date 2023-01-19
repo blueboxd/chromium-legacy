@@ -23,6 +23,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_output.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
+#include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
 #include "ui/ozone/platform/wayland/host/wayland_zaura_shell.h"
 
 namespace ui {
@@ -39,7 +40,8 @@ WaylandPopup::~WaylandPopup() = default;
 bool WaylandPopup::CreateShellPopup() {
   DCHECK(parent_window() && !shell_popup_);
 
-  if (window_scale() != parent_window()->window_scale()) {
+  if (applied_state().window_scale !=
+      parent_window()->applied_state().window_scale) {
     // If scale changed while this was hidden (when WaylandPopup hides, parent
     // window's child is reset), update buffer scale accordingly.
     UpdateWindowScale(true);
@@ -133,6 +135,10 @@ void WaylandPopup::Hide() {
   if (child_window())
     child_window()->Hide();
   WaylandWindow::Hide();
+  // Mutter compositor crashes if we don't reset subsurfaces when hiding.
+  if (WaylandWindow::primary_subsurface()) {
+    WaylandWindow::primary_subsurface()->ResetSubsurface();
+  }
 
   if (IsSupportedOnAuraSurface(ZAURA_SURFACE_RELEASE_SINCE_VERSION))
     SetAuraSurface(nullptr);
@@ -156,7 +162,7 @@ void WaylandPopup::SetBoundsInDIP(const gfx::Rect& bounds_dip) {
 
   // The shell popup can be null if bounds are being fixed during
   // the initialization. See WaylandPopup::CreateShellPopup.
-  if (shell_popup_ && old_bounds_dip != bounds_dip && !wayland_sets_bounds_) {
+  if (shell_popup_ && old_bounds_dip != bounds_dip) {
     const auto bounds_dip_in_parent =
         wl::TranslateWindowBoundsToParentDIP(this, parent_window());
 
@@ -195,32 +201,23 @@ void WaylandPopup::HandlePopupConfigure(const gfx::Rect& bounds_dip) {
 
 void WaylandPopup::HandleSurfaceConfigure(uint32_t serial) {
   if (schedule_redraw_) {
-    delegate()->OnDamageRect(gfx::Rect{size_px()});
+    delegate()->OnDamageRect(gfx::Rect{applied_state().size_px});
     schedule_redraw_ = false;
   }
-  ProcessPendingBoundsDip(serial);
+  ProcessPendingConfigureState(serial);
 }
 
-void WaylandPopup::UpdateVisualSize(const gfx::Size& size_px) {
-  WaylandWindow::UpdateVisualSize(size_px);
-
+void WaylandPopup::OnSequencePoint(int64_t seq) {
   if (!shell_popup())
     return;
 
-  ProcessVisualSizeUpdate(size_px);
-  ApplyPendingBounds();
-}
-
-void WaylandPopup::ApplyPendingBounds() {
-  if (has_pending_configures()) {
-    base::AutoReset<bool> auto_reset(&wayland_sets_bounds_, true);
-    WaylandWindow::ApplyPendingBounds();
-  }
+  ProcessSequencePoint(seq);
+  MaybeApplyLatestStateRequest(/*force=*/false);
 }
 
 void WaylandPopup::UpdateWindowMask() {
   // Popup doesn't have a shape. Update the opaqueness.
-  std::vector<gfx::Rect> region{gfx::Rect{visual_size_px()}};
+  std::vector<gfx::Rect> region{gfx::Rect{latched_state().size_px}};
   root_surface()->set_opaque_region(IsOpaqueWindow() ? &region : nullptr);
 }
 
@@ -291,9 +288,12 @@ void WaylandPopup::OnCloseRequest() {
   WaylandWindow::OnCloseRequest();
 }
 
-bool WaylandPopup::OnInitialize(PlatformWindowInitProperties properties) {
+bool WaylandPopup::OnInitialize(PlatformWindowInitProperties properties,
+                                State* state) {
   DCHECK(parent_window());
-  SetWindowScale(parent_window()->window_scale());
+  state->window_scale = parent_window()->applied_state().window_scale;
+  state->size_px =
+      gfx::ScaleToEnclosingRect(state->bounds_dip, state->window_scale).size();
   set_ui_scale(parent_window()->ui_scale());
   shadow_type_ = properties.shadow_type;
   return true;
@@ -308,12 +308,16 @@ bool WaylandPopup::IsSurfaceConfigured() {
 }
 
 void WaylandPopup::SetWindowGeometry(gfx::Size size_dip) {
-  DCHECK(shell_popup_);
+  if (!shell_popup_) {
+    return;
+  }
+
   const auto insets = GetDecorationInsetsInDIP();
   shell_popup_->SetWindowGeometry({{insets.left(), insets.top()}, size_dip});
 }
 
 void WaylandPopup::AckConfigure(uint32_t serial) {
-  shell_popup()->AckConfigure(serial);
+  DCHECK(shell_popup_);
+  shell_popup_->AckConfigure(serial);
 }
 }  // namespace ui

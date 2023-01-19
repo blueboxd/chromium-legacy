@@ -63,9 +63,7 @@ enum class PageLoadTrackerPageType {
 };
 
 extern const char kErrorEvents[];
-extern const char kPageLoadCompletedAfterAppBackground[];
 extern const char kPageLoadPrerender2Event[];
-extern const char kPageLoadStartedInForeground[];
 extern const char kPageLoadTrackerPageType[];
 
 }  // namespace internal
@@ -464,10 +462,6 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // metrics in DidFinishNavigation.
   bool did_stop_tracking_;
 
-  // Whether the application went into the background when this PageLoadTracker
-  // was active. This is a temporary boolean for UMA tracking.
-  bool app_entered_background_;
-
   // The navigation start in TimeTicks, not the wall time reported by Blink.
   const base::TimeTicks navigation_start_;
 
@@ -554,6 +548,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       experimental_largest_contentful_paint_handler_;
 
   uint32_t soft_navigation_count_ = 0;
+
+  const internal::PageLoadTrackerPageType page_type_;
 
   const base::WeakPtr<PageLoadTracker> parent_tracker_;
 

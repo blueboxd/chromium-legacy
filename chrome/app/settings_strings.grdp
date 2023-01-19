@@ -453,8 +453,20 @@
   <message name="IDS_SETTINGS_ADD_PAYMENT_METHOD_CREDIT_OR_DEBIT_CARD" desc="The label that appears in the drop-down selector when adding a local payment method, which allows users to add a credit or debit card.">
     Credit/Debit card
   </message>
-  <message name="IDS_SETTINGS_ADD_PAYMENT_METHOD_IBAN" desc="The label that appears in the drop-down selector when adding a local payment method, which allows users to add an IBAN.">
+  <message name="IDS_SETTINGS_ADD_PAYMENT_METHOD_IBAN" desc="The label that appears in the drop-down selector when adding a local payment method, which allows users to add an IBAN (International Bank Account Number).">
     IBAN
+  </message>
+  <message name="IDS_SETTINGS_IBAN_SAVED_TO_THIS_DEVICE_ONLY" desc="Shown in the payments section of settings. Descriptive text to inform the user that this IBAN (International Bank Account Number) will be saved to local device only.">
+   This IBAN will be saved to this device only
+  </message>
+  <message name="IDS_IBAN_NICKNAME" desc="Label for the field containing the nickname of the IBAN (International Bank Account Number) to be saved.">
+    Nickname
+  </message>
+  <message name="IDS_SETTINGS_ADD_IBAN_TITLE" desc="The title for the dialog that's shown when editing an IBAN (International Bank Account Number).">
+    Add IBAN
+  </message>
+  <message name="IDS_SETTINGS_EDIT_IBAN_TITLE" desc="The title for the dialog that's shown when entering the information for a new IBAN (International Bank Account Number).">
+    Edit IBAN
   </message>
   <message name="IDS_SETTINGS_UPI_ID_LABEL" desc="A label which appears next to UPI IDs, when they are listed as stored payment info, but it is visually separate from the UPI ID. It lets the user know this is a UPI ID (e.g. as opposed to a credit card number). UPI is a system for payments in India. A UPI ID is an email-like string.">
     UPI ID
@@ -1376,35 +1388,6 @@
     Open certain file types automatically after downloading
   </message>
 
-  <!-- Downloads Page: Web Drive Connection -->
-  <message name="IDS_SETTINGS_DOWNLOAD_CONNECTION_TITLE" desc="Label for the checkbox which enables a prompt for the user to choose a download location for each download instead of using the default.">
-    <ph name="WEB_DRIVE">$1<ex>Google Drive</ex></ph> Connection
-  </message>
-  <message name="IDS_SETTINGS_DOWNLOAD_CONNECTION_LEARN_MORE" desc="Text to be displayed to take user to relevant CBCM article.">
-    Learn more
-  </message>
-  <message name="IDS_SETTINGS_DOWNLOAD_CONNECTION_UNLINKED_MESSAGE" desc="Meesage to be displayed when downloads are set to be routed to web drive by CBCM policy but the user has not linked a web drive account yet.">
-    For data safety and security, your organization requries all eligible downloads to be saved to your organization's <ph name="WEB_DRIVE">$1<ex>Google Drive</ex></ph> account.
-  </message>
-<message name="IDS_SETTINGS_DOWNLOAD_CONNECTION_SIGN_IN_BUTTON" desc="Label for the checkbox which enables a prompt for the user to choose a download location for each download instead of using the default.">
-    Sign in to <ph name="WEB_DRIVE">$1<ex>Google Drive</ex></ph>
-  </message>
-  <message name="IDS_SETTINGS_DOWNLOAD_CONNECTION_LINKED_MESSAGE" desc="Meesage to be displayed when downloads are set to be routed to web drive by CBCM policy and the user has linked a web drive account already.">
-    All eligible downloads are routed to your organization's <ph name="WEB_DRIVE">$1<ex>Google Drive</ex></ph> account.
-  </message>
-  <message name="IDS_SETTINGS_DOWNLOAD_CONNECTION_SIGN_OUT_BUTTON" desc="Label for the checkbox which enables a prompt for the user to choose a download location for each download instead of using the default.">
-    Unlink Account
-  </message>
-  <message name="IDS_SETTINGS_DOWNLOAD_CONNECTION_ACCOUNT_TITLE" desc="Label for the checkbox which enables a prompt for the user to choose a download location for each download instead of using the default.">
-    Account
-  </message>
-  <message name="IDS_SETTINGS_DOWNLOAD_WEB_DRIVE_LOCATION" desc="Label for the input which allows the user to specify the default download directory, if the file system connector is enabled." meaning="File location">
-    <ph name="WEB_DRIVE">$1<ex>Google Drive</ex></ph> Location
-  </message>
-  <message name="IDS_SETTINGS_DOWNLOAD_LOCAL_LOCATION" desc="Label for the input which allows the user to specify the default download directory, if the file system connector is enabled." meaning="File location">
-    Local Location
-  </message>
-
   <!-- On Startup Page -->
   <message name="IDS_SETTINGS_ON_STARTUP" desc="Name of the on startup page.">
     On startup
@@ -1842,11 +1825,11 @@
   </message>
 
   <!-- Privacy Sandbox Settings 4 - Privacy & Security Page -->
-  <message name="IDS_SETTINGS_AD_PRIVACY_LINK_ROW_LABEL" translateable="false" desc="Label for row linking to the Ad Privacy preferences page in the Privacy &amp; Security Page.">
-    Donec semper
+  <message name="IDS_SETTINGS_AD_PRIVACY_LINK_ROW_LABEL" desc="A new label that appears on the Privacy and security page (chrome://settings/privacy) between 'Third-party cookies' and 'Security'. This same text is used as a page title for the new Ad privacy section. This same pair of words is used in the Consent and Notice flow and must be consistently translated in both contexts. We mean privacy associated with ads, and not privacy from ads. **** CONTEXT PRIVACY SANDBOX **** Chrome’s Privacy Sandbox initiative 1) deprecates third-party cookies in Chrome, 2) supports free and open content on the web (by finding better ways to support ads online), 3) while providing stronger privacy protections for users. You can see a high-level description of this public project at www.privacysanbox.com. **** NEW SETTINGS SECTION IN CHROME **** 3 new ad-specific settings appear on an 'Ad privacy' page in Chrome settings. For an equivalent structure, see 'Security' on chrome://settings/privacy that opens chrome://settings/security. Likewise, 'Ad privacy' on chrome://settings/privacy will open chrome://settings/AdPrivacy.">
+    Ad privacy
   </message>
-  <message name="IDS_SETTINGS_AD_PRIVACY_LINK_ROW_SUB_LABEL" translateable="false" desc="Sub label for row linking to the Ad Privacy preferences page in the Privacy &amp; Security Page.">
-    Fusce purus nibh, dictum sit amet mi in, fringilla ullamcorper tortor
+  <message name="IDS_SETTINGS_AD_PRIVACY_LINK_ROW_SUB_LABEL" desc="A string that describes 'Ad privacy', the label that appears just above it. For context, this new 'Ad privacy' / 'Customize the info...' pair of strings is similar to the existing 'Clear browsing data' / 'Clear history, cookies...' that you find on chrome://settings/privacy. * 'Customize': From our word list: 'This word describes user agency in refining their personalized recommendations, elements of the experience, or sometimes products'. Please don't confuse with 'personalize', which we reserve to mean: '...when Google provides recommendations and other content for users based on their data'.  **** CONTEXT PRIVACY SANDBOX **** Chrome’s Privacy Sandbox initiative 1) deprecates third-party cookies in Chrome, 2) supports free and open content on the web (by finding better ways to support ads online), 3) while providing stronger privacy protections for users. You can see a high-level description of this public project at www.privacysanbox.com. **** NEW SETTINGS SECTION IN CHROME **** 3 new ad-specific settings appear on an 'Ad privacy' page in Chrome settings. For an equivalent structure, see 'Security' on chrome://settings/privacy that opens chrome://settings/security. Likewise, 'Ad privacy' on chrome://settings/privacy will open chrome://settings/AdPrivacy.">
+    Customize the info used by sites to show you ads
   </message>
 
   <!-- Privacy Sandbox Settings 4 - Ad Privacy Page -->
@@ -1892,6 +1875,12 @@
   <message name="IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_DESCRIPTION_LEARN_MORE_LINK" desc="Text read by screen readers to help users distinguish this 'Learn more' link from others that might get added to this page.">
     Learn more
   </message>
+  <message name="IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_REGION_A11Y_DESCRIPTION" desc="An explanation read by screen readers that describes the list of topics.">
+    List of topics estimated by Chrome based on your recent browsing history
+  </message>
+  <message name="IDS_SETTINGS_TOPICS_PAGE_BLOCKED_TOPICS_REGION_A11Y_DESCRIPTION" desc="Read by screen readers to describe the list of blocked topics.">
+    List of topics you blocked that you don't want shared with sites
+  </message>
   <message name="IDS_SETTINGS_TOPICS_PAGE_FOOTER" desc="This footer helps the user understand that this setting is just one signal among others that affect whether this user sees personalized ads on a site. We define 'personalize' as 'when Google provides recommendations and other content for users based on their data'. At a high level, there are 4 things that affect whether an ad is personalized in this context: * 'this setting' refers to the 'Ad topics' setting. The user is on this page. * 'Site-suggested ads': this is a link to the other new ad setting Chrome is launching and that sites can use to personalize ads a user sees. * 'cookie settings': this is a link to the cookies control section in Chrome settings. The Privacy Sandbox project deprecates third-party cookies, but it's a process, and we're launching new functionality that will replace important functionality of cookies. Until third-party cookies are deprecated, the two systems remain active in Chrome. * 'site you're viewing personalizes ads': When a user engages with a site, Chrome has no control over whether that site shows the user personalized ads. Imagine you visit www.interesting-site.com and they know a lot about you already based on previous visits. They can personalize content and ads to you if they like. They can use an ad-serving product, like Facebook or Google Ads to deliver personalized ads. They can also use the new Privacy Sandbox APIs (if they so choose) in order to get more information about the user that could be helpful to them in order to personalize ads. Those 2 APIs (settings, from the user's perspective), are 'Ad topics' and 'Site-suggested ads'.">
     As you browse, whether an ad you see is personalized depends on this setting, <ph name="BEGIN_LINK1">&lt;a href="$1" target="_blank"&gt;</ph>Site-suggested ads<ph name="LINK_END1">&lt;/a&gt;</ph>, your <ph name="BEGIN_LINK2">&lt;a href="$2" target="_blank"&gt;</ph>cookie settings<ph name="LINK_END2">&lt;/a&gt;</ph>, and if the site you’re viewing personalizes ads
   </message>
@@ -1921,6 +1910,9 @@
   <message name="IDS_SETTINGS_FLEDGE_PAGE_CURRENT_SITES_DESCRIPTION_EMPTY" desc="1 of 2 descriptions that appear if there are no sites in the list. This string is for the case that the Site-suggested ads setting IS on, but the user hasn't browsed any sites that have called the Site-suggested ads API.">
     It can take up to a week for a list of sites to appear here based on your browsing history
   </message>
+  <message name="IDS_SETTINGS_FLEDGE_PAGE_CURRENT_SITES_REGION_A11Y_DESCRIPTION" desc="Read by screen readers to describe a list of sites that appear on the page.">
+    List of recent sites you visited that can suggest ads to other sites as you keep browsing
+  </message>
   <message name="IDS_SETTINGS_FLEDGE_PAGE_SEE_ALL_SITES_LABEL" desc="Text that serves as a button. Because the list of sites might be long, we only show the most recent sites. This button allows the user to browse all sites (because sites are auto-deleted every 4 weeks, the list is never older than 4 weeks).">
     See all sites
   </message>
@@ -1938,6 +1930,9 @@
   </message>
   <message name="IDS_SETTINGS_FLEDGE_PAGE_BLOCKED_SITES_DESCRIPTION_EMPTY" desc="2 of 2 possible descriptions beneath the 'Sites you blocked' title. In this case, the list is empty (the user hasn't blocked any sites).">
     Blocked sites appear here
+  </message>
+  <message name="IDS_SETTINGS_FLEDGE_PAGE_BLOCKED_SITES_REGION_A11Y_DESCRIPTION" desc="Read by screen readers to describe what this list of sites is.">
+    List of sites you blocked that you don't want suggesting ads to other sites
   </message>
   <message name="IDS_SETTINGS_FLEDGE_PAGE_ALLOW_SITE" desc="A button associated with each of the user's blocked sites. When the user clicks 'Add', it makes that site eligible. Clicking 'Add' doesn't automatically put the added site back onto the list of 'Sites'. For that to happen, a user would have to browse to that site again and the site would have to use the Site-suggested ads to save interests for this user.">
     Add
@@ -3345,17 +3340,74 @@
   <message name="IDS_SETTINGS_COOKIES_PAGE" desc="Title of the cookies settings page">
     Cookies and other site data
   </message>
-  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_LINK_ROW_LABEL" desc="Label of the link row that leads to the third-party cookies page" translateable="false">
-    Nam condimentum
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_DESCRIPTION" desc="An explanation of what third-party cookies are that appear beneath the page title: 'Third-party cookies'. * 'embed': A site you visit uses HTML to construct the page. HTML tags include references to images, like img src='filename.jpg', that are used to show an image. 'filename.jpg' can be a local file owned by the site you visit or a site can embed an external file with something like img src='www.third-party-site.com/images/filename.jpg'. This image is embedded into the site you visit and www.third-party-site.com can set a third-party cookie onto your device.">
+    A site you visit can embed content from other sites, for example, images, ads, and text. Cookies set by these other sites are called third-party cookies.
   </message>
-  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_LINK_ROW_SUB_LABEL_ENABLED" desc="Subabel for third-party cookies link row stating that third-party cookies are allowed with no exceptions" translateable="false">
-    Enabled Vestibulum ante mi, feugiat eget velit id
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_DEFAULT_BEHAVIOR_HEADING" desc="A label on a permissions page. For example, see the Microphone permission at chrome://settings/content/microphone.">
+    Default behavior
   </message>
-  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_LINK_ROW_SUB_LABEL_DISABLED_INCOGNITO" desc="Subabel for third-party cookies link row stating that third-party cookies are disabled in incognito mode with no exceptions" translateable="false">
-    Disabled Incognito Vestibulum ante mi, feugiat eget velit id
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_DEFAULT_BEHAVIOR_DESCRIPTION" desc="A description of what 'Default behavior' means. For example, see the Microphone permission at chrome://settings/content/microphone.">
+    Sites automatically follow this setting when you visit them
   </message>
-  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_LINK_ROW_SUB_LABEL_DISABLED" desc="Subabel for third-party cookies link row stating that third-party cookies are disabled with no exceptions" translateable="false">
-    Disabled Vestibulum ante mi, feugiat eget velit id
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_CUSTOMIZED_BEHAVIOR_HEADING" desc="A label on a permissions page. For example, see the Microphone permission at chrome://settings/content/microphone.">
+    Customized behaviors
+  </message>
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_CUSTOMIZED_BEHAVIOR_DESCRIPTION" desc="A description of 'customized behaviors' that appear beneath the 'Customized behaviors' title. For example, see the Microphone permission at chrome://settings/content/microphone.">
+    Sites listed below follow a custom setting instead of the default
+  </message>
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ALLOW_EXCEPTIONS_SUB_HEADING" desc="A description of an exception bucket">
+    Allowed to use third-party cookies
+  </message>
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_TITLE" desc="The title of a new page. Today, Chrome has a 'Cookies and other site data' page at chrome://settings/cookies. As part of the Privacy Sandbox project (see below), Chrome is deprecating third-party cookies but maintaining first-party cookies. As a step towards the ultimate deprecation of third-party cookies, we're first separating them from other forms of 'site data', making it easier to eventually remove this page completely. Cookies are often used for honorable objectives, and the difference between first and third-party cookies is important (see any of the many resources online such as https://termly.io/resources/articles/first-party-cookies-vs-third-party-cookies/.">
+    Third-party cookies
+  </message>
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_LINK_ROW_LABEL" desc="This text is the label of a page. Here, it serves as a button that opens the new page.">
+    Third-party cookies
+  </message>
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_LINK_ROW_SUB_LABEL_ENABLED" desc="1 of 3 possible states for the Third-party cookies setting. This text appears beneath the 'Third-party cookies' button label.">
+    Third-party cookies are allowed
+  </message>
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_LINK_ROW_SUB_LABEL_DISABLED_INCOGNITO" desc="2 of 3 possible states for the Third-party cookies setting. This text appears beneath the 'Third-party cookies' button label.">
+    Third-party cookies are blocked in Incognito mode
+  </message>
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_LINK_ROW_SUB_LABEL_DISABLED" desc="3 of 3 possible states for the Third-party cookies setting. This text appears beneath the 'Third-party cookies' button label.">
+    Third-party cookies are blocked
+  </message>
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ALLOW_RADIO_LABEL" desc="1 of 3 options the user has to configure cookies. See the cookies page for context: chrome://settings/cookies.">
+    Allow third-party cookies
+  </message>
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ALLOW_EXPAND_A11Y_LABEL" desc="This text is read by screenreaders and helps users find more info about this choice.">
+    More about allowing third-party cookies
+  </message>
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ALLOW_BULLET_1" desc="1 of 2 bullets that describes the 'Allow all cookies' option.">
+    Sites can use cookies to improve your browsing experience, for example, to keep you signed in or to remember items in your shopping cart
+  </message>
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ALLOW_BULLET_2" desc="2 of 2 bullets that describes the 'Allow all cookies' option. Sites use third-party cookies to 'see your browsing activity across different sites'. Third-party cookies aren't necessarily bad. 1) Personalized ads can be useful to the user (though the tracking that generally accompanies the use of third-party cookies for ads isn't). But 2) third-party cookies are also used for spam protection and for anti-tracking efforts.">
+    Sites can use cookies to see your browsing activity across different sites, for example, to personalize ads
+  </message>
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_INCOGNITO_RADIO_LABEL" desc="2 of 3 options the user has to configure cookies. See the cookies page for context: chrome://settings/cookies. For more about Incognito mode, see Google Chrome's Help Center.">
+    Block third-party cookies in Incognito mode
+  </message>
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_INCOGNITO_EXPAND_A11Y_LABEL" desc="This text is read by screenreaders and helps users find more info about this choice.">
+    More about blocking third-party cookies in Incognito mode
+  </message>
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_INCOGNITO_BULLET_1" desc="1 of 2 bullets that describes the 'Block third-party cookies in Incognito mode' option.">
+    Sites can use cookies to improve your browsing experience, for example, to keep you signed in or to remember items in your shopping cart
+  </message>
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_INCOGNITO_BULLET_2" desc="2 of 2 bullets that describes the 'Block third-party cookies in Incognito mode' option.">
+    While in Incognito, sites can't use your cookies to see your browsing activity across sites. Your browsing activity isn't used for things like personalizing ads. Features on some sites may not work.
+  </message>
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_RADIO_LABEL" desc="3 of 3 options the user has to configure cookies. See the cookies page for context: chrome://settings/cookies">
+    Block third-party cookies
+  </message>
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_EXPAND_A11Y_LABEL" desc="This text is read by screenreaders and helps users find more info about this choice.">
+    More about blocking third-party cookies
+  </message>
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_BULLET_1" desc="1 of 2 bullets that describes the 'Block third-party cookies' option.">
+    Sites can use cookies to improve your browsing experience, for example, to keep you signed in or to remember items in your shopping cart
+  </message>
+  <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_BULLET_2" desc="2 of 2 bullets that describe the 'Block third-party cookies' option">
+    Sites can't use your cookies to see your browsing activity across different sites, for example, to personalize ads. Features on some sites may not work
   </message>
   <message name="IDS_SETTINGS_COOKIES_CONTROLS" desc="Title of the general cookies control section.">
     General settings
@@ -4081,6 +4133,9 @@
   </message>
   <message name="IDS_SETTINGS_SYNC_DISCONNECT_MANAGED_PROFILE_EXPLANATION" desc="The text to display in the 'Sign out of Chrome' dialog to stop syncing for managed profiles.">
     Because this account is managed by <ph name="DOMAIN">$1<ex>example.com</ex></ph>, your bookmarks, history, passwords, and other settings will be cleared from this device. However, your data will remain stored in your Google Account and can be managed on <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$2" target=&quot;_blank&quot;&gt;</ex></ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
+  </message>
+  <message name="IDS_SETTINGS_TURN_OFF_SYNC_MANAGED_PROFILE_EXPLANATION" desc="The text to display in the 'Turn Sync off' dialog to stop syncing for managed profiles.">
+    Because this account is managed by <ph name="DOMAIN">$1<ex>example.com</ex></ph> you will not be signed out of your Google Account. Your bookmarks, history, passwords, and other settings will no longer be synced. However, your previously synced data will remain stored in your Google Account and can be managed on <ph name="BEGIN_LINK">&lt;a href="$2" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$2" target=&quot;_blank&quot;&gt;</ex></ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
   </message>
   <message name="IDS_SETTINGS_TURN_OFF_SYNC_DIALOG_TITLE" desc="The text to display on the title of the dialog to turn off sync.">
     Turn off sync?

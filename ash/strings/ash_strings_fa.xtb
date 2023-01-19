@@ -607,6 +607,7 @@
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> به پوشه <ph name="FOLDER_NAME" /> منتقل شد.</translation>
 <translation id="4302592941791324970">موجود نیست</translation>
 <translation id="4303223480529385476">بزرگ کردن ناحیه نشانگر وضعیت</translation>
+<translation id="4311195029067684288">پر</translation>
 <translation id="4312840429157639164">دوربین به گوشه بالا سمت راست چسبید. تداخلی با سطح سیستم روی داد.</translation>
 <translation id="4316910396681052118">همه برنامه‌ها</translation>
 <translation id="4321179778687042513">مهار</translation>
@@ -637,6 +638,7 @@
 <translation id="4455051983450390249">اعلان‌های تلفنتان را در <ph name="DEVICE_TYPE" /> مشاهده کنید</translation>
 <translation id="445864333228800152">عصر به‌خیر،</translation>
 <translation id="4458688154122353284">توقف ضبط صفحه‌نمایش</translation>
+<translation id="445923051607553918">‏پیوستن به شبکه Wi-Fi</translation>
 <translation id="4471354919263203780">درحال بارگیری فایل‌های تشخیص گفتار... <ph name="PERCENT" />٪</translation>
 <translation id="4471432286288241507">{0,plural, =0{همین حالا دستگاه را به‌روزرسانی کنید}=1{دستگاه را تا یک ثانیه دیگر به‌روزرسانی کنید}one{دستگاه را تا # ثانیه دیگر به‌روزرسانی کنید}other{دستگاه را تا # ثانیه دیگر به‌روزرسانی کنید}}</translation>
 <translation id="4472575034687746823">شروع به کار</translation>

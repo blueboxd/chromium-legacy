@@ -51,7 +51,6 @@
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_data.h"
@@ -1114,11 +1113,9 @@ absl::optional<syncer::ModelError>
 AppListSyncableService::MergeDataAndStartSyncing(
     syncer::ModelType type,
     const syncer::SyncDataList& initial_sync_data,
-    std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
-    std::unique_ptr<syncer::SyncErrorFactory> error_handler) {
+    std::unique_ptr<syncer::SyncChangeProcessor> sync_processor) {
   DCHECK(!sync_processor_.get());
   DCHECK(sync_processor.get());
-  DCHECK(error_handler.get());
 
   HandleUpdateStarted();
 
@@ -1128,7 +1125,6 @@ AppListSyncableService::MergeDataAndStartSyncing(
   pref_update->clear();
 
   sync_processor_ = std::move(sync_processor);
-  sync_error_handler_ = std::move(error_handler);
 
   VLOG(2) << this << ": MergeDataAndStartSyncing: " << initial_sync_data.size();
 
@@ -1229,7 +1225,6 @@ void AppListSyncableService::StopSyncing(syncer::ModelType type) {
   DCHECK_EQ(type, syncer::APP_LIST);
 
   sync_processor_.reset();
-  sync_error_handler_.reset();
 }
 
 syncer::SyncDataList AppListSyncableService::GetAllSyncDataForTesting() const {

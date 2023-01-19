@@ -88,14 +88,6 @@ class CrasAudioClientImpl : public CrasAudioClient {
         base::BindOnce(&CrasAudioClientImpl::SignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
 
-    // Monitor the D-Bus signal for input node gain change.
-    cras_proxy_->ConnectToSignal(
-        cras::kCrasControlInterface, cras::kInputNodeGainChanged,
-        base::BindRepeating(&CrasAudioClientImpl::InputNodeGainChangedReceived,
-                            weak_ptr_factory_.GetWeakPtr()),
-        base::BindOnce(&CrasAudioClientImpl::SignalConnected,
-                       weak_ptr_factory_.GetWeakPtr()));
-
     // Monitor the D-Bus signal for hotword.
     cras_proxy_->ConnectToSignal(
         cras::kCrasControlInterface, cras::kHotwordTriggered,
@@ -142,6 +134,14 @@ class CrasAudioClientImpl : public CrasAudioClient {
     cras_proxy_->ConnectToSignal(
         cras::kCrasControlInterface, cras::kSurveyTrigger,
         base::BindRepeating(&CrasAudioClientImpl::SurveyTriggerReceived,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&CrasAudioClientImpl::SignalConnected,
+                       weak_ptr_factory_.GetWeakPtr()));
+
+    // Monitor the D-Bus signal for new speak-on-mute detection.
+    cras_proxy_->ConnectToSignal(
+        cras::kCrasControlInterface, cras::kSpeakOnMuteDetected,
+        base::BindRepeating(&CrasAudioClientImpl::SpeakOnMuteDetectedReceived,
                             weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&CrasAudioClientImpl::SignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -266,6 +266,16 @@ class CrasAudioClientImpl : public CrasAudioClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void GetSpeakOnMuteDetectionEnabled(
+      chromeos::DBusMethodCallback<bool> callback) override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kSpeakOnMuteDetectionEnabled);
+    cras_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&CrasAudioClientImpl::OnGetSpeakOnMuteDetectionEnabled,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void SetOutputNodeVolume(uint64_t node_id, int32_t volume) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kSetOutputNodeVolume);
@@ -378,6 +388,16 @@ class CrasAudioClientImpl : public CrasAudioClient {
   void SetFlossEnabled(bool enabled) override {
     dbus::MethodCall method_call(cras::kCrasControlInterface,
                                  cras::kSetFlossEnabled);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendBool(enabled);
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
+  }
+
+  void SetSpeakOnMuteDetection(bool enabled) override {
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kSetSpeakOnMuteDetection);
     dbus::MessageWriter writer(&method_call);
     writer.AppendBool(enabled);
     cras_proxy_->CallMethod(&method_call,
@@ -616,29 +636,13 @@ class CrasAudioClientImpl : public CrasAudioClient {
     int volume;
 
     if (!reader.PopUint64(&node_id)) {
-      LOG(ERROR) << "Error reading signal from cras:" << signal->ToString();
+      LOG(ERROR) << "Error eading signal from cras:" << signal->ToString();
     }
     if (!reader.PopInt32(&volume)) {
-      LOG(ERROR) << "Error reading signal from cras:" << signal->ToString();
+      LOG(ERROR) << "Error eading signal from cras:" << signal->ToString();
     }
     for (auto& observer : observers_)
       observer.OutputNodeVolumeChanged(node_id, volume);
-  }
-
-  void InputNodeGainChangedReceived(dbus::Signal* signal) {
-    dbus::MessageReader reader(signal);
-    uint64_t node_id;
-    int gain;
-
-    if (!reader.PopUint64(&node_id)) {
-      LOG(ERROR) << "Error reading signal from cras:" << signal->ToString();
-    }
-    if (!reader.PopInt32(&gain)) {
-      LOG(ERROR) << "Error reading signal from cras:" << signal->ToString();
-    }
-    for (auto& observer : observers_) {
-      observer.InputNodeGainChanged(node_id, gain);
-    }
   }
 
   void HotwordTriggeredReceived(dbus::Signal* signal) {
@@ -779,6 +783,12 @@ class CrasAudioClientImpl : public CrasAudioClient {
 
     for (auto& observer : observers_)
       observer.SurveyTriggered(res);
+  }
+
+  void SpeakOnMuteDetectedReceived(dbus::Signal* signal) {
+    for (auto& observer : observers_) {
+      observer.SpeakOnMuteDetected();
+    }
   }
 
   void OnGetDefaultOutputBufferSize(chromeos::DBusMethodCallback<int> callback,
@@ -1111,6 +1121,26 @@ class CrasAudioClientImpl : public CrasAudioClient {
     return true;
   }
 
+  void OnGetSpeakOnMuteDetectionEnabled(
+      chromeos::DBusMethodCallback<bool> callback,
+      dbus::Response* response) {
+    if (!response) {
+      LOG(ERROR) << "Error calling "
+                 << "GetSpeakOnMuteDetectionEnabled";
+      std::move(callback).Run(absl::nullopt);
+      return;
+    }
+    bool speak_on_mute_detection_enabled = false;
+    dbus::MessageReader reader(response);
+    if (!reader.PopBool(&speak_on_mute_detection_enabled)) {
+      LOG(ERROR) << "Error reading response from cras: "
+                 << response->ToString();
+      std::move(callback).Run(absl::nullopt);
+      return;
+    }
+    std::move(callback).Run(speak_on_mute_detection_enabled);
+  }
+
   dbus::ObjectProxy* cras_proxy_ = nullptr;
   base::ObserverList<Observer>::Unchecked observers_;
 
@@ -1138,9 +1168,6 @@ void CrasAudioClient::Observer::ActiveInputNodeChanged(uint64_t node_id) {}
 void CrasAudioClient::Observer::OutputNodeVolumeChanged(uint64_t node_id,
                                                         int volume) {}
 
-void CrasAudioClient::Observer::InputNodeGainChanged(uint64_t node_id,
-                                                     int gain) {}
-
 void CrasAudioClient::Observer::HotwordTriggered(uint64_t tv_sec,
                                                  uint64_t tv_nsec) {}
 
@@ -1155,6 +1182,8 @@ void CrasAudioClient::Observer::NumberOfInputStreamsWithPermissionChanged(
 
 void CrasAudioClient::Observer::SurveyTriggered(
     const base::flat_map<std::string, std::string>& survey_specific_data) {}
+
+void CrasAudioClient::Observer::SpeakOnMuteDetected() {}
 
 CrasAudioClient::CrasAudioClient() {
   DCHECK(!g_instance);

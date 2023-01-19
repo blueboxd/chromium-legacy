@@ -113,7 +113,6 @@ V4L2ImageProcessorBackend::JobRecord::JobRecord()
 V4L2ImageProcessorBackend::JobRecord::~JobRecord() = default;
 
 V4L2ImageProcessorBackend::V4L2ImageProcessorBackend(
-    scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
     scoped_refptr<V4L2Device> device,
     const PortConfig& input_config,
     const PortConfig& output_config,
@@ -128,7 +127,8 @@ V4L2ImageProcessorBackend::V4L2ImageProcessorBackend(
                             output_mode,
                             relative_rotation,
                             std::move(error_cb),
-                            std::move(backend_task_runner)),
+                            base::ThreadPool::CreateSequencedTaskRunner(
+                                {base::TaskPriority::USER_VISIBLE})),
       input_memory_type_(input_memory_type),
       output_memory_type_(output_memory_type),
       device_(device),
@@ -229,8 +229,7 @@ std::unique_ptr<ImageProcessorBackend> V4L2ImageProcessorBackend::Create(
     const PortConfig& output_config,
     OutputMode output_mode,
     VideoRotation relative_rotation,
-    ErrorCB error_cb,
-    scoped_refptr<base::SequencedTaskRunner> backend_task_runner) {
+    ErrorCB error_cb) {
   VLOGF(2);
   DCHECK_GT(num_buffers, 0u);
 
@@ -413,7 +412,7 @@ std::unique_ptr<ImageProcessorBackend> V4L2ImageProcessorBackend::Create(
           : InputStorageTypeToV4L2Memory(output_storage_type);
   std::unique_ptr<V4L2ImageProcessorBackend> image_processor(
       new V4L2ImageProcessorBackend(
-          backend_task_runner, std::move(device),
+          std::move(device),
           PortConfig(input_config.fourcc, negotiated_input_size, input_planes,
                      input_config.visible_rect, {input_storage_type}),
           PortConfig(output_config.fourcc, negotiated_output_size,
@@ -432,13 +431,14 @@ std::unique_ptr<ImageProcessorBackend> V4L2ImageProcessorBackend::Create(
       },
       base::Unretained(&done), base::Unretained(&success));
   // Using base::Unretained() is safe because it is blocking call.
-  backend_task_runner->PostTask(
+  image_processor->backend_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&V4L2ImageProcessorBackend::Initialize,
                                 base::Unretained(image_processor.get()),
                                 std::move(init_cb)));
   done.Wait();
   if (!success) {
     // This needs to be destroyed on |backend_task_runner|.
+    auto backend_task_runner = image_processor->backend_task_runner_;
     backend_task_runner->DeleteSoon(FROM_HERE, std::move(image_processor));
     return nullptr;
   }
@@ -925,35 +925,16 @@ bool V4L2ImageProcessorBackend::EnqueueInputRecord(
 
   switch (input_memory_type_) {
     case V4L2_MEMORY_USERPTR: {
-      VideoFrame& frame = *job_record->input_frame;
       const size_t num_planes = V4L2Device::GetNumPlanesOfV4L2PixFmt(
           input_config_.fourcc.ToV4L2PixFmt());
       std::vector<void*> user_ptrs(num_planes);
-      if (frame.storage_type() == VideoFrame::STORAGE_SHMEM) {
-        // TODO(b/243883312): This copies the video frame to a writable buffer
-        // since the USERPTR API requires writable permission. Remove this
-        // workaround once the unreasonable permission is fixed.
-        const size_t buffer_size = frame.shm_region()->GetSize();
-        std::vector<uint8_t> writable_buffer(buffer_size);
-        std::memcpy(writable_buffer.data(), frame.data(0), buffer_size);
-        for (size_t i = 0; i < num_planes; ++i) {
-          const std::intptr_t plane_offset =
-              reinterpret_cast<std::intptr_t>(frame.data(i)) -
-              reinterpret_cast<std::intptr_t>(frame.data(0));
-          user_ptrs[i] = writable_buffer.data() + plane_offset;
-        }
-        job_record->input_frame->AddDestructionObserver(base::BindOnce(
-            [](std::vector<uint8_t>) {}, std::move(writable_buffer)));
-      } else {
-        for (size_t i = 0; i < num_planes; ++i)
-          user_ptrs[i] = frame.writable_data(i);
-      }
-
       for (size_t i = 0; i < num_planes; ++i) {
         int bytes_used =
-            VideoFrame::PlaneSize(frame.format(), i, input_config_.size)
+            VideoFrame::PlaneSize(job_record->input_frame->format(), i,
+                                  input_config_.size)
                 .GetArea();
         buffer.SetPlaneBytesUsed(i, bytes_used);
+        user_ptrs[i] = const_cast<uint8_t*>(job_record->input_frame->data(i));
       }
       if (!std::move(buffer).QueueUserPtr(user_ptrs)) {
         VPLOGF(1) << "Failed to queue a DMABUF buffer to input queue";

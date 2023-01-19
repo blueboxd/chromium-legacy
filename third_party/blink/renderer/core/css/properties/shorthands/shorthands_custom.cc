@@ -221,42 +221,17 @@ const CSSValue* AlternativeAnimation::CSSValueFromComputedStyleInternal(
 
 namespace {
 
-CSSValue* RangeOffsetValue(const CSSValue* range_name, double percentage) {
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  list->Append(*range_name);
-  list->Append(*CSSNumericLiteralValue::Create(
-      percentage, CSSPrimitiveValue::UnitType::kPercentage));
-  return list;
-}
-
 // Consume a single <animation-delay-start> and a single
-// <animation-delay-start>, and append the result to `start_list` and
+// <animation-delay-end>, and append the result to `start_list` and
 // `end_list` respectively.
 bool ConsumeAnimationDelayItemInto(CSSParserTokenRange& range,
                                    const CSSParserContext& context,
                                    CSSValueList* start_list,
                                    CSSValueList* end_list) {
   using css_parsing_utils::ConsumeAnimationDelay;
-  using css_parsing_utils::ConsumeTimelineRangeName;
-
-  CSSParserTokenRange original_range = range;
 
   const CSSValue* start_delay = ConsumeAnimationDelay(range, context);
   const CSSValue* end_delay = ConsumeAnimationDelay(range, context);
-
-  // If a <timeline-range-name> alone is specified, animation-delay-start is set
-  // to that name plus 0% and animation-delay-end is set to that name plus 100%.
-  //
-  // https://drafts.csswg.org/scroll-animations-1/#propdef-animation-delay
-  if (!start_delay) {
-    range = original_range;
-    const CSSValue* range_name = ConsumeTimelineRangeName(range);
-    if (!range_name) {
-      return false;
-    }
-    start_delay = RangeOffsetValue(range_name, 0);
-    end_delay = RangeOffsetValue(range_name, 100);
-  }
 
   if (!start_delay) {
     return false;
@@ -275,6 +250,60 @@ bool ConsumeAnimationDelayItemInto(CSSParserTokenRange& range,
 
   start_list->Append(*start_delay);
   end_list->Append(*end_delay);
+
+  return true;
+}
+
+CSSValue* RangeOffsetValue(const CSSValue* range_name, double percentage) {
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*range_name);
+  list->Append(*CSSNumericLiteralValue::Create(
+      percentage, CSSPrimitiveValue::UnitType::kPercentage));
+  return list;
+}
+
+// Consume a single <animation-range-start> and a single
+// <animation-range-end>, and append the result to `start_list` and
+// `end_list` respectively.
+bool ConsumeAnimationRangeItemInto(CSSParserTokenRange& range,
+                                   const CSSParserContext& context,
+                                   CSSValueList* start_list,
+                                   CSSValueList* end_list) {
+  using css_parsing_utils::ConsumeAnimationRange;
+  using css_parsing_utils::ConsumeTimelineRangeName;
+
+  CSSParserTokenRange original_range = range;
+
+  const CSSValue* start_range = ConsumeAnimationRange(range, context);
+  const CSSValue* end_range = ConsumeAnimationRange(range, context);
+
+  // If a <timeline-range-name> alone is specified, animation-delay-start is set
+  // to that name plus 0% and animation-delay-end is set to that name plus 100%.
+  //
+  // https://drafts.csswg.org/scroll-animations-1/#propdef-animation-range
+  if (!start_range) {
+    range = original_range;
+    const CSSValue* range_name = ConsumeTimelineRangeName(range);
+    if (!range_name) {
+      return false;
+    }
+    start_range = RangeOffsetValue(range_name, 0);
+    end_range = RangeOffsetValue(range_name, 100);
+  }
+
+  if (!start_range) {
+    return false;
+  }
+
+  if (!end_range) {
+    end_range = CSSIdentifierValue::Create(CSSValueID::kAuto);
+  }
+
+  DCHECK(start_range);
+  DCHECK(end_range);
+
+  start_list->Append(*start_range);
+  end_list->Append(*end_range);
 
   return true;
 }
@@ -341,17 +370,7 @@ const CSSValue* AlternativeAnimationDelay::CSSValueFromComputedStyleInternal(
   auto* outer_list = CSSValueList::CreateCommaSeparated();
 
   for (wtf_size_t i = 0; i < delay_start_list.size(); ++i) {
-    const Timing::Delay& start = delay_start_list[i];
     const Timing::Delay& end = delay_end_list[i];
-
-    // E.g. "enter 0% enter 100%" must be shortened to just "enter".
-    if (start.IsTimelineOffset() && end.IsTimelineOffset() &&
-        start.phase == end.phase && start.relative_offset == 0.0 &&
-        end.relative_offset == 1.0) {
-      outer_list->Append(
-          *MakeGarbageCollected<CSSIdentifierValue>(start.phase));
-      continue;
-    }
 
     auto* inner_list = CSSValueList::CreateSpaceSeparated();
     inner_list->Append(
@@ -359,6 +378,90 @@ const CSSValue* AlternativeAnimationDelay::CSSValueFromComputedStyleInternal(
     if (end != CSSTimingData::InitialDelayEnd()) {
       inner_list->Append(
           *ComputedStyleUtils::ValueForAnimationDelayEnd(delay_end_list[i]));
+    }
+    outer_list->Append(*inner_list);
+  }
+
+  return outer_list;
+}
+
+bool AnimationRange::ParseShorthand(
+    bool important,
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext& local_context,
+    HeapVector<CSSPropertyValue, 64>& properties) const {
+  DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+
+  using css_parsing_utils::AddProperty;
+  using css_parsing_utils::ConsumeCommaIncludingWhitespace;
+  using css_parsing_utils::IsImplicitProperty;
+
+  const StylePropertyShorthand shorthand = animationRangeShorthand();
+  DCHECK_EQ(2u, shorthand.length());
+  DCHECK_EQ(&GetCSSPropertyAnimationRangeStart(), shorthand.properties()[0]);
+  DCHECK_EQ(&GetCSSPropertyAnimationRangeEnd(), shorthand.properties()[1]);
+
+  CSSValueList* start_list = CSSValueList::CreateCommaSeparated();
+  CSSValueList* end_list = CSSValueList::CreateCommaSeparated();
+
+  do {
+    if (!ConsumeAnimationRangeItemInto(range, context, start_list, end_list)) {
+      return false;
+    }
+  } while (ConsumeCommaIncludingWhitespace(range));
+
+  DCHECK(start_list->length());
+  DCHECK(end_list->length());
+  DCHECK_EQ(start_list->length(), end_list->length());
+
+  AddProperty(CSSPropertyID::kAnimationRangeStart,
+              CSSPropertyID::kAnimationRange, *start_list, important,
+              IsImplicitProperty::kNotImplicit, properties);
+  AddProperty(CSSPropertyID::kAnimationRangeEnd, CSSPropertyID::kAnimationRange,
+              *end_list, important, IsImplicitProperty::kNotImplicit,
+              properties);
+
+  return range.AtEnd();
+}
+
+const CSSValue* AnimationRange::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  const Vector<absl::optional<Timing::TimelineOffset>>& range_start_list =
+      style.Animations() ? style.Animations()->RangeStartList()
+                         : Vector<absl::optional<Timing::TimelineOffset>>{
+                               CSSAnimationData::InitialRangeStart()};
+  const Vector<absl::optional<Timing::TimelineOffset>>& range_end_list =
+      style.Animations() ? style.Animations()->RangeEndList()
+                         : Vector<absl::optional<Timing::TimelineOffset>>{
+                               CSSAnimationData::InitialRangeEnd()};
+
+  if (range_start_list.size() != range_end_list.size()) {
+    return nullptr;
+  }
+
+  auto* outer_list = CSSValueList::CreateCommaSeparated();
+
+  for (wtf_size_t i = 0; i < range_start_list.size(); ++i) {
+    const absl::optional<Timing::TimelineOffset>& start = range_start_list[i];
+    const absl::optional<Timing::TimelineOffset>& end = range_end_list[i];
+
+    // E.g. "enter 0% enter 100%" must be shortened to just "enter".
+    if (start.has_value() && end.has_value() && start->name == end->name &&
+        start->relative_offset == 0.0 && end->relative_offset == 1.0) {
+      outer_list->Append(
+          *MakeGarbageCollected<CSSIdentifierValue>(start->name));
+      continue;
+    }
+
+    auto* inner_list = CSSValueList::CreateSpaceSeparated();
+    inner_list->Append(
+        *ComputedStyleUtils::ValueForAnimationRangeStart(range_start_list[i]));
+    if (end != CSSTimingData::InitialRangeEnd()) {
+      inner_list->Append(
+          *ComputedStyleUtils::ValueForAnimationRangeEnd(range_end_list[i]));
     }
     outer_list->Append(*inner_list);
   }
@@ -1352,6 +1455,12 @@ bool ConsumeFont(bool important,
                         : *CSSIdentifierValue::Create(CSSValueID::kNormal),
       important, css_parsing_utils::IsImplicitProperty::kNotImplicit,
       properties);
+
+  // All subproperties of the font, i.e. font-size-adjust, font-kerning, all
+  // subproperties of font-variant, font-feature-settings,
+  // font-language-override, font-optical-sizing and font-variation-settings
+  // property should be reset to their initial values, compare
+  // https://drafts.csswg.org/css-fonts-4/#font-prop
   css_parsing_utils::AddProperty(
       CSSPropertyID::kFontVariantLigatures, CSSPropertyID::kFont,
       *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
@@ -1370,6 +1479,28 @@ bool ConsumeFont(bool important,
         *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
         css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
   }
+  if (RuntimeEnabledFeatures::CSSFontSizeAdjustEnabled()) {
+    css_parsing_utils::AddProperty(
+        CSSPropertyID::kFontSizeAdjust, CSSPropertyID::kFont,
+        *CSSIdentifierValue::Create(CSSValueID::kNone), important,
+        css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
+  }
+  css_parsing_utils::AddProperty(
+      CSSPropertyID::kFontKerning, CSSPropertyID::kFont,
+      *CSSIdentifierValue::Create(CSSValueID::kAuto), important,
+      css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
+  css_parsing_utils::AddProperty(
+      CSSPropertyID::kFontOpticalSizing, CSSPropertyID::kFont,
+      *CSSIdentifierValue::Create(CSSValueID::kAuto), important,
+      css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
+  css_parsing_utils::AddProperty(
+      CSSPropertyID::kFontFeatureSettings, CSSPropertyID::kFont,
+      *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
+      css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
+  css_parsing_utils::AddProperty(
+      CSSPropertyID::kFontVariationSettings, CSSPropertyID::kFont,
+      *CSSIdentifierValue::Create(CSSValueID::kNormal), important,
+      css_parsing_utils::IsImplicitProperty::kNotImplicit, properties);
   if (RuntimeEnabledFeatures::FontVariantPositionEnabled()) {
     css_parsing_utils::AddProperty(
         CSSPropertyID::kFontVariantPosition, CSSPropertyID::kFont,
@@ -1428,10 +1559,6 @@ bool ConsumeFont(bool important,
       important, css_parsing_utils::IsImplicitProperty::kNotImplicit,
       properties);
 
-  // FIXME: http://www.w3.org/TR/2011/WD-css3-fonts-20110324/#font-prop requires
-  // that "font-stretch", "font-size-adjust", and "font-kerning" be reset to
-  // their initial values but we don't seem to support them at the moment. They
-  // should also be added here once implemented.
   return range.AtEnd();
 }
 

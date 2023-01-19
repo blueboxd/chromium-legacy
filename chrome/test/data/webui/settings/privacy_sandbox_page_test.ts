@@ -184,6 +184,8 @@ suite('PrivacySandboxTopicsSubpageTests', function() {
     assertTrue(isChildVisible(page, '#currentTopicsDescription'));
     assertFalse(isChildVisible(page, '#currentTopicsDescriptionEmpty'));
     assertTrue(isChildVisible(page, '#currentTopicsDescriptionDisabled'));
+    assertEquals(
+        0, testPrivacySandboxBrowserProxy.getCallCount('topicsToggleChanged'));
 
     page.$.topicsToggle.click();
     await flushTasks();
@@ -195,13 +197,14 @@ suite('PrivacySandboxTopicsSubpageTests', function() {
         page.$.topicsToggle.subLabel);
     assertTrue(!!page.getPref('privacy_sandbox.m1.topics_enabled.value'));
     assertTrue(isChildVisible(page, '#currentTopicsDescription'));
-    // TODO(crbug.com/1378703): Add test for `#currentTopicsDescriptionEmpty`
-    // when `getTopicsState()` returns an empty list.
-    assertFalse(isChildVisible(page, '#currentTopicsDescriptionEmpty'));
+    // The current list is always empty after re-enabling the toggle.
+    assertTrue(isChildVisible(page, '#currentTopicsDescriptionEmpty'));
     assertFalse(isChildVisible(page, '#currentTopicsDescriptionDisabled'));
     assertEquals(
         'Settings.PrivacySandbox.Topics.Enabled',
         await metricsBrowserProxy.whenCalled('recordAction'));
+    assertTrue((await testPrivacySandboxBrowserProxy.whenCalled(
+        'topicsToggleChanged'))[0]);
   });
 
   test('disableTopicsToggle', async function() {
@@ -214,10 +217,10 @@ suite('PrivacySandboxTopicsSubpageTests', function() {
         loadTimeData.getString('topicsPageToggleSubLabel'),
         page.$.topicsToggle.subLabel);
     assertTrue(isChildVisible(page, '#currentTopicsDescription'));
-    // TODO(crbug.com/1378703): Add test for `#currentTopicsDescriptionEmpty`
-    // when `getTopicsState()` returns an empty list.
     assertFalse(isChildVisible(page, '#currentTopicsDescriptionEmpty'));
     assertFalse(isChildVisible(page, '#currentTopicsDescriptionDisabled'));
+    assertEquals(
+        0, testPrivacySandboxBrowserProxy.getCallCount('topicsToggleChanged'));
 
     page.$.topicsToggle.click();
     await flushTasks();
@@ -234,6 +237,8 @@ suite('PrivacySandboxTopicsSubpageTests', function() {
     assertEquals(
         'Settings.PrivacySandbox.Topics.Disabled',
         await metricsBrowserProxy.whenCalled('recordAction'));
+    assertFalse((await testPrivacySandboxBrowserProxy.whenCalled(
+        'topicsToggleChanged'))[0]);
   });
 
   test('learnMoreDialog', async function() {
@@ -266,8 +271,6 @@ suite('PrivacySandboxTopicsSubpageTests', function() {
     assertEquals(learnMoreButton, page.shadowRoot!.activeElement);
   });
 
-  // TODO(crbug.com/1378703): Add test for empty blocked topics list description
-  // when `getTopicsState()` returns an empty list.
   test('blockedTopicsNotEmpty', async function() {
     page.setPrefValue('privacy_sandbox.m1.topics_enabled', false);
     const blockedTopicsRow =
@@ -429,6 +432,96 @@ suite('PrivacySandboxTopicsSubpageTests', function() {
   });
 });
 
+suite('PrivacySandboxTopicsSubpageEmptyTests', function() {
+  let page: SettingsPrivacySandboxTopicsSubpageElement;
+  let testPrivacySandboxBrowserProxy: TestPrivacySandboxBrowserProxy;
+  let metricsBrowserProxy: TestMetricsBrowserProxy;
+  let settingsPrefs: SettingsPrefsElement;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      isPrivacySandboxRestricted: false,
+    });
+    settingsPrefs = document.createElement('settings-prefs');
+    return CrSettingsPrefs.initialized;
+  });
+
+  setup(async function() {
+    testPrivacySandboxBrowserProxy = new TestPrivacySandboxBrowserProxy();
+    testPrivacySandboxBrowserProxy.setTopicsState({
+      topTopics: [],
+      blockedTopics: [],
+    });
+    PrivacySandboxBrowserProxyImpl.setInstance(testPrivacySandboxBrowserProxy);
+    metricsBrowserProxy = new TestMetricsBrowserProxy();
+    MetricsBrowserProxyImpl.setInstance(metricsBrowserProxy);
+
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    document.body.appendChild(settingsPrefs);
+    page = document.createElement('settings-privacy-sandbox-topics-subpage');
+    page.prefs = settingsPrefs.prefs!;
+    document.body.appendChild(page);
+    await testPrivacySandboxBrowserProxy.whenCalled('getTopicsState');
+    return flushTasks();
+  });
+
+  teardown(function() {
+    Router.getInstance().resetRouteForTesting();
+  });
+
+  test('topicsDisabled', async function() {
+    page.setPrefValue('privacy_sandbox.m1.topics_enabled', false);
+    await flushTasks();
+    // Check the current topics descriptions.
+    assertTrue(isChildVisible(page, '#currentTopicsDescription'));
+    assertFalse(isChildVisible(page, '#currentTopicsDescriptionEmpty'));
+    assertTrue(isChildVisible(page, '#currentTopicsDescriptionDisabled'));
+  });
+
+  test('topicsEnabled', async function() {
+    page.setPrefValue('privacy_sandbox.m1.topics_enabled', true);
+    await flushTasks();
+    // Check the current topics descriptions.
+    assertTrue(isChildVisible(page, '#currentTopicsDescription'));
+    assertTrue(isChildVisible(page, '#currentTopicsDescriptionEmpty'));
+    assertFalse(isChildVisible(page, '#currentTopicsDescriptionDisabled'));
+    // Check that there are no current topics.
+    const currentTopics =
+        page.shadowRoot!.querySelectorAll('privacy-sandbox-interest-item');
+    assertEquals(0, currentTopics.length);
+  });
+
+  test('blockedTopicsEmpty', async function() {
+    page.setPrefValue('privacy_sandbox.m1.topics_enabled', true);
+    await flushTasks();
+    const blockedTopicsRow =
+        page.shadowRoot!.querySelector<HTMLElement>('#blockedTopicsRow')!;
+    const blockedTopicsDescription =
+        page.shadowRoot!.querySelector<HTMLElement>(
+            '#blockedTopicsDescription')!;
+    assertTrue(isVisible(blockedTopicsRow));
+    assertFalse(isVisible(blockedTopicsDescription));
+    blockedTopicsRow.click();
+    await flushTasks();
+    assertEquals(
+        'Settings.PrivacySandbox.Topics.BlockedTopicsOpened',
+        await metricsBrowserProxy.whenCalled('recordAction'));
+
+    // Check the blocked topics description.
+    assertTrue(isVisible(blockedTopicsDescription));
+    assertEquals(
+        loadTimeData.getString('topicsPageBlockedTopicsDescriptionEmpty'),
+        blockedTopicsDescription.innerText);
+
+    // Check that there are no blocked topics.
+    const blockedTopicsList =
+        page.shadowRoot!.querySelector('#blockedTopicsList')!;
+    const blockedTopics =
+        blockedTopicsList.querySelectorAll('privacy-sandbox-interest-item');
+    assertEquals(0, blockedTopics.length);
+  });
+});
+
 suite('PrivacySandboxFledgeSubpageTests', function() {
   let page: SettingsPrivacySandboxFledgeSubpageElement;
   let testPrivacySandboxBrowserProxy: TestPrivacySandboxBrowserProxy;
@@ -496,9 +589,8 @@ suite('PrivacySandboxFledgeSubpageTests', function() {
         page.$.fledgeToggle.subLabel);
     assertTrue(!!page.getPref('privacy_sandbox.m1.fledge_enabled.value'));
     assertTrue(isChildVisible(page, '#currentSitesDescription'));
-    // TODO(crbug.com/1378703): Add test for `#currentSitesDescriptionEmpty`
-    // when `getFledgeState()` returns an empty list.
-    assertFalse(isChildVisible(page, '#currentSitesDescriptionEmpty'));
+    // The current list is always empty after re-enabling the toggle.
+    assertTrue(isChildVisible(page, '#currentSitesDescriptionEmpty'));
     assertFalse(isChildVisible(page, '#currentSitesDescriptionDisabled'));
     assertEquals(
         'Settings.PrivacySandbox.Fledge.Enabled',
@@ -515,8 +607,6 @@ suite('PrivacySandboxFledgeSubpageTests', function() {
         loadTimeData.getString('fledgePageToggleSubLabel'),
         page.$.fledgeToggle.subLabel);
     assertTrue(isChildVisible(page, '#currentSitesDescription'));
-    // TODO(crbug.com/1378703): Add test for `#currentSitesDescriptionEmpty`
-    // when `getFledgeState()` returns an empty list.
     assertFalse(isChildVisible(page, '#currentSitesDescriptionEmpty'));
     assertFalse(isChildVisible(page, '#currentSitesDescriptionDisabled'));
 
@@ -567,8 +657,6 @@ suite('PrivacySandboxFledgeSubpageTests', function() {
     assertEquals(learnMoreButton, page.shadowRoot!.activeElement);
   });
 
-  // TODO(crbug.com/1378703): Add test for empty blocked sites list description
-  // when `getFledgeState()` returns an empty list.
   test('blockedSitesDescriptionNotEmpty', async function() {
     page.setPrefValue('privacy_sandbox.m1.fledge_enabled', false);
     const blockedSitesRow =
@@ -717,6 +805,96 @@ suite('PrivacySandboxFledgeSubpageTests', function() {
     const expectedLinks =
         ['chrome://settings/adPrivacy/interests', 'chrome://settings/cookies'];
     assertDeepEquals(hrefs, expectedLinks);
+  });
+});
+
+suite('PrivacySandboxFledgeSubpageEmptyTests', function() {
+  let page: SettingsPrivacySandboxFledgeSubpageElement;
+  let testPrivacySandboxBrowserProxy: TestPrivacySandboxBrowserProxy;
+  let metricsBrowserProxy: TestMetricsBrowserProxy;
+  let settingsPrefs: SettingsPrefsElement;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      isPrivacySandboxRestricted: false,
+    });
+    settingsPrefs = document.createElement('settings-prefs');
+    return CrSettingsPrefs.initialized;
+  });
+
+  setup(async function() {
+    testPrivacySandboxBrowserProxy = new TestPrivacySandboxBrowserProxy();
+    testPrivacySandboxBrowserProxy.setFledgeState({
+      joiningSites: [],
+      blockedSites: [],
+    });
+    PrivacySandboxBrowserProxyImpl.setInstance(testPrivacySandboxBrowserProxy);
+    metricsBrowserProxy = new TestMetricsBrowserProxy();
+    MetricsBrowserProxyImpl.setInstance(metricsBrowserProxy);
+
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
+    document.body.appendChild(settingsPrefs);
+    page = document.createElement('settings-privacy-sandbox-fledge-subpage');
+    page.prefs = settingsPrefs.prefs!;
+    document.body.appendChild(page);
+    await testPrivacySandboxBrowserProxy.whenCalled('getFledgeState');
+    return flushTasks();
+  });
+
+  teardown(function() {
+    Router.getInstance().resetRouteForTesting();
+  });
+
+  test('fledgeDisabled', async function() {
+    page.setPrefValue('privacy_sandbox.m1.fledge_enabled', false);
+    await flushTasks();
+    // Check the current sites descriptions.
+    assertTrue(isChildVisible(page, '#currentSitesDescription'));
+    assertFalse(isChildVisible(page, '#currentSitesDescriptionEmpty'));
+    assertTrue(isChildVisible(page, '#currentSitesDescriptionDisabled'));
+  });
+
+  test('fledgeEnabled', async function() {
+    page.setPrefValue('privacy_sandbox.m1.fledge_enabled', true);
+    await flushTasks();
+    // Check the current sites descriptions.
+    assertTrue(isChildVisible(page, '#currentSitesDescription'));
+    assertTrue(isChildVisible(page, '#currentSitesDescriptionEmpty'));
+    assertFalse(isChildVisible(page, '#currentSitesDescriptionDisabled'));
+    assertFalse(isChildVisible(page, '#seeAllSites'));
+    // Check that there are no current sites.
+    const currentSites =
+        page.shadowRoot!.querySelectorAll('privacy-sandbox-interest-item');
+    assertEquals(0, currentSites.length);
+  });
+
+  test('blockedSitesEmpty', async function() {
+    page.setPrefValue('privacy_sandbox.m1.fledge_enabled', true);
+    await flushTasks();
+    const blockedSitesRow =
+        page.shadowRoot!.querySelector<HTMLElement>('#blockedSitesRow')!;
+    const blockedSitesDescription = page.shadowRoot!.querySelector<HTMLElement>(
+        '#blockedSitesDescription')!;
+    assertTrue(isVisible(blockedSitesRow));
+    assertFalse(isVisible(blockedSitesDescription));
+    blockedSitesRow.click();
+    await flushTasks();
+    assertEquals(
+        'Settings.PrivacySandbox.Fledge.BlockedSitesOpened',
+        await metricsBrowserProxy.whenCalled('recordAction'));
+
+    // Check the blocked sites description.
+    assertTrue(isVisible(blockedSitesDescription));
+    assertEquals(
+        loadTimeData.getString('fledgePageBlockedSitesDescriptionEmpty'),
+        blockedSitesDescription.innerText);
+
+    // Check that there are no blocked sites.
+    const blockedSitesList =
+        page.shadowRoot!.querySelector('#blockedSitesList')!;
+    const blockedSites =
+        blockedSitesList.querySelectorAll('privacy-sandbox-interest-item');
+    assertEquals(0, blockedSites.length);
   });
 });
 

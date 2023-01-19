@@ -858,9 +858,10 @@ void PrerenderHostRegistry::ResourceLoadComplete(
 
 void PrerenderHostRegistry::PrimaryMainFrameRenderProcessGone(
     base::TerminationStatus status) {
-  CancelAllHosts(status == base::TERMINATION_STATUS_PROCESS_CRASHED
-                     ? PrerenderFinalStatus::kRendererProcessCrashed
-                     : PrerenderFinalStatus::kRendererProcessKilled);
+  CancelAllHosts(
+      status == base::TERMINATION_STATUS_PROCESS_CRASHED
+          ? PrerenderFinalStatus::kPrimaryMainFrameRendererProcessCrashed
+          : PrerenderFinalStatus::kPrimaryMainFrameRendererProcessKilled);
 }
 
 int PrerenderHostRegistry::FindHostToActivateInternal(
@@ -939,6 +940,8 @@ int PrerenderHostRegistry::FindHostToActivateInternal(
   }
 
   if (!host->IsFramePolicyCompatibleWithPrimaryFrameTree()) {
+    CancelHost(host->frame_tree_node_id(),
+               PrerenderFinalStatus::kActivationFramePolicyNotCompatible);
     return RenderFrameHost::kNoFrameTreeNodeId;
   }
 

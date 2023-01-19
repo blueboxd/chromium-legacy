@@ -26,6 +26,35 @@ function getConflictDialogElement(): XfConflictDialog {
 }
 
 /*
+ * Tests that the <dialog> element has the focus when the dialog opens. Child
+ * UI elements should not be focused by design.
+ */
+export async function testDialogShowFocus(done: () => void) {
+  const element = getConflictDialogElement();
+
+  // Check: the dialog should not be open.
+  const dialog = element.getDialogElement();
+  assertFalse(dialog.open);
+
+  const randomTrueFalse = () => {  // Returns random Boolean.
+    return Math.random() < 0.5;
+  };
+
+  // Open the conflict dialog for 'file-name' with random optional params.
+  element.show('file-name', randomTrueFalse(), randomTrueFalse());
+  await waitUntil(() => dialog.open);
+
+  // Check: the dialog should be visible.
+  assertNotEquals('none', window.getComputedStyle(dialog).display);
+  assertFalse(dialog.hidden);
+
+  // Check: the <dialog> must have the focus, never its child UI elements.
+  await waitUntil(() => element.shadowRoot!.activeElement === dialog);
+
+  done();
+}
+
+/*
  * Tests that the dialog opens with no 'Apply to all' checkbox shown.
  */
 export async function testDialogShow(done: () => void) {
@@ -42,8 +71,7 @@ export async function testDialogShow(done: () => void) {
   // Check: the dialog message should contain 'file.txt'.
   const message = element.getMessageElement();
   assertNotEquals('none', window.getComputedStyle(message).display);
-  assertTrue(message.innerText.includes('A file named'));
-  assertTrue(message.innerText.includes('file.txt'));
+  assertTrue(message.innerText.includes('A file named "file.txt"'));
   assertFalse(message.hidden);
 
   // Check: the 'Apply to all' checkbox should not be shown.
@@ -51,10 +79,6 @@ export async function testDialogShow(done: () => void) {
   assertEquals('none', window.getComputedStyle(checkbox).display);
   assertFalse(checkbox.checked);
   assertTrue(checkbox.hidden);
-
-  // Check: dialog must have the focus, never its child DOM elements.
-  assertNotEquals('none', window.getComputedStyle(dialog).display);
-  await waitUntil(() => element.shadowRoot!.activeElement === dialog);
 
   done();
 }
@@ -77,8 +101,7 @@ export async function testDialogShowCheckbox(done: () => void) {
   // Check: the dialog message should contain 'image.jpg'.
   const message = element.getMessageElement();
   assertNotEquals('none', window.getComputedStyle(message).display);
-  assertTrue(message.innerText.includes('A file named'));
-  assertTrue(message.innerText.includes('image.jpg'));
+  assertTrue(message.innerText.includes('A file named "image.jpg"'));
   assertFalse(message.hidden);
 
   // Check: the 'Apply to all' checkbox should be shown.
@@ -87,10 +110,6 @@ export async function testDialogShowCheckbox(done: () => void) {
   assertFalse(checkbox.hasAttribute('disabled'));
   assertFalse(checkbox.checked);
   assertFalse(checkbox.hidden);
-
-  // Check: dialog must have the focus, never its child DOM elements.
-  assertNotEquals('none', window.getComputedStyle(dialog).display);
-  await waitUntil(() => element.shadowRoot!.activeElement === dialog);
 
   done();
 }
@@ -116,8 +135,7 @@ export async function testDialogShowDirectoryMessageText(done: () => void) {
   // Check: the dialog message should contain 'Downloads'.
   const message = element.getMessageElement();
   assertNotEquals('none', window.getComputedStyle(message).display);
-  assertTrue(message.innerText.includes('A folder named'));
-  assertTrue(message.innerText.includes('Downloads'));
+  assertTrue(message.innerText.includes('A folder named "Downloads"'));
   assertFalse(message.hidden);
 
   // Check: the 'Apply to all' checkbox should not be shown.
@@ -126,9 +144,126 @@ export async function testDialogShowDirectoryMessageText(done: () => void) {
   assertFalse(checkbox.checked);
   assertTrue(checkbox.hidden);
 
-  // Check: dialog must have the focus, never its child DOM elements.
-  assertNotEquals('none', window.getComputedStyle(dialog).display);
-  await waitUntil(() => element.shadowRoot!.activeElement === dialog);
+  done();
+}
+
+/*
+ * Tests that clicking the 'Apply to all' checkbox changes the dialog checked
+ * state attributes, properties, and button texts.
+ */
+export async function testDialogCheckboxChangesCheckedState(done: () => void) {
+  const element = getConflictDialogElement();
+
+  // Check: the dialog should not be open.
+  const dialog = element.getDialogElement();
+  assertFalse(dialog.open);
+
+  // Open the conflict dialog for a given file name, with a checkbox.
+  const withCheckbox = true;
+  element.show('image.jpg', withCheckbox);
+  await waitUntil(() => dialog.open);
+
+  // Check: the 'Apply to all' checkbox should be shown.
+  const checkbox = element.getCheckboxElement();
+  assertNotEquals('none', window.getComputedStyle(checkbox).display);
+  assertFalse(checkbox.hasAttribute('checked'));
+  assertFalse(checkbox.hasAttribute('disabled'));
+  assertFalse(checkbox.checked);
+  assertFalse(checkbox.hidden);
+
+  // Get the keepboth and replace buttons.
+  const keepboth = element.getKeepbothButton();
+  const replace = element.getReplaceButton();
+  assertFalse(element.hasAttribute('checked'));
+  assertEquals('Keep both', keepboth.innerText);
+  assertEquals('Replace', replace.innerText);
+
+  // Check: clicking the checkbox should change the checked state.
+  checkbox.click();
+  await waitUntil(() => element.hasAttribute('checked'));
+  assertTrue(checkbox.hasAttribute('checked'));
+  assertTrue(checkbox.checked);
+  assertEquals('Keep all', keepboth.innerText);
+  assertEquals('Replace all', replace.innerText);
+
+  // Check: clicking the checkbox should change the checked state.
+  checkbox.click();
+  await waitUntil(() => !element.hasAttribute('checked'));
+  assertFalse(checkbox.hasAttribute('checked'));
+  assertFalse(checkbox.checked);
+  assertEquals('Keep both', keepboth.innerText);
+  assertEquals('Replace', replace.innerText);
+
+  done();
+}
+
+/*
+ * Tests that the dialog checked state is reset when the dialog opens.
+ */
+export async function testDialogShowResetsCheckedState(done: () => void) {
+  const element = getConflictDialogElement();
+
+  // Check: the dialog should not be open.
+  const dialog = element.getDialogElement();
+  assertFalse(dialog.open);
+
+  // Open the conflict dialog for a given file name, with a checkbox.
+  const withCheckbox = true;
+  const resultPromise = element.show('image.jpg', withCheckbox);
+  await waitUntil(() => dialog.open);
+
+  // Get the keepboth and replace buttons.
+  const keepboth = element.getKeepbothButton();
+  const replace = element.getReplaceButton();
+  assertFalse(element.hasAttribute('checked'));
+  assertEquals('Keep both', keepboth.innerText);
+  assertEquals('Replace', replace.innerText);
+
+  // Check: the 'Apply to all' checkbox should be shown.
+  const checkbox = element.getCheckboxElement();
+  assertNotEquals('none', window.getComputedStyle(checkbox).display);
+  assertFalse(checkbox.hasAttribute('checked'));
+  assertFalse(checkbox.hasAttribute('disabled'));
+  assertFalse(checkbox.checked);
+  assertFalse(checkbox.hidden);
+
+  // Check: clicking the checkbox should change the checked state.
+  checkbox.click();
+  await waitUntil(() => element.hasAttribute('checked'));
+  assertTrue(checkbox.hasAttribute('checked'));
+  assertTrue(checkbox.checked);
+  assertEquals('Keep all', keepboth.innerText);
+  assertEquals('Replace all', replace.innerText);
+
+  // Close the modal dialog while in checked state. Closing should reject
+  // the resultPromise with a cancelled Error.
+  try {
+    dialog.close();
+    await resultPromise;
+    assertNotReached();
+  } catch (error: any) {
+    assertEquals('Error: dialog cancelled', error?.toString());
+    await waitUntil(() => !dialog.open);
+  }
+
+  // Check: the dialog closed and should still have checked state.
+  assertFalse(dialog.open);
+  assertTrue(element.hasAttribute('checked'));
+  assertTrue(checkbox.hasAttribute('checked'));
+  assertTrue(checkbox.checked);
+  assertEquals('Keep all', keepboth.innerText);
+  assertEquals('Replace all', replace.innerText);
+
+  // Open the dialog again.
+  element.show('file.txt', withCheckbox);
+  await waitUntil(() => dialog.open);
+
+  // Check: the checked state should be reset when the dialog opens.
+  await waitUntil(() => !element.hasAttribute('checked'));
+  assertFalse(checkbox.hasAttribute('checked'));
+  assertFalse(checkbox.checked);
+  assertEquals('Keep both', keepboth.innerText);
+  assertEquals('Replace', replace.innerText);
 
   done();
 }
@@ -252,17 +387,23 @@ export async function testDialogReplaceButton(done: () => void) {
   // Open the conflict dialog for a given file name, with the checkbox.
   const resultCheckboxPromise = element.show('file2.txt', true);
   await waitUntil(() => dialog.open);
+  assertFalse(element.hasAttribute('checked'));
+  assertEquals('Replace', replace.innerText);
 
   // Check: the 'Apply to all' checkbox should be shown.
   const checkbox = element.getCheckboxElement();
   assertNotEquals('none', window.getComputedStyle(checkbox).display);
+  assertFalse(checkbox.hasAttribute('checked'));
   assertFalse(checkbox.hasAttribute('disabled'));
   assertFalse(checkbox.checked);
   assertFalse(checkbox.hidden);
 
-  // Clicking the checkbox should toggle its checked state.
+  // Check: clicking the checkbox should change the checked state.
   checkbox.click();
-  await waitUntil(() => checkbox.checked);
+  await waitUntil(() => element.hasAttribute('checked'));
+  assertTrue(checkbox.hasAttribute('checked'));
+  assertTrue(checkbox.checked);
+  assertEquals('Replace all', replace.innerText);
 
   // Check: the replace button should be shown.
   assertNotEquals('none', window.getComputedStyle(replace).display);
@@ -323,17 +464,23 @@ export async function testDialogKeepbothButton(done: () => void) {
   // Open the conflict dialog for a given file name, with the checkbox.
   const resultCheckboxPromise = element.show('file2.txt', true);
   await waitUntil(() => dialog.open);
+  assertFalse(element.hasAttribute('checked'));
+  assertEquals('Keep both', keepboth.innerText);
 
   // Check: the 'Apply to all' checkbox should be shown.
   const checkbox = element.getCheckboxElement();
   assertNotEquals('none', window.getComputedStyle(checkbox).display);
+  assertFalse(checkbox.hasAttribute('checked'));
   assertFalse(checkbox.hasAttribute('disabled'));
   assertFalse(checkbox.checked);
   assertFalse(checkbox.hidden);
 
-  // Clicking the checkbox should toggle its checked state.
+  // Check: clicking the checkbox should change the checked state.
   checkbox.click();
-  await waitUntil(() => checkbox.checked);
+  await waitUntil(() => element.hasAttribute('checked'));
+  assertTrue(checkbox.hasAttribute('checked'));
+  assertTrue(checkbox.checked);
+  assertEquals('Keep all', keepboth.innerText);
 
   // Check: the keepboth button should be shown.
   assertNotEquals('none', window.getComputedStyle(keepboth).display);

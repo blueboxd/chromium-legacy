@@ -52,9 +52,9 @@ class UnifiedSystemTrayTest : public AshTestBase,
   ~UnifiedSystemTrayTest() override = default;
 
   void SetUp() override {
-    if (IsQsRevampEnabled())
-      feature_list_.InitWithFeatures(
-          {features::kQsRevamp, features::kQsRevampWip}, {});
+    if (IsQsRevampEnabled()) {
+      feature_list_.InitAndEnableFeature(features::kQsRevamp);
+    }
     AshTestBase::SetUp();
   }
 
@@ -294,8 +294,9 @@ TEST_P(UnifiedSystemTrayTest, HorizontalImeAndTimeLabelAlignment) {
 }
 
 TEST_P(UnifiedSystemTrayTest, FocusMessageCenter) {
-  if (IsQsRevampEnabled())
+  if (IsQsRevampEnabled()) {
     return;
+  }
 
   auto* tray = GetPrimaryUnifiedSystemTray();
   tray->ShowBubble();
@@ -321,8 +322,9 @@ TEST_P(UnifiedSystemTrayTest, FocusMessageCenter) {
 }
 
 TEST_P(UnifiedSystemTrayTest, FocusMessageCenter_MessageCenterBubbleNotShown) {
-  if (IsQsRevampEnabled())
+  if (IsQsRevampEnabled()) {
     return;
+  }
 
   auto* tray = GetPrimaryUnifiedSystemTray();
   tray->ShowBubble();
@@ -336,8 +338,9 @@ TEST_P(UnifiedSystemTrayTest, FocusMessageCenter_MessageCenterBubbleNotShown) {
 }
 
 TEST_P(UnifiedSystemTrayTest, FocusMessageCenter_VoxEnabled) {
-  if (IsQsRevampEnabled())
+  if (IsQsRevampEnabled()) {
     return;
+  }
 
   auto* tray = GetPrimaryUnifiedSystemTray();
   tray->ShowBubble();
@@ -504,8 +507,9 @@ TEST_P(UnifiedSystemTrayTest, CalendarAcceleratorFocusesDateCell) {
 // Tests that CalendarView switches back to Quick Settings when screen size is
 // limited and the bubble requires a collapsed state.
 TEST_P(UnifiedSystemTrayTest, CalendarGoesToMainView) {
-  if (IsQsRevampEnabled())
+  if (IsQsRevampEnabled()) {
     return;
+  }
 
   auto* tray = GetPrimaryUnifiedSystemTray();
   tray->ShowBubble();
@@ -681,8 +685,9 @@ TEST_P(UnifiedSystemTrayTest, TrayBackgroundColorAfterSwitchToTabletMode) {
 // bubble becomes visible, and otherwise does not automatically show or hide.
 TEST_P(UnifiedSystemTrayTest, BubbleHideBehavior) {
   // This hiding behavior only applies when QsRevamp is enabled.
-  if (!IsQsRevampEnabled())
+  if (!IsQsRevampEnabled()) {
     return;
+  }
 
   // Basic verification test that the unified system tray bubble can show/hide
   // itself when no other bubbles are visible.
@@ -709,5 +714,54 @@ TEST_P(UnifiedSystemTrayTest, BubbleHideBehavior) {
   // bubble.
   ShowNotificationBubble();
   EXPECT_FALSE(IsBubbleShown());
+}
+
+TEST_P(UnifiedSystemTrayTest, BubbleViewSizeChangeWithEnoughSpace) {
+  // Set a large enough screen size.
+  UpdateDisplay("1600x900");
+
+  auto* tray = GetPrimaryUnifiedSystemTray();
+  tray->ShowBubble();
+  auto* bubble_view = tray->bubble()->GetBubbleView();
+
+  // The main page height should be smaller than the detailed view height.
+  EXPECT_GT(464, bubble_view->height());
+
+  // Goes to a detailed view (here using calendar view).
+  ShellTestApi().PressAccelerator(
+      ui::Accelerator(ui::VKEY_C, ui::EF_COMMAND_DOWN));
+
+  // Asserts that calendar is actually shown.
+  EXPECT_TRUE(GetPrimaryUnifiedSystemTray()->IsShowingCalendarView());
+
+  if (IsQsRevampEnabled()) {
+    // The bubble height should be fixed to the detailed view height.
+    EXPECT_EQ(464, bubble_view->height());
+  } else {
+    EXPECT_GT(464, bubble_view->height());
+  }
+  tray->CloseBubble();
+}
+
+TEST_P(UnifiedSystemTrayTest, BubbleViewSizeChangeNoEnoughSpace) {
+  // Set a small screen size.
+  UpdateDisplay("300x200");
+
+  auto* tray = GetPrimaryUnifiedSystemTray();
+  tray->ShowBubble();
+  auto* bubble_view = tray->bubble()->GetBubbleView();
+
+  // The main page height should be smaller than the detailed view height.
+  EXPECT_GT(464, bubble_view->height());
+
+  // Goes to a detailed view (here using calendar view).
+  ShellTestApi().PressAccelerator(
+      ui::Accelerator(ui::VKEY_C, ui::EF_COMMAND_DOWN));
+  // Asserts that calendar is actually shown.
+  EXPECT_TRUE(GetPrimaryUnifiedSystemTray()->IsShowingCalendarView());
+
+  // No enough space for the fixed detailed view height.
+  EXPECT_GT(464, bubble_view->height());
+  tray->CloseBubble();
 }
 }  // namespace ash

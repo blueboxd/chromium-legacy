@@ -3,11 +3,18 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
-import("//tools/polymer/html_to_js.gni")
 import("../os_settings.gni")
 
 js_type_check("closure_compile_module") {
-  closure_flags = os_settings_closure_flags
+  closure_flags = os_settings_closure_flags + mojom_js_args + [
+                    # For typechecking nearby share Mojo WebUI bindings:
+                    # - Add the Mojo WebUI binding gen directory to the module root
+                    # - Replace import path prefix so the bindings can be resolved
+                    "js_module_root=" + rebase_path(
+                            "$root_gen_dir/mojom-webui/chrome/browser/ui/webui/nearby_share/",
+                            root_build_dir),
+                    "browser_resolver_prefix_replacements=\"/mojo/=./\"",
+                  ]
   is_polymer3 = true
   deps = [
     ":multidevice_browser_proxy",
@@ -236,24 +243,4 @@ js_library("multidevice_smartlock_item") {
 
 js_library("multidevice_metrics_logger") {
   deps = [ "//ash/webui/common/resources:assert" ]
-}
-
-html_to_js("web_components") {
-  js_files = [
-    "multidevice_combined_setup_item.js",
-    "multidevice_feature_item.js",
-    "multidevice_feature_toggle.js",
-    "multidevice_notification_access_setup_dialog.js",
-    "multidevice_page.js",
-    "multidevice_permissions_setup_dialog.js",
-    "multidevice_radio_button.js",
-    "multidevice_screen_lock_subpage.js",
-    "multidevice_smartlock_item.js",
-    "multidevice_subpage.js",
-    "multidevice_task_continuation_disabled_link.js",
-    "multidevice_task_continuation_item.js",
-    "multidevice_tether_item.js",
-    "multidevice_wifi_sync_disabled_link.js",
-    "multidevice_wifi_sync_item.js",
-  ]
 }

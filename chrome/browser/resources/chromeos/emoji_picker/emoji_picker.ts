@@ -196,6 +196,8 @@ export class EmojiPicker extends PolymerElement {
       '--emoji-picker-top-padding': constants.EMOJI_PICKER_TOP_PADDING_PX,
       '--emoji-spacing': constants.EMOJI_SPACING_PX,
       '--emoji-group-spacing': constants.EMOJI_GROUP_SPACING_PX,
+      '--visual-content-padding': constants.VISUAL_CONTENT_PADDING_PX,
+      '--visual-content-width': constants.VISUAL_CONTENT_WIDTH_PX,
       '--tab-button-margin': constants.TAB_BUTTON_MARGIN_PX,
       '--text-group-button-padding': constants.TEXT_GROUP_BUTTON_PADDING_PX,
     });
@@ -563,21 +565,28 @@ export class EmojiPicker extends PolymerElement {
       const maxPagination =
           this.getPaginationArray(this.emojiGroupTabs).pop() ?? 0;
       this.pagination = Math.min(this.pagination + 1, maxPagination);
-
-      const nextTab =
-          this.emojiGroupTabs.find((tab) => tab.pagination === this.pagination);
-      this.scrollToGroup(nextTab?.groupId);
-      this.groupTabsMoving = true;
+      this.updateCurrentGroupTabs();
     }
   }
 
   onLeftChevronClick() {
     this.pagination = Math.max(this.pagination - 1, 1);
+    this.updateCurrentGroupTabs();
+  }
 
+  updateCurrentGroupTabs() {
     const nextTab =
         this.emojiGroupTabs.find((tab) => tab.pagination === this.pagination);
-    this.scrollToGroup(nextTab?.groupId);
-    this.groupTabsMoving = true;
+    if (this.category === CategoryEnum.GIF) {
+      // GIF group tabs movement isn't affected by scrolling
+      this.groupTabsMoving = false;
+
+      // TODO(b/265731647) Set the GIF elements for the first GIF tab group
+      // Awaiting (b/263920562) to be merged in
+    } else {
+      this.scrollToGroup(nextTab?.groupId);
+      this.groupTabsMoving = true;
+    }
   }
 
   scrollToGroup(newGroup?: string) {
@@ -591,6 +600,13 @@ export class EmojiPicker extends PolymerElement {
 
   private onGroupsScroll() {
     this.updateChevrons();
+
+    // This stops the GIF group tabs bar from bouncing back
+    // when clicking on left/right chevron.
+    if (this.category === CategoryEnum.GIF) {
+      return;
+    }
+
     this.groupTabsMoving = true;
 
     if (this.groupButtonScrollTimeout) {

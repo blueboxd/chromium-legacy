@@ -65,11 +65,9 @@ class BluetoothFeaturePodControllerTest
  public:
   BluetoothFeaturePodControllerTest() {
     if (IsQsRevampEnabled()) {
-      feature_list_.InitWithFeatures(
-          {features::kQsRevamp, features::kQsRevampWip}, {});
+      feature_list_.InitAndEnableFeature(features::kQsRevamp);
     } else {
-      feature_list_.InitWithFeatures(
-          {}, {features::kQsRevamp, features::kQsRevampWip});
+      feature_list_.InitAndDisableFeature(features::kQsRevamp);
     }
   }
 
@@ -590,6 +588,21 @@ TEST_P(BluetoothFeaturePodControllerTest, LabelUMATracking) {
   histogram_tester->ExpectBucketCount(GetDiveInHistogramName(),
                                       QsFeatureCatalogName::kBluetooth,
                                       /*expected_count=*/1);
+}
+
+TEST_P(BluetoothFeaturePodControllerTest, VisibilityOnConstruction) {
+  BluetoothFeaturePodController controller(tray_controller());
+  if (IsQsRevampEnabled()) {
+    // Create a feature tile but don't spin the message loop.
+    auto tile = controller.CreateTile();
+    // System state defaults to "enabled" so the tile is visible.
+    EXPECT_TRUE(tile->GetVisible());
+  } else {
+    // Create a feature pod button but don't spin the message loop.
+    auto button = base::WrapUnique(controller.CreateButton());
+    // System state defaults to "unavailable" so the button is invisible.
+    EXPECT_FALSE(button->GetVisible());
+  }
 }
 
 }  // namespace ash

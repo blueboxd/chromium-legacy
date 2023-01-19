@@ -42,7 +42,6 @@ using bluetooth_config::mojom::BluetoothSystemPropertiesPtr;
 using bluetooth_config::mojom::BluetoothSystemState;
 using ::chromeos::network_config::NetworkTypeMatchesType;
 using ::chromeos::network_config::StateIsConnected;
-using ::chromeos::network_config::mojom::CrosNetworkConfig;
 using ::chromeos::network_config::mojom::DeviceStateProperties;
 using ::chromeos::network_config::mojom::DeviceStateType;
 using ::chromeos::network_config::mojom::FilterType;
@@ -336,7 +335,10 @@ void NetworkListViewControllerImpl::OnGetNetworkStateList(
     } else {
       RemoveAndResetViewIfExists(&unknown_header_);
     }
-
+    network_item_index = CreateJoinWifiEntry(network_item_index);
+    if (!is_wifi_enabled_) {
+      RemoveAndResetViewIfExists(&join_wifi_entry_);
+    }
     network_detailed_network_view()->ReorderNetworkListView(index++);
 
   } else {
@@ -496,6 +498,16 @@ void NetworkListViewControllerImpl::SetConnectionWarningIcon(
     TriView* parent,
     bool use_managed_icon) {
   DCHECK(parent) << "The connection warning parent view should not be null";
+  int newIconId = static_cast<int>(
+      use_managed_icon
+          ? NetworkListViewControllerViewChildId::kConnectionWarningManagedIcon
+          : NetworkListViewControllerViewChildId::kConnectionWarningSystemIcon);
+
+  if (connection_warning_icon_ &&
+      connection_warning_icon_->GetID() == newIconId) {
+    // The view is already showing the correct icon.
+    return;
+  }
 
   // Remove the previous icon if set.
   RemoveAndResetViewIfExists(&connection_warning_icon_);
@@ -508,8 +520,7 @@ void NetworkListViewControllerImpl::SetConnectionWarningIcon(
       AshColorProvider::Get()->GetContentLayerColor(
           AshColorProvider::ContentLayerType::kIconColorPrimary)));
   image_view->SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
-  image_view->SetID(static_cast<int>(
-      NetworkListViewControllerViewChildId::kConnectionWarningIcon));
+  image_view->SetID(newIconId);
   connection_warning_icon_ = image_view.get();
   parent->AddView(TriView::Container::START, image_view.release());
 }
@@ -611,6 +622,18 @@ size_t NetworkListViewControllerImpl::CreateWifiGroupHeader(
                         ->GetNetworkList(NetworkType::kWiFi)
                         ->AddChildViewAt(std::move(header), index++);
   return index;
+}
+
+size_t NetworkListViewControllerImpl::CreateJoinWifiEntry(size_t index) {
+  if (join_wifi_entry_) {
+    network_detailed_network_view()
+        ->GetNetworkList(NetworkType::kWiFi)
+        ->ReorderChildView(join_wifi_entry_, index++);
+    return index;
+  }
+
+  join_wifi_entry_ = network_detailed_network_view()->AddJoinNetworkEntry();
+  return index++;
 }
 
 void NetworkListViewControllerImpl::UpdateMobileSection() {

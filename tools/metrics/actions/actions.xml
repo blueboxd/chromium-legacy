@@ -4937,6 +4937,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="BookmarkBar_ContextMenu_AddToBookmarkBar">
+  <owner>emshack@chromium.org</owner>
+  <description>
+    The user added one or more bookmarks to the Bookmarks Bar using the context
+    menu.
+  </description>
+</action>
+
 <action name="BookmarkBar_ContextMenu_Edit">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -9062,6 +9070,22 @@ should be able to be added at any place in this file.
   <obsolete>Deprecated 02/2017.</obsolete>
   <owner>thestig@chromium.org</owner>
   <description>Count of Flash plugin instances.</description>
+</action>
+
+<action name="FloatWindowTucked">
+  <owner>sophiewen@chromium.org</owner>
+  <owner>shidi@chromium.org</owner>
+  <description>
+    Recorded when a floated window is tucked in tablet mode.
+  </description>
+</action>
+
+<action name="FloatWindowUntucked">
+  <owner>sophiewen@chromium.org</owner>
+  <owner>shidi@chromium.org</owner>
+  <description>
+    Recorded when a floated window is untucked in tablet mode.
+  </description>
 </action>
 
 <action name="FocusAppMenu">
@@ -26727,6 +26751,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="QS_Subpage_Network_JoinNetwork">
+  <owner>jiamingc@google.com</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <description>
+    User clicked on the Join Wi-Fi network entry in the quick settings network
+    subpage on ChromeOS.
+  </description>
+</action>
+
 <action name="QuickActionSearchWidget.LensQuery">
   <owner>ender@google.com</owner>
   <owner>fgorski@chromium.org</owner>
@@ -28271,12 +28304,30 @@ should be able to be added at any place in this file.
   <description>User declined the privacy sandbox consent.</description>
 </action>
 
+<action name="Settings.PrivacySandbox.Consent.LearnMoreClosed">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>sauski@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    User closed the Learn More in the Privacy Sandbox Consent.
+  </description>
+</action>
+
 <action name="Settings.PrivacySandbox.Consent.LearnMoreExpanded">
   <owner>harrisonsean@chromium.org</owner>
   <owner>sauski@google.com</owner>
   <owner>msramek@chromium.org</owner>
   <description>
     User expanded the Learn More in the Privacy Sandbox Consent.
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Consent.MoreButtonClicked">
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <owner>kartoffel-core-eng@google.com</owner>
+  <description>
+    User clicked on the More button in the Privacy Sandbox Consent.
   </description>
 </action>
 
@@ -28397,12 +28448,30 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Settings.PrivacySandbox.Notice.LearnMoreClosed">
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <owner>tommasin@chromium.org</owner>
+  <description>
+    User closed the Learn More in the Privacy Sandbox Notice.
+  </description>
+</action>
+
 <action name="Settings.PrivacySandbox.Notice.LearnMoreExpanded">
   <owner>olesiamarukhno@google.com</owner>
   <owner>sauski@google.com</owner>
   <owner>tommasin@chromium.org</owner>
   <description>
     User expanded the Learn More in the Privacy Sandbox Notice.
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Notice.MoreButtonClicked">
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <owner>kartoffel-core-eng@google.com</owner>
+  <description>
+    User clicked on the More button in the Privacy Sandbox Notice.
   </description>
 </action>
 

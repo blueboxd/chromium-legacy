@@ -96,20 +96,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Network.Ash.Cellular.Apn.CustomApns.{CustomApnState}.Count"
-    units="count" expires_after="2023-10-18">
-  <owner>gordonseto@google.com</owner>
-  <owner>cros-connectivity@google.com</owner>
-  <summary>
-    Records the number of {CustomApnState} APNs saved for a cellular network
-    every time a cellular network successfully connects.
-  </summary>
-  <token key="CustomApnState">
-    <variant name="Disabled"/>
-    <variant name="Enabled"/>
-  </token>
-</histogram>
-
 <histogram name="Network.Ash.Cellular.Apn.DisableCustomApn.ApnTypes"
     enum="ApnTypes" expires_after="2023-10-18">
   <owner>gordonseto@google.com</owner>
@@ -1509,7 +1495,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Patchpanel.ArcService"
-    enum="NetworkPatchpanelArcEvent" expires_after="2023-05-14">
+    enum="NetworkPatchpanelArcEvent" expires_after="2023-07-16">
   <owner>hugobenichi@google.com</owner>
   <owner>cros-connectivity@google.com</owner>
   <owner>cros-network-metrics@google.com</owner>
@@ -1683,7 +1669,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.ConnectResult"
-    enum="PlatformCellularConnectResult" expires_after="2023-05-14">
+    enum="PlatformCellularConnectResult" expires_after="2023-07-16">
   <owner>danielwinkler@google.com</owner>
   <owner>cros-connectivity@google.com</owner>
   <summary>
@@ -1749,7 +1735,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.PortalAttemptsToOnline" units="units"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1760,7 +1746,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.PortalResult"
-    enum="NetworkPortalResult" expires_after="2023-05-14">
+    enum="NetworkPortalResult" expires_after="2023-07-16">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1790,7 +1776,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.TimeOnline" units="seconds"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1801,7 +1787,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.TimeToConfig" units="ms"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1811,7 +1797,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.TimeToConnect" units="ms"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1821,7 +1807,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.TimeToDisable" units="ms"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1831,7 +1817,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.TimeToEnable" units="ms"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1851,7 +1837,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Cellular.TimeToOnline" units="ms"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>ejcaruso@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2011,7 +1997,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.TimeOnline" units="seconds"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>hugobenichi@google.com</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2337,21 +2323,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Network.Shill.Vpn.L2tpIpsec.StrokeEndReason"
-    enum="NetworkServiceError" expires_after="2023-02-19">
-  <owner>jiejiang@chromium.org</owner>
-  <owner>cros-connectivity@google.com</owner>
-  <owner>cros-network-metrics@google.com</owner>
-  <summary>
-    Chrome OS network usage metric emitted on the end of each L2TP/IPsec VPN
-    connection initiated by the stroke-based driver that tracks the reason that
-    the connection is ended. This metric will be emitted no matter if the
-    connection is established successfully, i.e., it will be emitted if an error
-    happens during connecting. This metric will be used to compare the stability
-    of the stroke-based driver and swanctl-based driver (b/204261554).
-  </summary>
-</histogram>
-
 <histogram name="Network.Shill.Vpn.L2tpIpsec.SwanctlEndReason"
     enum="NetworkServiceError" expires_after="2023-06-25">
   <owner>jiejiang@chromium.org</owner>
@@ -2362,8 +2333,7 @@ chromium-metrics-reviews@google.com.
     connection initiated by the swanctl-based driver that tracks the reason that
     the connection is ended. This metric will be emitted no matter if the
     connection is established successfully, i.e., it will be emitted if an error
-    happens during connecting. This metric will be used to compare the stability
-    of the stroke-based driver and swanctl-based driver (b/204261554).
+    happens during connecting.
   </summary>
 </histogram>
 
@@ -2602,6 +2572,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.WiFi.ApAlternateEDCASupport"
+    enum="WiFiApAlternateEDCASupport" expires_after="2023-12-30">
+  <owner>damiendejean@chromium.org</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    Chrome OS network metric sampling the number of Wireless Access Points that
+    support transmit opportunity negotation, emitted on successful connections
+    to an AP.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.WiFi.ApChannelSwitch" enum="WiFiApChannelSwitch"
     expires_after="2023-06-18">
   <owner>matthewmwang@chromium.org</owner>
@@ -2629,6 +2610,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     Chrome OS network usage metric. Broad category of reason AP disconnected a
     WiFi connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.WiFi.ApSCSupport" enum="WiFiApSCSupport"
+    expires_after="2023-12-30">
+  <owner>damiendejean@chromium.org</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    Chrome OS network metric sampling the number of Wireless Access Points that
+    support stream classification, emitted on successful connections to an AP.
   </summary>
 </histogram>
 
@@ -2695,6 +2686,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     Chrome OS network usage metric. The channel used for each successful WiFi
     connection.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.WiFi.CiscoAdaptiveFTSupport"
+    enum="WiFiCiscoAdaptiveFTSupport" expires_after="2023-12-01">
+  <owner>matthewmwang@chromium.org</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    Chrome OS network metric sampling the number of Wireless Access Points that
+    support Cisco's Adaptive FT feature, sampled on successful connections to an
+    AP.
   </summary>
 </histogram>
 
@@ -3172,7 +3174,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.TimeResumeToReady" units="ms"
-    expires_after="2023-02-12">
+    expires_after="2023-12-01">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>

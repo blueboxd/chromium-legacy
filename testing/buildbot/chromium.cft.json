@@ -1515,24 +1515,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "vr_pixeltests",
-        "test_id_prefix": "ninja://chrome/browser/vr:vr_pixeltests/"
-      },
-      {
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "wm_unittests",
         "test_id_prefix": "ninja://ui/wm:wm_unittests/"
       },
@@ -2552,7 +2534,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 10
+          "shards": 20
         },
         "test": "browser_tests",
         "test_id_prefix": "ninja://chrome/test:browser_tests/"
@@ -4193,6 +4175,26 @@
         },
         "test_id_prefix": "ninja://ui/views:views_perftests/"
       }
+    ],
+    "scripts": [
+      {
+        "isolate_profile_data": true,
+        "name": "check_static_initializers",
+        "script": "check_static_initializers.py",
+        "swarming": {}
+      },
+      {
+        "isolate_profile_data": true,
+        "name": "metrics_python_tests",
+        "script": "metrics_python_tests.py",
+        "swarming": {}
+      },
+      {
+        "isolate_profile_data": true,
+        "name": "webkit_lint",
+        "script": "blink_lint_expectations.py",
+        "swarming": {}
+      }
     ]
   },
   "win-rel-cft": {
@@ -4451,6 +4453,7 @@
       },
       {
         "args": [
+          "--disable-features=WebRTC-H264WithOpenH264FFmpeg",
           "--test-launcher-filter-file=../../testing/buildbot/filters/win.win-rel-cft.browser_tests.filter"
         ],
         "isolate_profile_data": true,
@@ -4468,37 +4471,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 10
-        },
-        "test": "browser_tests",
-        "test_id_prefix": "ninja://chrome/test:browser_tests/"
-      },
-      {
-        "args": [
-          "--browser-ui-tests-verify-pixels",
-          "--enable-pixel-output-in-tests",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/pixel_tests.filter",
-          "--git-revision=${got_revision}"
-        ],
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "pixel_browser_tests",
-        "precommit_args": [
-          "--gerrit-issue=${patch_issue}",
-          "--gerrit-patchset=${patch_set}",
-          "--buildbucket-id=${buildbucket_build_id}"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19042|Windows-10-19045"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests",
         "test_id_prefix": "ninja://chrome/test:browser_tests/"
@@ -6051,25 +6023,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "vr_pixeltests",
-        "test_id_prefix": "ninja://chrome/browser/vr:vr_pixeltests/"
-      },
-      {
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19042|Windows-10-19045"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "wm_unittests",
         "test_id_prefix": "ninja://ui/wm:wm_unittests/"
       },
@@ -6159,7 +6112,9 @@
         "args": [
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json",
-          "--git-revision=${got_revision}"
+          "--git-revision=${got_revision}",
+          "--target",
+          "Release_x64"
         ],
         "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
@@ -6197,7 +6152,9 @@
         "args": [
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json",
-          "--git-revision=${got_revision}"
+          "--git-revision=${got_revision}",
+          "--target",
+          "Release_x64"
         ],
         "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_wpt_tests",
@@ -6492,63 +6449,6 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:telemetry_gpu_unittests/"
-      },
-      {
-        "args": [
-          "--extra-browser-args=--enable-crashpad"
-        ],
-        "isolate_name": "telemetry_perf_unittests",
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "telemetry_perf_unittests",
-        "resultdb": {
-          "enable": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19042|Windows-10-19045"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 12
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_perf_unittests/"
-      },
-      {
-        "args": [
-          "--jobs=1",
-          "--extra-browser-args=--disable-gpu"
-        ],
-        "isolate_name": "telemetry_unittests",
-        "isolate_profile_data": true,
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "telemetry_unittests",
-        "resultdb": {
-          "enable": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19042|Windows-10-19045"
-            }
-          ],
-          "idempotent": false,
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 8
-        },
-        "test_id_prefix": "ninja://chrome/test:telemetry_unittests/"
       },
       {
         "args": [

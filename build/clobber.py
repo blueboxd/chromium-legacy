@@ -22,18 +22,17 @@ def extract_gn_build_commands(build_ninja_file):
   On error, returns the empty string."""
   result = ""
   with open(build_ninja_file, 'r') as f:
-    # Read until the third blank line. The first thing GN writes to the file
-    # is "ninja_required_version = x.y.z", then the "rule gn" and the third
-    # is the section for "build build.ninja", separated by blank lines.
-    num_blank_lines = 0
-    while num_blank_lines < 3:
-      line = f.readline()
-      if len(line) == 0:
-        return ''  # Unexpected EOF.
+    # Reads until the first empty line after the "build build.ninja:" target.
+    # We assume everything before it necessary as well (eg the
+    # "ninja_required_version" line).
+    found_build_dot_ninja_target = False
+    for line in f.readlines():
       result += line
-      if line[0] == '\n':
-        num_blank_lines = num_blank_lines + 1
-  return result
+      if line.startswith('build build.ninja:'):
+        found_build_dot_ninja_target = True
+      if found_build_dot_ninja_target and line[0] == '\n':
+        return result
+  return ''  # We got to EOF and didn't find what we were looking for.
 
 
 def delete_dir(build_dir):
@@ -68,7 +67,7 @@ def delete_build_dir(build_dir):
   except IOError:
     args_contents = ''
 
-  e = None
+  exception_during_rm = None
   try:
     # delete_dir and os.mkdir() may fail, such as when chrome.exe is running,
     # and we still want to restore args.gn/build.ninja/build.ninja.d, so catch
@@ -76,7 +75,7 @@ def delete_build_dir(build_dir):
     delete_dir(build_dir)
     os.mkdir(build_dir)
   except Exception as e:
-    pass
+    exception_during_rm = e
 
   # Put back the args file (if any).
   if args_contents != '':
@@ -105,9 +104,10 @@ build build.ninja: gn
   with open(build_ninja_d_file, 'w') as f:
     f.write('build.ninja: nonexistant_file.gn\n')
 
-  if e:
+  if exception_during_rm:
     # Rethrow the exception we caught earlier.
-    raise e
+    raise exception_during_rm
+
 
 def clobber(out_dir):
   """Clobber contents of build directory.

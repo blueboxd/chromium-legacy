@@ -343,7 +343,7 @@ crbug.com/1288134 [ win10 amd-0x7340 renderer-skia-gl ] Pixel_DirectComposition_
 # Pixel 4 Flaky Failures - Passthrough and Validating on Chromium
 
 # Pixel 6 failures.
-crbug.com/1286915 [ android android-pixel-6 ] Pixel_CanvasLowLatencyWebGLAlphaFalse [ Failure ]
+crbug.com/1286915 [ android android-pixel-6 angle-disabled no-passthrough ] Pixel_CanvasLowLatencyWebGLAlphaFalse [ Failure ]
 crbug.com/1287280 [ android android-pixel-6 no-passthrough android-chromium ] Pixel_CanvasDisplaySRGBAccelerated2D [ Failure ]
 crbug.com/1289884 [ android android-pixel-6 renderer-skia-vulkan android-webview-instrumentation ] * [ Failure ]
 
@@ -371,16 +371,22 @@ crbug.com/1395227 [ mac ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
 crbug.com/1395227 [ mac ] Pixel_WebGPUImportVideoFrameUnacceleratedOffscreenCanvas [ Failure ]
 crbug.com/1395227 [ mac ] Pixel_WebGPUImportVideoFrame [ Failure ]
 crbug.com/1395227 [ mac ] Pixel_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
-crbug.com/1395227 [ win ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
+crbug.com/1395227 [ amd-0x7340 release-x64 target-cpu-64 win ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
+crbug.com/1395227 [ debug-x64 nvidia-0x2184 target-cpu-64 win ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
+crbug.com/1395227 [ intel-0x9bc5 release-x64 target-cpu-64 win ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
 crbug.com/1395227 [ win ] Pixel_WebGPUImportVideoFrameUnacceleratedOffscreenCanvas [ Failure ]
-crbug.com/1395227 [ win ] Pixel_WebGPUImportVideoFrame [ Failure ]
-crbug.com/1395227 [ win ] Pixel_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
+crbug.com/1395227 [ amd-0x7340 release-x64 target-cpu-64 win ] Pixel_WebGPUImportVideoFrame [ Failure ]
+crbug.com/1395227 [ debug-x64 nvidia-0x2184 target-cpu-64 win ] Pixel_WebGPUImportVideoFrame [ Failure ]
+crbug.com/1395227 [ intel-0x9bc5 release-x64 target-cpu-64 win ] Pixel_WebGPUImportVideoFrame [ Failure ]
+crbug.com/1395227 [ amd-0x7340 release-x64 target-cpu-64 win ] Pixel_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
+crbug.com/1395227 [ debug-x64 nvidia-0x2184 target-cpu-64 win ] Pixel_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
+crbug.com/1395227 [ intel-0x9bc5 release-x64 target-cpu-64 win ] Pixel_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
 crbug.com/1395227 [ linux renderer-skia-vulkan ] Pixel_VulkanSwiftShader_WebGPUImportVideoFrame [ Failure ]
 crbug.com/1395227 [ linux renderer-skia-vulkan ] Pixel_VulkanSwiftShader_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
 crbug.com/1395227 [ linux renderer-skia-vulkan ] Pixel_VulkanSwiftShader_WebGPUImportVideoFrameUnaccelerated [ Failure ]
 
 # Pixel_VideoStreamFromWebGL* tests sporadically fail on Linux FYI Release (NVIDIA) bot
-crbug.com/1348002 [ linux nvidia ] Pixel_VideoStreamFromWebGLAlphaCanvas [ Failure ]
+crbug.com/1348002 [ angle-opengl linux nvidia release ] Pixel_VideoStreamFromWebGLAlphaCanvas [ Failure ]
 
 crbug.com/1372144 [ android android-sm-a135m ] Pixel_CanvasDisplaySRGBAccelerated2D [ Failure ]
 crbug.com/1372144 [ android android-sm-a135m ] Pixel_CanvasLowLatencyWebGLAlphaFalse [ Failure ]
@@ -406,10 +412,10 @@ crbug.com/1382332 [ android-chromium android-pixel-4 android-r angle-opengles pa
 crbug.com/1382332 [ android-chromium android-s android-sm-a135m angle-disabled arm no-passthrough renderer-skia-gl target-cpu-32 ] Pixel_MediaRecorderFromVideoElement [ Failure ]
 crbug.com/1382332 [ android ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
 crbug.com/1382332 [ fuchsia ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
+crbug.com/1382332 [ linux nvidia-0x2184 passthrough debug angle-vulkan ] Pixel_MediaRecorderFromVideoElementWithOoprCanvasDisabled [ Failure ]
 
 # WebGL tests are seeing occasional hangs on Linux FYI Release (AMD RX 5500 XT).
 crbug.com/1396451 [ linux desktop amd-0x7340 ] Pixel_WebGLSadCanvas [ RetryOnFailure ]
-crbug.com/1396451 [ linux desktop amd-0x7340 ] Pixel_WebGLContextRestored [ RetryOnFailure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

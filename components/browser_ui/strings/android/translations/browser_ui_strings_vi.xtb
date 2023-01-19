@@ -13,7 +13,6 @@
 <translation id="1289742167380433257">Google đã tối ưu hóa các hình ảnh trong trang này để tiết kiệm dữ liệu cho bạn.</translation>
 <translation id="129382876167171263">Những tệp mà trang web lưu lại sẽ xuất hiện ở đây</translation>
 <translation id="1317194122196776028">Xóa trang web này</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Đã thêm trang web <ph name="SITE_NAME" /></translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
 <translation id="1384959399684842514">Đã tạm dừng quá trình tải xuống</translation>
@@ -22,6 +21,7 @@
 <translation id="1426410128494586442">Có</translation>
 <translation id="1446450296470737166">Cho phép kiểm soát hoàn toàn thiết bị MIDI</translation>
 <translation id="1448064542941920355">Giảm mức thu phóng</translation>
+<translation id="1547123415014299762">Cho phép sử dụng cookie của bên thứ ba</translation>
 <translation id="1620510694547887537">Máy ảnh</translation>
 <translation id="1633720957382884102">Các trang web liên quan</translation>
 <translation id="1644574205037202324">Nhật ký</translation>
@@ -59,6 +59,7 @@
 <translation id="2238944249568001759">Cụm từ tìm kiếm đề xuất dựa trên thẻ gần đây nhất của bạn</translation>
 <translation id="2241634353105152135">Chỉ một lần</translation>
 <translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> Xoá</translation>
+<translation id="228293613124499805">Hầu hết trang web bạn truy cập có thể sẽ lưu dữ liệu vào thiết bị, thường là để cải thiện trải nghiệm của bạn bằng cách lưu các lựa chọn ưu tiên hoặc thông tin mà bạn chia sẻ với trang web. Chúng tôi khuyên bạn luôn bật chế độ cài đặt này.</translation>
 <translation id="2289270750774289114">Hỏi khi một trang web muốn tìm các thiết bị Bluetooth ở gần (khuyên dùng)</translation>
 <translation id="2315043854645842844">Lựa chọn chứng chỉ phía ứng dụng khách không được hệ điều hành hỗ trợ.</translation>
 <translation id="2321958826496381788">Kéo thanh trượt cho đến khi bạn có thể đọc nội dung này thoải mái. Chữ tối thiểu phải to như này sau khi bấm đúp vào một đoạn.</translation>
@@ -108,6 +109,7 @@
 <translation id="3123473560110926937">Đã chặn trên một số trang web</translation>
 <translation id="3143754809889689516">Phát từ đầu</translation>
 <translation id="3162899666601560689">Các trang web có thể dùng cookie để cải thiện trải nghiệm duyệt web của bạn, chẳng hạn như để duy trì trạng thái đăng nhập hoặc ghi nhớ các mục có trong giỏ hàng</translation>
+<translation id="3165022941318558018">Cho phép một trang web dùng cookie của bên thứ ba</translation>
 <translation id="3198916472715691905">Dữ liệu đã lưu trữ: <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3203366800380907218">Trên web</translation>
 <translation id="321187648315454507">Để cho phép <ph name="APP_NAME" /> gửi thông báo cho bạn, hãy bật cả thông báo trong phần <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
@@ -144,6 +146,7 @@
 <translation id="385051799172605136">Quay lại</translation>
 <translation id="3859306556332390985">Tìm kiếm tiến</translation>
 <translation id="3895926599014793903">Buộc bật thu phóng</translation>
+<translation id="3918378745482005425">Một số tính năng có thể không hoạt động. Các trang web có liên quan vẫn có thể sử dụng cookie của bên thứ ba.</translation>
 <translation id="3955193568934677022">Cho phép trang web phát nội dung được bảo vệ (được đề xuất)</translation>
 <translation id="3967822245660637423">Đã tải xuống xong</translation>
 <translation id="3987993985790029246">Sao chép đường liên kết</translation>
@@ -328,6 +331,7 @@
 <translation id="7649070708921625228">Trợ giúp</translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7667547420449112975">Phù thủy xứ Oz</translation>
+<translation id="7684642910516280563">Không cho phép một trang web dùng cookie của bên thứ ba</translation>
 <translation id="7690549345586282764">Hiện mục thu phóng</translation>
 <translation id="7695658402549134106">Lựa chọn ưu tiên về trang web cho <ph name="SITE_NAME" /></translation>
 <translation id="7719367874908701697">Thu phóng trang</translation>
@@ -351,6 +355,7 @@
 <translation id="8042586301629853791">Sắp xếp theo:</translation>
 <translation id="8067883171444229417">Phát video</translation>
 <translation id="8068648041423924542">Không thể chọn chứng chỉ.</translation>
+<translation id="8077120325605624147">Mọi trang web bạn truy cập đều có thể hiện quảng cáo cho bạn</translation>
 <translation id="8087000398470557479">Nội dung này đến từ <ph name="DOMAIN_NAME" />, do Google phân phối.</translation>
 <translation id="8116925261070264013">Đã ẩn</translation>
 <translation id="813082847718468539">Xem thông tin trang web</translation>
@@ -388,6 +393,7 @@
 <translation id="857943718398505171">Được phép (nên dùng)</translation>
 <translation id="8609465669617005112">Di chuyển lên</translation>
 <translation id="8676374126336081632">Xóa văn bản nhập</translation>
+<translation id="8681886425883659911">Quảng cáo sẽ bị chặn trên các trang web được xác định là hiện quảng cáo xâm nhập hoặc gây hiểu lầm</translation>
 <translation id="868929229000858085">Tìm kiếm trong danh bạ</translation>
 <translation id="8702612070107455751">Mọi dữ liệu ngoại tuyến sẽ bị xóa.</translation>
 <translation id="8712637175834984815">Bỏ qua</translation>
@@ -400,6 +406,7 @@
 <translation id="8816026460808729765">Chặn không cho các trang web sử dụng cảm biến</translation>
 <translation id="8823559166155093873">Chặn cookie</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8899807382908246773">Quảng cáo xâm nhập</translation>
 <translation id="8903921497873541725">Phóng to</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">NFC đã tắt đối với thiết bị này. Hãy bật trong phần <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>

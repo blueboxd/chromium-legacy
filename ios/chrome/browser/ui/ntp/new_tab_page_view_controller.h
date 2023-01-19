@@ -59,11 +59,11 @@
 @property(nonatomic, assign, getter=isFeedVisible) BOOL feedVisible;
 
 // The view controller representing the NTP feed header.
-@property(nonatomic, assign) FeedHeaderViewController* feedHeaderViewController;
+@property(nonatomic, weak) FeedHeaderViewController* feedHeaderViewController;
 
 // The view controller representing the Feed top section (between the feed
 // header and the feed collection).
-@property(nonatomic, assign) UIViewController* feedTopSectionViewController;
+@property(nonatomic, strong) UIViewController* feedTopSectionViewController;
 
 // Bubble presenter for displaying IPH bubbles relating to the NTP.
 @property(nonatomic, strong) BubblePresenter* bubblePresenter;
@@ -74,6 +74,13 @@
 
 // Whether the NTP should initially be scrolled into the feed.
 @property(nonatomic, assign) BOOL shouldScrollIntoFeed;
+
+// `YES` when notifications indicate the omnibox is focused.
+@property(nonatomic, assign) BOOL omniboxFocused;
+
+// `YES` if the omnibox should be focused on when the view appears for voice
+// over.
+@property(nonatomic, assign) BOOL focusAccessibilityOmniboxWhenViewAppears;
 
 // Initializes the new tab page view controller.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;

@@ -52,26 +52,26 @@ void AddMetricsTestData(TestPasswordStore* store) {
   password_form.username_value = u"test1@gmail.com";
   password_form.password_value = u"test";
   password_form.signon_realm = "http://example.com/";
-  password_form.times_used = 0;
+  password_form.times_used_in_html_form = 0;
   store->AddLogin(password_form);
 
   password_form.username_value = u"test2@gmail.com";
-  password_form.times_used = 1;
+  password_form.times_used_in_html_form = 1;
   store->AddLogin(password_form);
 
   password_form.url = GURL("http://second.example.com");
   password_form.signon_realm = "http://second.example.com";
-  password_form.times_used = 3;
+  password_form.times_used_in_html_form = 3;
   store->AddLogin(password_form);
 
   password_form.username_value = u"test3@gmail.com";
   password_form.type = PasswordForm::Type::kGenerated;
-  password_form.times_used = 2;
+  password_form.times_used_in_html_form = 2;
   store->AddLogin(password_form);
 
   password_form.url = GURL("ftp://third.example.com/");
   password_form.signon_realm = "ftp://third.example.com/";
-  password_form.times_used = 4;
+  password_form.times_used_in_html_form = 4;
   password_form.scheme = PasswordForm::Scheme::kOther;
   store->AddLogin(password_form);
 
@@ -79,7 +79,7 @@ void AddMetricsTestData(TestPasswordStore* store) {
   password_form.signon_realm = "http://fourth.example.com/";
   password_form.type = PasswordForm::Type::kFormSubmission;
   password_form.username_value = u"";
-  password_form.times_used = 10;
+  password_form.times_used_in_html_form = 10;
   password_form.scheme = PasswordForm::Scheme::kHtml;
   store->AddLogin(password_form);
 
@@ -1086,8 +1086,8 @@ TEST_F(StoreMetricsReporterTest, ReportPasswordNoteMetrics) {
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples("PasswordManager.ProfileStore."
-                                     "PasswordNotes.CountNotesPerCredential2"),
-      BucketsAre(base::Bucket(0, 1), base::Bucket(1, 2), base::Bucket(2, 2)));
+                                     "PasswordNotes.CountNotesPerCredential3"),
+      BucketsAre(base::Bucket(0, 0), base::Bucket(1, 2), base::Bucket(2, 2)));
   histogram_tester.ExpectBucketCount(
       "PasswordManager.ProfileStore.PasswordNotes."
       "CountCredentialsWithNonEmptyNotes2",
@@ -1095,8 +1095,8 @@ TEST_F(StoreMetricsReporterTest, ReportPasswordNoteMetrics) {
 
   EXPECT_THAT(
       histogram_tester.GetAllSamples("PasswordManager.AccountStore."
-                                     "PasswordNotes.CountNotesPerCredential2"),
-      BucketsAre(base::Bucket(0, 1), base::Bucket(1, 2)));
+                                     "PasswordNotes.CountNotesPerCredential3"),
+      BucketsAre(base::Bucket(0, 0), base::Bucket(1, 2)));
   histogram_tester.ExpectBucketCount(
       "PasswordManager.AccountStore.PasswordNotes."
       "CountCredentialsWithNonEmptyNotes2",

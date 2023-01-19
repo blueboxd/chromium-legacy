@@ -101,20 +101,29 @@ class DictationTestSupport {
     }
 
     await new Promise(resolve => {
-      // Wait for the editable value by attaching the necessary event listener.
+      // Wait for the editable value by attaching the necessary event listeners.
       const editableNode = inputController.getEditableNodeData().node;
-      const onValueChanged = () => {
+      const onEditableValueChanged = () => {
         if (goalTest()) {
+          inputController.onSurroundingTextChangedForTesting_ = null;
           editableNode.removeEventListener(
               chrome.automation.EventType.VALUE_IN_TEXT_FIELD_CHANGED,
-              onValueChanged, false);
+              onEditableValueChanged);
           resolve();
         }
       };
 
+      // Attach two event listeners: one for the VALUE_IN_TEXT_FIELD_CHANGED
+      // accessibility event, and one for the onSurroundingTextChanged IME
+      // event. The VALUE_IN_TEXT_FIELD_CHANGED event gets fired when the value
+      // of a <textarea> or <input> is changed; however, it doesn't get fired
+      // when the value of a content editable is changed. To support content
+      // editables, we use the onSurroundingTextChanged IME events.
+      inputController.onSurroundingTextChangedForTesting_ =
+          onEditableValueChanged;
       editableNode.addEventListener(
           chrome.automation.EventType.VALUE_IN_TEXT_FIELD_CHANGED,
-          onValueChanged, false);
+          onEditableValueChanged);
     });
 
     this.notifyCcTests_();

@@ -356,6 +356,16 @@ void AddStringsGeneric(base::Value::Dict* dict) {
   SET_STRING("TRASH_NUDGE_LABEL", IDS_FILE_BROWSER_TRASH_NUDGE_LABEL);
   SET_STRING("CONFIRM_DELETE_ONE", IDS_FILE_BROWSER_CONFIRM_DELETE_ONE);
   SET_STRING("CONFIRM_DELETE_SOME", IDS_FILE_BROWSER_CONFIRM_DELETE_SOME);
+  SET_STRING("CONFIRM_PERMANENTLY_DELETE_ONE_TITLE",
+             IDS_FILE_BROWSER_CONFIRM_PERMANENTLY_DELETE_ONE_TITLE);
+  SET_STRING("CONFIRM_PERMANENTLY_DELETE_SOME_TITLE",
+             IDS_FILE_BROWSER_CONFIRM_PERMANENTLY_DELETE_SOME_TITLE);
+  SET_STRING("CONFIRM_PERMANENTLY_DELETE_ONE_DESC",
+             IDS_FILE_BROWSER_CONFIRM_PERMANENTLY_DELETE_ONE_DESC);
+  SET_STRING("CONFIRM_PERMANENTLY_DELETE_SOME_DESC",
+             IDS_FILE_BROWSER_CONFIRM_PERMANENTLY_DELETE_SOME_DESC);
+  SET_STRING("PERMANENTLY_DELETE_FOREVER",
+             IDS_FILE_BROWSER_PERMANENTLY_DELETE_FOREVER);
   SET_STRING("CANT_RESTORE_SINGLE_ITEM",
              IDS_FILE_BROWSER_CANT_RESTORE_TRASHED_SINGLE_ITEM);
   SET_STRING("CANT_RESTORE_MULTIPLE_ITEMS_SAME_PARENTS",
@@ -375,6 +385,11 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_CONFLICT_DIALOG_KEEP_BOTH);
   SET_STRING("CONFLICT_DIALOG_REPLACE",
              IDS_FILE_BROWSER_CONFLICT_DIALOG_REPLACE);
+  SET_STRING("CONFLICT_DIALOG_KEEP_ALL",
+             IDS_FILE_BROWSER_CONFLICT_DIALOG_KEEP_ALL);
+  SET_STRING("CONFLICT_DIALOG_REPLACE_ALL",
+             IDS_FILE_BROWSER_CONFLICT_DIALOG_REPLACE_ALL);
+
   SET_STRING("COPY_BUTTON_LABEL", IDS_FILE_BROWSER_COPY_BUTTON_LABEL);
   SET_STRING("COPY_FILESYSTEM_ERROR", IDS_FILE_BROWSER_COPY_FILESYSTEM_ERROR);
   SET_STRING("EMPTY_TRASH_UNEXPECTED_ERROR",
@@ -1103,14 +1118,14 @@ void AddFileManagerFeatureStrings(const std::string& locale,
             base::FeatureList::IsEnabled(ash::features::kFilesSearchV2));
   dict->Set("FILES_TRASH_ENABLED",
             base::FeatureList::IsEnabled(ash::features::kFilesTrash));
-  dict->Set("DRIVE_DSS_PIN_ENABLED",
-            base::FeatureList::IsEnabled(
-                ash::features::kDriveFsBidirectionalNativeMessaging));
   dict->Set(
       "FILES_SINGLE_PARTITION_FORMAT_ENABLED",
       base::FeatureList::IsEnabled(ash::features::kFilesSinglePartitionFormat));
   dict->Set("FILES_APP_EXPERIMENTAL",
             base::FeatureList::IsEnabled(ash::features::kFilesAppExperimental));
+
+  dict->Set("FILES_CONFLICT_DIALOG",
+            base::FeatureList::IsEnabled(ash::features::kFilesConflictDialog));
 
   dict->Set("FUSEBOX_DEBUG",
             base::FeatureList::IsEnabled(ash::features::kFuseBoxDebug));
@@ -1134,8 +1149,6 @@ void AddFileManagerFeatureStrings(const std::string& locale,
     dict->Set("DLP_ENABLED", false);
   }
 
-  dict->Set("UI_LOCALE", locale);
-  dict->Set("WEEK_START_FROM", GetLocaleBasedWeekStart());
   base::Value::List vms;
   auto* share_path = guest_os::GuestOsSharePath::GetForProfile(profile);
   if (share_path) {
@@ -1147,4 +1160,8 @@ void AddFileManagerFeatureStrings(const std::string& locale,
     }
   }
   dict->Set("VMS_FOR_SHARING", std::move(vms));
+
+  // Lastly, set UI_LOCALE and locale-dependent settings.
+  dict->Set("UI_LOCALE", locale);
+  dict->Set("WEEK_START_FROM", GetLocaleBasedWeekStart());
 }

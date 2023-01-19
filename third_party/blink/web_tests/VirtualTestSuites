@@ -51,7 +51,8 @@
   {
     "prefix": "gpu",
     "platforms": ["Linux", "Mac", "Win", "Fuchsia"],
-    "bases": ["fast/canvas"],
+    "bases": [ "fast/canvas",
+               "external/wpt/mediacapture-record/MediaRecorder-canvas-media-source.https.html" ],
     "args": ["--enable-accelerated-2d-canvas"],
     "expires": "Jul 1, 2023"
   },
@@ -635,11 +636,19 @@
     "bases": [
       "external/wpt/html/browsers/origin/origin-keyed-agent-clusters",
       "external/wpt/html/infrastructure/urls/terminology-0",
-      "external/wpt/navigation-api/navigate-event/cross-window"
+      "external/wpt/navigation-api/navigate-event/cross-window",
+      "http/tests/security/cross-frame-access-callback-explicit-domain-ALLOW.html",
+      "http/tests/security/cross-frame-access-callback-explicit-domain-DENY.html",
+      "http/tests/security/cross-frame-access-child-explicit-domain.html",
+      "http/tests/security/cross-frame-access-parent-explicit-domain.html",
+      "http/tests/security/cross-frame-access-port-explicit-domain.html",
+      "http/tests/security/cross-frame-access-protocol-explicit-domain.html",
+      "http/tests/security/canvas-remote-read-remote-image-document-domain.html"
     ],
     "exclusive_tests": ["external/wpt/html/browsers/origin/origin-keyed-agent-clusters"],
     "args": ["--disable-auto-wpt-origin-isolation",
-             "--reset-browsing-instance-between-tests"],
+             "--reset-browsing-instance-between-tests",
+             "--disable-features=OriginAgentClusterDefaultEnable"],
     "expires": "Jul 1, 2023"
   },
   {
@@ -958,7 +967,6 @@
       "wpt_internal/storage/quota/partitioned-webkitTemporaryStorage-usage-details.tentative.sub.html",
       "wpt_internal/storage/quota/partitioned-webkitPersistentStorage-quota-usage-details.tentative.sub.html",
       "wpt_internal/storage/quota/partitioned-webkitStorageInfo-temporary-quota-usage-details.tentative.sub.html",
-      "wpt_internal/storage/quota/partitioned-webkitStorageInfo-persistent-quota-usage-details.tentative.sub.html",
       "external/wpt/FileAPI/BlobURL/cross-partition.tentative.https.html",
       "external/wpt/storage/partitioned-estimate-usage-details-caches.tentative.https.sub.html",
       "external/wpt/storage/partitioned-estimate-usage-details-indexeddb.tentative.https.sub.html",
@@ -1021,7 +1029,8 @@
   {
     "prefix": "oopr-canvas2d",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": [ "fast/canvas" ],
+    "bases": [ "fast/canvas",
+               "external/wpt/mediacapture-record/MediaRecorder-canvas-media-source.https.html" ],
     "args": [ "--enable-features=CanvasOopRasterization",
               "--enable-accelerated-2d-canvas",
               "--enable-gpu-rasterization" ],
@@ -1334,6 +1343,18 @@
     "expires": "Jul 1, 2023"
   },
   {
+    "prefix": "shared-storage-fenced-frame-mparch-selecturl-limit",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "wpt_internal/shared_storage_selecturl_limit/"
+    ],
+    "exclusive_tests": [
+      "wpt_internal/shared_storage_selecturl_limit/"
+    ],
+    "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,SharedStorageSelectURLLimit"],
+    "expires": "Jul 1, 2023"
+  },
+  {
     "prefix": "task-tracking",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["wpt_internal/task-tracking"],
@@ -1431,17 +1452,14 @@
     "expires": "Jul 1, 2023"
   },
 
-  "Tests in the virtual/origin-agent-cluster-default suite. These tests",
-  "require isolation behaviour as in the actual browser and are therefore",
-  "incompatible with auto-wpt-origin-isolation. Thus they are only run in",
-  "their virtual test suite.",
   {
-    "prefix": "origin-agent-cluster-default",
+    "prefix": "origin-agent-cluster-default-warning",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": [ "wpt_internal/origin-agent-cluster-default" ],
+    "bases": [ "wpt_internal/origin-agent-cluster-default-warning" ],
     "exclusive_tests": "ALL",
     "args": [
       "--enable-features=OriginAgentClusterDefaultWarning",
+      "--disable-features=OriginAgentClusterDefaultEnable",
       "--disable-auto-wpt-origin-isolation"
     ],
     "expires": "Jul 1, 2023"
@@ -1534,7 +1552,7 @@
     ],
     "exclusive_tests": "ALL",
     "args": [
-      "--enable-blink-features=SpeculationRulesPrefetchProxy,SpeculationRulesFetchFromHeader,SpeculationRulesDocumentRules,NoVarySearchPrefetch",
+      "--enable-blink-features=SpeculationRulesPrefetchProxy,SpeculationRulesFetchFromHeader,SpeculationRulesDocumentRules,NoVarySearchPrefetch,SpeculationRulesEagerness",
       "--enable-features=SpeculationRulesPrefetchProxy,PrefetchUseContentRefactor",
       "--bypass-prefetch-proxy-for-host=not-web-platform.test"
     ],
@@ -1677,13 +1695,9 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "external/wpt/html/infrastructure/safe-passing-of-structured-data/cross-origin-transfer-resizable-arraybuffer.html",
-      "external/wpt/html/infrastructure/safe-passing-of-structured-data/messagechannel.any.html",
-      "external/wpt/html/infrastructure/safe-passing-of-structured-data/messagechannel.any.serviceworker.html",
-      "external/wpt/html/infrastructure/safe-passing-of-structured-data/messagechannel.any.sharedworker.html",
-      "external/wpt/html/infrastructure/safe-passing-of-structured-data/messagechannel.any.worker.html",
+      "external/wpt/html/infrastructure/safe-passing-of-structured-data/messagechannel.any.js",
       "external/wpt/html/infrastructure/safe-passing-of-structured-data/window-postmessage.window.html",
-      "external/wpt/html/webappapis/structured-clone/structured-clone.any.html",
-      "external/wpt/html/webappapis/structured-clone/structured-clone.any.worker.html",
+      "external/wpt/html/webappapis/structured-clone/structured-clone.any.js",
       "external/wpt/webidl/ecmascript-binding/allow-resizable.html",
       "external/wpt/workers/semantics/structured-clone/dedicated.html",
       "external/wpt/workers/semantics/structured-clone/shared.html"

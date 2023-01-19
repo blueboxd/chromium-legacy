@@ -609,6 +609,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> teisaldati kausta <ph name="FOLDER_NAME" />.</translation>
 <translation id="4302592941791324970">Pole saadaval</translation>
 <translation id="4303223480529385476">Laienda olekuala</translation>
+<translation id="4311195029067684288">Täielik</translation>
 <translation id="4312840429157639164">Kaamera kinnitati paremasse ülanurka. Konflikt süsteemi platvormiga.</translation>
 <translation id="4316910396681052118">KÕIK RAKENDUSED</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -639,6 +640,7 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4455051983450390249">Vaadake seadmes <ph name="DEVICE_TYPE" /> oma telefoni märguandeid</translation>
 <translation id="445864333228800152">Tere õhtust!</translation>
 <translation id="4458688154122353284">Peata ekraani salvestamine</translation>
+<translation id="445923051607553918">WiFi-võrguga ühinemine</translation>
 <translation id="4471354919263203780">Kõnetuvastuse failide allalaadimine … <ph name="PERCENT" />%</translation>
 <translation id="4471432286288241507">{0,plural, =0{Värskendage seadet kohe}=1{Värskendage seadet 1 sekundi jooksul}other{Värskendage seadet # sekundi jooksul}}</translation>
 <translation id="4472575034687746823">Alustage</translation>

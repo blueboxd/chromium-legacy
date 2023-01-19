@@ -30,6 +30,7 @@
 #include "google_apis/common/auth_service_interface.h"
 
 class Profile;
+class PrefService;
 
 namespace base {
 class FilePath;
@@ -178,7 +179,9 @@ class DriveIntegrationService : public KeyedService,
   drivefs::DriveFsHost* GetDriveFsHost() const;
 
   // Returns the `DriveFsPinManager` iff DriveFS is mounted.
-  drivefs::pinning::DriveFsPinManager* GetDriveFsPinManager();
+  drivefs::pinning::DriveFsPinManager* GetPinManager() const {
+    return pin_manager_.get();
+  }
 
   // Returns the mojo interface to the DriveFs daemon if it is enabled and
   // connected.
@@ -300,6 +303,8 @@ class DriveIntegrationService : public KeyedService,
   // Manages passing changes in team drives to the drive notification manager.
   class NotificationManager;
 
+  PrefService* GetPrefs() const;
+
   // Returns true if Drive is enabled.
   // Must be called on UI thread.
   bool IsDriveEnabled();
@@ -364,6 +369,9 @@ class DriveIntegrationService : public KeyedService,
 
   // Pin all the files in |files_to_pin| with DriveFS.
   void PinFiles(const std::vector<base::FilePath>& files_to_pin);
+
+  // Enable or disable DriveFS bulk pinning.
+  void ToggleBulkPinning();
 
   void OnGetQuickAccessItems(
       GetQuickAccessItemsCallback callback,

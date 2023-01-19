@@ -65,6 +65,7 @@
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_selector_parser.h"
+#include "third_party/blink/renderer/core/css/post_style_update_scope.h"
 #include "third_party/blink/renderer/core/css/property_set_css_style_declaration.h"
 #include "third_party/blink/renderer/core/css/resolver/selector_filter_parent_scope.h"
 #include "third_party/blink/renderer/core/css/resolver/style_adjuster.h"
@@ -408,58 +409,6 @@ bool DefinitelyNewFormattingContext(const Node& node,
   return false;
 }
 
-inline bool NeedsLegacyBlockFragmentation(const Element& element,
-                                          const ComputedStyle& style) {
-  if (!style.InsideFragmentationContextWithNondeterministicEngine()) {
-    return false;
-  }
-
-  // If we're inside an NG block fragmentation context, all fragmentable boxes
-  // must be laid out by NG natively. We only allow legacy layout objects if
-  // they are monolithic (e.g. replaced content, inline-table, and so
-  // on).
-
-  // Inline display types end up on a line, and are therefore monolithic, so we
-  // can allow those.
-  if (style.IsDisplayInlineType()) {
-    return false;
-  }
-
-  if (style.IsDisplayTableType() &&
-      !RuntimeEnabledFeatures::LayoutNGTableFragmentationEnabled()) {
-    return true;
-  }
-
-  if (style.IsDisplayGridBox() &&
-      !RuntimeEnabledFeatures::LayoutNGGridFragmentationEnabled()) {
-    return true;
-  }
-
-  // display:flex (and variants) require legacy fallback if NG flex
-  // fragmentation isn't enabled. The same applies to button elements, as they
-  // use flex layout (albeit with some exceptions, but we'll ignore those here).
-  if ((style.IsDisplayFlexibleBox() ||
-       style.IsDeprecatedFlexboxUsingFlexLayout() ||
-       IsA<HTMLButtonElement>(element)) &&
-      !RuntimeEnabledFeatures::LayoutNGFlexFragmentationEnabled()) {
-    return true;
-  }
-
-  return false;
-}
-
-bool NeedsLegacyLayoutForEntireDocument(Document& document) {
-  // Fall back to legacy layout for frameset documents. The frameset itself (and
-  // the frames) can only create legacy layout objects anyway (no NG counterpart
-  // for them yet). However, the layout object for the HTML root element would
-  // be an NG one. If we'd then print the document, we'd fall back to legacy
-  // layout (because of the above check), which would re-attach all layout
-  // objects, which would cause the frameset to lose state of some sort, leaving
-  // everything blank when printed.
-  return document.IsFrameSet() &&
-         !RuntimeEnabledFeatures::LayoutNGFrameSetEnabled();
-}
-
 bool CalculateStyleShouldForceLegacyLayout(const Element& element,
                                            const ComputedStyle& style) {
   Document& document = element.GetDocument();
@@ -468,24 +417,8 @@ bool CalculateStyleShouldForceLegacyLayout(const Element& element,
     return false;
   }
 
-  if (!RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
-    // Disable NG for the entire subtree if we're establishing a multicol
-    // container.
-    if (style.SpecifiesColumns()) {
-      return true;
-    }
-  }
-
   if (document.Printing() && element == document.documentElement() &&
       !RuntimeEnabledFeatures::LayoutNGPrintingEnabled()) {
-    return true;
-  }
-
-  if (NeedsLegacyLayoutForEntireDocument(document)) {
-    return true;
-  }
-
-  if (NeedsLegacyBlockFragmentation(element, style)) {
     return true;
   }
 
@@ -3420,7 +3353,7 @@ StyleRecalcChange Element::RecalcStyle(
   }
 
   if (child_change.TraversePseudoElements(*this)) {
-    UpdatePseudoElement(kPseudoIdBackdrop, child_change, child_recalc_context);
+    UpdateBackdropPseudoElement(child_change, child_recalc_context);
     UpdatePseudoElement(kPseudoIdMarker, child_change, child_recalc_context);
     UpdatePseudoElement(kPseudoIdBefore, child_change, child_recalc_context);
   }
@@ -4370,8 +4303,7 @@ bool Element::IsSupportedByRegionCapture() const {
 }
 
 void Element::ResetForceLegacyLayoutForPrinting() {
-  SetShouldForceLegacyLayoutForChild(
-      NeedsLegacyLayoutForEntireDocument(GetDocument()));
+  SetShouldForceLegacyLayoutForChild(false);
 }
 
 void Element::SetCustomElementDefinition(CustomElementDefinition* definition) {
@@ -6568,6 +6500,66 @@ void Element::CancelSelectionAfterLayout() {
   if (GetDocument().FocusedElement() == this) {
     GetDocument().SetShouldUpdateSelectionAfterLayout(false);
   }
+}
+
+bool Element::ShouldUpdateBackdropPseudoElement(
+    const StyleRecalcChange change) {
+  PseudoElement* element = GetPseudoElement(
+      PseudoId::kPseudoIdBackdrop, /* view_transition_name */ g_null_atom);
+  bool generate_pseudo = CanGeneratePseudoElement(PseudoId::kPseudoIdBackdrop);
+
+  if (element) {
+    return !generate_pseudo || change.ShouldUpdatePseudoElement(*element);
+  }
+
+  return generate_pseudo;
+}
+
+void Element::UpdateBackdropPseudoElement(
+    const StyleRecalcChange change,
+    const StyleRecalcContext& style_recalc_context) {
+  if (!ShouldUpdateBackdropPseudoElement(change)) {
+    return;
+  }
+
+  if (GetDocument().GetStyleEngine().GetContainerForContainerStyleRecalc() !=
+      this) {
+    UpdatePseudoElement(PseudoId::kPseudoIdBackdrop, change,
+                        style_recalc_context);
+    return;
+  }
+
+  // We have a problem when ::backdrop appears on the interleaving container,
+  // because in that case ::backdrop's LayoutObject appears before the
+  // container's LayoutObject. In other words, it is too late to update
+  // ::backdrop at this point. Therefore, we add a pending update and deal with
+  // it in a separate pass.
+  //
+  // See also PostStyleUpdateScope::PseudoData::AddPendingBackdrop.
+  if (PostStyleUpdateScope::PseudoData* pseudo_data =
+          PostStyleUpdateScope::CurrentPseudoData()) {
+    pseudo_data->AddPendingBackdrop(/* originating_element */ *this);
+  }
+}
+
+void Element::ApplyPendingBackdropPseudoElementUpdate() {
+  PseudoElement* element = GetPseudoElement(
+      PseudoId::kPseudoIdBackdrop, /* view_transition_name */ g_null_atom);
+
+  if (!element && CanGeneratePseudoElement(PseudoId::kPseudoIdBackdrop)) {
+    element = PseudoElement::Create(this, PseudoId::kPseudoIdBackdrop,
+                                    /* view_transition_name */ g_null_atom);
+    EnsureElementRareData().SetPseudoElement(
+        PseudoId::kPseudoIdBackdrop, element,
+        /* view_transition_name */ g_null_atom);
+    element->InsertedInto(*this);
+    GetDocument().AddToTopLayer(element, this);
+  }
+
+  DCHECK(element);
+  element->SetNeedsStyleRecalc(kLocalStyleChange,
+                               StyleChangeReasonForTracing::Create(
+                                   style_change_reason::kConditionalBackdrop));
 }
 
 void Element::UpdateFirstLetterPseudoElement(StyleUpdatePhase phase) {

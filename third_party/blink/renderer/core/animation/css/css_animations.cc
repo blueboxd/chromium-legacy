@@ -118,20 +118,22 @@ StringKeyframeVector ProcessKeyframesRule(
     auto* keyframe = MakeGarbageCollected<StringKeyframe>();
     const Vector<KeyframeOffset>& offsets = style_keyframe->Keys();
     DCHECK(!offsets.empty());
-
     bool drop_keyframe = false;
     // If keyframe doesn't have a named range offset, act as before, we don't
     // care if we have a timeline at this point or not in this case.
-    if (offsets[0].phase == Timing::TimelineNamedPhase::kNone) {
+    if (offsets[0].name == Timing::TimelineNamedRange::kNone) {
       keyframe->SetOffset(offsets[0].percent);
     } else {
       // No matter what the timeline is, we have named range keyframes.
       has_named_range_keyframes = true;
 
       if (timeline && timeline->IsViewTimeline()) {
-        auto fractional_offset = To<ViewTimeline>(timeline)->ToFractionalOffset(
-            Timing::Delay(offsets[0].phase, offsets[0].percent));
-        keyframe->SetOffset(fractional_offset.value());
+        Timing::TimelineOffset timeline_offset;
+        timeline_offset.name = offsets[0].name;
+        timeline_offset.relative_offset = offsets[0].percent;
+        double fractional_offset =
+            To<ViewTimeline>(timeline)->ToFractionalOffset(timeline_offset);
+        keyframe->SetOffset(fractional_offset);
       } else {
         // This happens when you have a DocumentTimeline/ScrollTimeline with
         // Named Range keyframes, and also sometimes when you have a
@@ -175,17 +177,19 @@ StringKeyframeVector ProcessKeyframesRule(
     }
     // The last keyframe specified at a given offset is used.
     for (wtf_size_t j = 1; j < offsets.size(); ++j) {
-      if (offsets[j].phase == Timing::TimelineNamedPhase::kNone) {
+      if (offsets[j].name == Timing::TimelineNamedRange::kNone) {
         keyframes.push_back(
             To<StringKeyframe>(keyframe->CloneWithOffset(offsets[j].percent)));
       } else {
         has_named_range_keyframes = true;
         if (timeline && timeline->IsViewTimeline()) {
-          auto fractional_offset =
-              To<ViewTimeline>(timeline)->ToFractionalOffset(
-                  Timing::Delay(offsets[j].phase, offsets[j].percent));
-          keyframes.push_back(To<StringKeyframe>(
-              keyframe->CloneWithOffset(fractional_offset.value())));
+          Timing::TimelineOffset timeline_offset;
+          timeline_offset.name = offsets[j].name;
+          timeline_offset.relative_offset = offsets[j].percent;
+          double fractional_offset =
+              To<ViewTimeline>(timeline)->ToFractionalOffset(timeline_offset);
+          keyframes.push_back(
+              To<StringKeyframe>(keyframe->CloneWithOffset(fractional_offset)));
         }
       }
     }
@@ -637,11 +641,15 @@ void UpdateMatchingTimeline(const ScopedCSSName& target_name,
   if (target_name.GetName() != candidate_name.GetName()) {
     return;
   }
-  size_t distance = TreeScopeDistance(candidate_name.GetTreeScope(),
-                                      target_name.GetTreeScope());
-  if (distance < matching_distance) {
+  if (RuntimeEnabledFeatures::CSSTreeScopedTimelinesEnabled()) {
+    size_t distance = TreeScopeDistance(candidate_name.GetTreeScope(),
+                                        target_name.GetTreeScope());
+    if (distance < matching_distance) {
+      matching_timeline = candidate;
+      matching_distance = distance;
+    }
+  } else {
     matching_timeline = candidate;
-    matching_distance = distance;
   }
 }
 
@@ -682,10 +690,12 @@ CSSScrollTimeline* CSSAnimations::FindScrollTimelineForElement(
     return nullptr;
   }
 
-  if (TreeScopeDistance(pending_aware_timeline->Name().GetTreeScope(),
-                        target_name.GetTreeScope()) ==
-      std::numeric_limits<size_t>::max()) {
-    return nullptr;
+  if (RuntimeEnabledFeatures::CSSTreeScopedTimelinesEnabled()) {
+    if (TreeScopeDistance(pending_aware_timeline->Name().GetTreeScope(),
+                          target_name.GetTreeScope()) ==
+        std::numeric_limits<size_t>::max()) {
+      return nullptr;
+    }
   }
   return pending_aware_timeline;
 }
@@ -751,11 +761,15 @@ ScrollTimeline* CSSAnimations::FindPreviousSiblingAncestorTimeline(
     }
   }
 
-  Node* parent = node->ParentOrShadowHostElement();
-  if (!parent)
+  Element* parent_element =
+      RuntimeEnabledFeatures::CSSTreeScopedTimelinesEnabled()
+          ? node->ParentOrShadowHostElement()
+          : LayoutTreeBuilderTraversal::ParentElement(*node);
+  if (!parent_element) {
     return nullptr;
+  }
   return FindPreviousSiblingAncestorTimeline(
-      name, parent, GetPendingAnimationUpdate(*parent));
+      name, parent_element, GetPendingAnimationUpdate(*parent_element));
 }
 
 namespace {
@@ -1020,7 +1034,10 @@ void CSSAnimations::CalculateAnimationUpdate(
   for (bool& flag : cancel_running_animation_flags)
     flag = true;
 
-  if (animation_data && style_builder.Display() != EDisplay::kNone) {
+  if (animation_data &&
+      (style_builder.Display() != EDisplay::kNone ||
+       (RuntimeEnabledFeatures::CSSDisplayAnimationEnabled() && old_style &&
+        old_style->Display() != EDisplay::kNone))) {
     const Vector<AtomicString>& name_list = animation_data->NameList();
     for (wtf_size_t i = 0; i < name_list.size(); ++i) {
       AtomicString name = name_list[i];
@@ -2453,6 +2470,8 @@ bool CSSAnimations::IsAnimationAffectingProperty(const CSSProperty& property) {
     case CSSPropertyID::kAnimationIterationCount:
     case CSSPropertyID::kAnimationName:
     case CSSPropertyID::kAnimationPlayState:
+    case CSSPropertyID::kAnimationRangeEnd:
+    case CSSPropertyID::kAnimationRangeStart:
     case CSSPropertyID::kAnimationTimeline:
     case CSSPropertyID::kAnimationTimingFunction:
     case CSSPropertyID::kContentVisibility:
@@ -2460,7 +2479,6 @@ bool CSSAnimations::IsAnimationAffectingProperty(const CSSProperty& property) {
     case CSSPropertyID::kContainerName:
     case CSSPropertyID::kContainerType:
     case CSSPropertyID::kDirection:
-    case CSSPropertyID::kDisplay:
     case CSSPropertyID::kTextCombineUpright:
     case CSSPropertyID::kTextOrientation:
     case CSSPropertyID::kToggleGroup:
@@ -2476,6 +2494,8 @@ bool CSSAnimations::IsAnimationAffectingProperty(const CSSProperty& property) {
     case CSSPropertyID::kWillChange:
     case CSSPropertyID::kWritingMode:
       return true;
+    case CSSPropertyID::kDisplay:
+      return !RuntimeEnabledFeatures::CSSDisplayAnimationEnabled();
     default:
       return false;
   }

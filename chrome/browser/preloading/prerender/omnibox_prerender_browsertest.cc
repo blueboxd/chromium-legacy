@@ -8,6 +8,7 @@
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
+#include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
@@ -59,10 +60,7 @@ class OmniboxPrerenderBrowserTest : public PlatformBrowserTest {
   OmniboxPrerenderBrowserTest()
       : prerender_helper_(base::BindRepeating(
             &OmniboxPrerenderBrowserTest::GetActiveWebContents,
-            base::Unretained(this))) {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kOmniboxTriggerForPrerender2);
-  }
+            base::Unretained(this))) {}
 
   void SetUp() override {
     prerender_helper_.SetUp(embedded_test_server());
@@ -78,6 +76,7 @@ class OmniboxPrerenderBrowserTest : public PlatformBrowserTest {
         std::make_unique<content::test::PreloadingAttemptUkmEntryBuilder>(
             ToPreloadingPredictor(
                 ChromePreloadingPredictor::kOmniboxDirectURLInput));
+    test_timer_ = std::make_unique<base::ScopedMockElapsedTimersForTest>();
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
@@ -120,7 +119,7 @@ class OmniboxPrerenderBrowserTest : public PlatformBrowserTest {
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
   std::unique_ptr<content::test::PreloadingAttemptUkmEntryBuilder>
       ukm_entry_builder_;
-  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<base::ScopedMockElapsedTimersForTest> test_timer_;
 };
 
 // Tests that Prerender2 cannot be triggered when preload setting is disabled.
@@ -210,7 +209,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxPrerenderBrowserTest, DisableNetworkPrediction) {
         content::PreloadingHoldbackStatus::kAllowed,
         content::PreloadingTriggeringOutcome::kSuccess,
         content::PreloadingFailureReason::kUnspecified,
-        /*accurate=*/true);
+        /*accurate=*/true,
+        /*ready_time=*/base::ScopedMockElapsedTimersForTest::kMockElapsedTime);
     EXPECT_EQ(ukm_entries[1], expected_entry)
         << content::test::ActualVsExpectedUkmEntryToString(ukm_entries[1],
                                                            expected_entry);
@@ -248,10 +248,19 @@ class PrerenderOmniboxSearchSuggestionBrowserTest
   }
 
  protected:
+  GURL GetCanonicalSearchURL(const GURL& prefetch_url) {
+    GURL canonical_search_url;
+    HasCanoncialPreloadingOmniboxSearchURL(prefetch_url,
+                                           chrome_test_utils::GetProfile(this),
+                                           &canonical_search_url);
+    return canonical_search_url;
+  }
+
   int PrerenderQuery(const std::string& search_terms,
                      const GURL& expected_prerender_url) {
     AutocompleteMatch match = CreateSearchSuggestionMatch(search_terms);
-    prerender_manager_->StartPrerenderSearchSuggestion(match);
+    prerender_manager_->StartPrerenderSearchSuggestion(
+        match, GetCanonicalSearchURL(match.destination_url));
     int host_id = prerender_helper().GetHostForUrl(expected_prerender_url);
     EXPECT_NE(host_id, content::RenderFrameHost::kNoFrameTreeNodeId);
     return host_id;

@@ -853,7 +853,6 @@ std::ostream& operator<<(std::ostream& out,
 
   PRINT_IF_NOT_DEFAULT(arc)
   PRINT_IF_NOT_DEFAULT(browser)
-  PRINT_IF_NOT_DEFAULT(drive_dss_pin)
   PRINT_IF_NOT_DEFAULT(files_experimental)
   PRINT_IF_NOT_DEFAULT(generic_documents_provider)
   PRINT_IF_NOT_DEFAULT(mount_volumes)
@@ -1922,16 +1921,14 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.push_back(ash::features::kFilesAppExperimental);
   }
 
-  if (options.arc) {
-    arc::SetArcAvailableCommandLineForTesting(command_line);
+  if (options.enable_conflict_dialog) {
+    enabled_features.push_back(ash::features::kFilesConflictDialog);
+  } else {
+    disabled_features.push_back(ash::features::kFilesConflictDialog);
   }
 
-  if (options.drive_dss_pin) {
-    enabled_features.push_back(
-        ash::features::kDriveFsBidirectionalNativeMessaging);
-  } else {
-    disabled_features.push_back(
-        ash::features::kDriveFsBidirectionalNativeMessaging);
+  if (options.arc) {
+    arc::SetArcAvailableCommandLineForTesting(command_line);
   }
 
   if (options.single_partition_format) {
@@ -3037,6 +3034,11 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
         browser()->tab_strip_model()->GetActiveWebContents(), 1);
     observer.Wait();
     *output = observer.last_navigation_url().spec();
+    return;
+  }
+
+  if (name == "isConflictDialogEnabled") {
+    *output = options.enable_conflict_dialog ? "true" : "false";
     return;
   }
 

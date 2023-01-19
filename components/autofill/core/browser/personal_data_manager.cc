@@ -1444,13 +1444,13 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   return unique_suggestions;
 }
 
-const std::vector<CreditCard*> PersonalDataManager::GetCreditCardsToSuggest(
-    bool include_server_cards) const {
+const std::vector<CreditCard*> PersonalDataManager::GetCreditCardsToSuggest()
+    const {
   if (!IsAutofillCreditCardEnabled())
     return std::vector<CreditCard*>{};
 
   std::vector<CreditCard*> credit_cards;
-  if (include_server_cards && ShouldSuggestServerCards()) {
+  if (ShouldSuggestServerCards()) {
     credit_cards = GetCreditCards();
   } else {
     credit_cards = GetLocalCreditCards();
@@ -2304,7 +2304,11 @@ void PersonalDataManager::OnCreditCardSaved(bool is_local_card) {}
 void PersonalDataManager::ConvertWalletAddressesAndUpdateWalletCards() {
   // If the full Sync feature isn't enabled, then do NOT convert any Wallet
   // addresses to local ones.
-  if (!IsSyncFeatureEnabled()) {
+  // When syncing of account profiles is enabled, converting wallet addresses
+  // is unnecessary, since they are available through the ContactInfoSyncBridge.
+  if (!IsSyncFeatureEnabled() ||
+      base::FeatureList::IsEnabled(
+          features::kAutofillAccountProfilesUnionView)) {
     // PDM expects that each call to
     // ConvertWalletAddressesAndUpdateWalletCards() is followed by a
     // AutofillAddressConversionCompleted() notification, simulate the

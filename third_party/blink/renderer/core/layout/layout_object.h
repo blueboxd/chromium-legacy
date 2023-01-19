@@ -449,7 +449,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
   // Returns the layer that will paint this object. During paint invalidation,
   // we should use the faster PaintInvalidatorContext::painting_layer instead.
-  PaintLayer* PaintingLayer() const;
+  PaintLayer* PaintingLayer(int max_depth = -1) const;
 
   bool IsFixedPositionObjectInPagedMedia() const;
 
@@ -3175,8 +3175,11 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   }
   bool ShouldDoFullPaintInvalidation() const {
     NOT_DESTROYED();
-    if (!ShouldDelayFullPaintInvalidation() &&
-        FullPaintInvalidationReason() != PaintInvalidationReason::kNone) {
+    if (ShouldDelayFullPaintInvalidation()) {
+      DCHECK(!bitfields_.SubtreeShouldDoFullPaintInvalidation());
+      return false;
+    }
+    if (FullPaintInvalidationReason() != PaintInvalidationReason::kNone) {
       DCHECK(IsFullPaintInvalidationReason(FullPaintInvalidationReason()));
       DCHECK(ShouldCheckForPaintInvalidation());
       return true;

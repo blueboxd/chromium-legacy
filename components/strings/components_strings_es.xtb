@@ -800,6 +800,7 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="2986368408720340940">Este método de recogida no está disponible. Selecciona otro.</translation>
 <translation id="2987034854559945715">No se ha encontrado ninguna función</translation>
 <translation id="2989742184762224133">Grapado doble en la parte superior</translation>
+<translation id="2990882401221831923">La lista de tarjetas de crédito está cerrada.</translation>
 <translation id="2991174974383378012">Compartir con otros sitios web</translation>
 <translation id="299122504639061328">Gestiona el buscador predeterminado y las búsquedas en el sitio</translation>
 <translation id="2991571918955627853">No puedes acceder a <ph name="SITE" /> en este momento porque el sitio web utiliza HSTS. Los ataques y los errores de red suelen ser temporales, por lo que es probable que esta página funcione más tarde.</translation>
@@ -1584,6 +1585,7 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="4976702386844183910">Última visita: <ph name="DATE" /></translation>
 <translation id="498323057460789381">Error de validación del esquema: <ph name="ERROR" /></translation>
 <translation id="4984088539114770594">¿Usar micrófono?</translation>
+<translation id="4988822846878841743">Lista de tarjetas de crédito cuyos datos puedes rellenar con un toque. Está abierta a media altura.</translation>
 <translation id="4989163558385430922">Ver todo</translation>
 <translation id="4989542687859782284">No disponibles</translation>
 <translation id="4989809363548539747">Este complemento no es compatible</translation>
@@ -1712,7 +1714,6 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="5284295735376057059">Propiedades del documento</translation>
 <translation id="528468243742722775">Finalizar</translation>
 <translation id="5285570108065881030">Mostrar todas las contraseñas guardadas</translation>
-<translation id="5287240709317226393">Mostrar cookies</translation>
 <translation id="5287456746628258573">Este sitio web usa una configuración de seguridad obsoleta y puede que exponga tu información (por ejemplo, las contraseñas o los números de las tarjetas de crédito) cuando se envíe a este sitio web.</translation>
 <translation id="5288108484102287882">La validación de los valores de las políticas ha generado advertencias</translation>
 <translation id="5288393065350884210">Contabilidad y auditoría</translation>
@@ -1932,6 +1933,7 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="5863847714970149516">Es posible que la página a la que vas a acceder intente aplicar algún cargo</translation>
 <translation id="5866257070973731571">Añade un número de teléfono</translation>
 <translation id="5866898949289125849">Estás viendo una página de las herramientas para desarrolladores</translation>
+<translation id="5868548454963263350">Lista de tarjetas de crédito cuyos datos puedes rellenar con un toque. Está abierta a altura completa.</translation>
 <translation id="5869405914158311789">No se puede acceder a este sitio web</translation>
 <translation id="5869522115854928033">Contraseñas guardadas</translation>
 <translation id="5873013647450402046">Tu banco quiere confirmar tu identidad.</translation>
@@ -1978,7 +1980,7 @@ De lo contrario, lo impedirá tu configuración de privacidad. Permitirá que el
 <translation id="5989320800837274978">No se han especificado servidores proxy fijos ni una URL de secuencia de comandos .pac.</translation>
 <translation id="5992691462791905444">Plegado en Z asimétrico</translation>
 <translation id="5995727681868049093">Gestiona tu información, privacidad y seguridad en tu cuenta de Google</translation>
-<translation id="5997247540087773573">La contraseña que acabas de usar se ha encontrado en una quiebra de seguridad de datos. Para proteger tus cuentas, el gestor de contraseñas de Google te recomienda que cambies esa contraseña ahora y que compruebes las contraseñas que tengas guardadas.</translation>
+<translation id="5997247540087773573">La contraseña que acabas de usar se ha encontrado en una quiebra de seguridad de datos. Para proteger tus cuentas, el Gestor de contraseñas de Google te recomienda que cambies esa contraseña ahora y que compruebes las contraseñas que tengas guardadas.</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> resultados para "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6005765687956866568">La información autocompletada se ha borrado del formulario</translation>
 <translation id="6006365096047131769">3x5 pulgadas</translation>
@@ -2638,12 +2640,13 @@ Más información:
 <translation id="7637586430889951925">{COUNT,plural, =0{Ninguna}=1{1 contraseña en tu cuenta (de <ph name="DOMAIN_LIST" />)}other{# contraseñas en tu cuenta (de <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="7638605456503525968">Puertos serie</translation>
 <translation id="7639968568612851608">Gris oscuro</translation>
-<translation id="7646681339175747202">La contraseña que acabas de usar se ha encontrado en una quiebra de seguridad de datos. El gestor de contraseñas de Google te recomienda que cambies tu contraseña ahora.</translation>
+<translation id="7646681339175747202">La contraseña que acabas de usar se ha encontrado en una quiebra de seguridad de datos. El Gestor de contraseñas de Google te recomienda que cambies tu contraseña ahora.</translation>
 <translation id="7647206758853451655">Calidad de impresión</translation>
 <translation id="7648992873808071793">Almacenar archivos en este dispositivo</translation>
 <translation id="7653957176542370971">La hoja del controlador de pagos está cerrada</translation>
 <translation id="7654909834015434372">Si editas anotaciones, este documento volverá a su rotación original</translation>
 <translation id="765676359832457558">Ocultar configuración avanzada...</translation>
+<translation id="7656935528854393684">Lista de tarjetas de crédito cuyos datos puedes rellenar con un toque.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7659327900411729175">Sobre Kaku 8</translation>
 <translation id="7659878911471462949">Lágrimas de alegría</translation>
@@ -3191,7 +3194,6 @@ Más información:
 <translation id="9096425087209440047"><ph name="SET_CHROME_AS_DEFAULT_BROWSER_FOCUSED_FRIENDLY_MATCH_TEXT" />, pulsa Tabulador y luego Intro para establecer Chrome como navegador predeterminado del sistema en los ajustes de iOS</translation>
 <translation id="9096679202588811390">Series y programas de televisión</translation>
 <translation id="9101630580131696064">Bandeja 1</translation>
-<translation id="9102081333385212048">Los archivos que copies o muevas se enviarán a Google Cloud o a terceros para que se analicen. Por ejemplo, puede que se analicen para buscar datos sensibles o malware.</translation>
 <translation id="9103537084693478942">Software para vídeos</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> utiliza normalmente el cifrado para proteger tu información. Cuando Chromium intentó establecer conexión con <ph name="SITE" />, el sitio web devolvió unas credenciales inusuales e incorrectas. Esto puede ocurrir si un atacante intenta suplantar la identidad de <ph name="SITE" /> o si una pantalla de inicio de sesión Wi-Fi interrumpe la conexión. Tu información sigue estando protegida, ya que Chromium detuvo la conexión antes de que se intercambiaran datos.</translation>
 <translation id="9106062320799175032">Añade una dirección de facturación</translation>

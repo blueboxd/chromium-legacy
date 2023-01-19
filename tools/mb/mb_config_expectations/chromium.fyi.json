@@ -549,7 +549,7 @@
       "is_component_build": false,
       "is_debug": false,
       "proprietary_codecs": true,
-      "rbe_cfg_dir": "../../buildtools/reclient_cfgs/win-cross-experiments",
+      "rbe_cfg_dir": "../../buildtools/reclient_cfgs/win-cross",
       "symbol_level": 1,
       "use_remoteexec": true
     }
@@ -561,7 +561,7 @@
       "is_component_build": false,
       "is_debug": false,
       "proprietary_codecs": true,
-      "rbe_cfg_dir": "../../buildtools/reclient_cfgs/win-cross-experiments",
+      "rbe_cfg_dir": "../../buildtools/reclient_cfgs/win-cross",
       "symbol_level": 1,
       "use_remoteexec": true
     }
@@ -1010,6 +1010,19 @@
       "use_remoteexec": true
     }
   },
+  "lacros-arm-generic-rel-skylab-fyi": {
+    "args_file": "//build/args/chromeos/arm-generic-crostoolchain.gni",
+    "gn_args": {
+      "chromeos_is_browser_only": true,
+      "dcheck_always_on": false,
+      "is_chromeos_device": true,
+      "is_debug": false,
+      "is_skylab": true,
+      "ozone_platform_headless": true,
+      "target_os": "chromeos",
+      "use_remoteexec": true
+    }
+  },
   "lacros-arm64-generic-rel-skylab-fyi": {
     "args_file": "//build/args/chromeos/arm64-generic-crostoolchain.gni",
     "gn_args": {
@@ -1282,6 +1295,15 @@
     }
   },
   "linux-wpt-content-shell-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 1,
+      "use_remoteexec": true
+    }
+  },
+  "linux-wpt-content-shell-leak-detection": {
     "gn_args": {
       "dcheck_always_on": true,
       "is_component_build": false,

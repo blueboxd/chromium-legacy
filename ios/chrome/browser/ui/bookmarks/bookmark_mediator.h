@@ -11,12 +11,14 @@ class ChromeBrowserState;
 
 namespace bookmarks {
 class BookmarkNode;
+class BookmarkModel;
 }  // namespace bookmarks
 
 namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
 
+class PrefService;
 class GURL;
 @class MDCSnackbarMessage;
 @class URLWithTitle;
@@ -25,16 +27,14 @@ class GURL;
 @interface BookmarkMediator : NSObject
 
 - (instancetype)init NS_UNAVAILABLE;
-- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
+- (instancetype)initWithWithBookmarkModel:
+                    (bookmarks::BookmarkModel*)bookmarkModel
+                                    prefs:(PrefService*)prefs
     NS_DESIGNATED_INITIALIZER;
 
 // Registers the feature preferences.
 + (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry;
 
-// Accesses the default folder for bookmarks. The default folder is Mobile
-// Bookmarks.
-+ (const bookmarks::BookmarkNode*)folderForNewBookmarksInBrowserState:
-    (ChromeBrowserState*)browserState;
 + (void)setFolderForNewBookmarks:(const bookmarks::BookmarkNode*)folder
                   inBrowserState:(ChromeBrowserState*)browserState;
 

@@ -41,7 +41,6 @@
 #include "chrome/browser/sync/test/integration/committed_all_nudged_changes_checker.h"
 #include "chrome/browser/sync/test/integration/device_info_helper.h"
 #include "chrome/browser/sync/test/integration/fake_sync_gcm_driver_for_instance_id.h"
-#include "chrome/browser/sync/test/integration/invalidations/fake_sync_instance_id_driver.h"
 #include "chrome/browser/sync/test/integration/session_hierarchy_match_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_disabled_checker.h"
@@ -209,14 +208,6 @@ invalidation::FCMNetworkHandler* GetFCMNetworkHandler(
   return it != profile_to_fcm_network_handler_map->end() ? it->second : nullptr;
 }
 
-std::unique_ptr<KeyedService> CreateInstanceIDProfileService(
-    content::BrowserContext* context) {
-  Profile* profile = Profile::FromBrowserContext(context);
-  return instance_id::InstanceIDProfileService::CreateForTests(
-      std::make_unique<FakeSyncInstanceIDDriver>(
-          gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver()));
-}
-
 }  // namespace
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -266,6 +257,7 @@ SyncTest::SyncTest(TestType test_type)
       break;
     }
   }
+
 #if !BUILDFLAG(IS_ANDROID)
   browser_list_observer_ = std::make_unique<ClosedBrowserObserver>(
       base::BindRepeating(&SyncTest::OnBrowserRemoved, base::Unretained(this)));
@@ -494,22 +486,8 @@ void SyncTest::OnBrowserRemoved(Browser* browser) {
   for (size_t i = 0; i < browsers_.size(); ++i) {
     if (browsers_[i] == browser) {
       browsers_[i] = nullptr;
-      // Remove a corresponding SyncServiceHarness if exists since SyncService
-      // may be destroyed soon. It may not exist for browsers added during
-      // tests using AddBrowser().
-      if (i < clients_.size()) {
-        CheckForDataTypeFailures(/*client_index=*/i);
-        clients_[i].reset();
-      }
       break;
     }
-  }
-
-  if (fake_server_sync_invalidation_sender_ &&
-      base::Contains(profile_to_fcm_handler_map_, browser->profile())) {
-    fake_server_sync_invalidation_sender_->RemoveFCMHandler(
-        profile_to_fcm_handler_map_[browser->profile()]);
-    profile_to_fcm_handler_map_.erase(browser->profile());
   }
 }
 #endif
@@ -668,6 +646,7 @@ bool SyncTest::SetupClients() {
 void SyncTest::InitializeProfile(int index, Profile* profile) {
   DCHECK(profile);
   profiles_[index] = profile;
+  profile->AddObserver(this);
 
   SetUpInvalidations(index);
 #if !BUILDFLAG(IS_ANDROID)
@@ -936,6 +915,13 @@ void SyncTest::TearDownOnMainThread() {
   // Delete things that unsubscribe in destructor before their targets are gone.
   configuration_refresher_.reset();
 
+  for (Profile* profile : profiles_) {
+    // Profile could be removed earlier.
+    if (profile) {
+      profile->RemoveObserver(this);
+    }
+  }
+
   // Note: Closing all the browsers (see above) may destroy the Profiles, if
   // kDestroyProfileOnBrowserClose is enabled. So clear them out here, to make
   // sure they're not used anymore.
@@ -967,6 +953,30 @@ void SyncTest::SetUpInProcessBrowserTestFixture() {
                                   base::Unretained(this)));
 }
 
+void SyncTest::OnProfileWillBeDestroyed(Profile* profile) {
+  profile->RemoveObserver(this);
+
+  for (size_t index = 0; index < profiles_.size(); ++index) {
+    if (profiles_[index] != profile) {
+      continue;
+    }
+
+    CheckForDataTypeFailures(/*client_index=*/index);
+    profiles_[index] = nullptr;
+    clients_[index].reset();
+#if !BUILDFLAG(IS_ANDROID)
+    DCHECK(!browsers_[index]);
+#endif  // !BUILDFLAG(IS_ANDROID)
+  }
+
+  if (fake_server_sync_invalidation_sender_) {
+    DCHECK(base::Contains(profile_to_fcm_handler_map_, profile));
+    fake_server_sync_invalidation_sender_->RemoveFCMHandler(
+        profile_to_fcm_handler_map_[profile]);
+    profile_to_fcm_handler_map_.erase(profile);
+  }
+}
+
 void SyncTest::OnWillCreateBrowserContextServices(
     content::BrowserContext* context) {
   if (server_type_ == EXTERNAL_LIVE_SERVER) {
@@ -982,13 +992,6 @@ void SyncTest::OnWillCreateBrowserContextServices(
                               &profile_to_fcm_network_handler_map_));
   gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactory(
       context, base::BindRepeating(&FakeSyncGCMDriver::Build));
-
-  // Used by SharingService, real InstanceIDProfileService returns a real
-  // InstanceIDDriver. This factory prevents network requests when obtaining FCM
-  // registration tokens from real InstanceID.
-  instance_id::InstanceIDProfileServiceFactory::GetInstance()
-      ->SetTestingFactory(context,
-                          base::BindRepeating(&CreateInstanceIDProfileService));
 }
 
 // static

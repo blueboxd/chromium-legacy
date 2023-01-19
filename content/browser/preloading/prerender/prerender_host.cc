@@ -967,6 +967,9 @@ void PrerenderHost::SetFailureReason(PrerenderFinalStatus status) {
     case PrerenderFinalStatus::kActivatedInBackground:
     case PrerenderFinalStatus::kEmbedderHostDisallowed:
     case PrerenderFinalStatus::kActivationNavigationDestroyedBeforeSuccess:
+    case PrerenderFinalStatus::kPrimaryMainFrameRendererProcessCrashed:
+    case PrerenderFinalStatus::kPrimaryMainFrameRendererProcessKilled:
+    case PrerenderFinalStatus::kActivationFramePolicyNotCompatible:
       attempt_->SetFailureReason(ToPreloadingFailureReason(status));
       // We reset the attempt to ensure we don't update once we have reported it
       // as failure or accidentally use it for any other prerender attempts as

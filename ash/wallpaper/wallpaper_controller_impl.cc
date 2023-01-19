@@ -35,6 +35,7 @@
 #include "ash/wallpaper/wallpaper_utils/wallpaper_color_calculator.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_ephemeral_user.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer.h"
+#include "ash/wallpaper/wallpaper_utils/wallpaper_resolution.h"
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wallpaper/wallpaper_window_state_manager.h"
@@ -44,7 +45,6 @@
 #include "base/barrier_closure.h"
 #include "base/check.h"
 #include "base/command_line.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -214,21 +214,20 @@ base::FilePath GetUserGooglePhotosWallpaperDir(const AccountId& account_id) {
 }
 
 // Returns the appropriate wallpaper resolution for all root windows.
-WallpaperControllerImpl::WallpaperResolution GetAppropriateResolution() {
+WallpaperResolution GetAppropriateResolution() {
   gfx::Size size = WallpaperControllerImpl::GetMaxDisplaySizeInNative();
   return (size.width() > kSmallWallpaperMaxWidth ||
           size.height() > kSmallWallpaperMaxHeight)
-             ? WallpaperControllerImpl::WALLPAPER_RESOLUTION_LARGE
-             : WallpaperControllerImpl::WALLPAPER_RESOLUTION_SMALL;
+             ? WallpaperResolution::kLarge
+             : WallpaperResolution::kSmall;
 }
 
 // Returns the path of the online wallpaper corresponding to |url| and
 // |resolution|.
-base::FilePath GetOnlineWallpaperPath(
-    const std::string& url,
-    WallpaperControllerImpl::WallpaperResolution resolution) {
+base::FilePath GetOnlineWallpaperPath(const std::string& url,
+                                      WallpaperResolution resolution) {
   std::string file_name = GURL(url).ExtractFileName();
-  if (resolution == WallpaperControllerImpl::WALLPAPER_RESOLUTION_SMALL) {
+  if (resolution == WallpaperResolution::kSmall) {
     file_name = base::FilePath(file_name)
                     .InsertBeforeExtension(kSmallWallpaperSuffix)
                     .value();
@@ -239,9 +238,8 @@ base::FilePath GetOnlineWallpaperPath(
 
 // Returns wallpaper subdirectory name for current resolution.
 std::string GetCustomWallpaperSubdirForCurrentResolution() {
-  WallpaperControllerImpl::WallpaperResolution resolution =
-      GetAppropriateResolution();
-  return resolution == WallpaperControllerImpl::WALLPAPER_RESOLUTION_SMALL
+  WallpaperResolution resolution = GetAppropriateResolution();
+  return resolution == WallpaperResolution::kSmall
              ? WallpaperControllerImpl::kSmallWallpaperSubDir
              : WallpaperControllerImpl::kLargeWallpaperSubDir;
 }
@@ -462,16 +460,14 @@ bool IsActiveUser(const AccountId& account_id) {
 // Returns the file path of the wallpaper corresponding to |url| if it exists in
 // local file system, otherwise returns an empty file path.
 base::FilePath GetExistingOnlineWallpaperPath(const std::string& url) {
-  WallpaperControllerImpl::WallpaperResolution resolution =
-      GetAppropriateResolution();
+  WallpaperResolution resolution = GetAppropriateResolution();
   base::FilePath wallpaper_path = GetOnlineWallpaperPath(url, resolution);
   if (base::PathExists(wallpaper_path))
     return wallpaper_path;
 
   // Falls back to the large wallpaper if the small one doesn't exist.
-  if (resolution == WallpaperControllerImpl::WALLPAPER_RESOLUTION_SMALL) {
-    wallpaper_path = GetOnlineWallpaperPath(
-        url, WallpaperControllerImpl::WALLPAPER_RESOLUTION_LARGE);
+  if (resolution == WallpaperResolution::kSmall) {
+    wallpaper_path = GetOnlineWallpaperPath(url, WallpaperResolution::kLarge);
     if (base::PathExists(wallpaper_path))
       return wallpaper_path;
   }
@@ -483,18 +479,16 @@ base::FilePath GetExistingOnlineWallpaperPath(const std::string& url) {
 base::flat_map<std::string, base::FilePath> GetOnlineWallpaperVariantPaths(
     const std::vector<OnlineWallpaperVariant>& variants) {
   base::flat_map<std::string, base::FilePath> url_to_file_path_map;
-  WallpaperControllerImpl::WallpaperResolution resolution =
-      GetAppropriateResolution();
+  WallpaperResolution resolution = GetAppropriateResolution();
 
   for (const auto& variant : variants) {
     const std::string& url = variant.raw_url.spec();
     base::FilePath variant_path = GetOnlineWallpaperPath(url, resolution);
-    base::FilePath large_variant_path = GetOnlineWallpaperPath(
-        url, WallpaperControllerImpl::WALLPAPER_RESOLUTION_LARGE);
+    base::FilePath large_variant_path =
+        GetOnlineWallpaperPath(url, WallpaperResolution::kLarge);
     if (base::PathExists(variant_path)) {
       url_to_file_path_map[url] = variant_path;
-    } else if (resolution ==
-                   WallpaperControllerImpl::WALLPAPER_RESOLUTION_SMALL &&
+    } else if (resolution == WallpaperResolution::kSmall &&
                base::PathExists(large_variant_path)) {
       // Falls back to the large wallpaper if the small one doesn't exist.
       url_to_file_path_map[url] = large_variant_path;
@@ -516,14 +510,10 @@ void SaveOnlineWallpaper(const std::string& url,
     return;
   }
   ResizeAndSaveWallpaper(
-      image,
-      GetOnlineWallpaperPath(
-          url, WallpaperControllerImpl::WALLPAPER_RESOLUTION_LARGE),
-      layout, image.width(), image.height());
+      image, GetOnlineWallpaperPath(url, WallpaperResolution::kLarge), layout,
+      image.width(), image.height());
   ResizeAndSaveWallpaper(
-      image,
-      GetOnlineWallpaperPath(
-          url, WallpaperControllerImpl::WALLPAPER_RESOLUTION_SMALL),
+      image, GetOnlineWallpaperPath(url, WallpaperResolution::kSmall),
       WALLPAPER_LAYOUT_CENTER_CROPPED, kSmallWallpaperMaxWidth,
       kSmallWallpaperMaxHeight);
 }
@@ -534,27 +524,6 @@ void EnsureGooglePhotosDirectoryExists(const AccountId& account_id) {
   auto user_directory = GetUserGooglePhotosWallpaperDir(account_id);
   if (!base::DirectoryExists(user_directory))
     base::CreateDirectory(user_directory);
-}
-
-// Implementation of |WallpaperControllerImpl::GetOfflineWallpaper|.
-std::vector<std::string> GetOfflineWallpaperListImpl() {
-  DCHECK(!GlobalChromeOSWallpapersDir().empty());
-  std::vector<std::string> url_list;
-  if (base::DirectoryExists(GlobalChromeOSWallpapersDir())) {
-    base::FileEnumerator files(GlobalChromeOSWallpapersDir(),
-                               /*recursive=*/false,
-                               base::FileEnumerator::FILES);
-    for (base::FilePath current = files.Next(); !current.empty();
-         current = files.Next()) {
-      // Do not add file name of small resolution wallpaper to the list.
-      if (!base::EndsWith(current.BaseName().RemoveExtension().value(),
-                          kSmallWallpaperSuffix,
-                          base::CompareCase::SENSITIVE)) {
-        url_list.push_back(current.BaseName().value());
-      }
-    }
-  }
-  return url_list;
 }
 
 // Returns the type of the user with the specified |id| or USER_TYPE_REGULAR.
@@ -719,8 +688,7 @@ WallpaperControllerImpl::WallpaperControllerImpl(
 WallpaperControllerImpl::~WallpaperControllerImpl() {
   if (current_wallpaper_)
     current_wallpaper_->RemoveObserver(this);
-  if (color_calculator_)
-    color_calculator_->RemoveObserver(this);
+
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
 }
@@ -855,7 +823,6 @@ void WallpaperControllerImpl::ShowWallpaperImage(const gfx::ImageSkia& image,
 
   // Cancel any in-flight color calculation because we have a new wallpaper.
   if (color_calculator_) {
-    color_calculator_->RemoveObserver(this);
     color_calculator_.reset();
   }
 
@@ -1293,7 +1260,7 @@ void WallpaperControllerImpl::SetDefaultWallpaper(
 base::FilePath WallpaperControllerImpl::GetDefaultWallpaperPath(
     user_manager::UserType user_type) {
   const bool use_small =
-      (GetAppropriateResolution() == WALLPAPER_RESOLUTION_SMALL);
+      (GetAppropriateResolution() == WallpaperResolution::kSmall);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   // The wallpaper is determined in the following order:
   // Guest wallpaper, child wallpaper, customized default wallpaper, and regular
@@ -1621,13 +1588,6 @@ void WallpaperControllerImpl::RemovePolicyWallpaper(
   SetDefaultWallpaper(account_id, show_wallpaper, base::DoNothing());
 }
 
-void WallpaperControllerImpl::GetOfflineWallpaperList(
-    GetOfflineWallpaperListCallback callback) {
-  sequenced_task_runner_->PostTaskAndReplyWithResult(
-      FROM_HERE, base::BindOnce(&GetOfflineWallpaperListImpl),
-      std::move(callback));
-}
-
 void WallpaperControllerImpl::SetAnimationDuration(
     base::TimeDelta animation_duration) {
   animation_duration_ = animation_duration;
@@ -1767,11 +1727,8 @@ void WallpaperControllerImpl::OnWallpaperResized() {
     observer.OnWallpaperResized();
 }
 
-void WallpaperControllerImpl::OnColorCalculationComplete() {
-  WallpaperCalculatedColors wallpaper_calculated_colors =
-      color_calculator_->get_calculated_colors();
-  color_calculator_.reset();
-
+void WallpaperControllerImpl::OnColorCalculationComplete(
+    const WallpaperCalculatedColors& wallpaper_calculated_colors) {
   const AccountId account_id = GetActiveAccountId();
 
   // Use |WallpaperInfo::location| as the key for storing |prominent_colors_| in
@@ -1785,6 +1742,11 @@ void WallpaperControllerImpl::OnColorCalculationComplete() {
   pref_manager_->CacheKMeanColor(account_id,
                                  wallpaper_calculated_colors.k_mean_color);
   SetCalculatedColors(wallpaper_calculated_colors);
+
+  // Release the color calculator after it has returned a result by calling this
+  // callback. There is only ever one calculator and it should always be the one
+  // which is fulfilling this callback.
+  color_calculator_.reset();
 }
 
 void WallpaperControllerImpl::OnActiveUserSessionChanged(
@@ -2074,7 +2036,7 @@ void WallpaperControllerImpl::SetDefaultWallpaperImpl(
   }
 
   const bool use_small =
-      (GetAppropriateResolution() == WALLPAPER_RESOLUTION_SMALL);
+      (GetAppropriateResolution() == WallpaperResolution::kSmall);
   WallpaperLayout layout =
       use_small ? WALLPAPER_LAYOUT_CENTER : WALLPAPER_LAYOUT_CENTER_CROPPED;
   base::FilePath file_path = GetDefaultWallpaperPath(user_type);
@@ -2751,7 +2713,6 @@ void WallpaperControllerImpl::CalculateWallpaperColors() {
 
   // Cancel any in-flight color calculation.
   if (color_calculator_) {
-    color_calculator_->RemoveObserver(this);
     color_calculator_.reset();
   }
 
@@ -2771,9 +2732,10 @@ void WallpaperControllerImpl::CalculateWallpaperColors() {
   }
 
   color_calculator_ = std::make_unique<WallpaperColorCalculator>(
-      GetWallpaper(), color_profiles_, sequenced_task_runner_);
-  color_calculator_->AddObserver(this);
-  if (!color_calculator_->StartCalculation()) {
+      GetWallpaper(), color_profiles_);
+  if (!color_calculator_->StartCalculation(
+          base::BindOnce(&WallpaperControllerImpl::OnColorCalculationComplete,
+                         weak_factory_.GetWeakPtr()))) {
     ResetCalculatedColors();
   }
 }

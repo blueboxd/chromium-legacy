@@ -53,12 +53,10 @@
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/sync/protocol/app_list_specifics.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/test/fake_sync_change_processor.h"
 #include "components/sync/test/sync_change_processor_wrapper_for_test.h"
-#include "components/sync/test/sync_error_factory_mock.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -771,9 +769,8 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, RemoteAppsNotSynced) {
       std::make_unique<syncer::FakeSyncChangeProcessor>();
   app_list_syncable_service_->MergeDataAndStartSyncing(
       syncer::APP_LIST, {},
-      std::unique_ptr<syncer::SyncChangeProcessor>(
-          new syncer::SyncChangeProcessorWrapperForTest(sync_processor.get())),
-      std::make_unique<syncer::SyncErrorFactoryMock>());
+      std::make_unique<syncer::SyncChangeProcessorWrapperForTest>(
+          sync_processor.get()));
   content::RunAllTasksUntilIdle();
 
   // App has id kId1.
@@ -808,9 +805,8 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, RemoteFoldersNotSynced) {
   app_list_model_updater_->SetActive(true);
   app_list_syncable_service_->MergeDataAndStartSyncing(
       syncer::APP_LIST, {},
-      std::unique_ptr<syncer::SyncChangeProcessor>(
-          new syncer::SyncChangeProcessorWrapperForTest(sync_processor.get())),
-      std::make_unique<syncer::SyncErrorFactoryMock>());
+      std::make_unique<syncer::SyncChangeProcessorWrapperForTest>(
+          sync_processor.get()));
   content::RunAllTasksUntilIdle();
 
   // Folder has id kId1.

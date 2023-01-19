@@ -72,13 +72,6 @@ constexpr base::TimeDelta kRequestTimeout = base::Minutes(5);
 const base::FeatureParam<int> kUpdateDelayParam{
     &blink::features::kServiceWorkerUpdateDelay, "update_delay_in_ms", 1000};
 
-// The default value is set to max since it's not used when the feature is
-// disabled. In that case, the service worker will be terminated by the idle
-// timeout.
-const base::FeatureParam<int> kTerminationDelayParam{
-    &features::kServiceWorkerTerminationOnNoControllee,
-    "termination_delay_in_ms", std::numeric_limits<int>::max()};
-
 const char kClaimClientsStateErrorMesage[] =
     "Only the active worker can claim clients.";
 
@@ -854,12 +847,6 @@ void ServiceWorkerVersion::AddControllee(
   // crash.
   CHECK(!base::Contains(controllee_map_, uuid));
 
-  // Set the idle timeout to the default value if there's no controllee and the
-  // worker is running because the worker's idle delay has been set to a shorter
-  // value when all controllee are gone.
-  MaybeUpdateIdleDelayForTerminationOnNoControllee(
-      base::Seconds(blink::mojom::kServiceWorkerDefaultIdleDelayInSeconds));
-
   controllee_map_[uuid] = container_host->GetWeakPtr();
   embedded_worker_->UpdateForegroundPriority();
   ClearTick(&no_controllees_time_);
@@ -901,11 +888,6 @@ void ServiceWorkerVersion::RemoveControllee(const std::string& client_uuid) {
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
       FROM_HERE, base::BindOnce(&ServiceWorkerVersion::NotifyControlleeRemoved,
                                 weak_factory_.GetWeakPtr(), client_uuid));
-
-  // When a new controllee checks in before the delay passes, the idle delay
-  // is set to the default in AddControllee().
-  MaybeUpdateIdleDelayForTerminationOnNoControllee(
-      base::Milliseconds(kTerminationDelayParam.Get()));
 }
 
 void ServiceWorkerVersion::OnControlleeNavigationCommitted(
@@ -1322,9 +1304,6 @@ void ServiceWorkerVersion::OnStarted(
     for (const auto& [uuid, timeout_type] : pending_external_requests)
       StartExternalRequest(uuid, timeout_type);
   }
-
-  MaybeUpdateIdleDelayForTerminationOnNoControllee(
-      base::Milliseconds(kTerminationDelayParam.Get()));
 }
 
 void ServiceWorkerVersion::OnStopping() {
@@ -1839,33 +1818,33 @@ void ServiceWorkerVersion::CountFeature(blink::mojom::WebFeature feature) {
   }
 }
 
-void ServiceWorkerVersion::set_cross_origin_embedder_policy(
-    network::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
-  // Once it is set, the CrossOriginEmbedderPolicy is immutable.
-  DCHECK(!client_security_state_ ||
-         client_security_state_->cross_origin_embedder_policy.value ==
-             network::mojom::CrossOriginEmbedderPolicyValue::kNone ||
-         client_security_state_->cross_origin_embedder_policy ==
-             cross_origin_embedder_policy);
-  if (!client_security_state_) {
-    client_security_state_ = network::mojom::ClientSecurityState::New();
-  }
-  client_security_state_->cross_origin_embedder_policy =
-      std::move(cross_origin_embedder_policy);
-}
-
 network::mojom::CrossOriginEmbedderPolicyValue
 ServiceWorkerVersion::cross_origin_embedder_policy_value() const {
-  return client_security_state_
-             ? client_security_state_->cross_origin_embedder_policy.value
+  return policy_container_host_
+             ? policy_container_host_->cross_origin_embedder_policy().value
              : network::mojom::CrossOriginEmbedderPolicyValue::kNone;
 }
 
 const network::CrossOriginEmbedderPolicy*
 ServiceWorkerVersion::cross_origin_embedder_policy() const {
-  return client_security_state_
-             ? &client_security_state_->cross_origin_embedder_policy
+  return policy_container_host_
+             ? &policy_container_host_->cross_origin_embedder_policy()
              : nullptr;
+}
+
+const network::mojom::ClientSecurityStatePtr
+ServiceWorkerVersion::BuildClientSecurityState() const {
+  if (!policy_container_host_) {
+    return nullptr;
+  }
+
+  const PolicyContainerPolicies& policies = policy_container_host_->policies();
+  return network::mojom::ClientSecurityState::New(
+      policies.cross_origin_embedder_policy, policies.is_web_secure_context,
+      policies.ip_address_space,
+      DerivePrivateNetworkRequestPolicy(policies.ip_address_space,
+                                        policies.is_web_secure_context,
+                                        PrivateNetworkRequestContext::kWorker));
 }
 
 // static
@@ -2580,11 +2559,9 @@ void ServiceWorkerVersion::PrepareForUpdate(
     std::map<GURL, ServiceWorkerUpdateChecker::ComparedScriptInfo>
         compared_script_info_map,
     const GURL& updated_script_url,
-    scoped_refptr<PolicyContainerHost> policy_container_host,
-    network::CrossOriginEmbedderPolicy cross_origin_embedder_policy) {
+    scoped_refptr<PolicyContainerHost> policy_container_host) {
   compared_script_info_map_ = std::move(compared_script_info_map);
   updated_script_url_ = updated_script_url;
-  set_cross_origin_embedder_policy(cross_origin_embedder_policy);
   if (!GetContentClient()
            ->browser()
            ->ShouldServiceWorkerInheritPolicyContainerFromCreator(
@@ -2694,26 +2671,6 @@ ServiceWorkerVersion::RebindStorageReference() {
   return storage::mojom::ServiceWorkerLiveVersionInfo::New(
       version_id_, std::move(purgeable_resources),
       remote_reference_.BindNewPipeAndPassReceiver());
-}
-
-void ServiceWorkerVersion::MaybeUpdateIdleDelayForTerminationOnNoControllee(
-    base::TimeDelta delay) {
-  if (!base::FeatureList::IsEnabled(
-          features::kServiceWorkerTerminationOnNoControllee) ||
-      HasControllee() || running_status() != EmbeddedWorkerStatus::RUNNING) {
-    return;
-  }
-
-  // The idle delay can be updated only when the worker is running.
-  bool update_idle_delay = running_status() == EmbeddedWorkerStatus::RUNNING;
-
-  // The idle delay should not be updated when the worker needs to be
-  // terminated ASAP so that the new worker can be activated soon.
-  update_idle_delay = update_idle_delay && !needs_to_be_terminated_asap_;
-
-  if (update_idle_delay) {
-    endpoint()->SetIdleDelay(delay);
-  }
 }
 
 }  // namespace content

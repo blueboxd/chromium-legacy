@@ -12,6 +12,7 @@
 #include "net/cert/pki/cert_errors.h"
 #include "net/cert/pki/simple_path_builder_delegate.h"
 #include "net/cert/pki/string_util.h"
+#include "net/cert/pki/trust_store.h"
 #include "net/der/parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
@@ -323,10 +324,25 @@ bool ReadVerifyCertChainTestFromFile(const std::string& file_path_ascii,
       } else if (value == "TRUSTED_ANCHOR_WITH_CONSTRAINTS") {
         test->last_cert_trust =
             CertificateTrust::ForTrustAnchor().WithEnforceAnchorConstraints();
+      } else if (value == "TRUSTED_ANCHOR_WITH_REQUIRE_BASIC_CONSTRAINTS") {
+        test->last_cert_trust = CertificateTrust::ForTrustAnchor()
+                                    .WithRequireAnchorBasicConstraints();
+      } else if (value ==
+                 "TRUSTED_ANCHOR_WITH_CONSTRAINTS_REQUIRE_BASIC_CONSTRAINTS") {
+        test->last_cert_trust = CertificateTrust::ForTrustAnchor()
+                                    .WithEnforceAnchorConstraints()
+                                    .WithRequireAnchorBasicConstraints();
       } else if (value == "TRUSTED_ANCHOR_WITH_EXPIRATION_AND_CONSTRAINTS") {
         test->last_cert_trust = CertificateTrust::ForTrustAnchor()
                                     .WithEnforceAnchorExpiry()
                                     .WithEnforceAnchorConstraints();
+      } else if (value == "TRUSTED_ANCHOR_OR_LEAF") {
+        test->last_cert_trust = CertificateTrust::ForTrustAnchorOrLeaf();
+      } else if (value == "TRUSTED_LEAF") {
+        test->last_cert_trust = CertificateTrust::ForTrustedLeaf();
+      } else if (value == "TRUSTED_LEAF_REQUIRE_SELF_SIGNED") {
+        test->last_cert_trust =
+            CertificateTrust::ForTrustedLeaf().WithRequireLeafSelfSigned();
       } else if (value == "DISTRUSTED") {
         test->last_cert_trust = CertificateTrust::ForDistrusted();
       } else if (value == "UNSPECIFIED") {

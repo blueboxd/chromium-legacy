@@ -4,6 +4,7 @@
 
 #include "components/segmentation_platform/internal/selection/request_dispatcher.h"
 
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/user_metrics.h"
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
@@ -56,7 +57,8 @@ class RequestDispatcherTest : public testing::Test {
     configs_.emplace_back(CreateTestConfig(kTestClient1));
     configs_.emplace_back(CreateTestConfig(kTestClient2));
 
-    request_dispatcher_ = std::make_unique<RequestDispatcher>(configs_);
+    request_dispatcher_ =
+        std::make_unique<RequestDispatcher>(configs_, nullptr);
 
     auto handler1 = std::make_unique<MockRequestHandler>();
     request_handler1_ = handler1.get();
@@ -80,8 +82,8 @@ class RequestDispatcherTest : public testing::Test {
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   std::vector<std::unique_ptr<Config>> configs_;
-  MockRequestHandler* request_handler1_ = nullptr;
-  MockRequestHandler* request_handler2_ = nullptr;
+  raw_ptr<MockRequestHandler> request_handler1_ = nullptr;
+  raw_ptr<MockRequestHandler> request_handler2_ = nullptr;
   std::unique_ptr<RequestDispatcher> request_dispatcher_;
 };
 

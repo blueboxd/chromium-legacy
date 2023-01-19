@@ -47,8 +47,8 @@ struct GetStorageUsageForStorageKeyResult {
 storage::mojom::ServiceWorkerResourceRecordPtr
 CreateResourceRecord(int64_t resource_id, const GURL& url, int64_t size_bytes) {
   EXPECT_TRUE(url.is_valid());
-  return storage::mojom::ServiceWorkerResourceRecord::New(resource_id, url,
-                                                          size_bytes);
+  return storage::mojom::ServiceWorkerResourceRecord::New(
+      resource_id, url, size_bytes, /*sha256_checksum=*/"");
 }
 
 storage::mojom::ServiceWorkerRegistrationDataPtr CreateRegistrationData(
@@ -755,7 +755,9 @@ TEST_F(ServiceWorkerRegistryTest, StoreFindUpdateDeleteRegistration) {
   network::CrossOriginEmbedderPolicy coep_require_corp;
   coep_require_corp.value =
       network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp;
-  live_version->set_cross_origin_embedder_policy(coep_require_corp);
+  auto policy_container_host = base::MakeRefCounted<PolicyContainerHost>();
+  policy_container_host->set_cross_origin_embedder_policy(coep_require_corp);
+  live_version->set_policy_container_host(std::move(policy_container_host));
   live_registration->SetWaitingVersion(live_version);
   live_registration->set_last_update_check(kYesterday);
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
@@ -1134,6 +1136,45 @@ TEST_F(ServiceWorkerRegistryTest, FindRegistration_LongestScopeMatch) {
       FindRegistrationForClientUrl(kDocumentUrl, kKey, found_registration));
   EXPECT_EQ(1, helper()->quota_manager_proxy()->notify_bucket_accessed_count());
   EXPECT_EQ(live_registration2, found_registration);
+}
+
+TEST_F(ServiceWorkerRegistryTest, MergeDuplicateFindRegistrationCalls) {
+  const GURL kScope("http://www.example.com/scope/");
+  const GURL kScript("http://www.example.com/script.js");
+  const blink::StorageKey kKey(url::Origin::Create(kScope));
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript,
+                                                kKey,
+                                                /*resource_id=*/1);
+
+  ServiceWorkerVersion* version = registration->waiting_version();
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            StoreRegistration(registration, version));
+
+  const int kCallCount = 3;
+  int done_count = 0;
+  base::RunLoop loop;
+  for (int i = 0; i < kCallCount; i++) {
+    registry()->FindRegistrationForClientUrl(
+        kScope, kKey,
+        base::BindLambdaForTesting(
+            [&](blink::ServiceWorkerStatusCode status,
+                scoped_refptr<ServiceWorkerRegistration> found_registration) {
+              EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
+              EXPECT_EQ(registration, found_registration);
+              done_count++;
+              if (done_count == kCallCount) {
+                loop.Quit();
+              }
+            }));
+  }
+  // Even when FindRegistrationForClientUrl is called 3 times, the in-flight
+  // calls of FindRegistrationForClientUrl must be merged into one internally.
+  // The following check expects that the
+  // `registry()->FindRegistrationForClientUrl()` implementation keeps track of
+  // `inflight_call_count()` synchronously.
+  EXPECT_EQ(inflight_call_count(), 1U);
+  loop.Run();
 }
 
 // Tests that fields of ServiceWorkerRegistrationInfo are filled correctly.
@@ -2228,8 +2269,8 @@ TEST_F(ServiceWorkerRegistryOriginTrialsTest, FromMainScript) {
   EXPECT_EQ(kFeature2Token2, tokens.at(kFeature2Name)[1]);
 
   std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
-  records.push_back(
-      storage::mojom::ServiceWorkerResourceRecord::New(1, kScript, 100));
+  records.push_back(storage::mojom::ServiceWorkerResourceRecord::New(
+      1, kScript, 100, /*sha256_checksum=*/""));
   version->script_cache_map()->SetResources(records);
   version->set_fetch_handler_type(
       ServiceWorkerVersion::FetchHandlerType::kNotSkippable);

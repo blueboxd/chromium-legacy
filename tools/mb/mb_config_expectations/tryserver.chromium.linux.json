@@ -525,7 +525,6 @@
       "ozone_platform_headless": true,
       "ozone_platform_wayland": true,
       "proprietary_codecs": true,
-      "remoting_use_wayland": true,
       "symbol_level": 0,
       "use_bundled_weston": true,
       "use_dummy_lastchange": true,
@@ -544,6 +543,15 @@
     }
   },
   "linux-wpt-content-shell-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 0,
+      "use_goma": true
+    }
+  },
+  "linux-wpt-content-shell-leak-detection": {
     "gn_args": {
       "dcheck_always_on": true,
       "is_component_build": false,
@@ -742,15 +750,6 @@
       "is_debug": false,
       "is_ubsan_no_recover": true,
       "is_ubsan_vptr": true,
-      "use_remoteexec": true
-    }
-  },
-  "linux_layout_tests_layout_ng_disabled": {
-    "gn_args": {
-      "dcheck_always_on": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "symbol_level": 0,
       "use_remoteexec": true
     }
   },

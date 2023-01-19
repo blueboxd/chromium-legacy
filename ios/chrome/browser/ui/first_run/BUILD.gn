@@ -95,7 +95,6 @@ source_set("first_run") {
     "//ios/chrome/browser/ui/first_run/default_browser",
     "//ios/chrome/browser/ui/first_run/legacy_signin",
     "//ios/chrome/browser/ui/first_run/signin",
-    "//ios/chrome/browser/ui/first_run/sync",
     "//ios/chrome/browser/ui/first_run/tangible_sync",
     "//ios/chrome/browser/ui/first_run/welcome",
     "//ios/chrome/browser/ui/screen:screen_provider",
@@ -188,10 +187,7 @@ source_set("interruptible_chrome_coordinator") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "fre_field_trial_unittest.mm",
-    "trending_queries_field_trial_unittest.mm",
-  ]
+  sources = [ "trending_queries_field_trial_unittest.mm" ]
   deps = [
     ":field_trial",
     ":field_trial_constants",
@@ -229,7 +225,6 @@ source_set("eg2_tests") {
     "enterprise_loading_screen_egtest.mm",
     "first_run_egtest.mm",
     "first_run_two_steps_egtest.mm",
-    "first_run_uma_dialog_egtest.mm",
   ]
   deps = [
     ":constants",

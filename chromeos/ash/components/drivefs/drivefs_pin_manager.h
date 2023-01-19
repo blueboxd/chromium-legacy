@@ -12,6 +12,7 @@
 #include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -73,11 +74,11 @@ struct SetupProgress {
   // Estimated number of bytes that are required to store the files to pin. This
   // is a pessimistic estimate based on the assumption that each file uses an
   // integral number of fixed-size blocks. Estimated at the beginning of the
-  // setup process and left unchanged afterwards.
+  // setup process and updated if necessary afterwards.
   int64_t required_space = 0;
 
   // Estimated number of bytes that are required to download the files to pin.
-  // Estimated at the beginning of the setup process and left unchanged
+  // Estimated at the beginning of the setup process and updated if necessary
   // afterwards.
   int64_t total_bytes = 0;
 
@@ -100,19 +101,6 @@ struct SetupProgress {
   SetupStage stage = SetupStage::kNotStarted;
 };
 
-// Observe the setup progress via subscribing as an observer on the
-// `DriveFsPinManager`.
-// TODO(b/261633796): Send back monitoring events to the observers.
-class DriveFsBulkPinObserver {
- public:
-  // When the setup progresses, this returns back the information gathered and
-  // the current stage of setup.
-  virtual void OnSetupProgress(const SetupProgress& progress) = 0;
-
- protected:
-  virtual ~DriveFsBulkPinObserver() = default;
-};
-
 // Manages bulk pinning of items via DriveFS. This class handles the following:
 //  - Manage batching of pin actions to avoid sending too many events at once.
 //  - Ensure disk space is not being exceeded whilst pinning files.
@@ -122,37 +110,24 @@ class DriveFsBulkPinObserver {
 class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) DriveFsPinManager
     : public DriveFsHostObserver {
  public:
-  using SpaceResult = base::OnceCallback<void(int64_t)>;
-  using SpaceGetter =
-      base::RepeatingCallback<void(const base::FilePath&, SpaceResult)>;
-
-  DriveFsPinManager(bool enabled,
-                    const base::FilePath& profile_path,
-                    mojom::DriveFs* drivefs_interface,
-                    SpaceGetter get_free_space = {});
+  DriveFsPinManager(base::FilePath profile_path, mojom::DriveFs* drivefs);
 
   DriveFsPinManager(const DriveFsPinManager&) = delete;
   DriveFsPinManager& operator=(const DriveFsPinManager&) = delete;
 
   ~DriveFsPinManager() override;
 
-  // Enable or disable the bulk pinning.
-  void SetBulkPinningEnabled(bool enabled) { enabled_ = enabled; }
-
-  // Start up the manager, which will first search for any unpinned items and
+  // Starts up the manager, which will first search for any unpinned items and
   // pin them (within the users My drive) then turn to a "monitoring" phase
   // which will ensure any new files created and switched to pinned state
-  // automatically. The complete callback will be called once the initial
-  // pinning has completed.
-  using CompletionCallback = base::OnceCallback<void(SetupStage)>;
-  void Start(CompletionCallback complete_callback, bool should_pin = true);
+  // automatically.
+  void Start();
 
-  void GetFeatureAvailability(base::OnceCallback<void(SetupStage)> callback) {
-    Start(std::move(callback), false);
-  }
-
-  // Stop the syncing setup.
+  // Stops the syncing setup.
   void Stop();
+
+  // Starts or stops the syncing engine if necessary.
+  void Enable(bool enabled);
 
   // Gets the current progress status.
   SetupProgress GetProgress() const {
@@ -160,8 +135,24 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) DriveFsPinManager
     return progress_;
   }
 
-  void AddObserver(DriveFsBulkPinObserver* observer);
-  void RemoveObserver(DriveFsBulkPinObserver* observer);
+  // Observer interface.
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called when the setup progresses.
+    virtual void OnProgress(const SetupProgress& progress) {}
+
+    // Called when the DriveFsPinManager is getting deleted.
+    virtual void OnDrop() {}
+  };
+
+  void AddObserver(Observer* const observer) {
+    observers_.AddObserver(observer);
+  }
+
+  void RemoveObserver(Observer* const observer) {
+    DCHECK(observers_.HasObserver(observer));
+    observers_.RemoveObserver(observer);
+  }
 
   // drivefs::DriveFsHostObserver
   void OnSyncingStatusUpdate(const mojom::SyncingStatus& status) override;
@@ -172,12 +163,44 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) DriveFsPinManager
   // Stable ID provided by DriveFS.
   enum class StableId : int64_t { kNone = 0 };
 
+  base::WeakPtr<DriveFsPinManager> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+  // Sets the function that retrieves the free space. For tests only.
+  using SpaceResult = base::OnceCallback<void(int64_t)>;
+  using SpaceGetter =
+      base::RepeatingCallback<void(const base::FilePath&, SpaceResult)>;
+  void SetSpaceGetter(SpaceGetter f) { space_getter_ = std::move(f); }
+
+  // Sets the completion callback, which will be called once the initial pinning
+  // has completed.
+  using CompletionCallback = base::OnceCallback<void(SetupStage)>;
+  void SetCompletionCallback(CompletionCallback f) {
+    completion_callback_ = std::move(f);
+  }
+
+  // Sets the flag controlling whether the feature should actually pin files
+  // (default), or whether it should stop after checking the space requirements.
+  void ShouldPin(const bool b) { should_pin_ = b; }
+
+  // Sets the flag controlling whether the feature should regularly check the
+  // status of files that have been pinned but that haven't seen any progress
+  // yet.
+  void ShouldCheckStalledFiles(const bool b) {
+    should_check_stalled_files_ = b;
+  }
+
  private:
-  // Adds an item to the tracked files.
-  void Add(StableId id, const std::string& path, int64_t expected_size);
+  // Adds an item to the files to pin.  Does nothing if an item with the same ID
+  // already exists in files_to_pin_. Updates the total number of bytes to
+  // transfer and the required space. Returns whether an item was actually
+  // added.
+  bool Add(StableId id, const std::string& path, int64_t size);
 
   // Removes an item from the map. Does nothing if the item is not in the map.
   // Updates the total number of bytes transferred so far.
+  // If `bytes_transferred` is negative, use the total expected size.
   // Returns whether an item was actually removed.
   bool Remove(StableId id,
               const std::string& path,
@@ -188,18 +211,18 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) DriveFsPinManager
   // Returns whether anything has actually been updated.
   bool Update(StableId id,
               const std::string& path,
-              int64_t bytes_transferred,
-              int64_t bytes_to_transfer);
+              int64_t transferred,
+              int64_t total);
 
   // Updates an item to mark it in progress.
   // Does nothing if the item is not in the map.
   // Returns whether anything has actually been updated.
   bool MarkInProgress(StableId id, const std::string& path);
 
- private:
   // Struct keeping track of the progress of a file being synced.
   struct Progress {
     // Path inside the Drive folder.
+    // TODO(b/265209836) Remove this field when not needed anymore.
     std::string path;
 
     // Number of bytes that have been transferred so far.
@@ -249,7 +272,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) DriveFsPinManager
   // ensure they are all still not available offline (i.e. still syncing). In
   // certain cases (e.g. hosted docs like gdocs) they will not emit a syncing
   // status update but will get pinned.
-  void CheckUnstartedFiles();
+  void CheckStalledFiles();
 
   // When an item goes to completed, it doesn't emit the final chunk of progress
   // nor it's final size, to ensure progress is adequately retrieved, this
@@ -267,22 +290,22 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) DriveFsPinManager
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  // Denotes whether the feature is enabled. If the feature is disabled no setup
-  // nor monitoring occurs.
-  bool enabled_ = false;
-
   // Should the feature actually pin files, or should it stop after checking the
   // space requirements?
-  bool should_pin_ = false;
+  bool should_pin_ = true;
 
-  CompletionCallback complete_callback_;
-  const SpaceGetter get_free_space_;
+  // Should the feature regularly check the status of files that have been
+  // pinned but that haven't seen any progress yet?
+  bool should_check_stalled_files_ = false;
+
+  SpaceGetter space_getter_;
+  CompletionCallback completion_callback_;
 
   SetupProgress progress_ GUARDED_BY_CONTEXT(sequence_checker_);
-  base::ObserverList<DriveFsBulkPinObserver>::Unchecked observers_;
+  base::ObserverList<Observer> observers_;
 
   const base::FilePath profile_path_;
-  const raw_ptr<mojom::DriveFs> drivefs_interface_;
+  const raw_ptr<mojom::DriveFs> drivefs_;
   mojo::Remote<mojom::SearchQuery> search_query_;
   base::ElapsedTimer timer_;
 
@@ -292,8 +315,11 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) DriveFsPinManager
   Files files_to_track_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   base::WeakPtrFactory<DriveFsPinManager> weak_ptr_factory_{this};
+
+  FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, Add);
 };
 
+COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS)
 std::ostream& operator<<(std::ostream& out, DriveFsPinManager::StableId id);
 
 }  // namespace drivefs::pinning

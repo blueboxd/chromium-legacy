@@ -822,7 +822,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                             base::TerminationStatus status,
                             int error_code) override;
   void RenderViewDeleted(RenderViewHost* render_view_host) override;
-  void Close(RenderViewHost* render_view_host) override;
   bool DidAddMessageToConsole(
       RenderFrameHostImpl* source_frame,
       blink::mojom::ConsoleMessageLevel log_level,
@@ -2348,6 +2347,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Stores WebContents::CreateParams::lock_picture_in_picture_aspect_ratio.
   bool pip_lock_aspect_ratio_ = false;
+
+  // Pip might require the content window to continue rendering. This handle
+  // ensures that rendering continues despite occlusion or hidden window state.
+  base::ScopedClosureRunner pip_capture_handle_;
 
   VisibleTimeRequestTrigger visible_time_request_trigger_;
 

@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/css/css_counter_value.h"
 #include "third_party/blink/renderer/core/css/css_cursor_image_value.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
-#include "third_party/blink/renderer/core/css/css_font_feature_value.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_font_variation_value.h"
 #include "third_party/blink/renderer/core/css/css_function_value.h"
@@ -407,6 +406,39 @@ const CSSValue* AnimationPlayState::CSSValueFromComputedStyleInternal(
 
 const CSSValue* AnimationPlayState::InitialValue() const {
   return CSSIdentifierValue::Create(CSSValueID::kRunning);
+}
+
+const CSSValue* AnimationRangeStart::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+  return css_parsing_utils::ConsumeCommaSeparatedList(
+      css_parsing_utils::ConsumeAnimationRange, range, context);
+}
+
+const CSSValue* AnimationRangeStart::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValueForAnimationRangeStartList(
+      style.Animations());
+}
+
+const CSSValue* AnimationRangeEnd::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+  return css_parsing_utils::ConsumeCommaSeparatedList(
+      css_parsing_utils::ConsumeAnimationRange, range, context);
+}
+
+const CSSValue* AnimationRangeEnd::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValueForAnimationRangeEndList(style.Animations());
 }
 
 const CSSValue* AnimationTimeline::ParseSingleValue(
@@ -3062,34 +3094,21 @@ const CSSValue* FontFeatureSettings::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  const blink::FontFeatureSettings* feature_settings =
-      style.GetFontDescription().FeatureSettings();
-  if (!feature_settings || !feature_settings->size()) {
-    return CSSIdentifierValue::Create(CSSValueID::kNormal);
-  }
-  CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  for (wtf_size_t i = 0; i < feature_settings->size(); ++i) {
-    const FontFeature& feature = feature_settings->at(i);
-    auto* feature_value = MakeGarbageCollected<cssvalue::CSSFontFeatureValue>(
-        feature.TagString(), feature.Value());
-    list->Append(*feature_value);
-  }
-  return list;
+  return ComputedStyleUtils::ValueForFontFeatureSettings(style);
 }
 
 const CSSValue* FontKerning::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return CSSIdentifierValue::Create(style.GetFontDescription().GetKerning());
+  return ComputedStyleUtils::ValueForFontKerning(style);
 }
 
 const CSSValue* FontOpticalSizing::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return CSSIdentifierValue::Create(
-      style.GetFontDescription().FontOpticalSizing());
+  return ComputedStyleUtils::ValueForFontOpticalSizing(style);
 }
 
 const CSSValue* FontPalette::CSSValueFromComputedStyleInternal(
@@ -3379,20 +3398,7 @@ const CSSValue* FontVariationSettings::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  const blink::FontVariationSettings* variation_settings =
-      style.GetFontDescription().VariationSettings();
-  if (!variation_settings || !variation_settings->size()) {
-    return CSSIdentifierValue::Create(CSSValueID::kNormal);
-  }
-  CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  for (wtf_size_t i = 0; i < variation_settings->size(); ++i) {
-    const FontVariationAxis& variation_axis = variation_settings->at(i);
-    cssvalue::CSSFontVariationValue* variation_value =
-        MakeGarbageCollected<cssvalue::CSSFontVariationValue>(
-            variation_axis.TagString(), variation_axis.Value());
-    list->Append(*variation_value);
-  }
-  return list;
+  return ComputedStyleUtils::ValueForFontVariationSettings(style);
 }
 
 const CSSValue* FontWeight::ParseSingleValue(

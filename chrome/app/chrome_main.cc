@@ -19,8 +19,8 @@
 #include "chrome/common/profiler/main_thread_stack_sampling_profiler.h"
 #include "content/public/app/content_main.h"
 #include "content/public/common/content_switches.h"
-#include "headless/app/headless_shell_switches.h"
 #include "headless/public/headless_shell.h"
+#include "headless/public/switches.h"
 
 #if BUILDFLAG(IS_MAC)
 #include "chrome/app/chrome_main_mac.h"
@@ -161,6 +161,10 @@ int ChromeMain(int argc, const char** argv) {
 
   // Chrome-specific process modes.
   if (headless::IsHeadlessMode()) {
+    if (command_line->GetArgs().size() > 1) {
+      LOG(ERROR) << "Multiple targets are not supported in headless mode.";
+      return chrome::RESULT_CODE_UNSUPPORTED_PARAM;
+    }
     headless::SetUpCommandLine(command_line);
   } else {
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC) || \

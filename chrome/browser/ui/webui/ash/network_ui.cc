@@ -65,11 +65,6 @@
 
 namespace ash {
 
-// TODO(https://crbug.com/1164001): remove after migrating to ash.
-namespace network_config {
-namespace mojom = ::chromeos::network_config::mojom;
-}
-
 namespace {
 
 constexpr char kAddNetwork[] = "addNetwork";
@@ -631,7 +626,7 @@ class HotspotConfigMessageHandler : public content::WebUIMessageHandler {
     ShillManagerClient::Get()->SetTetheringEnabled(
         enabled,
         base::BindOnce(&HotspotConfigMessageHandler::RespondStringResult,
-                       weak_ptr_factory_.GetWeakPtr(), callback_id, "success"),
+                       weak_ptr_factory_.GetWeakPtr(), callback_id),
         base::BindOnce(&HotspotConfigMessageHandler::RespondError,
                        weak_ptr_factory_.GetWeakPtr(), callback_id,
                        kSetTetheringEnabled));
@@ -990,7 +985,8 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
 NetworkUI::~NetworkUI() = default;
 
 void NetworkUI::BindInterface(
-    mojo::PendingReceiver<network_config::mojom::CrosNetworkConfig> receiver) {
+    mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
+        receiver) {
   GetNetworkConfigService(std::move(receiver));
 }
 

@@ -15,10 +15,12 @@
 #include "base/strings/string_piece.h"
 #include "components/user_education/common/help_bubble_params.h"
 #include "components/user_education/webui/tracked_element_webui.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/webui/resources/cr_components/help_bubble/help_bubble.mojom.h"
 
 namespace content {
@@ -39,8 +41,19 @@ class HelpBubbleHandlerBase : public help_bubble::mojom::HelpBubbleHandler {
   ~HelpBubbleHandlerBase() override;
   void operator=(const HelpBubbleHandlerBase&) = delete;
 
-  // TODO(dfried): determine if there's a safe way to have these change context.
+  // Returns the context. Currently this is tied to the WebUIController and not
+  // the browser that holds it, as (at least for tab contents) the owning
+  // browser can change during the handler's lifespan.
   ui::ElementContext context() const { return context_; }
+
+  // Returns the associated `WebUIController`. This should not change over the
+  // lifetime of the handler.
+  virtual content::WebUIController* GetController() = 0;
+
+  // Returns the WebContents associated with the controller. This is a
+  // convenience method. A contents should be associated with the controller but
+  // it is probably good to check for null.
+  content::WebContents* GetWebContents();
 
  protected:
   // Provides reliable access to a HelpBubbleClient. Derived classes should
@@ -84,7 +97,8 @@ class HelpBubbleHandlerBase : public help_bubble::mojom::HelpBubbleHandler {
 
   // mojom::HelpBubbleHandler:
   void HelpBubbleAnchorVisibilityChanged(const std::string& identifier_name,
-                                         bool visible) final;
+                                         bool visible,
+                                         const gfx::RectF& rect) final;
   void HelpBubbleAnchorActivated(const std::string& identifier_name) final;
   void HelpBubbleAnchorCustomEvent(const std::string& identifier_name,
                                    const std::string& event_name) final;
@@ -110,12 +124,12 @@ class HelpBubbleHandlerBase : public help_bubble::mojom::HelpBubbleHandler {
 //
 // Full usage recommendations can be found in README.md.
 //
-// SECURITY NOTE: a `HelpBubbleHandler` is typically owned by a
-// `WebUIController` that implements `HelpBubbleHandlerFactory`, and typically
-// has a lifespan limited to a subset of the corresponding WebUI page's
-// lifespan. Reloading the page can cause it to be discarded and recreated (and
-// a common attack vector is triggering a recreate). If a class has a raw_ptr to
-// a HelpBubbleHandler[Base], then a test MUST be added to ensure that the class
+// SECURITY NOTE: a `HelpBubbleHandler` is owned by a `WebUIController` that
+// implements `HelpBubbleHandlerFactory`, and typically has a lifespan limited
+// to a subset of the corresponding WebUI page's lifespan. Reloading the page
+// can cause it to be discarded and recreated (and a common attack vector is
+// triggering a recreate). If a class has a raw_ptr to a
+// HelpBubbleHandler[Base], then a test MUST be added to ensure that the class
 // releases the reference when the HelpBubbleHandler is destroyed. Tests are
 // already provided for `HelpBubbleWebUI` and `TrackedElementWebUI` in
 // help_bubble_handler_unittest.cc.
@@ -134,9 +148,12 @@ class HelpBubbleHandler : public HelpBubbleHandlerBase {
       mojo::PendingReceiver<help_bubble::mojom::HelpBubbleHandler>
           pending_handler,
       mojo::PendingRemote<help_bubble::mojom::HelpBubbleClient> pending_client,
-      content::WebContents* web_contents,
+      content::WebUIController* controller,
       const std::vector<ui::ElementIdentifier>& identifiers);
   ~HelpBubbleHandler() override;
+
+  // HelpBubbleHandlerBase:
+  content::WebUIController* GetController() override;
 
  private:
   class ClientProvider : public HelpBubbleHandlerBase::ClientProvider {
@@ -155,6 +172,7 @@ class HelpBubbleHandler : public HelpBubbleHandlerBase {
   void ReportBadMessage(base::StringPiece error) override;
 
   mojo::Receiver<help_bubble::mojom::HelpBubbleHandler> receiver_;
+  const base::raw_ptr<content::WebUIController> controller_;
 };
 
 }  // namespace user_education

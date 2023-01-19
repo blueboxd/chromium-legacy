@@ -46,6 +46,9 @@
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
+#include "base/logging.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+
 namespace blink {
 
 StylePropertySerializer::CSSPropertyValueSetForSerializer::
@@ -472,6 +475,8 @@ String StylePropertySerializer::SerializeShorthand(
       return GetLayeredShorthandValue(alternativeAnimationShorthand());
     case CSSPropertyID::kAlternativeAnimationDelay:
       return AnimationDelayShorthandValue();
+    case CSSPropertyID::kAnimationRange:
+      return AnimationRangeShorthandValue();
     case CSSPropertyID::kBorderSpacing:
       return Get2Values(borderSpacingShorthand());
     case CSSPropertyID::kBackgroundPosition:
@@ -804,31 +809,23 @@ String StylePropertySerializer::ContainerValue() const {
 String StylePropertySerializer::ScrollTimelineValue() const {
   CHECK_EQ(scrollTimelineShorthand().length(), 2u);
   CHECK_EQ(scrollTimelineShorthand().properties()[0],
-           &GetCSSPropertyScrollTimelineAxis());
-  CHECK_EQ(scrollTimelineShorthand().properties()[1],
            &GetCSSPropertyScrollTimelineName());
+  CHECK_EQ(scrollTimelineShorthand().properties()[1],
+           &GetCSSPropertyScrollTimelineAxis());
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
 
-  const CSSValue* axis =
-      property_set_.GetPropertyCSSValue(GetCSSPropertyScrollTimelineAxis());
   const CSSValue* name =
       property_set_.GetPropertyCSSValue(GetCSSPropertyScrollTimelineName());
+  const CSSValue* axis =
+      property_set_.GetPropertyCSSValue(GetCSSPropertyScrollTimelineAxis());
 
-  DCHECK(axis);
   DCHECK(name);
+  DCHECK(axis);
 
-  // Append any value that's not the initial value.
+  list->Append(*name);
+
   if (To<CSSIdentifierValue>(*axis).GetValueID() != CSSValueID::kBlock) {
-    list->Append(*axis);
-  }
-  if (!(IsA<CSSIdentifierValue>(name) &&
-        To<CSSIdentifierValue>(*name).GetValueID() == CSSValueID::kNone)) {
-    list->Append(*name);
-  }
-
-  // If both values were the initial value, we append axis.
-  if (!list->length()) {
     list->Append(*axis);
   }
 
@@ -893,6 +890,27 @@ String StylePropertySerializer::ViewTimelineValue() const {
 
 namespace {
 
+CSSValue* AnimationDelayShorthandValueItem(wtf_size_t index,
+                                           const CSSValueList& start_list,
+                                           const CSSValueList& end_list) {
+  DCHECK_LT(index, start_list.length());
+  DCHECK_LT(index, end_list.length());
+
+  const CSSValue& start = start_list.Item(index);
+  const CSSValue& end = end_list.Item(index);
+
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+
+  list->Append(start);
+
+  if (const auto* primitive = DynamicTo<CSSPrimitiveValue>(end);
+      !primitive || !primitive->IsZero()) {
+    list->Append(end);
+  }
+
+  return list;
+}
+
 std::pair<CSSValueID, double> GetTimelineRange(const CSSValue& value) {
   const auto* list = DynamicTo<CSSValueList>(value);
   if (!list) {
@@ -904,7 +922,7 @@ std::pair<CSSValueID, double> GetTimelineRange(const CSSValue& value) {
   return {name.GetValueID(), offset.GetValue<double>()};
 }
 
-CSSValue* AnimationDelayShorthandValueItem(wtf_size_t index,
+CSSValue* AnimationRangeShorthandValueItem(wtf_size_t index,
                                            const CSSValueList& start_list,
                                            const CSSValueList& end_list) {
   DCHECK_LT(index, start_list.length());
@@ -926,8 +944,8 @@ CSSValue* AnimationDelayShorthandValueItem(wtf_size_t index,
 
   list->Append(start);
 
-  if (const auto* primitive = DynamicTo<CSSPrimitiveValue>(end);
-      !primitive || !primitive->IsZero()) {
+  if (const auto* ident = DynamicTo<CSSIdentifierValue>(end);
+      !ident || (ident->GetValueID() != CSSValueID::kAuto)) {
     list->Append(end);
   }
 
@@ -961,6 +979,31 @@ String StylePropertySerializer::AnimationDelayShorthandValue() const {
   return list->CssText();
 }
 
+String StylePropertySerializer::AnimationRangeShorthandValue() const {
+  CHECK_EQ(animationRangeShorthand().length(), 2u);
+  CHECK_EQ(animationRangeShorthand().properties()[0],
+           &GetCSSPropertyAnimationRangeStart());
+  CHECK_EQ(animationRangeShorthand().properties()[1],
+           &GetCSSPropertyAnimationRangeEnd());
+
+  const CSSValueList& start_list = To<CSSValueList>(
+      *property_set_.GetPropertyCSSValue(GetCSSPropertyAnimationRangeStart()));
+  const CSSValueList& end_list = To<CSSValueList>(
+      *property_set_.GetPropertyCSSValue(GetCSSPropertyAnimationRangeEnd()));
+
+  if (start_list.length() != end_list.length()) {
+    return "";
+  }
+
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+
+  for (wtf_size_t i = 0; i < start_list.length(); ++i) {
+    list->Append(*AnimationRangeShorthandValueItem(i, start_list, end_list));
+  }
+
+  return list->CssText();
+}
+
 String StylePropertySerializer::FontValue() const {
   int font_size_property_index =
       property_set_.FindPropertyIndex(GetCSSPropertyFontSize());
@@ -974,12 +1017,24 @@ String StylePropertySerializer::FontValue() const {
       property_set_.FindPropertyIndex(GetCSSPropertyFontVariantNumeric());
   int font_variant_east_asian_property_index =
       property_set_.FindPropertyIndex(GetCSSPropertyFontVariantEastAsian());
+  int font_kerning_property_index =
+      property_set_.FindPropertyIndex(GetCSSPropertyFontKerning());
+  int font_optical_sizing_property_index =
+      property_set_.FindPropertyIndex(GetCSSPropertyFontOpticalSizing());
+  int font_variation_settings_property_index =
+      property_set_.FindPropertyIndex(GetCSSPropertyFontVariationSettings());
+  int font_feature_settings_property_index =
+      property_set_.FindPropertyIndex(GetCSSPropertyFontFeatureSettings());
   DCHECK_NE(font_size_property_index, -1);
   DCHECK_NE(font_family_property_index, -1);
   DCHECK_NE(font_variant_caps_property_index, -1);
   DCHECK_NE(font_variant_ligatures_property_index, -1);
   DCHECK_NE(font_variant_numeric_property_index, -1);
   DCHECK_NE(font_variant_east_asian_property_index, -1);
+  DCHECK_NE(font_kerning_property_index, -1);
+  DCHECK_NE(font_optical_sizing_property_index, -1);
+  DCHECK_NE(font_variation_settings_property_index, -1);
+  DCHECK_NE(font_feature_settings_property_index, -1);
 
   PropertyValueForSerializer font_size_property =
       property_set_.PropertyAt(font_size_property_index);
@@ -993,34 +1048,99 @@ String StylePropertySerializer::FontValue() const {
       property_set_.PropertyAt(font_variant_numeric_property_index);
   PropertyValueForSerializer font_variant_east_asian_property =
       property_set_.PropertyAt(font_variant_east_asian_property_index);
+  PropertyValueForSerializer font_kerning_property =
+      property_set_.PropertyAt(font_kerning_property_index);
+  PropertyValueForSerializer font_optical_sizing_property =
+      property_set_.PropertyAt(font_optical_sizing_property_index);
+  PropertyValueForSerializer font_variation_settings_property =
+      property_set_.PropertyAt(font_variation_settings_property_index);
+  PropertyValueForSerializer font_feature_settings_property =
+      property_set_.PropertyAt(font_feature_settings_property_index);
 
   // Check that non-initial font-variant subproperties are not conflicting with
   // this serialization.
   const CSSValue* ligatures_value = font_variant_ligatures_property.Value();
   const CSSValue* numeric_value = font_variant_numeric_property.Value();
   const CSSValue* east_asian_value = font_variant_east_asian_property.Value();
+  const CSSValue* feature_settings_value =
+      font_feature_settings_property.Value();
+  const CSSValue* variation_settings_value =
+      font_variation_settings_property.Value();
 
-  auto* ligatures_identifier_value =
-      DynamicTo<CSSIdentifierValue>(ligatures_value);
-  if ((ligatures_identifier_value &&
-       ligatures_identifier_value->GetValueID() != CSSValueID::kNormal) ||
+  auto IsPropertyNonInitial = [](const CSSValue& value,
+                                 const CSSValueID initial_value_id) {
+    auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+    return (identifier_value &&
+            identifier_value->GetValueID() != initial_value_id);
+  };
+
+  if (IsPropertyNonInitial(*ligatures_value, CSSValueID::kNormal) ||
       ligatures_value->IsValueList()) {
     return g_empty_string;
   }
 
-  auto* numeric_identifier_value = DynamicTo<CSSIdentifierValue>(numeric_value);
-  if ((numeric_identifier_value &&
-       numeric_identifier_value->GetValueID() != CSSValueID::kNormal) ||
+  if (IsPropertyNonInitial(*numeric_value, CSSValueID::kNormal) ||
       numeric_value->IsValueList()) {
     return g_empty_string;
   }
 
-  auto* east_asian_identifier_value =
-      DynamicTo<CSSIdentifierValue>(east_asian_value);
-  if ((east_asian_identifier_value &&
-       east_asian_identifier_value->GetValueID() != CSSValueID::kNormal) ||
+  if (IsPropertyNonInitial(*east_asian_value, CSSValueID::kNormal) ||
       east_asian_value->IsValueList()) {
     return g_empty_string;
+  }
+
+  if (IsPropertyNonInitial(*font_kerning_property.Value(), CSSValueID::kAuto) ||
+      IsPropertyNonInitial(*font_optical_sizing_property.Value(),
+                           CSSValueID::kAuto)) {
+    return g_empty_string;
+  }
+
+  if (IsPropertyNonInitial(*variation_settings_value, CSSValueID::kNormal) ||
+      variation_settings_value->IsValueList()) {
+    return g_empty_string;
+  }
+
+  if (IsPropertyNonInitial(*feature_settings_value, CSSValueID::kNormal) ||
+      feature_settings_value->IsValueList()) {
+    return g_empty_string;
+  }
+
+  if (RuntimeEnabledFeatures::FontVariantAlternatesEnabled()) {
+    int font_variant_alternates_property_index =
+        property_set_.FindPropertyIndex(GetCSSPropertyFontVariantAlternates());
+    DCHECK_NE(font_variant_alternates_property_index, -1);
+    PropertyValueForSerializer font_variant_alternates_property =
+        property_set_.PropertyAt(font_variant_alternates_property_index);
+    const CSSValue* alternates_value = font_variant_alternates_property.Value();
+    if (IsPropertyNonInitial(*alternates_value, CSSValueID::kNormal) ||
+        alternates_value->IsValueList()) {
+      return g_empty_string;
+    }
+  }
+
+  if (RuntimeEnabledFeatures::FontVariantPositionEnabled()) {
+    int font_variant_position_property_index =
+        property_set_.FindPropertyIndex(GetCSSPropertyFontVariantPosition());
+    DCHECK_NE(font_variant_position_property_index, -1);
+    PropertyValueForSerializer font_variant_position_property =
+        property_set_.PropertyAt(font_variant_position_property_index);
+    if (IsPropertyNonInitial(*font_variant_position_property.Value(),
+                             CSSValueID::kNormal)) {
+      return g_empty_string;
+    }
+  }
+
+  if (RuntimeEnabledFeatures::CSSFontSizeAdjustEnabled()) {
+    int font_size_adjust_property_index =
+        property_set_.FindPropertyIndex(GetCSSPropertyFontSizeAdjust());
+    DCHECK_NE(font_size_adjust_property_index, -1);
+    PropertyValueForSerializer font_size_adjust_property =
+        property_set_.PropertyAt(font_size_adjust_property_index);
+    const CSSValue* size_adjust_value = font_size_adjust_property.Value();
+    if (IsPropertyNonInitial(*size_adjust_value, CSSValueID::kNone) ||
+        size_adjust_value->IsNumericLiteralValue()) {
+      return g_empty_string;
+    }
   }
 
   const StylePropertyShorthand& shorthand = fontShorthand();

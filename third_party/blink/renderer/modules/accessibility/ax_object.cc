@@ -253,8 +253,7 @@ constexpr wtf_size_t kNumRoles =
 
 using ARIARoleMap = HashMap<String,
                             ax::mojom::blink::Role,
-                            CaseFoldingHash,
-                            HashTraits<String>,
+                            CaseFoldingHashTraits<String>,
                             RoleHashTraits>;
 
 struct RoleEntry {
@@ -2092,6 +2091,10 @@ void AXObject::SerializeUnignoredAttributes(ui::AXNodeData* node_data,
     node_data->SetHasPopup(ax::mojom::blink::HasPopup::kMenu);
   } else if (ui::IsComboBox(role)) {
     node_data->SetHasPopup(ax::mojom::blink::HasPopup::kListbox);
+  }
+
+  if (IsPopup() != ax::mojom::blink::IsPopup::kNone) {
+    node_data->SetIsPopup(IsPopup());
   }
 
   if (IsAutofillAvailable())
@@ -4630,6 +4633,10 @@ ax::mojom::blink::Role AXObject::DetermineAriaRoleAttribute() const {
 
 ax::mojom::blink::HasPopup AXObject::HasPopup() const {
   return ax::mojom::blink::HasPopup::kFalse;
+}
+
+ax::mojom::blink::IsPopup AXObject::IsPopup() const {
+  return ax::mojom::blink::IsPopup::kNone;
 }
 
 bool AXObject::IsEditable() const {

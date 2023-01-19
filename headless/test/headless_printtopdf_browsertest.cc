@@ -16,7 +16,7 @@
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "content/public/test/browser_test.h"
-#include "headless/app/headless_shell_switches.h"
+#include "headless/public/switches.h"
 #include "headless/test/headless_browser_test.h"
 #include "headless/test/headless_browser_test_utils.h"
 #include "headless/test/headless_devtooled_browsertest.h"
@@ -375,6 +375,33 @@ class HeadlessPDFOOPIFBrowserTest : public HeadlessPDFBrowserTestBase {
 };
 
 HEADLESS_DEVTOOLED_TEST_F(HeadlessPDFOOPIFBrowserTest);
+
+class HeadlessPDFDisableLazyLoading : public HeadlessPDFBrowserTestBase {
+ public:
+  const char* GetUrl() override { return "/page_with_lazy_image.html"; }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    HeadlessPDFBrowserTestBase::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kDisableLazyLoading);
+  }
+
+  base::Value::Dict GetPrintToPDFParams() override {
+    base::Value::Dict params;
+    params.Set("printBackground", true);
+
+    return params;
+  }
+
+  void OnPDFReady(base::span<const uint8_t> pdf_span, int num_pages) override {
+    EXPECT_THAT(num_pages, testing::Eq(5));
+    PDFPageBitmap page_image;
+    ASSERT_TRUE(page_image.Render(pdf_span, 4));
+    EXPECT_TRUE(page_image.CheckColoredRect(SkColorSetRGB(0x00, 0x64, 0x00),
+                                            SkColorSetRGB(0xff, 0xff, 0xff)));
+  }
+};
+
+HEADLESS_DEVTOOLED_TEST_F(HeadlessPDFDisableLazyLoading);
 
 #if BUILDFLAG(ENABLE_TAGGED_PDF)
 

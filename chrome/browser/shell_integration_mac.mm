@@ -62,10 +62,6 @@ bool SetAsDefaultBrowser() {
                                           toOpenContentType:UTTypeHTML
                                           completionHandler:^(NSError*){
                                           }];
-    [NSWorkspace.sharedWorkspace setDefaultApplicationAtURL:app_bundle
-                                          toOpenContentType:UTTypeURL
-                                          completionHandler:^(NSError*){
-                                          }];
     // TODO(https://crbug.com/1393452): Passing empty completion handlers,
     // above, is kinda broken, but given that this API is synchronous, nothing
     // better can be done. This entire API should be rebuilt.
@@ -85,10 +81,6 @@ bool SetAsDefaultBrowser() {
       return false;
     }
     if (LSSetDefaultRoleHandlerForContentType(kUTTypeHTML, kLSRolesViewer,
-                                              identifier) != noErr) {
-      return false;
-    }
-    if (LSSetDefaultRoleHandlerForContentType(kUTTypeURL, kLSRolesViewer,
                                               identifier) != noErr) {
       return false;
     }

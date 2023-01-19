@@ -224,14 +224,10 @@ component("base") {
     "base_switches.h",
     "big_endian.cc",
     "big_endian.h",
-    "bind.h",
     "bit_cast.h",
     "bits.h",
     "build_time.cc",
     "build_time.h",
-    "callback.h",
-    "callback_forward.h",
-    "callback_helpers.h",
     "callback_list.cc",
     "callback_list.h",
     "cancelable_callback.h",
@@ -1319,8 +1315,6 @@ component("base") {
       "mac/scoped_objc_class_swizzler.mm",
       "mac/scoped_sending_event.h",
       "mac/scoped_sending_event.mm",
-      "mac/sdk_forward_declarations.h",
-      "mac/sdk_forward_declarations.mm",
       "message_loop/message_pump_mac.h",
       "message_loop/message_pump_mac.mm",
       "native_library_mac.mm",
@@ -4130,7 +4124,8 @@ if (is_android) {
       "android/java/src/org/chromium/base/annotations/NativeMethods.java",
     ]
 
-    deps = [ "//build/android:build_java" ]
+    # Public because @CheckDiscard is added to generated *Jni.java files.
+    public_deps = [ "//build/android:build_java" ]
   }
 
   java_cpp_features("java_features_srcjar") {
@@ -4196,7 +4191,6 @@ if (is_android) {
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_collection_collection_java",
       "//third_party/androidx:androidx_core_core_java",
-      "//third_party/androidx:androidx_multidex_multidex_java",
     ]
 
     sources = [
@@ -4244,6 +4238,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/PowerMonitorForQ.java",
       "android/java/src/org/chromium/base/Promise.java",
       "android/java/src/org/chromium/base/RadioUtils.java",
+      "android/java/src/org/chromium/base/RequiredCallback.java",
       "android/java/src/org/chromium/base/StreamUtil.java",
       "android/java/src/org/chromium/base/StrictModeContext.java",
       "android/java/src/org/chromium/base/SysUtils.java",
@@ -4303,7 +4298,6 @@ if (is_android) {
       "android/java/src/org/chromium/base/metrics/TimingMetric.java",
       "android/java/src/org/chromium/base/metrics/UmaRecorder.java",
       "android/java/src/org/chromium/base/metrics/UmaRecorderHolder.java",
-      "android/java/src/org/chromium/base/multidex/ChromiumMultiDexInstaller.java",
       "android/java/src/org/chromium/base/supplier/DestroyableObservableSupplier.java",
       "android/java/src/org/chromium/base/supplier/ObservableSupplier.java",
       "android/java/src/org/chromium/base/supplier/ObservableSupplierImpl.java",
@@ -4443,6 +4437,7 @@ if (is_android) {
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_core_core_java",
+      "//third_party/androidx:androidx_multidex_multidex_java",
       "//third_party/androidx:androidx_test_uiautomator_uiautomator_java",
       "//third_party/hamcrest:hamcrest_java",
       "//third_party/junit",
@@ -4451,6 +4446,7 @@ if (is_android) {
     public_deps = [ ":base_java_url_utils_for_test" ]
 
     sources = [
+      "test/android/java/src/org/chromium/base/multidex/ChromiumMultiDexInstaller.java",
       "test/android/javatests/src/org/chromium/base/FakeTimeTestRule.java",
       "test/android/javatests/src/org/chromium/base/test/BaseActivityTestRule.java",
       "test/android/javatests/src/org/chromium/base/test/BaseChromiumAndroidJUnitRunner.java",
@@ -4469,6 +4465,7 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/TestTraceEvent.java",
       "test/android/javatests/src/org/chromium/base/test/UiThreadStatement.java",
       "test/android/javatests/src/org/chromium/base/test/UiThreadTest.java",
+      "test/android/javatests/src/org/chromium/base/test/UnitTestLifetimeAssertRule.java",
       "test/android/javatests/src/org/chromium/base/test/UnitTestNoBrowserProcessHook.java",
       "test/android/javatests/src/org/chromium/base/test/metrics/HistogramTestRule.java",
       "test/android/javatests/src/org/chromium/base/test/params/BaseJUnit4RunnerDelegate.java",

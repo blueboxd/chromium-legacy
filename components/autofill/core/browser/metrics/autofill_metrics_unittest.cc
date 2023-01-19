@@ -9401,64 +9401,6 @@ TEST_F(AutofillMetricsTest, LogAutocompleteSuggestionAcceptedIndex_IndexCap) {
       /*expected_count=*/1);
 }
 
-TEST_F(AutofillMetricsTest, LogSuggestionAcceptedIndex_CreditCard) {
-  const int index = 2;
-  const PopupType popup_type = PopupType::kCreditCards;
-
-  base::HistogramTester histogram_tester;
-  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type,
-                                                      /*off_the_record=*/false);
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.SuggestionAcceptedIndex.CreditCard", index, 1);
-
-  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
-  EXPECT_THAT(
-      histograms,
-      Not(AnyOf(HasSubstr("Autofill.SuggestionAcceptedIndex.Other"),
-                HasSubstr("Autofill.SuggestionAcceptedIndex.Profile"))));
-}
-
-TEST_F(AutofillMetricsTest, LogSuggestionAcceptedIndex_Profile) {
-  const int index = 1;
-  const PopupType popup_type1 = PopupType::kPersonalInformation;
-  const PopupType popup_type2 = PopupType::kAddresses;
-
-  base::HistogramTester histogram_tester;
-  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type1,
-                                                      /*off_the_record=*/false);
-  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type2,
-                                                      /*off_the_record=*/false);
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.SuggestionAcceptedIndex.Profile", index, 2);
-
-  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
-  EXPECT_THAT(
-      histograms,
-      Not(AnyOf(HasSubstr("Autofill.SuggestionAcceptedIndex.CreditCard"),
-                HasSubstr("Autofill.SuggestionAcceptedIndex.Other"))));
-}
-
-TEST_F(AutofillMetricsTest, LogSuggestionAcceptedIndex_Other) {
-  const int index = 0;
-  const PopupType popup_type1 = PopupType::kUnspecified;
-  const PopupType popup_type2 = PopupType::kPasswords;
-
-  base::HistogramTester histogram_tester;
-  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type1,
-                                                      /*off_the_record=*/false);
-  AutofillMetrics::LogAutofillSuggestionAcceptedIndex(index, popup_type2,
-                                                      /*off_the_record=*/false);
-
-  histogram_tester.ExpectUniqueSample("Autofill.SuggestionAcceptedIndex.Other",
-                                      index, 2);
-
-  const std::string histograms = histogram_tester.GetAllHistogramsRecorded();
-  EXPECT_THAT(
-      histograms,
-      Not(AnyOf(HasSubstr("Autofill.SuggestionAcceptedIndex.CreditCard"),
-                HasSubstr("Autofill.SuggestionAcceptedIndex.Profile"))));
-}
-
 TEST_F(AutofillMetricsTest, OnAutocompleteSuggestionsShown) {
   base::HistogramTester histogram_tester;
   AutofillMetrics::OnAutocompleteSuggestionsShown();
@@ -10180,8 +10122,7 @@ class AutofillMetricsCrossFrameFormTest : public AutofillMetricsTest {
     credit_card_with_cvc_ = {
         .credit_card = *autofill_manager()
                             .personal_data_manager_for_test()
-                            .GetCreditCardsToSuggest(
-                                autofill_client_->AreServerCardsSupported())
+                            .GetCreditCardsToSuggest()
                             .front(),
         .cvc = u"123"};
 
@@ -10528,12 +10469,23 @@ TEST_F(AutofillMetricsSeamlessnessTest,
        }});
 }
 
+// Test the field log events at the form submission.
+class AutofillMetricsFromLogEventsTest : public AutofillMetricsTest {
+ protected:
+  AutofillMetricsFromLogEventsTest() {
+    scoped_features_.InitWithFeatures(
+        /*enabled_features=*/{features::kAutofillLogUKMEventsWithSampleRate,
+                              features::kAutofillParsingPatternProvider},
+        /*disabled_features=*/{});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_features_;
+};
+
 // Test if we record FieldInfo UKM metrics correctly after we fill and submit an
 // address form.
-TEST_F(AutofillMetricsTest, AddressSubmittedFormLogEvents) {
-  base::test::ScopedFeatureList features;
-  features.InitAndEnableFeature(features::kAutofillLogUKMEventsWithSampleRate);
-
+TEST_F(AutofillMetricsFromLogEventsTest, AddressSubmittedFormLogEvents) {
   // Create a profile.
   RecreateProfile(/*is_server=*/false);
   FormData form = CreateForm({CreateField("State", "state", "", "text"),
@@ -10590,6 +10542,7 @@ TEST_F(AutofillMetricsTest, AddressSubmittedFormLogEvents) {
           {UFIT::kFieldSignatureName,
            Collapse(CalculateFieldSignatureForField(form.fields[i])).value()},
           {UFIT::kWasFocusedName, i == 0},
+          {UFIT::kIsFocusableName, true},
           {UFIT::kWasAutofilledName, true},
           {UFIT::kAutofillSkippedStatusName,
            DenseSet<SkipStatus>{SkipStatus::kNotSkipped}.to_uint64()},
@@ -10609,6 +10562,75 @@ TEST_F(AutofillMetricsTest, AddressSubmittedFormLogEvents) {
       for (const auto& [metric, value] : expected) {
         test_ukm_recorder_->ExpectEntryMetric(entry, metric, value);
       }
+    }
+  }
+}
+
+// Test if we have recorded UKM metrics correctly about field types after
+// parsing the form by the local heuristic prediction.
+TEST_F(AutofillMetricsFromLogEventsTest, AutofillFieldInfoMetrics_FieldType) {
+  FormData form = CreateForm(
+      {// Heuristic value will match with Autocomplete attribute.
+       CreateField("Last Name", "lastname", "", "text", "family-name"),
+       // Heuristic value will NOT match with Autocomplete attribute.
+       CreateField("First Name", "firstname", "", "text", "additional-name"),
+       // No autocomplete attribute.
+       CreateField("Address", "address", "", "text", ""),
+       // Heuristic value will be unknown.
+       CreateField("Garbage label", "garbage", "", "text", "postal-code")});
+
+  auto form_structure = std::make_unique<FormStructure>(form);
+  FormStructure* form_structure_ptr = form_structure.get();
+  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
+  ASSERT_TRUE(
+      autofill_manager()
+          .mutable_form_structures_for_test()
+          ->emplace(form_structure_ptr->global_id(), std::move(form_structure))
+          .second);
+
+  SubmitForm(form);
+  // Record Autofill.FieldInfo UKM event at autofill manager reset.
+  autofill_manager().Reset();
+
+  auto entries =
+      test_ukm_recorder_->GetEntriesByName(UkmFieldInfoType::kEntryName);
+  // The local heuristic prediction does not predict the type for the fourth
+  // field.
+  ASSERT_EQ(3u, entries.size());
+  std::vector<ServerFieldType> heuristic_types{NAME_LAST, NAME_FIRST,
+                                               ADDRESS_HOME_LINE1};
+
+  for (size_t i = 0; i < entries.size(); ++i) {
+    SCOPED_TRACE(testing::Message() << i);
+    using UFIT = UkmFieldInfoType;
+    const auto* const entry = entries[i];
+
+    std::map<std::string, int64_t> expected = {
+      {UFIT::kFormSessionIdentifierName,
+       AutofillMetrics::FormGlobalIdToHash64Bit(form.global_id())},
+      {UFIT::kFieldSessionIdentifierName,
+       AutofillMetrics::FieldGlobalIdToHash64Bit(form.fields[i].global_id())},
+      {UFIT::kFieldSignatureName,
+       Collapse(CalculateFieldSignatureForField(form.fields[i])).value()},
+      {UFIT::kHeuristicTypeName, heuristic_types[i]},
+      {UFIT::kHeuristicTypeLegacyName, heuristic_types[i]},
+#if BUILDFLAG(USE_INTERNAL_AUTOFILL_PATTERNS)
+      {UFIT::kHeuristicTypeDefaultName, heuristic_types[i]},
+      {UFIT::kHeuristicTypeExperimentalName, heuristic_types[i]},
+      {UFIT::kHeuristicTypeNextGenName, heuristic_types[i]},
+#else
+      {UFIT::kHeuristicTypeDefaultName, UNKNOWN_TYPE},
+      {UFIT::kHeuristicTypeExperimentalName, UNKNOWN_TYPE},
+      {UFIT::kHeuristicTypeNextGenName, UNKNOWN_TYPE},
+#endif
+      {UFIT::kIsFocusableName, true},
+      {UFIT::kRankInFieldSignatureGroupName, 1},
+      {UFIT::kWasFocusedName, false},
+    };
+
+    EXPECT_EQ(expected.size(), entry->metrics.size());
+    for (const auto& [metric, value] : expected) {
+      test_ukm_recorder_->ExpectEntryMetric(entry, metric, value);
     }
   }
 }

@@ -1058,6 +1058,34 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   handler(download);
 }
 
+- (BOOL)findInteractionSupported {
+  if (@available(iOS 16, *)) {
+    // The `findInteraction` property only exists for iOS 16 or later, if there
+    // is a web view.
+    return self.webView != nil;
+  }
+
+  return false;
+}
+
+- (void)setFindInteractionEnabled:(BOOL)enabled {
+  if (@available(iOS 16, *)) {
+    self.webView.findInteractionEnabled = enabled;
+  }
+}
+
+- (BOOL)findInteractionEnabled {
+  if (@available(iOS 16, *)) {
+    return self.webView.findInteractionEnabled;
+  }
+
+  return NO;
+}
+
+- (UIFindInteraction*)findInteraction API_AVAILABLE(ios(16)) {
+  return self.webView.findInteraction;
+}
+
 #pragma mark - JavaScript
 
 - (void)injectWindowID {
@@ -1787,7 +1815,7 @@ CrFullscreenState CrFullscreenStateFromWKFullscreenState(
     createWebViewWithConfiguration:(WKWebViewConfiguration*)configuration
                        forWebState:(web::WebState*)webState {
   CRWWebController* webController =
-      static_cast<web::WebStateImpl*>(webState)->GetWebController();
+      web::WebStateImpl::FromWebState(webState)->GetWebController();
   DCHECK(!webController || webState->HasOpener());
 
   [webController ensureWebViewCreatedWithConfiguration:configuration];

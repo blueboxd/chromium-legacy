@@ -177,14 +177,14 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
     return FakeModelTypeSyncBridge::GetStorageKey(entity_data);
   }
 
-  sync_pb::EntitySpecifics TrimRemoteSpecificsForCaching(
+  sync_pb::EntitySpecifics TrimAllSupportedFieldsFromRemoteSpecifics(
       const sync_pb::EntitySpecifics& entity_specifics) const override {
     if (entity_specifics.has_preference()) {
       sync_pb::EntitySpecifics trimmed_specifics = entity_specifics;
       trimmed_specifics.mutable_preference()->clear_value();
       return trimmed_specifics;
     }
-    return FakeModelTypeSyncBridge::TrimRemoteSpecificsForCaching(
+    return FakeModelTypeSyncBridge::TrimAllSupportedFieldsFromRemoteSpecifics(
         entity_specifics);
   }
 
@@ -695,7 +695,8 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
       type_processor()->GetPossiblyTrimmedRemoteSpecifics(kKey1).preference();
 
   // Below verifies that
-  // TestModelTypeSyncBridge::TrimRemoteSpecificsForCaching() is honored.
+  // TestModelTypeSyncBridge::TrimAllSupportedFieldsFromRemoteSpecifics() is
+  // honored.
   // Preserved fields.
   EXPECT_EQ(cached_preference.name(), kKey1);
   EXPECT_EQ(cached_preference.unknown_fields(), kValue2);
@@ -2941,6 +2942,45 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldResetOnInvalidDataTypeId) {
 }
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldResetForEntityMetadataWithoutInitialSyncDone) {
+  base::HistogramTester histogram_tester;
+
+  const syncer::ClientTagHash kClientTagHash =
+      ClientTagHash::FromUnhashed(AUTOFILL, "tag");
+  sync_pb::EntityMetadata entity_metadata1;
+  entity_metadata1.set_client_tag_hash(kClientTagHash.value());
+  entity_metadata1.set_creation_time(0);
+  sync_pb::EntityMetadata entity_metadata2;
+  entity_metadata2.set_client_tag_hash(kClientTagHash.value());
+  entity_metadata2.set_creation_time(0);
+  sync_pb::EntityMetadata entity_metadata3;
+  entity_metadata3.set_client_tag_hash(kClientTagHash.value());
+  entity_metadata3.set_creation_time(0);
+
+  db()->PutMetadata(kKey1, std::move(entity_metadata1));
+  db()->PutMetadata(kKey2, std::move(entity_metadata2));
+  db()->PutMetadata(kKey3, std::move(entity_metadata3));
+
+  InitializeToMetadataLoaded(/*initial_sync_done=*/false);
+  OnSyncStarting();
+
+  // Since initial_sync_done was false, metadata should have been cleared.
+  EXPECT_EQ(0U, db()->metadata_count());
+  EXPECT_EQ(0U, ProcessorEntityCount());
+  EXPECT_FALSE(type_processor()->IsTrackingMetadata());
+  // Initial update.
+  worker()->UpdateFromServer();
+  EXPECT_TRUE(type_processor()->IsTrackingMetadata());
+
+  // There were three entities with the same client-tag-hash which indicates
+  // that two of them were metadata oprhans.
+  histogram_tester.ExpectBucketCount(
+      "Sync.ModelTypeEntityMetadataWithoutInitialSync",
+      /*sample=*/ModelTypeHistogramValue(GetModelType()),
+      /*expected_count=*/1);
+}
+
+TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldResetForDuplicateClientTagHash) {
   base::HistogramTester histogram_tester;
 
@@ -2974,8 +3014,8 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   // that two of them were metadata oprhans.
   histogram_tester.ExpectBucketCount(
       "Sync.ModelTypeOrphanMetadata.ModelReadyToSync",
-      /*bucket=*/ModelTypeHistogramValue(GetModelType()),
-      /*count=*/2);
+      /*sample=*/ModelTypeHistogramValue(GetModelType()),
+      /*expected_count=*/2);
 }
 
 // The param indicates whether the password notes feature is enabled.

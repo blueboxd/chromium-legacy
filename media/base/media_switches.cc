@@ -407,7 +407,12 @@ BASE_FEATURE(kCdmProcessSiteIsolation,
 // playback going to a specific output device in the audio service.
 BASE_FEATURE(kChromeWideEchoCancellation,
              "ChromeWideEchoCancellation",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_CHROMEOS_DEVICE)
+    base::FEATURE_DISABLED_BY_DEFAULT
+#else
+    base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+             );
 
 // If non-zero, audio processing is done on a dedicated processing thread which
 // receives audio from the audio capture thread via a fifo of a specified size.
@@ -525,6 +530,11 @@ BASE_FEATURE(kGlobalMediaControlsAutoDismiss,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_CHROMEOS)
+// Updated global media controls UI for CrOS.
+BASE_FEATURE(kGlobalMediaControlsCrOSUpdatedUI,
+             "GlobalMediaControlsCrOSUpdatedUI",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Show Cast sessions in Global Media Controls.
 BASE_FEATURE(kGlobalMediaControlsForCast,
              "GlobalMediaControlsForCast",
@@ -925,6 +935,12 @@ BASE_FEATURE(kUseRealColorSpaceForAndroidVideo,
              "UseRealColorSpaceForAndroidVideo",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+#if BUILDFLAG(ENABLE_HLS_DEMUXER)
+BASE_FEATURE(kBuiltInHlsPlayer,
+             "BuiltInHlsPlayer",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(ENABLE_HLS_DEMUXER)
+
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
@@ -954,14 +970,10 @@ BASE_FEATURE(kLimitConcurrentDecoderInstances,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if defined(ARCH_CPU_ARM_FAMILY)
-// Some architectures have separate image processor hardware that
-// can be used by Chromium's ImageProcessor to color convert/crop/etc.
-// video buffers.  Sometimes it is more efficient/performant/correct
-// to use a libYUV or GL based implementation instead of the hardware to
-// do this processing.
-BASE_FEATURE(kPreferLibYuvImageProcessor,
-             "PreferLibYUVImageProcessor",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+// Experimental support for GL based image processing. On some architectures,
+// the hardware accelerated video decoder outputs frames in a format not
+// understood by the display controller. We usually use LibYUV to convert these
+// frames. This flag enables an experimental GL-based conversion method.
 BASE_FEATURE(kPreferGLImageProcessor,
              "PreferGLImageProcessor",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1069,8 +1081,15 @@ constexpr base::FeatureParam<MediaFoundationClearRenderingStrategy>::Option
 const base::FeatureParam<MediaFoundationClearRenderingStrategy>
     kMediaFoundationClearRenderingStrategyParam{
         &kMediaFoundationClearRendering, "strategy",
-        MediaFoundationClearRenderingStrategy::kDynamic,
+        MediaFoundationClearRenderingStrategy::kDirectComposition,
         &kMediaFoundationClearRenderingStrategyOptions};
+
+BASE_FEATURE(kMediaFoundationBatchRead,
+             "MediaFoundationBatchRead",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<int> kBatchReadCount{&kMediaFoundationBatchRead,
+                                              "batch_read_count", 1};
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(ENABLE_PLATFORM_ENCRYPTED_DOLBY_VISION)

@@ -13,7 +13,6 @@
 <translation id="1289742167380433257">તમારો ડેટા બચાવવા માટે, આ પેજની છબીઓને Google દ્વારા ઑપ્ટિમાઇઝ કરવામાં આવી છે.</translation>
 <translation id="129382876167171263">વેબસાઇટ દ્વારા સાચવવામાં આવેલી ફાઇલો અહીં દેખાશે</translation>
 <translation id="1317194122196776028">આ સાઇટને ભૂલી જાઓ</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> - <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">સાઈટ <ph name="SITE_NAME" /> ઉમેરવામાં આવી</translation>
 <translation id="1383876407941801731">શોધો</translation>
 <translation id="1384959399684842514">ડાઉનલોડ થોભાવ્યું</translation>
@@ -22,6 +21,7 @@
 <translation id="1426410128494586442">હા</translation>
 <translation id="1446450296470737166">MIDI ઉપકરણોના પૂર્ણ નિયંત્રણની મંજૂરી આપો</translation>
 <translation id="1448064542941920355">નાનું-મોટું કરવાની ટકાવારી ઘટાડો</translation>
+<translation id="1547123415014299762">ત્રીજા પક્ષની કુકીને મંજૂરી આપવામાં આવી છે</translation>
 <translation id="1620510694547887537">કૅમેરા</translation>
 <translation id="1633720957382884102">સંબંધિત સાઇટ</translation>
 <translation id="1644574205037202324">ઇતિહાસ</translation>
@@ -59,6 +59,7 @@
 <translation id="2238944249568001759">તમારા છેલ્લા ટૅબ પર આધારિત સૂચવેલી શોધ</translation>
 <translation id="2241634353105152135">માત્ર એક વખત</translation>
 <translation id="2253414712144136228"><ph name="NAME_OF_LIST_ITEM" /> કાઢી નાખો</translation>
+<translation id="228293613124499805">તમે મુલાકાત લો છો તે મોટાભાગની સાઇટ કદાચ તમારા ડિવાઇસ પરનો ડેટા સાચવે છે, ઘણીવાર તમારી પસંદગીઓ કે તમે સાઇટ સાથે શેર કરો છો તે માહિતીને સાચવીને તમારા અનુભવને બહેતર બનાવવા માટે આમ કરવામાં આવે છે. અમે આ સેટિંગ ચાલુ રાખવાનો સુઝાવ આપીએ છીએ.</translation>
 <translation id="2289270750774289114">જ્યારે કોઈ સાઇટ નજીકના બ્લૂટૂથ ડિવાઇસને શોધવા માગે ત્યારે પૂછો (સુઝાવ આપેલ)</translation>
 <translation id="2315043854645842844">ઓપરેટિંગ સિસ્ટમ દ્વારા ક્લાઇન્ટ તરફની પ્રમાણપત્ર પસંદગી સપોર્ટ કરતી નથી.</translation>
 <translation id="2321958826496381788">જ્યાં સુધી તમે આ અનુકૂળ રીતે વાંચી ન શકો ત્યાં સુધી સ્લાઇડર ખેંચો. ફકરા પર ડબલ-ટેપિંગ પછી ટેક્સ્ટ ઓછામાં ઓછી આટલી મોટી દેખાવી જોઈએ.</translation>
@@ -351,6 +352,7 @@
 <translation id="8042586301629853791">આ પ્રમાણે સૉર્ટ કરો:</translation>
 <translation id="8067883171444229417">વીડિયો ચલાવો</translation>
 <translation id="8068648041423924542">પ્રમાણપત્ર પસંદ કરવામાં અસમર્થ.</translation>
+<translation id="8077120325605624147">તમે મુલાકાત લો છો તેવી કોઈપણ સાઇટ તમને કોઈપણ જાહેરાત બતાવી શકે છે</translation>
 <translation id="8087000398470557479">આ કન્ટેન્ટ <ph name="DOMAIN_NAME" /> માંથી, Google દ્વારા વિતરિત કરેલ છે.</translation>
 <translation id="8116925261070264013">મ્યૂટ કરેલ</translation>
 <translation id="813082847718468539">સ્થાન માહિતી જુઓ</translation>
@@ -388,6 +390,7 @@
 <translation id="857943718398505171">મંજૂર (ભલામણ કરેલ)</translation>
 <translation id="8609465669617005112">ઉપર ખસેડો</translation>
 <translation id="8676374126336081632">ઇનપુટ સાફ કરો</translation>
+<translation id="8681886425883659911">ખલેલ પાડતી અથવા ગેરમાર્ગે દોરતી જાહેરાતો બતાવવા માટે જાણીતી સાઇટ પર જાહેરાતો બ્લૉક કરવામાં આવે છે</translation>
 <translation id="868929229000858085">તમારા સંપર્કો શોધો</translation>
 <translation id="8702612070107455751">બધો ઑફલાઇન ડેટા સાફ કરવામાં આવશે.</translation>
 <translation id="8712637175834984815">સમજાઈ ગયું</translation>
@@ -400,6 +403,7 @@
 <translation id="8816026460808729765">સાઇટને સેન્સરને ઍક્સેસ કરવાથી બ્લૉક કરો</translation>
 <translation id="8823559166155093873">કુકી બ્લૉક કરો</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8899807382908246773">ખલેલ પાડતી જાહેરાતો</translation>
 <translation id="8903921497873541725">ઝૂમ વધારો</translation>
 <translation id="8921772741368021346"><ph name="POSITION" /> / <ph name="DURATION" /></translation>
 <translation id="8926666909099850184">આ ડિવાઇસ માટે NFC સેવા બંધ કરેલી છે. તેને <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં ચાલુ કરો.</translation>

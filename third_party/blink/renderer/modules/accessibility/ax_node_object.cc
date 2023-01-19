@@ -426,7 +426,11 @@ void AXNodeObject::AlterSliderOrSpinButtonValue(bool increase) {
       ->PostDelayedTask(
           FROM_HERE,
           WTF::BindOnce(
-              [](Node* node, KeyboardEvent* evt) { node->DispatchEvent(*evt); },
+              [](Node* node, KeyboardEvent* evt) {
+                if (node) {
+                  node->DispatchEvent(*evt);
+                }
+              },
               WrapWeakPersistent(GetNode()), WrapPersistent(keyup)),
           base::Milliseconds(100));
 }
@@ -1235,8 +1239,10 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (GetNode()->HasTagName(html_names::kStrongTag))
     return ax::mojom::blink::Role::kStrong;
 
-  if (GetNode()->HasTagName(html_names::kDelTag))
+  if (GetNode()->HasTagName(html_names::kDelTag) ||
+      GetNode()->HasTagName(html_names::kSTag)) {
     return ax::mojom::blink::Role::kContentDeletion;
+  }
 
   if (GetNode()->HasTagName(html_names::kInsTag))
     return ax::mojom::blink::Role::kContentInsertion;
@@ -2868,17 +2874,30 @@ bool AXNodeObject::MinValueForRange(float* out_value) const {
 
 bool AXNodeObject::StepValueForRange(float* out_value) const {
   if (IsNativeSlider() || IsNativeSpinButton()) {
-    // AT may want to know whether a step value was explicitly provided or not,
-    // so return false if there was not one set.
-    if (!To<HTMLInputElement>(*GetNode())
-             .FastGetAttribute(html_names::kStepAttr)) {
+    auto step_range =
+        To<HTMLInputElement>(*GetNode()).CreateStepRange(kRejectAny);
+    auto step = step_range.Step().ToString().ToFloat();
+
+    // Provide a step if ATs incrementing slider should move by step, otherwise
+    // AT will move by 5%.
+    // If there are too few allowed stops (< 20), incrementing/decrementing
+    // the slider by 5% could get stuck, and therefore the step is exposed.
+    // The step is also exposed if moving by 5% would cause intermittent
+    // behavior where sometimes the slider would alternate by 1 or 2 steps.
+    // Therefore the final decision is to use the step if there are
+    // less than stops in the slider, otherwise, move by 5%.
+    float max = step_range.Maximum().ToString().ToFloat();
+    float min = step_range.Minimum().ToString().ToFloat();
+    int num_stops = (max - min) / step;
+    constexpr int kNumStopsForFivePercentRule = 40;
+    if (num_stops >= kNumStopsForFivePercentRule) {
+      // No explicit step, and the step is very small -- don't expose a step
+      // so that Talkback will move by 5% increments.
       *out_value = 0.0f;
       return false;
     }
 
-    auto step =
-        To<HTMLInputElement>(*GetNode()).CreateStepRange(kRejectAny).Step();
-    *out_value = step.ToString().ToFloat();
+    *out_value = step;
     return std::isfinite(*out_value);
   }
 
@@ -3150,7 +3169,7 @@ void AXNodeObject::Dropeffects(
 
 ax::mojom::blink::HasPopup AXNodeObject::HasPopup() const {
   const AtomicString& has_popup =
-      GetAOMPropertyOrARIAAttribute(AOMStringProperty::kHasPopUp);
+      GetAOMPropertyOrARIAAttribute(AOMStringProperty::kHasPopup);
   if (!has_popup.IsNull()) {
     if (EqualIgnoringASCIICase(has_popup, "false"))
       return ax::mojom::blink::HasPopup::kFalse;
@@ -3187,6 +3206,24 @@ ax::mojom::blink::HasPopup AXNodeObject::HasPopup() const {
   }
 
   return AXObject::HasPopup();
+}
+
+ax::mojom::blink::IsPopup AXNodeObject::IsPopup() const {
+  if (IsDetached() || !GetElement()) {
+    return ax::mojom::blink::IsPopup::kNone;
+  }
+  const auto* html_element = DynamicTo<HTMLElement>(GetElement());
+  if (!html_element) {
+    return ax::mojom::blink::IsPopup::kNone;
+  }
+  switch (html_element->PopoverType()) {
+    case PopoverValueType::kNone:
+      return ax::mojom::blink::IsPopup::kNone;
+    case PopoverValueType::kAuto:
+      return ax::mojom::blink::IsPopup::kAuto;
+    case PopoverValueType::kManual:
+      return ax::mojom::blink::IsPopup::kManual;
+  }
 }
 
 bool AXNodeObject::IsEditableRoot() const {
@@ -3486,9 +3523,6 @@ static bool ShouldInsertSpaceBetweenObjectsIfNeeded(
   // using a space.
   if (previous->IsControl() || next->IsControl())
     return true;
-
-  if (!RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled())
-    return false;
 
   // When |previous| and |next| are in same inline formatting context, we
   // may have block-in-inline between |previous| and |next|.

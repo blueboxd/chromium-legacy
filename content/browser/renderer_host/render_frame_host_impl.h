@@ -71,6 +71,7 @@
 #include "content/common/input/input_injector.mojom-forward.h"
 #include "content/common/navigation_client.mojom-forward.h"
 #include "content/common/navigation_client.mojom.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
@@ -508,6 +509,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Additional non-override const version of GetMainFrame.
   const RenderFrameHostImpl* GetMainFrame() const;
+
+  // Additional non-override const version of GetPage.
+  const PageImpl& GetPage() const;
 
   // Returns the token for the document currently associated with this frame.
   // This can change over time if a `RenderFrameHost` is reused when navigating
@@ -1625,15 +1629,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Prevents this frame (along with its parents/children) from being added to
   // the BackForwardCache. If the frame is already in the cache an eviction is
   // triggered.
-  void DisableBackForwardCache(BackForwardCache::DisabledSource source,
-                               BackForwardCache::DisabledReasonType reason);
-  void DisableBackForwardCache(BackForwardCache::DisabledReason reason);
+  // For what `source_id` means and when it's set, see `DisabledReasonsMap` from
+  // `back_forward_cache_can_store_document_result.h`.
+  void DisableBackForwardCache(
+      BackForwardCache::DisabledReason reason,
+      absl::optional<ukm::SourceId> source_id = absl::nullopt);
 
   bool is_evicted_from_back_forward_cache() {
     return is_evicted_from_back_forward_cache_;
   }
 
-  const std::set<BackForwardCache::DisabledReason>&
+  const BackForwardCacheCanStoreDocumentResult::DisabledReasonsMap&
   back_forward_cache_disabled_reasons() const {
     return back_forward_cache_disabled_reasons_;
   }
@@ -2222,7 +2228,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GoToEntryAtOffset(int32_t offset,
                          bool has_user_gesture,
                          absl::optional<blink::scheduler::TaskAttributionId>
-                             soft_navigation_heuristic_task_id) override;
+                             soft_navigation_heuristics_task_id) override;
   void NavigateToNavigationApiKey(
       const std::string& key,
       bool has_user_gesture,
@@ -2338,6 +2344,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
           remote_frame_interfaces,
       const blink::RemoteFrameToken& frame_token,
       const base::UnguessableToken& devtools_frame_token) override;
+  void OnViewTransitionOptInChanged(blink::mojom::ViewTransitionSameOriginOptIn
+                                        view_transition_opt_in) override;
 
   // blink::mojom::BackForwardCacheControllerHost:
   void EvictFromBackForwardCache(blink::mojom::RendererEvictionReason) override;
@@ -2780,6 +2788,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
     user_activation_state_.Activate(notification_type);
   }
 
+  // Tells the renderer process to run the page's unload handler.
+  // A completion callback is invoked by the renderer when the handler
+  // execution completes.
+  void ClosePage();
+
+  // When true, indicates that the unload handlers have already executed (e.g.,
+  // after receiving a ClosePage ACK) or that they should be ignored. This is
+  // queried while attempting to close the current tab/window.  Should only be
+  // used on primary main frames.
+  bool IsPageReadyToBeClosed();
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -2904,6 +2923,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
                            WebUIJavascriptDisallowedAfterUnload);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest, LastCommittedOrigin);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
+                           CloseWithPendingWhileUnresponsive);
   FRIEND_TEST_ALL_PREFIXES(
       RenderFrameHostManagerUnloadBrowserTest,
       PendingDeleteRFHProcessShutdownDoesNotRemoveSubframes);
@@ -3738,6 +3759,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
     snapshotted_base_url_from_parent_ = inherited_base_url;
   }
 
+  // Close the page ignoring whether it has unload events registered. This is
+  // called either (1) when the unload events have already run in the renderer
+  // and the ACK is received, or (2) when a timeout for running those events
+  // has expired.
+  void ClosePageIgnoringUnloadEvents();
+
+  // Called when this frame's page has started closing via ClosePage(), and the
+  // timer for running unload events has expired.
+  void ClosePageTimeout();
+
   // The RenderViewHost that this RenderFrameHost is associated with.
   //
   // It is kept alive as long as any RenderFrameHosts or RenderFrameProxyHosts
@@ -4028,6 +4059,26 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // have triggered a dialog.
   bool has_shown_beforeunload_dialog_ = false;
 
+  // Tracks the process of closing the current page.  Only used on primary main
+  // frames.
+  enum class PageCloseState {
+    kNotClosing,
+
+    // Set to true when waiting for a blink.mojom.LocalMainFrame.ClosePage()
+    // to complete.
+    kRunningUnloadHandlers,
+
+    // Set to true when renderer-side unload handlers have run (or timed out)
+    // and the current page is ready to be closed.
+    kReadyToBeClosed
+  };
+  PageCloseState page_close_state_ = PageCloseState::kNotClosing;
+
+  // The timeout monitor that runs from when the page close is started in
+  // ClosePage() until either the renderer process ACKs the close, or until the
+  // timeout triggers and the page is forcibly closed.
+  std::unique_ptr<TimeoutMonitor> close_timeout_;
+
   // Returns whether the tab was previously discarded.
   // This is passed to CommitNavigationParams in NavigationRequest.
   bool was_discarded_ = false;
@@ -4311,9 +4362,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool is_evicted_from_back_forward_cache_ = false;
   base::OneShotTimer back_forward_cache_eviction_timer_;
 
-  // The reasons given in BackForwardCache::DisableForRenderFrameHost. This is a
-  // breakdown of NotRestoredReason::kDisableForRenderFrameHostCalled.
-  std::set<BackForwardCache::DisabledReason>
+  // The map that stores the disabled reasons and the associated UKM source ID.
+  // The reasons are given in BackForwardCache::DisableForRenderFrameHost, which
+  // is a breakdown of NotRestoredReason::kDisableForRenderFrameHostCalled.
+  BackForwardCacheCanStoreDocumentResult::DisabledReasonsMap
       back_forward_cache_disabled_reasons_;
 
   // Tracks whether the RenderFrameHost had ever been restored from back/forward
@@ -4464,6 +4516,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
     // The Page object associated with the main document. It is nullptr for
     // subframes.
     PageImpl* owned_page() { return owned_page_.get(); }
+
+    const PageImpl* owned_page() const { return owned_page_.get(); }
 
     // Indicates whether `blink::mojom::DidDispatchDOMContentLoadedEvent` was
     // called for this document or not.

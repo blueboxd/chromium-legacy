@@ -571,6 +571,11 @@ public class StartSurfaceTest {
 
         Assert.assertEquals(expectedRecordCount,
                 RecordHistogram.getHistogramTotalCountForTesting(
+                        ReturnToChromeUtil
+                                .LAST_ACTIVE_TAB_IS_NTP_WHEN_OVERVIEW_IS_SHOWN_AT_LAUNCH_UMA));
+
+        Assert.assertEquals(expectedRecordCount,
+                RecordHistogram.getHistogramTotalCountForTesting(
                         StartSurfaceConfiguration.getHistogramName(
                                 ExploreSurfaceCoordinator.FEED_CONTENT_FIRST_LOADED_TIME_MS_UMA,
                                 isInstantStart)));
@@ -594,6 +599,19 @@ public class StartSurfaceTest {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         StartSurfaceCoordinator.START_SHOWN_AT_STARTUP_UMA, showAtStartup));
+
+        if (mImmediateReturn) {
+            Assert.assertEquals(1,
+                    RecordHistogram.getHistogramValueCountForTesting(
+                            ReturnToChromeUtil.START_SHOW_STATE_UMA,
+                            StartSurfaceState.SHOWING_START));
+        } else {
+            Assert.assertEquals(1,
+                    RecordHistogram.getHistogramValueCountForTesting(
+                            ReturnToChromeUtil.START_SHOW_STATE_UMA,
+
+                            StartSurfaceState.SHOWING_HOMEPAGE));
+        }
     }
 
     @Test
@@ -698,6 +716,7 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     @EnableFeatures(ChromeFeatureList.START_SURFACE_REFACTOR)
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
+    @DisabledTest(message = "Flaky, crbug.com/1407193")
     public void testShow_SingleAsHomepage_DoNotResetScrollPositionFromBack() {
         assumeTrue(mImmediateReturn);
 

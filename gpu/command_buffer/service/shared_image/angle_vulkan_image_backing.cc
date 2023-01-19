@@ -264,7 +264,7 @@ bool AngleVulkanImageBacking::InitializeWihGMB(
   DCHECK(vulkan_implementation->CanImportGpuMemoryBuffer(device_queue,
                                                          handle.type));
 
-  VkFormat vk_format = ToVkFormat(format().resource_format());
+  VkFormat vk_format = ToVkFormat(format());
   auto vulkan_image = vulkan_implementation->CreateImageFromGpuMemoryHandle(
       device_queue, std::move(handle), size(), vk_format, color_space());
 
@@ -309,11 +309,14 @@ std::unique_ptr<GLTexturePassthroughImageRepresentation>
 AngleVulkanImageBacking::ProduceGLTexturePassthrough(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker) {
-  if (!passthrough_texture_ && !InitializePassthroughTexture())
+  if (!passthrough_texture_ && !InitializePassthroughTexture()) {
     return nullptr;
+  }
 
+  std::vector<scoped_refptr<gles2::TexturePassthrough>> gl_textures = {
+      passthrough_texture_};
   return std::make_unique<GLTexturePassthroughGLCommonRepresentation>(
-      manager, this, this, tracker, passthrough_texture_);
+      manager, this, this, tracker, std::move(gl_textures));
 }
 
 std::unique_ptr<SkiaImageRepresentation> AngleVulkanImageBacking::ProduceSkia(
@@ -411,9 +414,6 @@ void AngleVulkanImageBacking::GLTextureImageRepresentationEndAccess(
   is_gl_write_in_process_ = false;
   ReleaseTextureANGLE();
 }
-
-void AngleVulkanImageBacking::GLTextureImageRepresentationRelease(
-    bool have_context) {}
 
 void AngleVulkanImageBacking::AcquireTextureANGLE() {
   gl::GLApi* api = gl::g_current_gl_context;

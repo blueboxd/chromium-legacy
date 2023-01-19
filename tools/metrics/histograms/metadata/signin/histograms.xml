@@ -22,7 +22,7 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
-<histogram name="Signin" enum="SigninHelperFlow" expires_after="2023-07-09">
+<histogram name="Signin" enum="SigninHelperFlow" expires_after="2023-07-16">
   <owner>mlerman@chromium.org</owner>
   <summary>
     Tracks user interactions as they sign in through a flow. The suffix of the
@@ -419,6 +419,41 @@ prefs when the profile is loaded.  -->
   </summary>
 </histogram>
 
+<histogram name="Signin.Extensions.GetAuthTokenInteractivityStatus.{UiType}"
+    enum="SigninExtensionsGetAuthTokenInteractivityStatus"
+    expires_after="2023-07-10">
+  <owner>droger@chromium.org</owner>
+  <owner>msarda@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Records whether an interactive UI is allowed, when
+    `chrome.identity.getAuthToken` is in interactive mode and attempts to show a
+    &quot;{UiType}&quot; UI. If multiple UIs are shown by the same call, only
+    the first one is recorded.
+  </summary>
+  <token key="UiType">
+    <variant name="Consent" summary="OAuth consent"/>
+    <variant name="Signin" summary="Signin"/>
+  </token>
+</histogram>
+
+<histogram name="Signin.Extensions.GetAuthTokenNoGestureIdleTime.{UiType}"
+    units="ms" expires_after="2023-07-10">
+  <owner>droger@chromium.org</owner>
+  <owner>msarda@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Records the Chrome idle time, when `chrome.identity.getAuthToken` is in
+    interactive mode, has no user gesture, and attempts to show a
+    &quot;{UiType}&quot; UI. If multiple UIs are shown by the same call, only
+    the first one is recorded.
+  </summary>
+  <token key="UiType">
+    <variant name="Consent" summary="OAuth consent"/>
+    <variant name="Signin" summary="Signin"/>
+  </token>
+</histogram>
+
 <histogram name="Signin.Extensions.GetAuthTokenResult"
     enum="GetAuthTokenResult" expires_after="2023-06-04">
 <!-- Name completed by histogram_suffixes name="GetAuthTokenType" -->
@@ -558,7 +593,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.IOSDeviceRestoreSentinelError"
-    enum="SigninIOSDeviceRestoreSentinelError" expires_after="2023-05-14">
+    enum="SigninIOSDeviceRestoreSentinelError" expires_after="2023-07-16">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -568,7 +603,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.IOSDeviceRestoreSentinelPathGenerated"
-    enum="BooleanSuccess" expires_after="2023-05-14">
+    enum="BooleanSuccess" expires_after="2023-07-16">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -621,7 +656,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.IOSNumberOfDeviceAccounts" units="accounts"
-    expires_after="2023-05-14">
+    expires_after="2023-07-16">
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -680,16 +715,6 @@ the browser and content area. -->
   <summary>Tracks the latency of calls to the Kids Management API.</summary>
 </histogram>
 
-<histogram name="Signin.ListFamilyMembersRequest.LegacyNoError.Latency"
-    units="ms" expires_after="2023-11-01">
-  <owner>tju@google.com</owner>
-  <owner>chrome-kids-eng@google.com</owner>
-  <summary>
-    Latency of the legacy calls to the Kids Management API that resulted with
-    success.
-  </summary>
-</histogram>
-
 <histogram name="Signin.ListFamilyMembersRequest.Status"
     enum="KidsExternalFetcherStatus" expires_after="2023-11-01">
   <owner>tju@google.com</owner>
@@ -707,9 +732,12 @@ the browser and content area. -->
   </summary>
   <token key="Status">
     <variant name="AuthError" summary="authentication error"/>
+    <variant name="DataError"
+        summary="contract error (data in the response missing despite
+                 succesful parsing)"/>
     <variant name="HttpError" summary="transport error"/>
-    <variant name="InvalidResponse" summary="parsing error"/>
     <variant name="NoError" summary="no error recorded"/>
+    <variant name="ParseError" summary="parsing error"/>
   </token>
 </histogram>
 
@@ -994,7 +1022,7 @@ OAuth Multilogin call. -->
 </histogram>
 
 <histogram name="Signin.SignedInAccountsViewImpression" enum="BooleanShown"
-    expires_after="2023-04-01">
+    expires_after="2023-07-16">
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>

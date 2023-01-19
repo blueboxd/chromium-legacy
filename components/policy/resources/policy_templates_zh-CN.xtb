@@ -1866,15 +1866,6 @@
       如果此政策已停用，“用电高峰期切换电源”功能会保持关闭状态。
 
       如果此政策未设置，“用电高峰期切换电源”功能最初会处于关闭状态。用户无法更改相关设置。</translation>
-<translation id="2773036462435523078">在计算机处于闲置状态时触发操作。
-
-      如果您设置了此政策，那么只要设备处于闲置状态（未发生用户输入）的时长达到此处指定的时长（以分钟为单位），<ph name="PRODUCT_NAME" /> 就会运行 <ph name="IDLE_TIMEOUT_ACTIONS_POLICY_NAME" /> 政策中配置的操作。
-
-      如果此政策未设置，系统将不会运行任何操作。
-
-      最低阈值为 5 分钟。
-
-      “用户输入”由操作系统 API 定义，包括移动鼠标或使用键盘输入内容等操作。</translation>
 <translation id="2773288106548584039">旧版浏览器支持</translation>
 <translation id="2780840673734667062">禁止使用其他 Google 帐号登录</translation>
 <translation id="2784880732336446591">退出时清除浏览数据</translation>
@@ -8103,21 +8094,6 @@
 <translation id="8882307005437314052">为登录屏幕启用屏幕键盘，并允许用户暂时停用它</translation>
 <translation id="8883577480680089760">停用<ph name="PRODUCT_NAME" /> V2 服务，且登录时不启动远程桌面</translation>
 <translation id="8887709920496070892">系统应在设备闲置多久（以毫秒为单位）后显示警告对话框</translation>
-<translation id="8887847586787956456">以列表形式指定在达到 <ph name="IDLE_TIMEOUT_POLICY_NAME" /> 政策所设的超时时限后要运行的一系列操作。
-
-      如果 <ph name="IDLE_TIMEOUT_POLICY_NAME" /> 政策未设置，此政策将不会产生任何效力。
-
-      达到 <ph name="IDLE_TIMEOUT_POLICY_NAME" /> 政策所设的超时时限后，<ph name="PRODUCT_NAME" /> 会运行此政策中配置的操作。
-
-      如果此政策为空或未设置，<ph name="IDLE_TIMEOUT_POLICY_NAME" /> 政策将不会产生任何效力。
-
-      支持的操作如下：
-
-      “<ph name="CLOSE_BROWSERS_ACTION" />”：关闭该个人资料的所有浏览器窗口和 PWA。
-
-      “<ph name="SHOW_PROFILE_PICKER_ACTION" />”：显示“个人资料选择器”窗口。
-
-      “<ph name="CLEAR_BROWSING_HISTORY_ACTION" />”“<ph name="CLEAR_DOWNLOAD_HISTORY_ACTION" />”“<ph name="CLEAR_COOKIES_AND_OTHER_SITE_DATA_ACTION" />”“<ph name="CLEAR_CACHED_IMAGES_AND_FILES_ACTION" />”“<ph name="CLEAR_PASSWORD_SIGNIN_ACTION" />”“<ph name="CLEAR_AUTOFILL_ACTION" />”“<ph name="CLEAR_SITE_SETTINGS_ACTION" />”“<ph name="CLEAR_HOSTED_APP_DATA_ACTION" />”：清除相应的浏览数据。有关详情，请参阅 <ph name="CLEAR_BROWSING_DATA_ON_EXIT_LIST_POLICY_NAME" /> 政策。</translation>
 <translation id="8890438048579188548">隐藏 <ph name="CLOUD_PRINT_NAME" />弃用警告</translation>
 <translation id="8891334958985336685">停用设备系统信息报告功能</translation>
 <translation id="8892286064305622118"><ph name="PLUGIN_VM_NAME" /> 所需的可用磁盘空间</translation>

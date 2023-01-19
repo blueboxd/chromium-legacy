@@ -33,8 +33,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/callback_helpers.h"
 #include "base/feature_list.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
@@ -689,6 +689,12 @@ bool ServiceWorkerGlobalScope::AddEventListenerInternal(
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         mojom::ConsoleMessageLevel::kWarning, message));
+    // Count the update of fetch handlers after the initial evaluation.
+    if (event_type == event_type_names::kFetch) {
+      UseCounter::Count(
+          this,
+          WebFeature::kServiceWorkerFetchHandlerUpdateAfterInitialization);
+    }
   }
   return WorkerGlobalScope::AddEventListenerInternal(event_type, listener,
                                                      options);

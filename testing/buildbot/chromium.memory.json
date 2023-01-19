@@ -1681,26 +1681,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "vr_pixeltests",
-        "test_id_prefix": "ninja://chrome/browser/vr:vr_pixeltests/"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "wm_unittests",
         "test_id_prefix": "ninja://ui/wm:wm_unittests/"
       },
@@ -3266,23 +3246,6 @@
         },
         "test": "vr_common_unittests",
         "test_id_prefix": "ninja://chrome/browser/vr:vr_common_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "vr_pixeltests",
-        "test_id_prefix": "ninja://chrome/browser/vr:vr_pixeltests/"
       },
       {
         "merge": {
@@ -8851,27 +8814,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "vr_pixeltests",
-        "test_id_prefix": "ninja://chrome/browser/vr:vr_pixeltests/"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-20.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "wm_unittests",
         "test_id_prefix": "ninja://ui/wm:wm_unittests/"
       },
@@ -10592,26 +10534,6 @@
         },
         "test": "vr_common_unittests",
         "test_id_prefix": "ninja://chrome/browser/vr:vr_common_unittests/"
-      },
-      {
-        "args": [
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "vr_pixeltests",
-        "test_id_prefix": "ninja://chrome/browser/vr:vr_pixeltests/"
       },
       {
         "args": [
@@ -15032,49 +14954,6 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
-            "vr_pixeltests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "MMB29Q",
-              "device_os_type": "userdebug",
-              "device_type": "bullhead",
-              "os": "Android"
-            }
-          ],
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "vr_pixeltests",
-        "test_id_prefix": "ninja://chrome/browser/vr:vr_pixeltests/"
-      },
-      {
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
             "wtf_unittests"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
@@ -18653,12 +18532,12 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter;../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v111.0.5535.0/test_ash_chrome",
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v111.0.5547.0/test_ash_chrome",
           "--test-launcher-print-test-stdio=always",
           "--combine-ash-logs-on-bots",
           "--asan-symbolize-output"
         ],
-        "description": "Run with ash-chrome version 111.0.5535.0",
+        "description": "Run with ash-chrome version 111.0.5547.0",
         "isolate_profile_data": true,
         "merge": {
           "args": [],
@@ -18670,8 +18549,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v111.0.5535.0",
-              "revision": "version:111.0.5535.0"
+              "location": "lacros_version_skew_tests_v111.0.5547.0",
+              "revision": "version:111.0.5547.0"
             }
           ],
           "dimension_sets": [
@@ -18844,12 +18723,12 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v111.0.5535.0/test_ash_chrome",
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v111.0.5547.0/test_ash_chrome",
           "--test-launcher-print-test-stdio=always",
           "--combine-ash-logs-on-bots",
           "--asan-symbolize-output"
         ],
-        "description": "Run with ash-chrome version 111.0.5535.0",
+        "description": "Run with ash-chrome version 111.0.5547.0",
         "isolate_profile_data": true,
         "merge": {
           "args": [],
@@ -18861,8 +18740,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v111.0.5535.0",
-              "revision": "version:111.0.5535.0"
+              "location": "lacros_version_skew_tests_v111.0.5547.0",
+              "revision": "version:111.0.5547.0"
             }
           ],
           "dimension_sets": [
@@ -19011,12 +18890,12 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v111.0.5535.0/test_ash_chrome",
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v111.0.5547.0/test_ash_chrome",
           "--test-launcher-print-test-stdio=always",
           "--combine-ash-logs-on-bots",
           "--asan-symbolize-output"
         ],
-        "description": "Run with ash-chrome version 111.0.5535.0",
+        "description": "Run with ash-chrome version 111.0.5547.0",
         "isolate_profile_data": true,
         "merge": {
           "args": [],
@@ -19028,8 +18907,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v111.0.5535.0",
-              "revision": "version:111.0.5535.0"
+              "location": "lacros_version_skew_tests_v111.0.5547.0",
+              "revision": "version:111.0.5547.0"
             }
           ],
           "dimension_sets": [
@@ -21369,23 +21248,6 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "vr_pixeltests",
-        "test_id_prefix": "ninja://chrome/browser/vr:vr_pixeltests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
         "test": "wm_unittests",
         "test_id_prefix": "ninja://ui/wm:wm_unittests/"
       },
@@ -23004,23 +22866,6 @@
         },
         "test": "vr_common_unittests",
         "test_id_prefix": "ninja://chrome/browser/vr:vr_common_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10-15063"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "vr_pixeltests",
-        "test_id_prefix": "ninja://chrome/browser/vr:vr_pixeltests/"
       },
       {
         "merge": {

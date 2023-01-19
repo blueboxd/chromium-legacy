@@ -11,6 +11,7 @@
 #include "base/check_is_test.h"
 #include "base/functional/bind.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_installer.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_installer_impl.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -210,9 +211,8 @@ void BruschettaInstallerView::StateChanged(InstallerState new_state) {
   OnStateUpdated();
 }
 
-void BruschettaInstallerView::Error() {
-  VLOG(2) << "Error";
-  error_ = true;
+void BruschettaInstallerView::Error(bruschetta::BruschettaInstallError error) {
+  error_ = error;
   state_ = State::kFailed;
   OnStateUpdated();
 }
@@ -253,24 +253,28 @@ std::u16string BruschettaInstallerView::GetPrimaryMessage() const {
 std::u16string BruschettaInstallerView::GetSecondaryMessage() const {
   if (state_ == State::kInstalling) {
     switch (installing_state_) {
-      case InstallerState::kBootDiskDownload:
       case InstallerState::kInstallStarted:
+        // We don't really spend any time in the InstallStarted state, the real
+        // first step is installing DLC so fall through to that.
       case InstallerState::kDlcInstall:
+        return l10n_util::GetStringUTF16(
+            IDS_BRUSCHETTA_INSTALLER_INSTALLING_DLC_MESSAGE);
+      case InstallerState::kBootDiskDownload:
       case InstallerState::kFirmwareDownload:
-      case InstallerState::kFirmwareMount:
-      case InstallerState::kBootDiskMount:
+      case InstallerState::kPflashDownload:
       case InstallerState::kOpenFiles:
+        return l10n_util::GetStringUTF16(
+            IDS_BRUSCHETTA_INSTALLER_DOWNLOADING_MESSAGE);
       case InstallerState::kCreateVmDisk:
       case InstallerState::kStartVm:
       case InstallerState::kLaunchTerminal:
-        return u"state=" +
-               base::NumberToString16(static_cast<int>(installing_state_));
+        return l10n_util::GetStringUTF16(
+            IDS_BRUSCHETTA_INSTALLER_STARTING_VM_MESSAGE);
     }
   } else if (state_ == State::kFailed) {
-    // TODO(b/231899688): expose errors from installer and expose them via the
-    // UI.
-    return l10n_util::GetStringFUTF16(IDS_BRUSCHETTA_INSTALLER_ERROR_MESSAGE,
-                                      u"UNKNOWN_ERROR");
+    return l10n_util::GetStringFUTF16(
+        IDS_BRUSCHETTA_INSTALLER_ERROR_MESSAGE,
+        bruschetta::BruschettaInstallErrorString(error_));
   }
   return {};
 }

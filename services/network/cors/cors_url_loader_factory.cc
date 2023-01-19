@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "base/bind.h"
 #include "base/debug/crash_logging.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/types/optional_util.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -69,7 +69,7 @@ bool VerifyTrustTokenParamsIntegrityIfPresent(
   if (trust_token_redemption_policy ==
           mojom::TrustTokenRedemptionPolicy::kForbid &&
       DoesTrustTokenOperationRequirePermissionsPolicy(
-          resource_request.trust_token_params->type)) {
+          resource_request.trust_token_params->operation)) {
     // Got a request configured for Trust Tokens redemption or signing from
     // a context in which this operation is prohibited.
     mojo::ReportBadMessage(

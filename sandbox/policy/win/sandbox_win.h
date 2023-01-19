@@ -9,8 +9,8 @@
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/callback_forward.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
 #include "sandbox/policy/export.h"
@@ -121,9 +121,10 @@ class SANDBOX_POLICY_EXPORT SandboxWin {
       sandbox::mojom::Sandbox sandbox_type);
 };
 
+// Add a block list DLL to a configuration |config| based on the name of the DLL
+// passed as |module_name|. The DLL must be loaded in the current process.
 SANDBOX_POLICY_EXPORT
 void BlocklistAddOneDllForTesting(const wchar_t* module_name,
-                                  bool check_in_browser,
                                   TargetConfig* config);
 
 }  // namespace policy

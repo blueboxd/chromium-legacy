@@ -12,8 +12,8 @@
 <translation id="1272079795634619415">Zastaviť</translation>
 <translation id="1289742167380433257">Google optimalizoval obrázky tejto stránky, aby vám ušetril dáta.</translation>
 <translation id="129382876167171263">Tu sa zobrazia súbory uložené webmi</translation>
+<translation id="131112695174432497">Dáta, ktoré ovplyvňujú prispôsobenie reklám, sa odstránia</translation>
 <translation id="1317194122196776028">Zabudnúť tento web</translation>
-<translation id="1364532808393826295"><ph name="APP_NAME" /> – <ph name="NOTIFICATION_MESSAGE" /></translation>
 <translation id="1369915414381695676">Boli pridané stránky <ph name="SITE_NAME" /></translation>
 <translation id="1383876407941801731">Vyhľadávanie</translation>
 <translation id="1384959399684842514">Sťahovanie bolo pozastavené</translation>
@@ -22,6 +22,7 @@
 <translation id="1426410128494586442">Áno</translation>
 <translation id="1446450296470737166">Povoliť úplné ovlád. zar. MIDI</translation>
 <translation id="1448064542941920355">Znížiť úroveň lupy</translation>
+<translation id="1547123415014299762">Súbory cookie tretích strán sú povolené</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1633720957382884102">Súvisiace weby</translation>
 <translation id="1644574205037202324">História</translation>
@@ -59,6 +60,7 @@
 <translation id="2238944249568001759">Navrhované vyhľadávania na základe vašej poslednej karty</translation>
 <translation id="2241634353105152135">Iba raz</translation>
 <translation id="2253414712144136228">Odobrať osobu alebo odstrániť položku <ph name="NAME_OF_LIST_ITEM" /></translation>
+<translation id="228293613124499805">Väčšina webov, ktoré navštevujete, pravdepodobne ukladá dáta vo vašom zariadení. Často ukladajú vaše predvoľby alebo informácie, ktoré s nimi zdieľate, čím zlepšujú vaše prostredie. Toto nastavenie odporúčame nechať zapnuté.</translation>
 <translation id="2289270750774289114">Opýtať sa, keď chce web objavovať zariadenia Bluetooth v okolí (odporúčané)</translation>
 <translation id="2315043854645842844">Operačný systém nepodporuje výber certifikátu na strane klienta.</translation>
 <translation id="2321958826496381788">Presúvajte posúvač, dokým nebude čítanie tohto textu pohodlné. Po dvojitom klepnutí na odsek by mal byť text aspoň takto veľký.</translation>
@@ -351,6 +353,7 @@
 <translation id="8042586301629853791">Zoradiť podľa:</translation>
 <translation id="8067883171444229417">Prehrať video</translation>
 <translation id="8068648041423924542">Nedá sa vybrať certifikát</translation>
+<translation id="8077120325605624147">Všetky weby, ktoré navštívite, vám môžu zobrazovať ľubovoľné reklamy</translation>
 <translation id="8087000398470557479">Tento obsah pochádza z domény <ph name="DOMAIN_NAME" /> a bol doručený Googlom.</translation>
 <translation id="8116925261070264013">Vypnuté</translation>
 <translation id="813082847718468539">Zobraziť informácie o stránkach</translation>
@@ -388,6 +391,7 @@
 <translation id="857943718398505171">Povolené (odporúčané)</translation>
 <translation id="8609465669617005112">Presunúť nahor</translation>
 <translation id="8676374126336081632">Vymazať vstup</translation>
+<translation id="8681886425883659911">Na weboch, o ktorých sa vie, že zobrazujú obťažujúce alebo zavádzajúce reklamy, sú reklamy blokované</translation>
 <translation id="868929229000858085">Prehľadať kontakty</translation>
 <translation id="8702612070107455751">Všetky offline dáta budú vymazané.</translation>
 <translation id="8712637175834984815">Dobre</translation>
@@ -400,6 +404,7 @@
 <translation id="8816026460808729765">Brániť webom v prístupe k senzorom</translation>
 <translation id="8823559166155093873">Blokovať súbory cookie</translation>
 <translation id="8847988622838149491">USB</translation>
+<translation id="8899807382908246773">Obťažujúce reklamy</translation>
 <translation id="8903921497873541725">Priblížiť</translation>
 <translation id="8921772741368021346"><ph name="POSITION" />/<ph name="DURATION" /></translation>
 <translation id="8926666909099850184">Technológia NFC je v tomto zariadení vypnutá. Zapnite ju v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>

@@ -25,7 +25,10 @@ CookieControlsBubbleViewTest.*
 CryptoModulePasswordDialogTest.*
 DeepScanningFailureModalDialogTest.*
 *DiceWebSigninInterceptionBubblePixelTest.InvokeUi_*
-*DiceWebSigninInterceptionBubbleSyncPromoPixelTest.InvokeUi_*
+*DiceWebSigninInterceptionBubbleV1SyncPromoPixelTest.InvokeUi_*
+*DiceWebSigninInterceptionBubbleV2PixelTest.InvokeUi_*
+EnterpriseWelcomeUIDialogPixelTest.*
+EnterpriseWelcomeUIWindowPixelTest.*
 ExtensionInstallDialogViewInteractiveBrowserTest.*
 ExtensionUninstallDialogViewInteractiveBrowserTest.*
 *EyeDropperBrowserTest.*

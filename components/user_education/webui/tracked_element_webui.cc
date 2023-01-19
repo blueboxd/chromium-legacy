@@ -5,8 +5,12 @@
 #include "components/user_education/webui/tracked_element_webui.h"
 
 #include "base/check.h"
+#include "components/user_education/webui/help_bubble_handler.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 #include "ui/base/interaction/element_tracker.h"
 #include "ui/base/interaction/framework_specific_implementation.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace user_education {
 
@@ -21,7 +25,29 @@ TrackedElementWebUI::~TrackedElementWebUI() {
   SetVisible(false);
 }
 
-void TrackedElementWebUI::SetVisible(bool visible) {
+gfx::Rect TrackedElementWebUI::GetScreenBounds() const {
+  gfx::Rect result;
+  content::WebContents* const contents =
+      handler_->GetController()->web_ui()->GetWebContents();
+  if (contents) {
+    // Use the last known bounds, but if the bounds are empty, make them 1x1 so
+    // there's something to anchor to.
+    result = gfx::ToRoundedRect(last_known_bounds_);
+    if (result.width() < 1) {
+      result.set_width(1);
+    }
+    if (result.height() < 1) {
+      result.set_height(1);
+    }
+    // To get the screen coordinates, have to offset by the coordinates of the
+    // viewport.
+    result.Offset(contents->GetContainerBounds().OffsetFromOrigin());
+  }
+  return result;
+}
+
+void TrackedElementWebUI::SetVisible(bool visible, gfx::RectF bounds) {
+  last_known_bounds_ = bounds;
   if (visible == visible_)
     return;
 

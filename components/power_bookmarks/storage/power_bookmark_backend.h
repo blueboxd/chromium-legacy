@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/power_bookmarks/common/power_bookmark_observer.h"
 #include "components/power_bookmarks/storage/power_bookmark_database.h"
@@ -51,7 +52,12 @@ class PowerBookmarkBackend : public PowerBookmarkSyncBridge::Delegate {
       const sync_pb::PowerBookmarkSpecifics::PowerType& power_type);
 
   // Returns a vector of Powers matching the given `search_params`.
-  std::vector<std::unique_ptr<Power>> Search(const SearchParams& search_params);
+  std::vector<std::unique_ptr<Power>> SearchPowers(
+      const SearchParams& search_params);
+
+  // Returns a vector of PowerOverviews matching the given `search_params`.
+  std::vector<std::unique_ptr<PowerOverview>> SearchPowerOverviews(
+      const SearchParams& search_params);
 
   // Create the given `power` in the database. If it already exists, then it
   // will be updated. Returns whether the operation was successful.
@@ -89,7 +95,7 @@ class PowerBookmarkBackend : public PowerBookmarkSyncBridge::Delegate {
 
   // Observer that serves the frontend of power bookmarks.
   // Needs to be called on the frontend task runner.
-  PowerBookmarkObserver* service_observer_;
+  raw_ptr<PowerBookmarkObserver> service_observer_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

@@ -101,13 +101,6 @@ void GPUCanvasContext::Reshape(int width, int height) {
     return;
   }
 
-  // If an explicit size was given during the last call to configure() use that
-  // size instead. This is deprecated behavior.
-  // TODO(crbug.com/1326473): Remove after deprecation period.
-  if (!configured_size_.IsZero()) {
-    return;
-  }
-
   ResizeSwapbuffers(gfx::Size(width, height));
 }
 
@@ -174,6 +167,10 @@ bool GPUCanvasContext::CopyRenderingResultsToVideoFrame(
     SourceDrawingBuffer src_buffer,
     const gfx::ColorSpace& dst_color_space,
     VideoFrameCopyCompletedCallback callback) {
+  if (!swap_buffers_) {
+    return false;
+  }
+
   return swap_buffers_->CopyToVideoFrame(frame_pool, src_buffer,
                                          dst_color_space, std::move(callback));
 }
@@ -228,6 +225,35 @@ bool GPUCanvasContext::PushFrame() {
 
 ImageBitmap* GPUCanvasContext::TransferToImageBitmap(
     ScriptState* script_state) {
+  auto MakeFallbackImageBitmap =
+      [this](V8GPUCanvasAlphaMode::Enum alpha_mode) -> ImageBitmap* {
+    // It is not possible to create an empty image bitmap, return null in that
+    // case which will fail ImageBitmap creation with an exception instead.
+    gfx::Size size = Host()->Size();
+    if (size.IsEmpty()) {
+      return nullptr;
+    }
+
+    // We intentionally leave the image in legacy color space.
+    SkBitmap black_bitmap;
+    black_bitmap.allocN32Pixels(size.width(), size.height());
+    if (alpha_mode == V8GPUCanvasAlphaMode::Enum::kOpaque) {
+      black_bitmap.eraseARGB(255, 0, 0, 0);
+    } else {
+      black_bitmap.eraseARGB(0, 0, 0, 0);
+    }
+
+    return MakeGarbageCollected<ImageBitmap>(
+        UnacceleratedStaticBitmapImage::Create(
+            SkImage::MakeFromBitmap(black_bitmap)));
+  };
+
+  // If the canvas configuration is invalid, WebGPU requires that we give a
+  // fallback black ImageBitmap if possible.
+  if (!swap_buffers_) {
+    return MakeFallbackImageBitmap(V8GPUCanvasAlphaMode::Enum::kOpaque);
+  }
+
   viz::TransferableResource transferable_resource;
   viz::ReleaseCallback release_callback;
   if (!swap_buffers_->PrepareTransferableResource(
@@ -235,15 +261,8 @@ ImageBitmap* GPUCanvasContext::TransferToImageBitmap(
     // If we can't get a mailbox, return an transparent black ImageBitmap.
     // The only situation in which this could happen is when two or more calls
     // to transferToImageBitmap are made back-to-back, or when the context gets
-    // lost. We intentionally leave the transparent black image in legacy color
-    // space.
-    SkBitmap black_bitmap;
-    black_bitmap.allocN32Pixels(transferable_resource.size.width(),
-                                transferable_resource.size.height());
-    black_bitmap.eraseARGB(0, 0, 0, 0);
-    return MakeGarbageCollected<ImageBitmap>(
-        UnacceleratedStaticBitmapImage::Create(
-            SkImage::MakeFromBitmap(black_bitmap)));
+    // lost.
+    return MakeFallbackImageBitmap(alpha_mode_);
   }
   DCHECK(release_callback);
 
@@ -323,6 +342,12 @@ void GPUCanvasContext::configure(const GPUCanvasConfiguration* descriptor,
   texture_descriptor_.viewFormats = view_formats_.get();
   texture_descriptor_.viewFormatCount = descriptor->viewFormats().size();
 
+  // Set the size of the texture in case there was no Reshape() since the
+  // creation of the context.
+  gfx::Size host_size = Host()->Size();
+  texture_descriptor_.size = {static_cast<uint32_t>(host_size.width()),
+                              static_cast<uint32_t>(host_size.height()), 1};
+
   // This needs to happen early so that if any validation fails the swapbuffers
   // are not created and getCurrentTexture() will return an error GPUTexture.
   DetachSwapBuffers();
@@ -330,6 +355,13 @@ void GPUCanvasContext::configure(const GPUCanvasConfiguration* descriptor,
   // Store the configured device separately, even if the configuration fails, so
   // that errors can be generated in the appropriate error scope.
   device_ = descriptor->device();
+
+  // The WebGPU spec requires that a validation error be produced if the
+  // descriptor is invalid. However no call to AssociateMailbox is done in
+  // configure() which would produce the error. Directly request that the
+  // descriptor be validated instead.
+  device_->GetProcs().deviceValidateTextureDescriptor(device_->GetHandle(),
+                                                      &texture_descriptor_);
 
   switch (texture_descriptor_.format) {
     // TODO(crbug.com/1361468): support BGRA8Unorm on Android.
@@ -346,26 +378,15 @@ void GPUCanvasContext::configure(const GPUCanvasConfiguration* descriptor,
 #endif
       break;
     default:
-      device_->InjectError(WGPUErrorType_Validation,
-                           "unsupported swap chain format");
+      device_->InjectError(
+          WGPUErrorType_Validation,
+          ("unsupported swap chain format \"" +
+           std::string(FromDawnEnum(texture_descriptor_.format)) + "\"")
+              .c_str());
       return;
   }
 
-  alpha_mode_ = V8GPUCanvasAlphaMode::Enum::kPremultiplied;
-  if (descriptor->hasCompositingAlphaMode()) {
-    alpha_mode_ = descriptor->compositingAlphaMode().AsEnum();
-    device_->AddConsoleWarning(
-        "compositingAlphaMode is deprecated and will soon be removed. Please "
-        "set alphaMode instead.");
-  } else if (descriptor->hasAlphaMode()) {
-    alpha_mode_ = descriptor->alphaMode().AsEnum();
-  } else {
-    device_->AddConsoleWarning(
-        "The default GPUCanvasAlphaMode will change from "
-        "\"premultiplied\" to \"opaque\". "
-        "Please explicitly set alphaMode to \"premultiplied\" if you would "
-        "like to continue using that compositing mode.");
-  }
+  alpha_mode_ = descriptor->alphaMode().AsEnum();
 
   if (!ValidateAndConvertColorSpace(descriptor->colorSpace(), color_space_,
                                     exception_state)) {
@@ -398,39 +419,7 @@ void GPUCanvasContext::configure(const GPUCanvasConfiguration* descriptor,
       break;
   }
 
-  // Set the size while configuring.
-  if (descriptor->hasSize()) {
-    // TODO(crbug.com/1326473): Remove this branch after deprecation period.
-    device_->AddConsoleWarning(
-        "Setting an explicit size when calling configure() on a "
-        "GPUCanvasContext has been deprecated, and will soon be removed. "
-        "Please set the canvas width and height attributes instead. Note that "
-        "after the initial call to configure() changes to the canvas width and "
-        "height will now take effect without the need to call configure() "
-        "again.");
-
-    WGPUExtent3D dawn_extent = AsDawnType(descriptor->size());
-    configured_size_ = gfx::Size(dawn_extent.width, dawn_extent.height);
-
-    if (dawn_extent.depthOrArrayLayers != 1) {
-      device_->InjectError(
-          WGPUErrorType_Validation,
-          "swap chain size must have depthOrArrayLayers set to 1");
-      return;
-    }
-    if (configured_size_.IsEmpty()) {
-      device_->InjectError(WGPUErrorType_Validation,
-                           "context width and height must be greater than 0");
-      return;
-    }
-
-    ResizeSwapbuffers(configured_size_);
-  } else {
-    configured_size_.SetSize(0, 0);
-
-    gfx::Size size = Host()->Size();
-    ResizeSwapbuffers(size);
-  }
+  ResizeSwapbuffers(host_size);
 }
 
 void GPUCanvasContext::ResizeSwapbuffers(gfx::Size size) {
@@ -472,20 +461,6 @@ void GPUCanvasContext::DetachSwapBuffers() {
     swap_buffers_ = nullptr;
   }
   texture_ = nullptr;
-}
-
-String GPUCanvasContext::getPreferredFormat(ExecutionContext* execution_context,
-                                            GPUAdapter* adapter) {
-  adapter->AddConsoleWarning(
-      execution_context,
-      "Calling getPreferredFormat() on a GPUCanvasContext is deprecated and "
-      "will soon be removed. Call navigator.gpu.getPreferredCanvasFormat() "
-      "instead, which no longer requires an adapter.");
-#if BUILDFLAG(IS_ANDROID)
-  return "rgba8unorm";
-#else
-  return "bgra8unorm";
-#endif
 }
 
 GPUTexture* GPUCanvasContext::getCurrentTexture(

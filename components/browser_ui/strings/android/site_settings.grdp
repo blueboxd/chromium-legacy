@@ -258,7 +258,10 @@
   <!-- Site settings Edit Exception dialog -->
 
   <message name="IDS_WEBSITE_SETTINGS_EDIT_SITE_DIALOG_TITLE" desc="The title of the dialog to edit permissions for a website from a list.">
-    Site preference for <ph name="SITE_NAME">%1$s<ex>google.com</ex></ph>
+    Site preference
+  </message>
+  <message name="IDS_WEBSITE_SETTINGS_EDIT_SITE_DIALOG_DESCRIPTION" desc="The description of the dialog to edit permissions for a website from a list.">
+    Select an option for <ph name="SITE_NAME">%1$s<ex>google.com</ex></ph>
   </message>
 
   <!-- Site settings Clear Data Dialog and other ways of resetting permissions -->
@@ -276,7 +279,7 @@
     This will clear all data and cookies stored by <ph name="ORIGIN">%1$s<ex>google.com</ex></ph> or by its app on your Home screen.
   </message>
   <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_OFFLINE_MESSAGE" desc="Text of the confirmation dialog, explaining that all offline data will be cleared (when clearing a site/sites).">
-    Any offline data will be cleared.
+    Any offline data will be cleared
   </message>
   <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_MESSAGE" desc="Text of the confirmation dialog when the user ask to clear all data for multiple origins">
     This will clear <ph name="DATASIZE">%1$s<ex>1 GB</ex></ph> of data and cookies stored by sites.
@@ -285,13 +288,13 @@
     This will clear <ph name="DATASIZE">%1$s<ex>1 GB</ex></ph> of data and cookies stored by sites or by apps on your Home screen.
   </message>
   <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_SIGN_OUT_MESSAGE" desc="Text of the confirmation dialog, explaining that the user will be signed out of the site being cleared.">
-    You'll be signed out of this site.
+    You'll be signed out of this site
   </message>
   <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_SIGN_OUT_ALL_MESSAGE" desc="Text of the confirmation dialog, explaining that the user will be signed out of all sites being cleared.">
-    You'll be signed out of all sites.
+    You'll be signed out of all sites
   </message>
-  <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_SITE_SETTINGS_REMOVE_SITE_AD_PERSONALIZATION" translateable="false" desc="Text of the confirmation dialog, explaining that the user will be signed out of all sites being cleared.">
-    Cras in lectus mi ac magna dapibus
+  <message name="IDS_WEBSTORAGE_CLEAR_DATA_DIALOG_SITE_SETTINGS_REMOVE_SITE_AD_PERSONALIZATION" desc="A bullet in a list of data that gets deleted from the user's device when they choose 'Clear data' for a specific site. 1) Go to chrome://settings/content. 2) From the 'Recent activity' list, choose a site. 3) Click the 'Clear data' button. The 'Clear site data?' dialog appears. This string will appear as a new bullet at the bottom of the dialog.">
+    Data that affects ad personalization is deleted
   </message>
   <message name="IDS_STORAGE_CLEAR_SITE_STORAGE_TITLE" desc="Title of clear storage dialogs used in a couple different places to confirm clearing site storage data. [CHAR_LIMIT=24]">
     Clear site data?
@@ -421,9 +424,6 @@
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_ALLOW_ADDITION" desc="Additional text used to explain the allow cookies option in settings">
     Sites will work normally
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_BLOCK_THIRD_PARTY_ADDITION" desc="Additional text used to explain the block third-party cookies option in settings">
-    Features on some sites may not work
-  </message>
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_COOKIE_BLOCK_THIRD_PARTY_FPS_ADDITION" desc="Additional text used to explain the block third-party cookies option in settings when First Party Sets are enables.">
     Related sites can see your activity in the group
   </message>
@@ -459,8 +459,8 @@
   <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_BLOCK_CONFIRM_DIALOG_TITLE" desc="The title of a dialog box that appears if the user chooses 'Don’t allow sites to save data on your device (not recommended)'. This dialog essentially serves as a 'are you sure?' reminder.">
     Sites you visit may stop working as designed
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_BLOCK_CONFIRM_DIALOG_DESCRIPTION" desc="Most sites you visit probably save data to your device, often to improve your experience by saving your preferences or information you share with the site. We recommend keeping this setting on.">
-    Suspendisse vitae malesuada purus, ut molestie eros. Fusce malesuada ullamcorper sem a blandit.
+  <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_BLOCK_CONFIRM_DIALOG_DESCRIPTION" desc="A paragraph beneath the 'Sites you visit may stop working as designed' title on a dialog box that appears when a user chooses 'Don’t allow sites to save data on your device (not recommended)'. We want to convey that sites are generally designed to rely on saving some information about the user. Usually this is benign, but sites can abuse this power, and so we qualify the statement with 'often'.">
+    Most sites you visit probably save data to your device, often to improve your experience by saving your preferences or information you share with the site. We recommend keeping this setting on.
   </message>
   <message name="IDS_WEBSITE_SETTINGS_SITE_DATA_PAGE_BLOCK_CONFIRM_DIALOG_CONFIRM_BUTTON" desc="A button label. The user chose 'Don’t allow sites to save data on your device (not recommended)'. As an 'are you sure' moment, we show the user a dialog box titled 'Sites you visit may stop working as designed.'. This string allows the user to confirm their intention to turn this setting off.">
     Turn off
@@ -491,14 +491,17 @@
   <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_RADIO_SUB_LABEL" desc="This string appears as a sub label beneath the 'Block third-party cookies' label. It summarizes the result of choosing this option. A site you visit may rely on cookies for certain functionality, such as remembering your language preferences or maintaining a shopping cart. If the user chooses this option, some sites they visit may not work as designed.">
     Features on some sites may not work
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_RADIO_SUB_LABEL_FPS_ADDITION" desc="" translateable="false">
-    Related sites can see your activity in the group
-  </message>
   <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ADD_ALLOW_EXCEPTION_DESCRIPTION" desc="The description of a dialog box. Dialog to add a third-party cookie exception to allow a site">
-    Allow third-party cookies for a specific site
+    Allow a site to use third-party cookies
   </message>
-  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ADD_BLOCK_EXCEPTION_DESCRIPTION" desc="The description of a dialog box. Dialog to block a third-party cookie exception to block a site">
-    Block third-party cookies for a specific site
+  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_ADD_BLOCK_EXCEPTION_DESCRIPTION" desc="The description of a dialog box. Dialog to add a third-party cookie exception to block a site">
+    Don't allow a site to use third-party cookies
+  </message>
+  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_RADIO_SUB_LABEL_FPS_ENABLED" desc="* 'related sites': These words reference a new feature that's part of the Privacy Sandbox project (see details below). What are 'related sites'? ** Chrome will limit how much information 2 sites can share about a user. ** But there are legitimate purposes for sharing information about a user between 2 domains. ** For example, a company might have 2 sites, www.showBiz-music.com and www.showBiz-films.com. The company showBiz might want to keep users signed in across these sites. ** Chrome is launching a new service that allows companies to define groups of related sites. The number of sites in a group is limited to just a few. ** 'related sites' is referring to this new feature. As a counter example, www.some-shoe-store.com and www.a-different-shoe-store.com aren't considered 'related' in this context even though both sites sell shoes. * So this sentence, 'Related sites can still...' explains to the user that there is an exception to the 'Block third-party cookies' option they chose. That exception exists because the use has previously chosen to enable 'Related sites'.">
+    Some features may not work. Related sites can still use third-party cookies.
+  </message>
+  <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_RADIO_SUB_LABEL_FPS_DISABLED" desc="This string appears as a sub label beneath the 'Block third-party cookies' label. It summarizes the result of choosing this option. A site you visit may rely on cookies for certain functionality, such as remembering your language preferences or maintaining a shopping cart. If the user chooses this option, some sites they visit may not work as designed.">
+    Features on some sites may not work
   </message>
   <message name="IDS_WEBSITE_SETTINGS_COOKIE_INFO" desc="Text describing cookie and third-party cookie settings.">
     A site you visit can embed content from other sites, for example images, ads, and text. Any of these sites can save cookies and other data to personalize your experience.

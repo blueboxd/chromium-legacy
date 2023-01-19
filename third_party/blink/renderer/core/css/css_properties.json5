@@ -871,6 +871,32 @@
       valid_for_keyframe: false,
     },
     {
+      name: "animation-range-start",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      style_builder_template: "animation",
+      style_builder_template_args: {
+        attribute: "RangeStart",
+      },
+      separator: ",",
+      valid_for_marker: true,
+      is_animation_property: true,
+      valid_for_keyframe: false,
+      runtime_flag: "CSSScrollTimeline",
+    },
+    {
+      name: "animation-range-end",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      style_builder_template: "animation",
+      style_builder_template_args: {
+        attribute: "RangeEnd",
+      },
+      separator: ",",
+      valid_for_marker: true,
+      is_animation_property: true,
+      valid_for_keyframe: false,
+      runtime_flag: "CSSScrollTimeline",
+    },
+    {
       name: "animation-timeline",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal", "InitialValue"],
       style_builder_template: "animation",
@@ -1050,6 +1076,7 @@
       inherited: true,
       font: true,
       name_for_methods: "Kerning",
+      converter: "ConvertFontKerning",
       type_name: "FontDescription::Kerning",
       priority: "High",
       keywords: ["auto", "normal", "none"],
@@ -1066,6 +1093,7 @@
       inherited: true,
       font: true,
       name_for_methods: "FontOpticalSizing",
+      converter: "ConvertFontOpticalSizing",
       type_name: "OpticalSizing",
       priority: "High",
       keywords: ["auto", "none"],
@@ -6535,6 +6563,15 @@
       runtime_flag: 'CSSScrollTimeline',
     },
     {
+      name: "animation-range",
+      longhands: [
+        "animation-range-start", "animation-range-end",
+      ],
+      property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
+      valid_for_keyframe: false,
+      runtime_flag: 'CSSScrollTimeline',
+    },
+    {
       name: "background",
       longhands: [
         "background-image", "background-position-x", "background-position-y",
@@ -6804,16 +6841,16 @@
         "font-style", "font-variant-ligatures", "font-variant-caps",
         "font-variant-numeric", "font-variant-east-asian", "font-variant-alternates",
         "font-variant-position", "font-weight", "font-stretch", "font-size",
-        "line-height", "font-family"
+        "line-height", "font-family", "font-optical-sizing", "font-size-adjust",
+        "font-kerning", "font-feature-settings", "font-variation-settings"
       ],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
       name: "font-variant",
       longhands: [
-        "font-variant-ligatures", "font-variant-caps",
-        "font-variant-alternates", "font-variant-numeric",
-        "font-variant-east-asian", "font-variant-position"
+        "font-variant-ligatures", "font-variant-caps", "font-variant-alternates",
+        "font-variant-numeric", "font-variant-east-asian", "font-variant-position"
       ],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       is_descriptor: true,
@@ -7030,7 +7067,7 @@
     },
     {
       name: "scroll-timeline",
-      longhands: ["scroll-timeline-axis", "scroll-timeline-name"],
+      longhands: ["scroll-timeline-name", "scroll-timeline-axis"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
       runtime_flag: "CSSScrollTimeline",
     },

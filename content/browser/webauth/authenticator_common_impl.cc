@@ -1029,10 +1029,11 @@ void AuthenticatorCommonImpl::GetAssertion(
                                     GetBrowserContext()->IsOffTheRecord());
   ctap_get_assertion_options_.emplace();
 
-  bool is_first = true;
-  absl::optional<std::vector<uint8_t>> last_id;
   if (options->prf) {
     requested_extensions_.insert(RequestExtension::kPRF);
+
+    bool is_first = true;
+    absl::optional<std::vector<uint8_t>> last_id;
     for (const auto& prf_input_from_renderer : options->prf_inputs) {
       device::CtapGetAssertionOptions::PRFInput prf_input;
 
@@ -1819,7 +1820,7 @@ AuthenticatorCommonImpl::CreateMakeCredentialResponse(
       case RequestExtension::kLargeBlobEnable:
         response->echo_large_blob = true;
         response->supports_large_blob =
-            response_data.large_blob_key.has_value();
+            response_data.has_associated_large_blob_key;
         break;
       case RequestExtension::kCredBlob:
         response->echo_cred_blob = true;

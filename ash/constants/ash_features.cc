@@ -544,18 +544,13 @@ BASE_FEATURE(kCryptAuthV2Enrollment,
              "CryptAuthV2Enrollment",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables the Cryptohome recovery feature, which allows users to recover access
-// to their profile and Cryptohome after performing an online authentication.
-BASE_FEATURE(kCryptohomeRecoveryFlow,
-             "CryptohomeRecoveryFlow",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables the UI for the cryptohome recovery feature:
-// - New UI for Gaia password changed screen.
+// Enables the cryptohome recovery feature:
+// - Enable recovery via the recovery service.
+// - New UI for Cryptohome recovery and Gaia password changed screen.
 // - Adds a "forgot password" button to the error bubble that opens when the
 //   user fails to enter their correct password.
-BASE_FEATURE(kCryptohomeRecoveryFlowUI,
-             "CryptohomeRecoveryFlowUI",
+BASE_FEATURE(kCryptohomeRecoveryFlow,
+             "CryptohomeRecoveryFlow",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the UI to enable or disable cryptohome recovery in the settings
@@ -1046,6 +1041,11 @@ BASE_FEATURE(kGesturePropertiesDBusService,
 // native screen capture tool.
 BASE_FEATURE(kGifRecording, "GifRecording", base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables a Files banner about Google One offer.
+BASE_FEATURE(kGoogleOneOfferFilesBanner,
+             "GoogleOneOfferFilesBanner",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables editing with handwriting gestures within the virtual keyboard.
 BASE_FEATURE(kHandwritingGestureEditing,
              "HandwritingGestureEditing",
@@ -1375,23 +1375,6 @@ BASE_FEATURE(kLoginScreenDeviceTrustConnectorEnabled,
 BASE_FEATURE(kMacAddressRandomization,
              "MacAddressRandomization",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables the custom color picker and recent colors UI in the media app.
-BASE_FEATURE(kMediaAppCustomColors,
-             "MediaAppCustomColors",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Within the ChromeOS media app, reveals the button to edit the current image
-// in Photos.
-BASE_FEATURE(kMediaAppPhotosIntegrationImage,
-             "MediaAppPhotosIntegrationImage",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Within the ChromeOS media app, reveals the button to edit the current video
-// in Photos.
-BASE_FEATURE(kMediaAppPhotosIntegrationVideo,
-             "MediaAppPhotosIntegrationVideo",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables notification of when a microphone-using app is launched while the
 // microphone is muted.
@@ -1950,6 +1933,13 @@ BASE_FEATURE(kSmartLockUIRevamp,
 // Controls whether the snap group feature is enabled or not.
 BASE_FEATURE(kSnapGroup, "SnapGroup", base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls whether to create the snap group automatically when two windows are
+// snapped if true. Otherwise, the user has to explicitly lock the two windows
+// when both are snapped via cliking on the lock button when hovering the mouse
+// over the shared edge of the two snapped windows.
+constexpr base::FeatureParam<bool> kAutomaticallyLockGroup{
+    &kSnapGroup, "AutomaticLockGroup", true};
+
 // Controls whether the speak-on-mute detection feature is enabled or not.
 BASE_FEATURE(kSpeakOnMuteEnabled,
              "SpeakOnMuteEnabled",
@@ -2467,10 +2457,6 @@ bool IsCryptohomeRecoveryFlowEnabled() {
   return base::FeatureList::IsEnabled(kCryptohomeRecoveryFlow);
 }
 
-bool IsCryptohomeRecoveryFlowUIEnabled() {
-  return base::FeatureList::IsEnabled(kCryptohomeRecoveryFlowUI);
-}
-
 bool IsCryptohomeRecoverySetupEnabled() {
   return base::FeatureList::IsEnabled(kCryptohomeRecoverySetup);
 }
@@ -2829,6 +2815,10 @@ bool IsEcheLauncherEnabled() {
          base::FeatureList::IsEnabled(kEcheSWA);
 }
 
+bool IsEcheLauncherIconsInMoreAppsButtonEnabled() {
+  return base::FeatureList::IsEnabled(kEcheLauncherIconsInMoreAppsButton);
+}
+
 bool IsEcheLauncherListViewEnabled() {
   return IsEcheLauncherEnabled() &&
          base::FeatureList::IsEnabled(kEcheLauncherListView);
@@ -3057,7 +3047,7 @@ bool IsQuickDimEnabled() {
 }
 
 bool IsQuickSettingsNetworkRevampEnabled() {
-  return base::FeatureList::IsEnabled(kQuickSettingsNetworkRevamp);
+  return true;
 }
 
 bool IsPerDeskZOrderEnabled() {
@@ -3213,7 +3203,7 @@ bool IsWallpaperFullScreenPreviewEnabled() {
 }
 
 bool IsWallpaperGooglePhotosSharedAlbumsEnabled() {
-  return base::FeatureList::IsEnabled(kWallpaperFullScreenPreview);
+  return base::FeatureList::IsEnabled(kWallpaperGooglePhotosSharedAlbums);
 }
 
 bool IsWallpaperPerDeskEnabled() {

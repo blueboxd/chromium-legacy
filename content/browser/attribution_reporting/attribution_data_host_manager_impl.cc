@@ -21,6 +21,7 @@
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
+#include "components/attribution_reporting/trigger_attestation.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/attribution_header_utils.h"
 #include "content/browser/attribution_reporting/attribution_input_event.h"
@@ -190,7 +191,6 @@ struct AttributionDataHostManagerImpl::NavigationDataHost {
   mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host;
   base::TimeTicks register_time;
   AttributionInputEvent input_event;
-  AttributionNavigationType nav_type;
 };
 
 struct AttributionDataHostManagerImpl::NavigationRedirectSourceRegistrations {
@@ -212,7 +212,13 @@ struct AttributionDataHostManagerImpl::NavigationRedirectSourceRegistrations {
 
   // Input event associated with the navigation.
   AttributionInputEvent input_event;
+
+  // Will not change over the course of the redirect chain.
   AttributionNavigationType nav_type;
+
+  // Whether the navigation is initiated within a fenced frame. Will not
+  // change over the course of the redirect chain.
+  bool is_within_fenced_frame;
 };
 
 AttributionDataHostManagerImpl::AttributionDataHostManagerImpl(
@@ -252,14 +258,12 @@ void AttributionDataHostManagerImpl::RegisterDataHost(
 bool AttributionDataHostManagerImpl::RegisterNavigationDataHost(
     mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
     const blink::AttributionSrcToken& attribution_src_token,
-    AttributionInputEvent input_event,
-    AttributionNavigationType nav_type) {
+    AttributionInputEvent input_event) {
   auto [it, inserted] = navigation_data_host_map_.try_emplace(
       attribution_src_token,
       NavigationDataHost{.data_host = std::move(data_host),
                          .register_time = base::TimeTicks::Now(),
-                         .input_event = input_event,
-                         .nav_type = nav_type});
+                         .input_event = input_event});
   // Should only be possible with a misbehaving renderer.
   if (!inserted) {
     return false;
@@ -289,11 +293,13 @@ void AttributionDataHostManagerImpl::NotifyNavigationRedirectRegistration(
   }
 
   auto [it, inserted] = redirect_registrations_.try_emplace(
-      attribution_src_token, NavigationRedirectSourceRegistrations{
-                                 .source_origin = source_origin,
-                                 .register_time = base::TimeTicks::Now(),
-                                 .input_event = input_event,
-                                 .nav_type = nav_type});
+      attribution_src_token,
+      NavigationRedirectSourceRegistrations{
+          .source_origin = source_origin,
+          .register_time = base::TimeTicks::Now(),
+          .input_event = input_event,
+          .nav_type = nav_type,
+          .is_within_fenced_frame = is_within_fenced_frame});
   DCHECK(!it->second.navigation_complete);
 
   // Treat ongoing redirect registrations within a chain as a data host for the
@@ -310,8 +316,7 @@ void AttributionDataHostManagerImpl::NotifyNavigationRedirectRegistration(
       header_value,
       base::BindOnce(&AttributionDataHostManagerImpl::OnRedirectSourceParsed,
                      weak_factory_.GetWeakPtr(), attribution_src_token,
-                     std::move(reporting_origin), header_value, nav_type,
-                     is_within_fenced_frame));
+                     std::move(reporting_origin), header_value));
 }
 
 void AttributionDataHostManagerImpl::NotifyNavigationForDataHost(
@@ -416,7 +421,9 @@ void AttributionDataHostManagerImpl::SourceDataAvailable(
 
 void AttributionDataHostManagerImpl::TriggerDataAvailable(
     attribution_reporting::SuitableOrigin reporting_origin,
-    attribution_reporting::TriggerRegistration data) {
+    attribution_reporting::TriggerRegistration data,
+    // TODO(crbug.com/1401347): Propagate `attestation` to storage.
+    absl::optional<attribution_reporting::TriggerAttestation> attestation) {
   // This is validated by the Mojo typemapping.
   DCHECK(reporting_origin.IsValid());
 
@@ -569,8 +576,6 @@ void AttributionDataHostManagerImpl::OnRedirectSourceParsed(
     const blink::AttributionSrcToken& attribution_src_token,
     const SuitableOrigin& reporting_origin,
     const std::string& header_value,
-    AttributionNavigationType nav_type,
-    bool is_within_fenced_frame,
     data_decoder::DataDecoder::ValueOrError result) {
   auto it = redirect_registrations_.find(attribution_src_token);
 
@@ -591,7 +596,8 @@ void AttributionDataHostManagerImpl::OnRedirectSourceParsed(
       source = ParseSourceRegistration(
           std::move(*result).TakeDict(), /*source_time=*/base::Time::Now(),
           reporting_origin, registrations.source_origin,
-          AttributionSourceType::kNavigation, is_within_fenced_frame);
+          AttributionSourceType::kNavigation,
+          registrations.is_within_fenced_frame);
     } else {
       source = base::unexpected(SourceRegistrationError::kRootWrongType);
     }
@@ -599,7 +605,8 @@ void AttributionDataHostManagerImpl::OnRedirectSourceParsed(
 
   if (source.has_value()) {
     base::UmaHistogramEnumeration(
-        "Conversions.SourceRegistration.NavigationType.Foreground", nav_type);
+        "Conversions.SourceRegistration.NavigationType.Foreground",
+        registrations.nav_type);
     attribution_manager_->HandleSource(std::move(*source));
   } else {
     attribution_manager_->NotifyFailedSourceRegistration(

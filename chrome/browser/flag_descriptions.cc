@@ -42,10 +42,6 @@ const char kPdfUseSkiaRendererName[] = "Use Skia Renderer";
 const char kPdfUseSkiaRendererDescription[] = "Use Skia as the PDF renderer.";
 #endif
 
-const char kAccountIdMigrationName[] = "Account ID migration";
-const char kAccountIdMigrationDescription[] =
-    "Migrate to use Gaia ID instead of the email as the account identifer for "
-    "the Identity Manager.";
 extern const char kAddEduAccountFromAccountSettingsForSupervisedUsersName[] =
     "Add Edu Account From Account Settings For Supervised Users";
 extern const char
@@ -126,10 +122,6 @@ const char kChromeRootStoreEnabledName[] = "Chrome Root Store";
 const char kChromeRootStoreEnabledDescription[] =
     "Enable use of Chrome Root Store over platform roots. "
     "On some platforms this may also enable Chrome Cert Verifier.";
-
-const char kConditionalTabStripAndroidName[] = "Conditional Tab Strip";
-const char kConditionalTabStripAndroidDescription[] =
-    "Allows users to access conditional tab strip.";
 
 const char kContentLanguagesInLanguagePickerName[] =
     "Content languages in language picker";
@@ -1562,6 +1554,10 @@ const char kGlobalMediaControlsModernUIDescription[] =
     "Use a redesigned version of the Global Media Controls UI. Requires "
     "#global-media-controls to also be enabled.";
 
+const char kGoogleOneOfferFilesBannerName[] = "Google One offer Files banner";
+const char kGoogleOneOfferFilesBannerDescription[] =
+    "Shows a Files banner about Google One offer.";
+
 const char kOpenscreenCastStreamingSessionName[] =
     "Enable Open Screen Library (libcast) as the Mirroring Service's Cast "
     "Streaming implementation";
@@ -2174,6 +2170,11 @@ const char kOmniboxMlRelevanceScoringName[] = "Omnibox ML Relevance Scoring";
 const char kOmniboxMlRelevanceScoringDescription[] =
     "Enables ML-based relevance scoring of Omnibox URL Suggestions.";
 
+const char kOmniboxMlUrlScoringModelName[] =
+    "Omnibox autocomplete URL scoring model.";
+const char kOmniboxMlUrlScoringModelDescription[] =
+    "Enables machine learning scoring model for Omnibox URL sugestions.";
+
 const char kOmniboxOnClobberFocusTypeOnContentName[] =
     "Omnibox On Clobber Focus Type On Content";
 const char kOmniboxOnClobberFocusTypeOnContentDescription[] =
@@ -2681,11 +2682,6 @@ const char kSendTabToSelfSigninPromoName[] = "Send tab to self sign-in promo";
 const char kSendTabToSelfSigninPromoDescription[] =
     "Enables a sign-in promo if the user attempts to share a tab while being "
     "signed out";
-
-const char kSidePanelImprovedClobberingName[] =
-    "Side panel improved clobbering";
-const char kSidePanelImprovedClobberingDescription[] =
-    "Improves the side panel clobbering experience for RHS side panels.";
 
 const char kSidePanelJourneysFlagId[] = "side-panel-journeys";
 const char kSidePanelJourneysName[] = "Side panel journeys";
@@ -3774,6 +3770,12 @@ const char kPageInfoStoreInfoName[] = "Page info store info";
 const char kPageInfoStoreInfoDescription[] =
     "Enable a store info row to the page info menu on eligible pages.";
 
+const char kPageInfoAboutThisSiteImprovedBottomSheetName[] =
+    "Page info 'About this site' improved bottomsheet";
+const char kPageInfoAboutThisSiteImprovedBottomSheetDescription[] =
+    "Enable an improved 'About this site' bottomsheet, which includes a "
+    "less cluttered toolbar view and opening navigations in a new tab.";
+
 const char kPersistShareHubOnAppSwitchName[] = "Persist sharing hub";
 const char kPersistShareHubOnAppSwitchDescription[] =
     "Persist the sharing hub across app pauses/resumes.";
@@ -4371,6 +4373,13 @@ const char kSharingDesktopShareToGoogleCollectionsName[] =
     "Share to Google Collections";
 const char kSharingDesktopShareToGoogleCollectionsDescription[] =
     "Adds an item to the sharing hub to allow sharing to Google Collections.";
+
+const char kWebAppManifestImmediateUpdatingName[] =
+    "Web App Manifest Immediate Updating";
+const char kWebAppManifestImmediateUpdatingDescription[] =
+    "Enables web app manifest updates to apply to running web app windows as "
+    "soon as a change has been detected instead of waiting for all app windows "
+    "to be closed.";
 
 const char kWebAuthenticationPermitEnterpriseAttestationName[] =
     "Web Authentication Enterprise Attestation";
@@ -5645,20 +5654,6 @@ const char kLockScreenNotificationName[] = "Lock screen notification";
 const char kLockScreenNotificationDescription[] =
     "Enable notifications on the lock screen.";
 
-const char kMediaAppCustomColorsName[] = "Media App Custom Colors";
-const char kMediaAppCustomColorsDescription[] =
-    "Within Gallery, enable the custom color chooser and recent colors.";
-
-const char kMediaAppPhotosIntegrationImageName[] =
-    "Media App Photos Integration (Image)";
-const char kMediaAppPhotosIntegrationImageDescription[] =
-    "Within Gallery, enable finding more editing tools for images in Photos";
-
-const char kMediaAppPhotosIntegrationVideoName[] =
-    "Media App Photos Integration (Video)";
-const char kMediaAppPhotosIntegrationVideoDescription[] =
-    "Within Gallery, enable finding editing tools for videos in Photos";
-
 const char kMeteredShowToggleName[] = "Show Metered Toggle";
 const char kMeteredShowToggleDescription[] =
     "Shows a Metered toggle in the Network settings UI for WiFI and Cellular. "
@@ -6283,11 +6278,6 @@ const char kRevampedPasswordManagementBubbleName[] =
 const char kRevampedPasswordManagementBubbleDescription[] =
     "Enable the new password managment bubble triggered by clicking the key "
     "icon in the omnibox.";
-
-const char kSideSearchName[] = "Side search";
-const char kSideSearchDescription[] =
-    "Enables an easily accessible way to access your most recent Google search "
-    "results page embedded in a browser side panel";
 
 const char kSearchWebInSidePanelName[] = "Search web in side panel";
 const char kSearchWebInSidePanelDescription[] =

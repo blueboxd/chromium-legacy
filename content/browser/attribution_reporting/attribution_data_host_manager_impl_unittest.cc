@@ -30,6 +30,7 @@
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
+#include "components/attribution_reporting/trigger_attestation.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
@@ -42,6 +43,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -310,8 +312,9 @@ TEST_F(AttributionDataHostManagerImplTest, TriggerDataHost_TriggerRegistered) {
     trigger_data.aggregatable_dedup_key = 123;
     trigger_data.debug_reporting = true;
 
-    data_host_remote.data_host->TriggerDataAvailable(reporting_origin,
-                                                     std::move(trigger_data));
+    data_host_remote.data_host->TriggerDataAvailable(
+        reporting_origin, std::move(trigger_data),
+        /*attestation=*/absl::nullopt);
     data_host_remote.data_host.FlushForTesting();
   }
 
@@ -353,14 +356,14 @@ TEST_F(AttributionDataHostManagerImplTest,
 
     TriggerRegistration trigger_data;
 
-    data_host_remote.data_host->TriggerDataAvailable(reporting_origin,
-                                                     trigger_data);
+    data_host_remote.data_host->TriggerDataAvailable(
+        reporting_origin, trigger_data, /*attestation=*/absl::nullopt);
     data_host_remote.data_host.FlushForTesting();
 
     checkpoint.Call(1);
 
-    data_host_remote.data_host->TriggerDataAvailable(reporting_origin,
-                                                     trigger_data);
+    data_host_remote.data_host->TriggerDataAvailable(
+        reporting_origin, trigger_data, /*attestation=*/absl::nullopt);
     data_host_remote.data_host.FlushForTesting();
 
     checkpoint.Call(2);
@@ -381,7 +384,8 @@ TEST_F(AttributionDataHostManagerImplTest,
     checkpoint.Call(3);
 
     data_host_remote.data_host->TriggerDataAvailable(
-        std::move(reporting_origin), std::move(trigger_data));
+        std::move(reporting_origin), std::move(trigger_data),
+        /*attestation=*/absl::nullopt);
     data_host_remote.data_host.FlushForTesting();
   }
 
@@ -441,8 +445,9 @@ TEST_F(AttributionDataHostManagerImplTest,
     {
       mojo::test::BadMessageObserver bad_message_observer;
 
-      data_host_remote.data_host->TriggerDataAvailable(reporting_origin,
-                                                       TriggerRegistration());
+      data_host_remote.data_host->TriggerDataAvailable(
+          reporting_origin, TriggerRegistration(),
+          /*attestation=*/absl::nullopt);
       data_host_remote.data_host.FlushForTesting();
 
       EXPECT_EQ(bad_message_observer.WaitForBadMessage(),
@@ -503,8 +508,7 @@ TEST_F(AttributionDataHostManagerImplTest,
                                         raw_ref(task_environment_)};
     data_host_manager_.RegisterNavigationDataHost(
         data_host_remote.data_host.BindNewPipeAndPassReceiver(),
-        attribution_src_token, AttributionInputEvent(),
-        AttributionNavigationType::kContextMenu);
+        attribution_src_token, AttributionInputEvent());
 
     task_environment_.FastForwardBy(base::Milliseconds(1));
 
@@ -610,7 +614,7 @@ TEST_F(AttributionDataHostManagerImplTest,
       trigger_data_host_remote->TriggerDataAvailable(
           /*reporting_origin=*/*SuitableOrigin::Deserialize(
               "https://report.test"),
-          TriggerRegistration());
+          TriggerRegistration(), /*attestation=*/absl::nullopt);
       trigger_data_host_remote.FlushForTesting();
 
       task_environment_.FastForwardBy(base::Seconds(5) - base::Microseconds(1));
@@ -658,7 +662,7 @@ TEST_F(AttributionDataHostManagerImplTest,
   // delayed.
   data_host_remote2->TriggerDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report.test"),
-      TriggerRegistration());
+      TriggerRegistration(), /*attestation=*/absl::nullopt);
 
   data_host_remote2.FlushForTesting();
 
@@ -683,8 +687,7 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> source_data_host_remote;
   data_host_manager_.RegisterNavigationDataHost(
       source_data_host_remote.BindNewPipeAndPassReceiver(),
-      attribution_src_token, AttributionInputEvent(),
-      AttributionNavigationType::kAnchor);
+      attribution_src_token, AttributionInputEvent());
 
   mojo::Remote<blink::mojom::AttributionDataHost> trigger_data_host_remote;
   data_host_manager_.RegisterDataHost(
@@ -696,7 +699,7 @@ TEST_F(AttributionDataHostManagerImplTest,
   // be delayed.
   trigger_data_host_remote->TriggerDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report.test"),
-      TriggerRegistration());
+      TriggerRegistration(), /*attestation=*/absl::nullopt);
   trigger_data_host_remote.FlushForTesting();
 
   task_environment_.FastForwardBy(base::Seconds(5) - base::Microseconds(1));
@@ -850,7 +853,8 @@ TEST_F(AttributionDataHostManagerImplTest,
   // Because there is a connected data host in source mode, this trigger should
   // be delayed.
   trigger_data_host_remote->TriggerDataAvailable(std::move(reporter),
-                                                 TriggerRegistration());
+                                                 TriggerRegistration(),
+                                                 /*attestation=*/absl::nullopt);
   trigger_data_host_remote.FlushForTesting();
 
   task_environment_.FastForwardBy(base::Seconds(5) - base::Microseconds(1));
@@ -910,7 +914,7 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   trigger_data_host_remote->TriggerDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report.test"),
-      TriggerRegistration());
+      TriggerRegistration(), /*attestation=*/absl::nullopt);
   trigger_data_host_remote.FlushForTesting();
 
   CheckTriggerQueueHistograms(histograms, {.skipped_queue = 1});
@@ -959,7 +963,7 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   trigger_data_host_remote->TriggerDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report.test"),
-      TriggerRegistration());
+      TriggerRegistration(), /*attestation=*/absl::nullopt);
   trigger_data_host_remote.FlushForTesting();
 
   CheckTriggerQueueHistograms(histograms, {.skipped_queue = 1});
@@ -987,7 +991,7 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   trigger_data_host_remote->TriggerDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report.test"),
-      TriggerRegistration());
+      TriggerRegistration(), /*attestation=*/absl::nullopt);
   trigger_data_host_remote.FlushForTesting();
 
   CheckTriggerQueueHistograms(histograms, {.skipped_queue = 1});
@@ -1014,10 +1018,11 @@ TEST_F(AttributionDataHostManagerImplTest, TwoTriggerReceivers) {
 
   TriggerRegistration trigger_data;
 
-  trigger_data_host_remote1->TriggerDataAvailable(reporting_origin,
-                                                  trigger_data);
-  trigger_data_host_remote2->TriggerDataAvailable(std::move(reporting_origin),
-                                                  std::move(trigger_data));
+  trigger_data_host_remote1->TriggerDataAvailable(
+      reporting_origin, trigger_data, /*attestation=*/absl::nullopt);
+  trigger_data_host_remote2->TriggerDataAvailable(
+      std::move(reporting_origin), std::move(trigger_data),
+      /*attestation=*/absl::nullopt);
 
   trigger_data_host_remote1.FlushForTesting();
   trigger_data_host_remote2.FlushForTesting();
@@ -1048,8 +1053,7 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> source_data_host_remote;
   data_host_manager_.RegisterNavigationDataHost(
       source_data_host_remote.BindNewPipeAndPassReceiver(),
-      attribution_src_token, AttributionInputEvent(),
-      AttributionNavigationType::kAnchor);
+      attribution_src_token, AttributionInputEvent());
 
   mojo::Remote<blink::mojom::AttributionDataHost> trigger_data_host_remote;
   data_host_manager_.RegisterDataHost(
@@ -1063,7 +1067,7 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   trigger_data_host_remote->TriggerDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report.test"),
-      TriggerRegistration());
+      TriggerRegistration(), /*attestation=*/absl::nullopt);
   trigger_data_host_remote.FlushForTesting();
 
   CheckTriggerQueueHistograms(histograms, {.skipped_queue = 1});
@@ -1114,8 +1118,8 @@ TEST_F(AttributionDataHostManagerImplTest,
       /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger);
 
   auto send_trigger = [&](const SuitableOrigin& reporting_origin) {
-    trigger_data_host_remote->TriggerDataAvailable(reporting_origin,
-                                                   TriggerRegistration());
+    trigger_data_host_remote->TriggerDataAvailable(
+        reporting_origin, TriggerRegistration(), /*attestation=*/absl::nullopt);
   };
 
   send_trigger(reporting_origin1);
@@ -1160,7 +1164,7 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   trigger_data_host_remote->TriggerDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report.test"),
-      TriggerRegistration());
+      TriggerRegistration(), /*attestation=*/absl::nullopt);
   trigger_data_host_remote.FlushForTesting();
 
   task_environment_.FastForwardBy(base::Seconds(2));
@@ -1199,8 +1203,8 @@ TEST_F(AttributionDataHostManagerImplTest,
       /*is_within_fenced_frame=*/false, RegistrationType::kSourceOrTrigger);
 
   auto send_trigger = [&](const SuitableOrigin& reporting_origin) {
-    trigger_data_host_remote->TriggerDataAvailable(reporting_origin,
-                                                   TriggerRegistration());
+    trigger_data_host_remote->TriggerDataAvailable(
+        reporting_origin, TriggerRegistration(), /*attestation=*/absl::nullopt);
   };
 
   for (size_t i = 0; i < kMaxDelayedTriggers; i++) {
@@ -1270,7 +1274,7 @@ TEST_F(AttributionDataHostManagerImplTest, SourceThenTrigger_TriggerDelayed) {
   // should be delayed.
   trigger_data_host_remote->TriggerDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://report2.test"),
-      TriggerRegistration());
+      TriggerRegistration(), /*attestation=*/absl::nullopt);
   trigger_data_host_remote.FlushForTesting();
 
   task_environment_.FastForwardBy(base::Seconds(5) - base::Microseconds(1));
@@ -1310,7 +1314,7 @@ TEST_F(AttributionDataHostManagerImplTest,
   mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
   data_host_manager_.RegisterNavigationDataHost(
       data_host_remote.BindNewPipeAndPassReceiver(), attribution_src_token,
-      AttributionInputEvent(), AttributionNavigationType::kAnchor);
+      AttributionInputEvent());
 
   data_host_manager_.NotifyNavigationForDataHost(
       attribution_src_token, *SuitableOrigin::Deserialize("https://s.test"),
@@ -1320,7 +1324,7 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   data_host_remote->TriggerDataAvailable(
       /*reporting_origin=*/*SuitableOrigin::Deserialize("https://r.test"),
-      TriggerRegistration());
+      TriggerRegistration(), /*attestation=*/absl::nullopt);
   data_host_remote.FlushForTesting();
 
   EXPECT_EQ(bad_message_observer.WaitForBadMessage(),
@@ -1344,13 +1348,13 @@ TEST_F(AttributionDataHostManagerImplTest,
 
     EXPECT_TRUE(data_host_manager_.RegisterNavigationDataHost(
         data_host_remote1.BindNewPipeAndPassReceiver(), attribution_src_token,
-        AttributionInputEvent(), AttributionNavigationType::kAnchor));
+        AttributionInputEvent()));
 
     // This one should not be registered, as `attribution_src_token` is already
     // associated with a receiver.
     EXPECT_FALSE(data_host_manager_.RegisterNavigationDataHost(
         data_host_remote2.BindNewPipeAndPassReceiver(), attribution_src_token,
-        AttributionInputEvent(), AttributionNavigationType::kAnchor));
+        AttributionInputEvent()));
 
     // kRegistered = 0.
     histograms.ExpectUniqueSample("Conversions.NavigationDataHostStatus2", 0,
@@ -1426,8 +1430,8 @@ TEST_F(AttributionDataHostManagerImplTest,
       data_host_remote.BindNewPipeAndPassReceiver(), destination_origin,
       /*is_within_fenced_frame=*/true, RegistrationType::kSourceOrTrigger);
 
-  data_host_remote->TriggerDataAvailable(reporting_origin,
-                                         TriggerRegistration());
+  data_host_remote->TriggerDataAvailable(
+      reporting_origin, TriggerRegistration(), /*attestation=*/absl::nullopt);
   data_host_remote.FlushForTesting();
 }
 
@@ -1440,7 +1444,7 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   data_host_manager_.RegisterNavigationDataHost(
       data_host_remote.BindNewPipeAndPassReceiver(), attribution_src_token,
-      AttributionInputEvent(), AttributionNavigationType::kAnchor);
+      AttributionInputEvent());
 
   data_host_manager_.NotifyNavigationForDataHost(
       attribution_src_token,

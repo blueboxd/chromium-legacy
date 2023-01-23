@@ -505,6 +505,7 @@ TEST_F(PhoneStatusProcessorTest,
   expected_snapshot.add_notifications();
   InitializeNotificationProto(expected_snapshot.mutable_notifications(0),
                               /*id=*/0u);
+
   auto* streamable_apps = expected_snapshot.mutable_streamable_apps();
   auto* app = streamable_apps->add_apps();
   app->set_package_name("pkg1");
@@ -521,6 +522,19 @@ TEST_F(PhoneStatusProcessorTest,
 
   // Simulate receiving a proto message.
   fake_message_receiver_->NotifyPhoneStatusSnapshotReceived(expected_snapshot);
+
+  proto::AppListUpdate expected_all_apps;
+
+  auto* all_apps = expected_all_apps.mutable_all_apps();
+  auto* all_app1 = all_apps->add_apps();
+  all_app1->set_package_name("pkg1");
+  all_app1->set_visible_name("vis");
+
+  auto* all_app2 = all_apps->add_apps();
+  all_app2->set_package_name("pkg2");
+  all_app2->set_visible_name("a_vis");  // Test alphbetical sort.
+
+  fake_message_receiver_->NotifyAppListUpdateReceived(expected_all_apps);
 
   EXPECT_EQ(1u, fake_notification_manager_->num_notifications());
   EXPECT_EQ(base::UTF8ToUTF16(test_remote_device_.name()),
@@ -1139,6 +1153,141 @@ TEST_F(PhoneStatusProcessorTest, OnAppListUpdateLatencyFlagDisabled) {
   histogram_tester.ExpectTimeBucketCount(kAppListUpdateLatencyHistogramName,
                                          kLatencyDelta, 0);
   EXPECT_EQ(0u, app_stream_launcher_data_model_->GetAppsList()->size());
+}
+
+TEST_F(PhoneStatusProcessorTest,
+       OnAppListIncrementalUpdateReceived_installApps) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitWithFeatures(
+      /*enabled_features=*/{features::kEcheSWA, features::kPhoneHubCameraRoll,
+                            features::kEcheLauncher},
+      /*disabled_features=*/{});
+
+  fake_multidevice_setup_client_->SetHostStatusWithDevice(
+      std::make_pair(HostStatus::kHostVerified, test_remote_device_));
+  CreatePhoneStatusProcessor();
+
+  proto::AppListUpdate expected_update;
+  auto* streamable_apps = expected_update.mutable_all_apps();
+  auto* app1 = streamable_apps->add_apps();
+  app1->set_package_name("pkg1");
+  app1->set_visible_name("first_app");
+  app1->set_icon("icon1");
+
+  // Simulate feature set to enabled and connected.
+  fake_feature_status_provider_->SetStatus(FeatureStatus::kEnabledAndConnected);
+  fake_multidevice_setup_client_->SetFeatureState(
+      Feature::kPhoneHubNotifications, FeatureState::kEnabledByUser);
+
+  // Simulate receiving a proto message.
+  fake_message_receiver_->NotifyAppListUpdateReceived(expected_update);
+  decoder_delegate_->CompleteAllRequests();
+
+  EXPECT_EQ(0u,
+            fake_recent_apps_interaction_handler_->FetchRecentAppMetadataList()
+                .size());
+  EXPECT_EQ(1u, app_stream_launcher_data_model_->GetAppsList()->size());
+  EXPECT_EQ(
+      u"first_app",
+      app_stream_launcher_data_model_->GetAppsList()->at(0).visible_app_name);
+
+  proto::AppListIncrementalUpdate incremental_update;
+  auto* installed_apps = incremental_update.mutable_installed_apps();
+  auto* installed_app = installed_apps->add_apps();
+  installed_app->set_package_name("pkg2");
+  installed_app->set_visible_name("second_app");
+  installed_app->set_icon("icon2");
+
+  // Simulate receiving a proto message.
+  fake_message_receiver_->NotifyAppListIncrementalUpdateReceived(
+      incremental_update);
+  decoder_delegate_->CompleteAllRequests();
+
+  EXPECT_EQ(0u,
+            fake_recent_apps_interaction_handler_->FetchRecentAppMetadataList()
+                .size());
+  EXPECT_EQ(2u, app_stream_launcher_data_model_->GetAppsList()->size());
+  EXPECT_EQ(
+      u"second_app",
+      app_stream_launcher_data_model_->GetAppsList()->at(1).visible_app_name);
+}
+
+TEST_F(PhoneStatusProcessorTest,
+       OnAppListIncrementalUpdateReceived_removeApps) {
+  scoped_feature_list_.Reset();
+  scoped_feature_list_.InitWithFeatures(
+      /*enabled_features=*/{features::kEcheSWA, features::kPhoneHubCameraRoll,
+                            features::kEcheLauncher},
+      /*disabled_features=*/{});
+
+  fake_multidevice_setup_client_->SetHostStatusWithDevice(
+      std::make_pair(HostStatus::kHostVerified, test_remote_device_));
+  CreatePhoneStatusProcessor();
+
+  proto::AppListUpdate list_update;
+  auto* streamable_apps = list_update.mutable_all_apps();
+  auto* app1 = streamable_apps->add_apps();
+  app1->set_package_name("pkg1");
+  app1->set_visible_name("first_app");
+  app1->set_icon("icon1");
+
+  auto* app2 = streamable_apps->add_apps();
+  app2->set_package_name("pkg2");
+  app2->set_visible_name("second_app");
+  app2->set_icon("icon2");
+
+  // Simulate feature set to enabled and connected.
+  fake_feature_status_provider_->SetStatus(FeatureStatus::kEnabledAndConnected);
+  fake_multidevice_setup_client_->SetFeatureState(
+      Feature::kPhoneHubNotifications, FeatureState::kEnabledByUser);
+
+  // Simulate receiving a proto message.
+  fake_message_receiver_->NotifyAppListUpdateReceived(list_update);
+  decoder_delegate_->CompleteAllRequests();
+  EXPECT_EQ(2u, app_stream_launcher_data_model_->GetAppsList()->size());
+
+  proto::AppListUpdate recent_app_update;
+  auto* recent_apps = recent_app_update.mutable_recent_apps();
+  auto* recent_app1 = recent_apps->add_apps();
+  recent_app1->set_package_name("pkg1");
+  recent_app1->set_visible_name("first_app");
+  recent_app1->set_icon("icon1");
+
+  auto* recent_app2 = recent_apps->add_apps();
+  recent_app2->set_package_name("pkg2");
+  recent_app2->set_visible_name("second_app");
+  recent_app2->set_icon("icon2");
+
+  fake_message_receiver_->NotifyAppListUpdateReceived(recent_app_update);
+  decoder_delegate_->CompleteAllRequests();
+
+  EXPECT_EQ(2u,
+            fake_recent_apps_interaction_handler_->FetchRecentAppMetadataList()
+                .size());
+
+  proto::AppListIncrementalUpdate incremental_update;
+  auto* removed_apps = incremental_update.mutable_removed_apps();
+  auto* removed_app = removed_apps->add_apps();
+  removed_app->set_package_name("pkg2");
+  removed_app->set_visible_name("second_app");
+  removed_app->set_icon("icon2");
+
+  // Simulate receiving a proto message.
+  fake_message_receiver_->NotifyAppListIncrementalUpdateReceived(
+      incremental_update);
+  decoder_delegate_->CompleteAllRequests();
+
+  EXPECT_EQ(1u, app_stream_launcher_data_model_->GetAppsList()->size());
+  EXPECT_EQ(
+      u"first_app",
+      app_stream_launcher_data_model_->GetAppsList()->at(0).visible_app_name);
+  EXPECT_EQ(1u,
+            fake_recent_apps_interaction_handler_->FetchRecentAppMetadataList()
+                .size());
+  EXPECT_EQ(u"first_app",
+            fake_recent_apps_interaction_handler_->FetchRecentAppMetadataList()
+                .at(0)
+                .visible_app_name);
 }
 
 }  // namespace ash::phonehub

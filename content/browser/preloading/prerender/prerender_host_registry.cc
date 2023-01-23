@@ -29,13 +29,11 @@
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/content_client.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "third_party/blink/public/common/features.h"
 
@@ -127,11 +125,32 @@ int PrerenderHostRegistry::CreateAndStartHost(
         base::BindOnce(&PrerenderHostRegistry::NotifyTrigger,
                        base::Unretained(this), attributes.prerendering_url));
 
-    // Check whether preloading is enabled. If users disable this setting, it
-    // means users do not want to preload pages.
-    if (initiator_web_contents.IsPrerender2Disabled()) {
+    // Check whether preloading is enabled. If it is not enabled, report the
+    // reason.
+    if (auto reason =
+            initiator_web_contents.GetDelegate()->IsPrerender2Supported(
+                initiator_web_contents);
+        reason != PreloadingEligibility::kEligible) {
+      switch (reason) {
+        case PreloadingEligibility::kPreloadingDisabled:
+          // TODO(crbug.com/1382315): add
+          // PrerenderFinalStatus::kPreloadingDisabled
+          break;
+        case PreloadingEligibility::kBatterySaverEnabled:
+          // TODO(crbug.com/1382315): add
+          // PrerenderFinalStatus::kBatterySaverEnabled
+          break;
+        case PreloadingEligibility::kDataSaverEnabled:
+          RecordFailedPrerenderFinalStatus(
+              PrerenderCancellationReason(
+                  PrerenderFinalStatus::kDataSaverEnabled),
+              attributes);
+          break;
+        default:
+          NOTREACHED();
+      }
       if (attempt)
-        attempt->SetEligibility(PreloadingEligibility::kPreloadingDisabled);
+        attempt->SetEligibility(reason);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
@@ -153,17 +172,6 @@ int PrerenderHostRegistry::CreateAndStartHost(
           attributes);
       if (attempt)
         attempt->SetEligibility(PreloadingEligibility::kLowMemory);
-      return RenderFrameHost::kNoFrameTreeNodeId;
-    }
-
-    // Don't prerender when the Data Saver setting is enabled.
-    if (GetContentClient()->browser()->IsDataSaverEnabled(
-            prerender_web_contents.GetBrowserContext())) {
-      RecordFailedPrerenderFinalStatus(
-          PrerenderCancellationReason(PrerenderFinalStatus::kDataSaverEnabled),
-          attributes);
-      if (attempt)
-        attempt->SetEligibility(PreloadingEligibility::kDataSaverEnabled);
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 

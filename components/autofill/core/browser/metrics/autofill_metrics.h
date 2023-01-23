@@ -1363,19 +1363,8 @@ class AutofillMetrics {
   static void LogSilentUpdatesProfileImportType(
       AutofillProfileImportType import_type);
 
-  // Logs the type of profile import used for a silent update, which was only
-  // possible after an invalid phone number was removed.
-  // TODO(crbug.com/1298424): Cleanup when launched.
-  static void LogSilentUpdatesWithRemovedPhoneNumberProfileImportType(
-      AutofillProfileImportType import_type);
-
   // Logs the user decision for importing a new profile.
   static void LogNewProfileImportDecision(
-      AutofillClient::SaveAddressProfileOfferUserDecision decision);
-
-  // Logs the user decision for importing a new profile with a complemented
-  // country.
-  static void LogNewProfileWithComplementedCountryImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
   // Logs the user decision for importing a new profile, which could only
@@ -1383,17 +1372,8 @@ class AutofillMetrics {
   static void LogNewProfileWithIgnoredCountryImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
-  // Logs the user decision for importing a new profile, which was only possible
-  // after an invalid phone number was removed.
-  // TODO(crbug.com/1298424): Cleanup when launched.
-  static void LogNewProfileWithRemovedPhoneNumberImportDecision(
-      AutofillClient::SaveAddressProfileOfferUserDecision decision);
-
   // Logs that a specific type was edited in a save prompt.
   static void LogNewProfileEditedType(ServerFieldType edited_type);
-
-  // Logs that the auto complemented country was edited in a save prompt.
-  static void LogNewProfileEditedComplementedCountry();
 
   // Logs the number of edited fields for an accepted profile save.
   static void LogNewProfileNumberOfEditedFields(int number_of_edited_fields);
@@ -1402,20 +1382,9 @@ class AutofillMetrics {
   static void LogProfileUpdateImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
-  // Logs the user decision for updating an exiting profile with a complemented
-  // country.
-  static void LogProfileUpdateWithComplementedCountryImportDecision(
-      AutofillClient::SaveAddressProfileOfferUserDecision decision);
-
   // Logs the user decision for updating an exiting profile, which could only
   // be imported after an invalid country was ignored.
   static void LogProfileUpdateWithIgnoredCountryImportDecision(
-      AutofillClient::SaveAddressProfileOfferUserDecision decision);
-
-  // Logs the user decision for updating an existing profile, which was only
-  // possible after an invalid phone number was removed.
-  // TODO(crbug.com/1298424): Cleanup when launched.
-  static void LogProfileUpdateWithRemovedPhoneNumberImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
   // Logs that a specific type changed in a profile update that received the
@@ -1427,9 +1396,6 @@ class AutofillMetrics {
 
   // Logs that a specific type was edited in an update prompt.
   static void LogProfileUpdateEditedType(ServerFieldType edited_type);
-
-  // Logs that the auto complemented country was edited in an update prompt.
-  static void LogProfileUpdateEditedComplementedCountry();
 
   // Logs the number of edited fields for an accepted profile update.
   static void LogUpdateProfileNumberOfEditedFields(int number_of_edited_fields);

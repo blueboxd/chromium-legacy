@@ -258,11 +258,20 @@ const char kUserGestureRequiredPolicy[] = "user-gesture-required";
 // This provides a mechanism during testing to lock the decoder framerate
 // to a specific value.
 const char kHardwareVideoDecodeFrameRate[] = "hardware-video-decode-framerate";
-// Set the maximum number of decoder threads for hardware video decoders on
-// ChromeOS. This is intended to be used for development only.
+// Set the task runner strategy used for hardware video decoding on ChromeOS.
+// If the option value of --chromeos-decoder-task-runner is
+// * OneThreadPoolSequenceSharedByAllDecoders, then SequencedTaskRunner.
+// * OneThreadPoolThreadSharedByAllDecoders, then SingleThreadTaskRunner
+//   (one of the threads in ThreadPool).
+// * OneDedicatedThreadSharedByAllDecoders, then SingleThreadTaskRunner of
+//   base::Thread("VDdecThread"), which is unique and only used for video
+//   decoders.
+// * OneThreadPoolThreadPerDecoder (default), then SingleThreadTaskRunner
+//   of a dedicated thread newly created in ThreadPool per decoder.
 // TODO(b/195769334): Propagate this to Chrome utility process for
 // Out-of-Process video decoding.
-const char kMaxChromeOSDecoderThreads[] = "max-chromeos-decoder-threads";
+const char kChromeOSVideoDecoderTaskRunner[] =
+    "chromeos-video-decoder-task-runner";
 #endif
 
 const char kCastStreamingForceDisableHardwareH264[] =
@@ -448,6 +457,48 @@ const base::FeatureParam<bool> kChromeWideEchoCancellationAllowAllSampleRates{
     &kChromeWideEchoCancellation, "allow_all_sample_rates", true};
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS)
+// To control running audio communication effect on Chrome OS Audio Server.
+BASE_FEATURE(kCrOSSystemAEC,
+             "CrOSSystemAECWithBoardTuningsAllowed",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kCrOSSystemAECDeactivatedGroups,
+             "CrOSSystemAECDeactivatedGroups",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kCrOSEnforceSystemAecNsAgc,
+             "CrOSEnforceSystemAecNsAgc",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kCrOSEnforceSystemAecNs,
+             "CrOSEnforceSystemAecNs",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kCrOSEnforceSystemAecAgc,
+             "CrOSEnforceSystemAecAgc",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kCrOSEnforceSystemAec,
+             "CrOSEnforceSystemAec",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCrOSDspBasedAecDeactivatedGroups,
+             "CrOSDspBasedAecDeactivatedGroups",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kCrOSDspBasedNsDeactivatedGroups,
+             "CrOSDspBasedNsDeactivatedGroups",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kCrOSDspBasedAgcDeactivatedGroups,
+             "CrOSDspBasedAgcDeactivatedGroups",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCrOSDspBasedAecAllowed,
+             "CrOSDspBasedAecAllowed",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kCrOSDspBasedNsAllowed,
+             "CrOSDspBasedNsAllowed",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kCrOSDspBasedAgcAllowed,
+             "CrOSDspBasedAgcAllowed",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif
+
 // Make MSE garbage collection algorithm more aggressive when we are under
 // moderate or critical memory pressure. This will relieve memory pressure by
 // releasing stale data from MSE buffers.
@@ -504,6 +555,16 @@ BASE_FEATURE(kRevokeMediaSourceObjectURLOnAttach,
 BASE_FEATURE(kD3D11VideoDecoderUseSharedHandle,
              "D3D11VideoDecoderUseSharedHandle",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Runs the media service in the GPU process on a dedicated thread.
+BASE_FEATURE(kDedicatedMediaServiceThread,
+             "DedicatedMediaServiceThread",
+#if BUILDFLAG(IS_WIN)
+             base::FEATURE_DISABLED_BY_DEFAULT
+#else
+             base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+);
 
 // Falls back to other decoders after audio/video decode error happens. The
 // implementation may choose different strategies on when to fallback. See
@@ -1290,6 +1351,14 @@ BASE_FEATURE(kFuchsiaMediacodecVideoEncoder,
 
 bool IsChromeWideEchoCancellationEnabled() {
 #if BUILDFLAG(CHROME_WIDE_ECHO_CANCELLATION)
+#if BUILDFLAG(IS_CHROMEOS_DEVICE)
+  if (base::FeatureList::IsEnabled(kCrOSEnforceSystemAecNsAgc) ||
+      base::FeatureList::IsEnabled(kCrOSEnforceSystemAecNs) ||
+      base::FeatureList::IsEnabled(kCrOSEnforceSystemAecAgc) ||
+      base::FeatureList::IsEnabled(kCrOSEnforceSystemAec)) {
+    return false;
+  }
+#endif
   return base::FeatureList::IsEnabled(kChromeWideEchoCancellation);
 #else
   return false;

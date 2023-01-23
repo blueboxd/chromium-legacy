@@ -48,7 +48,6 @@
 #import "ios/chrome/browser/url/url_util.h"
 #import "ios/chrome/browser/web/browser_about_rewriter.h"
 #import "ios/chrome/browser/web/chrome_main_parts.h"
-#import "ios/chrome/browser/web/error_page_controller_bridge.h"
 #import "ios/chrome/browser/web/error_page_util.h"
 #import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/browser/web/font_size/font_size_java_script_feature.h"
@@ -64,6 +63,7 @@
 #import "ios/components/security_interstitials/https_only_mode/https_only_mode_error.h"
 #import "ios/components/security_interstitials/https_only_mode/https_upgrade_service.h"
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
+#import "ios/components/security_interstitials/ios_security_interstitial_java_script_feature.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_blocking_page.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
 #import "ios/components/security_interstitials/lookalikes/lookalike_url_controller_client.h"
@@ -305,6 +305,9 @@ std::vector<web::JavaScriptFeature*> ChromeWebClient::GetJavaScriptFeatures(
       SearchEngineTabHelperFactory::GetInstance());
   features.push_back(SearchEngineJavaScriptFeature::GetInstance());
   features.push_back(
+      security_interstitials::IOSSecurityInterstitialJavaScriptFeature::
+          GetInstance());
+  features.push_back(
       language::LanguageDetectionJavaScriptFeature::GetInstance());
   features.push_back(translate::TranslateJavaScriptFeature::GetInstance());
   features.push_back(WebPerformanceMetricsJavaScriptFeature::GetInstance());
@@ -373,13 +376,6 @@ void ChromeWebClient::PrepareErrorPage(
   } else {
     std::move(error_html_callback)
         .Run(GetErrorPage(url, error, is_post, is_off_the_record));
-    ErrorPageControllerBridge* error_page_controller =
-        ErrorPageControllerBridge::FromWebState(web_state);
-    if (error_page_controller) {
-      // ErrorPageControllerBridge may not be created for web_state not attached
-      // to a tab.
-      error_page_controller->StartHandlingJavascriptCommands();
-    }
   }
 }
 

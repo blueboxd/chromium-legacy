@@ -164,6 +164,8 @@ static_library("browser") {
     "assist_ranker/assist_ranker_service_factory.h",
     "autocomplete/autocomplete_classifier_factory.cc",
     "autocomplete/autocomplete_classifier_factory.h",
+    "autocomplete/autocomplete_scoring_model_service_factory.cc",
+    "autocomplete/autocomplete_scoring_model_service_factory.h",
     "autocomplete/chrome_autocomplete_provider_client.cc",
     "autocomplete/chrome_autocomplete_provider_client.h",
     "autocomplete/chrome_autocomplete_scheme_classifier.cc",
@@ -2105,6 +2107,7 @@ static_library("browser") {
     "//components/dom_distiller/content/browser",
     "//components/dom_distiller/content/common/mojom",
     "//components/domain_reliability",
+    "//components/domain_reliability:prefs",
     "//components/download/content/factory",
     "//components/download/content/public",
     "//components/download/database",
@@ -3326,9 +3329,7 @@ static_library("browser") {
       "//chrome/browser/sync/android:jni_headers",
       "//chrome/browser/tab:jni_headers",
       "//chrome/browser/touch_to_fill/payments/android:public",
-      "//chrome/browser/ui:adaptive_toolbar_enums_java",
       "//chrome/browser/ui/android/layouts:android",
-      "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings",
       "//chrome/browser/ui/webui/feed_internals:mojo_bindings",
       "//chrome/browser/usb/android:jni_headers",
       "//chrome/browser/video_tutorials/internal",
@@ -4604,6 +4605,8 @@ static_library("browser") {
   if (is_chromeos_ash) {
     assert(enable_system_notifications)
     sources += [
+      "apps/app_deduplication_service/app_deduplication_cache.cc",
+      "apps/app_deduplication_service/app_deduplication_cache.h",
       "apps/app_deduplication_service/app_deduplication_mapper.cc",
       "apps/app_deduplication_service/app_deduplication_mapper.h",
       "apps/app_deduplication_service/app_deduplication_server_connector.cc",
@@ -5240,6 +5243,8 @@ static_library("browser") {
   if (is_chromeos_lacros) {
     assert(enable_system_notifications)
     sources += [
+      "accessibility/live_caption_surface.cc",
+      "accessibility/live_caption_surface.h",
       "apps/digital_goods/digital_goods_factory_stub.cc",
       "apps/digital_goods/digital_goods_factory_stub.h",
       "apps/digital_goods/digital_goods_lacros.cc",
@@ -5350,6 +5355,7 @@ static_library("browser") {
       "lacros/screen_orientation_delegate_lacros.h",
       "lacros/standalone_browser_test_controller.cc",
       "lacros/standalone_browser_test_controller.h",
+      "lacros/sync/crosapi_session_sync_notifier.h",
       "lacros/sync/sync_crosapi_manager_lacros.cc",
       "lacros/sync/sync_crosapi_manager_lacros.h",
       "lacros/sync/sync_explicit_passphrase_client_lacros.cc",
@@ -7705,7 +7711,7 @@ grit("resources") {
   if (is_android) {
     deps += [
       "//chrome/browser/resources/offline_pages:build_ts",
-      "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings_js",
+      "//chrome/browser/resources/video_tutorials:build_ts",
     ]
   }
   if (!is_android) {

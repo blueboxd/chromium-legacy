@@ -66,7 +66,7 @@ Refer to README.md for content description and update process.
  <item id="dns_over_https" added_in_milestone="66" content_hash_code="02b087b6" os_list="linux,windows,chromeos,android" file_path="net/dns/dns_transaction.cc" />
  <item id="dns_transaction" added_in_milestone="65" content_hash_code="07e14f9f" os_list="linux,windows,chromeos,android" file_path="net/dns/dns_transaction.cc" />
  <item id="dom_distiller" added_in_milestone="62" content_hash_code="0653c7f2" os_list="linux,windows,chromeos,android" file_path="components/dom_distiller/core/distiller_url_fetcher.cc" />
- <item id="domain_reliability_report_upload" added_in_milestone="62" content_hash_code="0223d254" os_list="linux,windows,chromeos,android" file_path="components/domain_reliability/uploader.cc" />
+ <item id="domain_reliability_report_upload" added_in_milestone="62" content_hash_code="005de12f" os_list="linux,windows,chromeos,android" file_path="components/domain_reliability/uploader.cc" />
  <item id="domain_security_policy" added_in_milestone="62" content_hash_code="01d7c177" os_list="linux,windows,chromeos,android" file_path="services/network/network_context.cc" />
  <item id="download_internals_webui_source" added_in_milestone="66" content_hash_code="07b659d0" os_list="linux,windows,chromeos,android" file_path="chrome/browser/ui/webui/download_internals/download_internals_ui_message_handler.cc" />
  <item id="download_manager_resume" added_in_milestone="62" content_hash_code="0275159a" os_list="linux,windows,chromeos,android" file_path="components/download/internal/common/download_item_impl.cc" />
@@ -329,7 +329,7 @@ Refer to README.md for content description and update process.
  <item id="nearby_connections_wifi_lan" added_in_milestone="99" content_hash_code="06b30010" os_list="chromeos" file_path="chrome/services/sharing/nearby/platform/wifi_lan_medium.cc" />
  <item id="timezone_lookup" added_in_milestone="98" content_hash_code="01e64e71" os_list="chromeos" file_path="chromeos/ash/components/timezone/timezone_request.cc" />
  <item id="oma_download_handler_android" added_in_milestone="99" content_hash_code="03226fe2" os_list="android" file_path="chrome/android/java/src/org/chromium/chrome/browser/download/OMADownloadHandler.java" />
- <item id="wallpaper_google_photos_albums" added_in_milestone="99" content_hash_code="00248f64" os_list="chromeos" file_path="chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.cc" />
+ <item id="wallpaper_google_photos_albums" added_in_milestone="99" content_hash_code="02f721fe" os_list="chromeos" file_path="chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.cc" />
  <item id="webapk_create" added_in_milestone="99" content_hash_code="07b8fd35" os_list="android" file_path="chrome/browser/android/webapk/webapk_installer.cc" />
  <item id="webapk_update" added_in_milestone="99" content_hash_code="0763f8a7" os_list="android" file_path="chrome/browser/android/webapk/webapk_installer.cc" />
  <item id="safe_browsing_extension_telemetry" added_in_milestone="98" content_hash_code="06f81c76" os_list="linux,windows,chromeos" file_path="chrome/browser/safe_browsing/extension_telemetry/extension_telemetry_uploader.cc" />
@@ -421,4 +421,5 @@ Refer to README.md for content description and update process.
  <item id="network_portal_detector" added_in_milestone="111" content_hash_code="023cdc21" os_list="chromeos" file_path="chrome/browser/ash/net/network_portal_detector_impl.cc" />
  <item id="safe_browsing_hashprefix_realtime_lookup" added_in_milestone="111" content_hash_code="07b1dc5e" os_list="linux,windows,chromeos,android" file_path="components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_service.cc" />
  <item id="android_feedback_connectivity_checker" added_in_milestone="111" content_hash_code="0011753d" os_list="android" file_path="chrome/android/java/src/org/chromium/chrome/browser/feedback/ConnectivityChecker.java" />
+ <item id="printer_config_fetch" added_in_milestone="111" content_hash_code="078c2ad0" os_list="chromeos" file_path="chromeos/printing/printer_config_cache.cc" />
 </annotations>

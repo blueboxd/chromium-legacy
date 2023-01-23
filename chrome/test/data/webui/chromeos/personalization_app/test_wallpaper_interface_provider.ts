@@ -20,6 +20,7 @@ export class TestWallpaperProvider extends TestBrowserProxy implements
       'fetchGooglePhotosAlbums',
       'fetchGooglePhotosEnabled',
       'fetchGooglePhotosPhotos',
+      'fetchGooglePhotosSharedAlbums',
       'getDefaultImageThumbnail',
       'getLocalImages',
       'getLocalImageThumbnail',
@@ -104,12 +105,18 @@ export class TestWallpaperProvider extends TestBrowserProxy implements
       key: '1',
       type: WallpaperType.kOnline,
     };
+
+    this.albumId = '';
+
+    this.collectionId = this.collections_![0]!.id;
   }
 
   private collections_: WallpaperCollection[]|null;
   private images_: WallpaperImage[]|null;
   private googlePhotosAlbums_: GooglePhotosAlbum[]|undefined = [];
   private googlePhotosAlbumsResumeToken_: string|undefined;
+  private googlePhotosSharedAlbums_: GooglePhotosAlbum[]|undefined = [];
+  private googlePhotosSharedAlbumsResumeToken_: string|undefined;
   private googlePhotosEnabled_: GooglePhotosEnablementState =
       GooglePhotosEnablementState.kEnabled;
   private googlePhotosPhotos_: GooglePhotosPhoto[]|undefined = [];
@@ -123,6 +130,8 @@ export class TestWallpaperProvider extends TestBrowserProxy implements
   defaultImageThumbnail:
       Url = {url: 'data:image/png;base64,default_image_thumbnail'};
   currentWallpaper: CurrentWallpaper;
+  albumId: string;
+  collectionId: string;
   selectWallpaperResponse = true;
   selectGooglePhotosPhotoResponse = true;
   selectGooglePhotosAlbumResponse: SetDailyRefreshResponse = {
@@ -175,6 +184,14 @@ export class TestWallpaperProvider extends TestBrowserProxy implements
         this.googlePhotosAlbums_ :
         undefined;
     response.resumeToken = this.googlePhotosAlbumsResumeToken_;
+    return Promise.resolve({response});
+  }
+
+  fetchGooglePhotosSharedAlbums(resumeToken: string|null) {
+    this.methodCalled('fetchGooglePhotosSharedAlbums', resumeToken);
+    const response = new FetchGooglePhotosAlbumsResponse();
+    response.albums = this.googlePhotosSharedAlbums_;
+    response.resumeToken = this.googlePhotosSharedAlbumsResumeToken_;
     return Promise.resolve({response});
   }
 
@@ -246,7 +263,7 @@ export class TestWallpaperProvider extends TestBrowserProxy implements
 
   getGooglePhotosDailyRefreshAlbumId() {
     this.methodCalled('getGooglePhotosDailyRefreshAlbumId');
-    return Promise.resolve({albumId: ''});
+    return Promise.resolve({albumId: this.albumId});
   }
 
   selectLocalImage(
@@ -269,7 +286,7 @@ export class TestWallpaperProvider extends TestBrowserProxy implements
 
   getDailyRefreshCollectionId() {
     this.methodCalled('getDailyRefreshCollectionId');
-    return Promise.resolve({collectionId: this.collections_![0]!.id});
+    return Promise.resolve({collectionId: this.collectionId});
   }
 
   updateDailyRefreshWallpaper() {
@@ -305,6 +322,17 @@ export class TestWallpaperProvider extends TestBrowserProxy implements
   setGooglePhotosAlbumsResumeToken(googlePhotosAlbumsResumeToken: string|
                                    undefined) {
     this.googlePhotosAlbumsResumeToken_ = googlePhotosAlbumsResumeToken;
+  }
+
+  setGooglePhotosSharedAlbums(googlePhotosSharedAlbums: GooglePhotosAlbum[]|
+                              undefined) {
+    this.googlePhotosSharedAlbums_ = googlePhotosSharedAlbums;
+  }
+
+  setGooglePhotosSharedAlbumsResumeToken(googlePhotosSharedAlbumsResumeToken:
+                                             string|undefined) {
+    this.googlePhotosSharedAlbumsResumeToken_ =
+        googlePhotosSharedAlbumsResumeToken;
   }
 
   setGooglePhotosEnabled(googlePhotosEnabled: GooglePhotosEnablementState) {

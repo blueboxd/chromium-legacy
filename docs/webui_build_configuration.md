@@ -44,8 +44,11 @@ generated directory (|target_gen_dir|).
 ```
 in_files: specifies the list of files to process with respect to the
           |in_folder|.
-template: html_to_wrapper only. Defaults to "polymer", set to "native" if using
-          the rule to wrap the HTML of a non-Polymer Web Component.
+template: html_to_wrapper only. Valid values are:
+          - "polymer" (default)
+          - "native" (use when wrapping the HTML template of a non-Polymer web
+             component)
+          - "detect" (use when there are both Polymer and native web components)
 in_folder: Specifies the input folder where files are located. If not specified,
            the current directory (of the BUILD.gn file) is used.
 out_folder: Specifies the location to write the wrapped files. If not specified,
@@ -237,7 +240,7 @@ out_manifest: File location to write the manifest of all output files created
               by optimize_webui(). Useful for generating grds.
 deps: Targets generating any files being bundled. Note that this should include
       targets generating shared resources that are expected to be bundled in
-      the UI, e.g. //ui/webui/resources:preprocess.
+      the UI, e.g. //ui/webui/resources:library.
 excludes: Paths of files that are not bundled. Often used for large mojo files
           that would otherwise be in many bundles, and for cr.js which relies
           on global variables.
@@ -261,7 +264,7 @@ if (optimize_webui) {
     # build_ts.
     deps = [
       ":build_ts",
-      "//ui/webui/resources:preprocess",
+      "//ui/webui/resources:library",
     ]
     excludes = [
       "chrome://resources/js/cr.js",

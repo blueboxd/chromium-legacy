@@ -1661,6 +1661,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
+  SCOPED_CRASH_KEY_STRING256("Bug1407526", "lifecycle",
+                             LifecycleStateImplToString(lifecycle_state()));
   TRACE_EVENT("navigation", "~RenderFrameHostImpl()",
               ChromeTrackEvent::kRenderFrameHost, this);
   // See https://crbug.com/1276535
@@ -1706,10 +1708,15 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   g_token_frame_map.Get().erase(frame_token_);
 
   auto* process = GetProcess();
+  SCOPED_CRASH_KEY_BOOL("Bug1407526", "si_exists", !!site_instance_);
+  SCOPED_CRASH_KEY_BOOL("Bug1407526", "sig_exists", !!site_instance_->group());
+  SCOPED_CRASH_KEY_BOOL("Bug1407526", "process_exists", !!process);
   site_instance_->group()->RemoveObserver(this);
   process->UnregisterRenderFrameHost(GetGlobalId());
 
   const bool was_created = is_render_frame_created();
+  SCOPED_CRASH_KEY_BOOL("Bug1407526", "was_created", !!was_created);
+  SCOPED_CRASH_KEY_BOOL("Bug1407526", "delegate_exists", !!delegate_);
   render_frame_state_ = RenderFrameState::kDeleted;
   if (was_created)
     delegate_->RenderFrameDeleted(this);
@@ -8877,19 +8884,36 @@ void RenderFrameHostImpl::StartPendingDeletionOnSubtree(
   DCHECK(IsPendingDeletion());
 
   if (pending_deletion_reason == PendingDeletionReason::kFrameDetach ||
-      !base::FeatureList::IsEnabled(kAvoidUnnecessaryNavigationCancellations)) {
-    // Reset navigations only when entering "pending deletion" state due to
-    // frame detach if the kStopCancellingNavigationsOnCommitAndNewNavigation
-    // flag is enabled, or for all pending deletion cases otherwise.
-    GetFrameTreeNodeForUnload()->ResetAllNavigationsForFrameDetach();
+      !base::FeatureList::IsEnabled(
+          features::kAvoidUnnecessaryNavigationCancellations)) {
+    // Reset all navigations happening in the FrameTreeNode only when entering
+    // "pending deletion" state due to frame detach if the
+    // kStopCancellingNavigationsOnCommitAndNewNavigation flag is enabled, or
+    // for all pending deletion cases otherwise.
+    NavigationDiscardReason reason = NavigationDiscardReason::kWillRemoveFrame;
+    GetFrameTreeNodeForUnload()->CancelNavigation();
+    GetFrameTreeNodeForUnload()
+        ->GetRenderFrameHostManager()
+        .DiscardSpeculativeRFH(reason);
+    ResetOwnedNavigationRequests(reason);
   } else {
-    CHECK(
-        pending_deletion_reason == PendingDeletionReason::kSwappedOut ||
-        base::FeatureList::IsEnabled(kAvoidUnnecessaryNavigationCancellations));
+    CHECK(pending_deletion_reason == PendingDeletionReason::kSwappedOut ||
+          base::FeatureList::IsEnabled(
+              features::kAvoidUnnecessaryNavigationCancellations));
     // The pending deletion state is caused by swapping out the RFH. Reset only
     // the navigations that are owned by or will be using the swapped out RFH,
     // and also reset all navigations happening in the descendant frames.
-    ResetNavigationsUsingSwappedOutRFHAndAllNavigationsInSubtree();
+    ResetNavigationsUsingSwappedOutRFH();
+  }
+
+  // For the child frames, we should delete all ongoing navigations
+  // unconditionally, because the child frames will be deleted when this RFH
+  // gets unloaded. Note that we are going through the RFH's children instead of
+  // the FrameTreeNode's children, as the FTN might already have children that
+  // isn't shared with the detached/swapped out RFH, e.g. in case of prerender
+  // activation.
+  for (auto& subframe : children_) {
+    subframe->ResetAllNavigationsForFrameDetach();
   }
 
   for (std::unique_ptr<FrameTreeNode>& child_frame : children_) {
@@ -8973,10 +8997,9 @@ void RenderFrameHostImpl::PendingDeletionCheckCompletedOnSubtree() {
   }
 }
 
-void RenderFrameHostImpl::
-    ResetNavigationsUsingSwappedOutRFHAndAllNavigationsInSubtree() {
+void RenderFrameHostImpl::ResetNavigationsUsingSwappedOutRFH() {
   // Only delete the navigation owned by the swapped out RFH or those that
-  // intend to use the current RFH.
+  // intend to use the swapped out RFH.
   ResetOwnedNavigationRequests(
       NavigationDiscardReason::kRenderFrameHostDestruction);
   const NavigationRequest* navigation_request =
@@ -8992,13 +9015,6 @@ void RenderFrameHostImpl::
     // deletion RFH.
     frame_tree_node_->ResetNavigationRequest(
         NavigationDiscardReason::kRenderFrameHostDestruction);
-  }
-
-  // For the child frames, we should delete all ongoing navigations,
-  // unconditionally, because the child frames will be deleted when this RFH
-  // gets unloaded.
-  for (auto& subframe : children_) {
-    subframe->ResetAllNavigationsForFrameDetach();
   }
 }
 

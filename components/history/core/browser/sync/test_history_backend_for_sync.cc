@@ -283,6 +283,19 @@ bool TestHistoryBackendForSync::UpdateVisitReferrerOpenerIDs(
   return false;
 }
 
+void TestHistoryBackendForSync::AddVisitToSyncedCluster(
+    const ClusterVisit& cluster_visit,
+    const std::string& originator_cache_guid,
+    int64_t cluster_id) {
+  ++add_visit_to_synced_cluster_count_;
+}
+
+int64_t TestHistoryBackendForSync::GetClusterIdContainingVisit(
+    VisitID visit_id) {
+  // For testing purposes, just put every visit in a different cluster.
+  return 1000 + static_cast<int64_t>(visit_id);
+}
+
 std::vector<GURL> TestHistoryBackendForSync::GetFaviconURLsForURL(
     const GURL& page_url) {
   // For the unit tests based on this class, favicon URLs aren't required.

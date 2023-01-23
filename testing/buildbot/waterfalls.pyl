@@ -168,6 +168,17 @@
         },
         'os_type': 'chromeos'
       },
+      'chromeos-octopus-chrome-skylab': {
+        'additional_compile_targets': [
+          "chrome",
+          "linux_symbols",
+          "symupload",
+        ],
+        'test_suites': {
+          'skylab_tests': 'chromeos_octopus_skylab_tests',
+        },
+        'os_type': 'chromeos',
+      },
       'chromeos-reven-chrome': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -1249,7 +1260,7 @@
     'name': 'chromium.cft',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
-      # Mirrors Linux Builder and Linux Tests.
+      # Mirrors "Linux Builder" and "Linux Tests".
       'linux-rel-cft': {
         'mixins': [
           'isolate_profile_data',
@@ -1265,7 +1276,7 @@
         }
       },
 
-      # Mirrors Mac Builder and Mac12 Tests, except that we don't run
+      # Mirrors "Mac Builder" and "Mac12 Tests", except that we don't run
       # 'mac_signing_tests' (it is removed in test_suite_exceptions.pyl),
       # which doesn't exist in the CfT config.
       'mac-rel-cft': {
@@ -1288,7 +1299,7 @@
         },
       },
 
-      # Mirrors Win x64 Builder and Win10 Tests x64.
+      # Mirrors "Win x64 Builder" and "Win10 Tests x64".
       'win-rel-cft': {
         'mixins': [
           'x86-64',
@@ -3645,6 +3656,15 @@
         },
         'use_swarming': False,
       },
+      'mac10.15-wpt-content-shell-fyi-rel': {
+        'mixins': [
+          'mac_10.15',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'wpt_web_tests_content_shell',
+        },
+        'os_type': 'mac',
+      },
       'mac12-wpt-content-shell-fyi-rel': {
         'mixins': [
           'mac_12_x64',
@@ -4343,7 +4363,7 @@
           'linux_intel_uhd_630_stable',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_fyi_chromeos_release_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_lacros_release_telemetry_tests',
         },
       },
       'Linux FYI Debug (NVIDIA)': {
@@ -6580,7 +6600,7 @@
       'win-finch-smoke-chrome': {
         'mixins': [
           'chrome-finch-swarming-pool',
-          'win10',
+          'win10-any',
         ],
         'test_suites': {
           'isolated_scripts': 'chrome_finch_smoke_tests',

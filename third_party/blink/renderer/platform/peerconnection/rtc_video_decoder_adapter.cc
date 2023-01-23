@@ -310,7 +310,7 @@ void RTCVideoDecoderAdapter::Impl::Initialize(
       ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
           &RTCVideoDecoderAdapter::Impl::OnOutput, weak_decoder_this_));
   video_decoder_->Initialize(
-      config, /*low_delay=*/false,
+      config, /*low_delay=*/true,
       /*cdm_context=*/nullptr,
       base::BindOnce(
           [](base::OnceCallback<void(bool)> cb,
@@ -570,9 +570,6 @@ std::unique_ptr<RTCVideoDecoderAdapter> RTCVideoDecoderAdapter::Create(
 
   const webrtc::VideoCodecType video_codec_type =
       webrtc::PayloadStringToCodecType(format.name);
-
-  if (!Platform::Current()->IsWebRtcHWH264DecodingEnabled(video_codec_type))
-    return nullptr;
 
   // Bail early for unknown codecs.
   if (WebRtcToMediaVideoCodec(video_codec_type) == media::VideoCodec::kUnknown)

@@ -46,6 +46,7 @@
 #include "content/browser/renderer_host/render_frame_host_owner.h"
 #include "content/browser/renderer_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/renderer_host/render_view_host_enums.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -637,7 +638,7 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
                   std::move(stored_page_to_restore_), clear_proxies_on_commit);
 
     if (base::FeatureList::IsEnabled(
-            kAvoidUnnecessaryNavigationCancellations)) {
+            features::kAvoidUnnecessaryNavigationCancellations)) {
       // When kAvoidUnnecessaryNavigationCancellations is enabled, if there are
       // other navigation requests that are ongoing, set their "associated
       // RenderFrameHost type" NONE, as the old type may no longer be accurate:
@@ -1042,10 +1043,17 @@ void RenderFrameHostManager::RestorePage(
   // in the long run. For now, and to avoid complex edge cases, we simply reuse
   // it to preserve the understood logic in CommitPending.
 
-  // There should be no speculative RFH at this point. With BackForwardCache, it
+  // When the kAvoidUnnecessaryNavigationCancellations flag is disabled, there
+  // should be no speculative RFH at this point. With BackForwardCache, it
   // should have never been created, and with prerender activation, it should
   // have been cleared out earlier.
-  DCHECK(!speculative_render_frame_host_);
+  // TODO(https://crbug.com/1220337): Ensure we aren't deleting a pending commit
+  // RFH.
+  DCHECK(base::FeatureList::IsEnabled(
+             features::kAvoidUnnecessaryNavigationCancellations) ||
+         !speculative_render_frame_host_);
+  SCOPED_CRASH_KEY_BOOL("Bug1407526", "spec_rfh_exists",
+                        !!speculative_render_frame_host_);
   speculative_render_frame_host_ = stored_page->TakeRenderFrameHost();
   // Now |stored_page| is destroyed and thus does not monitor cookie changes any
   // more. This is okay as eviction would not happen from this point.
@@ -1114,7 +1122,7 @@ void RenderFrameHostManager::DidCreateNavigationRequest(
     // calling that method for navigations which will be forced into the current
     // document.
     if (base::FeatureList::IsEnabled(
-            kAvoidUnnecessaryNavigationCancellations)) {
+            features::kAvoidUnnecessaryNavigationCancellations)) {
       // When kAvoidUnnecessaryNavigationCancellations is enabled, only delete
       // the speculative RFH if it is unused. In particular, this means that a
       // speculative RFH with a pending-commit navigation won't be deleted
@@ -1228,9 +1236,9 @@ RenderFrameHostManager::GetFrameHostForNavigation(
     use_current_rfh = false;
 
   // Force using a different RenderFrameHost when RenderDocument is enabled.
-  // TODO(arthursonzogni, fergal): Add support for the main frame.
-  if (ShouldCreateNewHostForSameSiteSubframe() &&
-      !frame_tree_node_->IsMainFrame() &&
+  if (((ShouldCreateNewHostForSameSiteSubframe() &&
+        !frame_tree_node_->IsMainFrame()) ||
+       ShouldCreateNewHostForAllFrames()) &&
       render_frame_host_->has_committed_any_navigation()) {
     use_current_rfh = false;
   }
@@ -1310,7 +1318,7 @@ RenderFrameHostManager::GetFrameHostForNavigation(
     request->SetAssociatedRFHType(
         NavigationRequest::AssociatedRenderFrameHostType::CURRENT);
     if (base::FeatureList::IsEnabled(
-            kAvoidUnnecessaryNavigationCancellations)) {
+            features::kAvoidUnnecessaryNavigationCancellations)) {
       // When kAvoidUnnecessaryNavigationCancellations is enabled, only delete
       // the speculative RFH if it is unused.
       DiscardSpeculativeRFHIfUnused(NavigationDiscardReason::kNewNavigation);
@@ -2950,8 +2958,27 @@ RenderFrameHostManager::CreateRenderFrameHost(
     frame_routing_id = site_instance->GetProcess()->GetNextRoutingID();
   }
 
-  scoped_refptr<RenderViewHostImpl> render_view_host =
-      frame_tree.GetRenderViewHost(site_instance->group());
+  // Check to see if a speculative RenderViewHost is needed. It is needed for
+  // cross-page same-SiteInstanceGroup navigations when the feature is enabled.
+  // TODO(yangsharon, rakina, crbug.com/1336305): Handle the
+  // cross-SiteInstanceGroup  and crashed frame cases.
+  CreateRenderViewHostCase create_rvh_case =
+      (ShouldCreateNewHostForAllFrames() &&
+       create_frame_case == CreateFrameCase::kCreateSpeculative &&
+       static_cast<SiteInstanceImpl*>(site_instance)->group() ==
+           render_frame_host_->GetSiteInstance()->group() &&
+       frame_tree_node_->IsMainFrame() &&
+       !render_frame_host_->must_be_replaced())
+          ? CreateRenderViewHostCase::kSpeculative
+          : CreateRenderViewHostCase::kDefault;
+
+  scoped_refptr<RenderViewHostImpl> render_view_host = nullptr;
+  // In the case a speculative RenderViewHost will be created, we don't need to
+  // check if there's an existing RenderViewHost. Otherwise, get the appropriate
+  // RenderViewHost.
+  if (create_rvh_case == CreateRenderViewHostCase::kDefault) {
+    render_view_host = frame_tree.GetRenderViewHost(site_instance->group());
+  }
 
   switch (create_frame_case) {
     case CreateFrameCase::kInitChild:
@@ -2991,7 +3018,8 @@ RenderFrameHostManager::CreateRenderFrameHost(
                 features::BrowsingContextStateImplementationType::
                     kSwapForCrossBrowsingInstanceNavigations
             ? browsing_context_state
-            : nullptr);
+            : nullptr,
+        create_rvh_case);
   }
   CHECK(render_view_host);
 
@@ -3070,6 +3098,9 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
       // BrowsingContextState.
       browsing_context_state = render_frame_host_->browsing_context_state();
     } else {
+      // TODO(crbug.com/936696, rakina, yangsharon): Once RenderDocument is
+      // implemented, there will never be an existing RenderViewHost, so getting
+      // the RenderViewHost and checking if there's a value can be removed.
       scoped_refptr<RenderViewHostImpl> render_view_host =
           frame_tree_node_->frame_tree().GetRenderViewHost(
               new_instance->group());
@@ -3261,7 +3292,8 @@ void RenderFrameHostManager::CreateRenderFrameProxy(
                   features::BrowsingContextStateImplementationType::
                       kSwapForCrossBrowsingInstanceNavigations
               ? render_frame_host_->browsing_context_state()
-              : nullptr);
+              : nullptr,
+          CreateRenderViewHostCase::kDefault);
     } else {
       TRACE_EVENT_INSTANT("navigation",
                           "RenderFrameHostManager::CreateRenderFrameProxy_RVH",
@@ -4051,6 +4083,15 @@ std::unique_ptr<RenderFrameHostImpl> RenderFrameHostManager::SetRenderFrameHost(
   render_frame_host_ = std::move(render_frame_host);
 
   FrameTree& frame_tree = frame_tree_node_->frame_tree();
+
+  // If the feature is enabled, check if there is a corresponding speculative
+  // RenderViewHost that also needs to be swapped in.
+  if (ShouldCreateNewHostForAllFrames() && render_frame_host_ &&
+      render_frame_host_->GetRenderViewHost() ==
+          frame_tree.speculative_render_view_host()) {
+    CHECK(frame_tree_node_->IsMainFrame());
+    frame_tree.MakeSpeculativeRVHCurrent();
+  }
 
   // Swapping the current RenderFrameHost in a FrameTreeNode comes along with an
   // update to its LifecycleStateImpl.

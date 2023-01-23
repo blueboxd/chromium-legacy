@@ -522,6 +522,13 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void AddVisitsToCluster(int64_t cluster_id,
                           const std::vector<ClusterVisit>& visits);
 
+  // Adds `cluster_visit` to the local cluster with `originator_cache_guid` and
+  // `originator_cluster_id`. If an existing cluster does not exist with those
+  // synced details, a new one will be created.
+  void AddVisitToSyncedCluster(const history::ClusterVisit& cluster_visit,
+                               const std::string& originator_cache_guid,
+                               int64_t originator_cluster_id) override;
+
   void UpdateClusterTriggerability(const std::vector<Cluster>& clusters);
 
   std::vector<Cluster> GetMostRecentClusters(
@@ -536,6 +543,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // populated if `include_keywords_and_duplicates` is true.
   Cluster GetCluster(int64_t cluster_id,
                      bool include_keywords_and_duplicates = true);
+
+  // Returns the ID of the cluster containing `visit_id`. Returns 0 if
+  // `visit_id` is not in a cluster.
+  // HistoryBackendForSync:
+  int64_t GetClusterIdContainingVisit(VisitID visit_id) override;
 
   // Finds the 1st visit in the redirect chain containing `visit`.
   // Unlike `GetRedirectsToSpecificVisit()`, this only considers actual
@@ -798,7 +810,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       absl::optional<std::string> originator_cache_guid = absl::nullopt,
       absl::optional<VisitID> originator_visit_id = absl::nullopt,
       absl::optional<VisitID> originator_referring_visit = absl::nullopt,
-      absl::optional<VisitID> originator_opener_visit = absl::nullopt);
+      absl::optional<VisitID> originator_opener_visit = absl::nullopt,
+      bool is_known_to_sync = false);
 
   // Returns a redirect-or-referral chain in `redirects` for the VisitID
   // `cur_visit`. `cur_visit` is assumed to be valid. Assumes that

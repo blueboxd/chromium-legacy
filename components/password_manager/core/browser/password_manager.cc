@@ -1281,21 +1281,6 @@ PasswordFormManager* PasswordManager::GetSubmittedManager() const {
   return nullptr;
 }
 
-bool PasswordManager::HasSubmittedManager() const {
-  return GetSubmittedManager() != nullptr;
-}
-
-bool PasswordManager::HasSubmittedManagerWithSamePassword() const {
-  PasswordFormManager* submitted_manager = GetSubmittedManager();
-  return submitted_manager && submitted_manager->IsSamePassword();
-}
-
-void PasswordManager::SaveSubmittedManager() {
-  PasswordFormManager* submitted_manager = GetSubmittedManager();
-  DCHECK(submitted_manager);
-  submitted_manager->Save();
-}
-
 absl::optional<PasswordForm> PasswordManager::GetSubmittedCredentials() {
   PasswordFormManager* submitted_manager = GetSubmittedManager();
   if (submitted_manager)
@@ -1423,12 +1408,6 @@ bool PasswordManager::NewFormsParsed(PasswordManagerDriver* driver,
   return base::ranges::any_of(form_data, [driver, this](const FormData& form) {
     return !GetMatchedManager(driver, form.unique_renderer_id);
   });
-}
-
-void PasswordManager::ResetPendingCredentials() {
-  for (auto& form_manager : form_managers_)
-    form_manager->ResetState();
-  owned_submitted_form_manager_.reset();
 }
 
 bool PasswordManager::IsFormManagerPendingPasswordUpdate() const {

@@ -109,7 +109,7 @@ MEDIA_EXPORT extern const char kUserGestureRequiredPolicy[];
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 MEDIA_EXPORT extern const char kHardwareVideoDecodeFrameRate[];
-MEDIA_EXPORT extern const char kMaxChromeOSDecoderThreads[];
+MEDIA_EXPORT extern const char kChromeOSVideoDecoderTaskRunner[];
 #endif
 
 // NOTE: callers should always use the free functions in
@@ -172,7 +172,22 @@ MEDIA_EXPORT extern const base::FeatureParam<double>
 MEDIA_EXPORT extern const base::FeatureParam<bool>
     kChromeWideEchoCancellationAllowAllSampleRates;
 #endif
+#if BUILDFLAG(IS_CHROMEOS)
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kCrOSSystemAEC);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kCrOSSystemAECDeactivatedGroups);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kCrOSEnforceSystemAecNsAgc);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kCrOSEnforceSystemAecNs);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kCrOSEnforceSystemAecAgc);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kCrOSEnforceSystemAec);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kCrOSDspBasedAecDeactivatedGroups);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kCrOSDspBasedNsDeactivatedGroups);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kCrOSDspBasedAgcDeactivatedGroups);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kCrOSDspBasedAecAllowed);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kCrOSDspBasedNsAllowed);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kCrOSDspBasedAgcAllowed);
+#endif
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kD3D11VideoDecoderUseSharedHandle);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kDedicatedMediaServiceThread);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kEnableTabMuting);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kExposeSwDecodersToWebRTC);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kExternalClearKeyForTesting);

@@ -469,6 +469,25 @@
           '--flag-specific=enable-editing-ng',
         ],
       },
+      'linux-rel-cft': {
+        "args": [
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
+        ],
+        'swarming': {
+          'shards': 8,
+        },
+      },
+      'mac-rel-cft': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': None,
+            },
+          ],
+          'shards': 12,
+          'inverse_quickrun_shards': 24,
+        },
+      },
       'mac10.13-blink-rel': {
         'swarming': {
           'shards': 1,
@@ -511,6 +530,10 @@
           '--target',
           'Release_x64',
         ],
+        'swarming': {
+          "shards": 12,
+          "inverse_quickrun_shards": 24,
+        },
       },
       'win10-rel-no-external-ip': {
         'args': [
@@ -778,6 +801,28 @@
           '--flag-specific=enable-editing-ng',
         ],
       },
+      'linux-rel-cft': {
+        "args": [
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
+        ],
+        'swarming': {
+          'shards': 10,
+        },
+      },
+      'mac-rel-cft': {
+        'args': [
+          '--driver-logging',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': None,
+            },
+          ],
+          'shards': 18,
+          'inverse_quickrun_shards': 36,
+        },
+      },
       'mac10.13-blink-rel': {
         'swarming': {
           'shards': 1,
@@ -820,6 +865,10 @@
           '--target',
           'Release_x64',
         ],
+        'swarming': {
+          "shards": 18,
+          "inverse_quickrun_shards": 36,
+        },
       },
       'win10-rel-no-external-ip': {
         'args': [
@@ -1088,6 +1137,9 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux.linux-rel-cft.browser_tests.filter',
         ],
+        'swarming': {
+          'shards': 20,
+        },
       },
       'mac-code-coverage': {
         'args': [
@@ -1103,6 +1155,7 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac-rel-cft.browser_tests.filter',
         ],
+        'ci_only': True,
         'swarming': {
           'shards': 20,  # crbug.com/1361887
         },
@@ -1125,6 +1178,11 @@
           '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
           '--test-launcher-filter-file=../../testing/buildbot/filters/win.win-rel-cft.browser_tests.filter',
         ],
+        'swarming': {
+          # This is for slow test execution that often becomes a critical path of
+          # swarming jobs. crbug.com/868114
+          'shards': 15,
+        }
       },
       'win10-rel-no-external-ip': {
         # crbug.com/868082
@@ -1182,6 +1240,11 @@
   'check_static_initializers': {
     'modifications': {
       'Mac Builder': {
+        'args': [
+          '--allow-coverage-initializer',
+        ],
+      },
+      'mac-rel-cft': {
         'args': [
           '--allow-coverage-initializer',
         ],
@@ -1487,6 +1550,10 @@
         # TODO(crbug.com/1369158): Fix & re-enable.
         'isolate_profile_data': False,
       },
+      'win-rel-cft': {
+        # TODO(crbug.com/1369158): Fix & re-enable.
+        'isolate_profile_data': False,
+      },
     },
     'remove_from': [
       # Timeout happens sometimes (crbug.com/951799).
@@ -1571,10 +1638,20 @@
           'inverse_quickrun_shards': 12,
         },
       },
+      'mac-rel-cft': {
+        'swarming': {
+          'inverse_quickrun_shards': 2,
+        },
+      },
       'win-asan': {
         # With a single shard seems to hit time limit.
         'swarming': {
           'shards': 2,
+        },
+      },
+      'win-rel-cft': {
+        'swarming': {
+          'inverse_quickrun_shards': 2,
         },
       },
     },
@@ -1780,6 +1857,11 @@
         'swarming': {
           'shards': 41,
         },
+        'args': [
+          # TODO(crbug.com/1406693): Remove this when the kernal panic in
+          # fuchsia has been resolved.
+          '--test-arg=--test-launcher-jobs=1',
+        ],
       },
       'linux-chromeos-code-coverage': {
         'swarming': {
@@ -1808,6 +1890,12 @@
           '--coverage-continuous-mode=1',
         ],
       },
+      'mac-rel-cft': {
+        'swarming': {
+          'shards': 12,
+          'inverse_quickrun_shards': 24,
+        },
+      },
       # https://crbug.com/1255940
       'mac-rel-swarming': {
         'swarming': {
@@ -1817,6 +1905,15 @@
               'cores': '8|12',
             }
           ],
+        },
+      },
+      'win-rel-cft': {
+        # crbug.com/868082
+        'args': [
+          '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
+        ],
+        'swarming': {
+          'quickrun_shards': 18,
         },
       },
       'win10-rel-no-external-ip': {
@@ -2532,11 +2629,18 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/mac.mac-rel-cft.interactive_ui_tests.filter',
         ],
+        'swarming': {
+          'shards': 6,
+          'inverse_quickrun_shards': 12,
+        },
       },
       'win-rel-cft': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/win.win-rel-cft.interactive_ui_tests.filter',
         ],
+        'swarming': {
+          'shards': 9,
+        },
       },
     },
   },
@@ -2912,6 +3016,14 @@
         ],
         'swarming': {
           'shards': 20,
+        },
+      },
+      'linux-rel-cft': {
+        "args": [
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
+        ],
+        'swarming': {
+          'quickrun_shards': 18,
         },
       },
     },
@@ -3326,6 +3438,17 @@
           '--coverage-continuous-mode=1',
         ],
       },
+      'mac-rel-cft': {
+        'ci_only': True,
+        'swarming': {
+          'shards': 4,
+        },
+      },
+      'win-rel-cft': {
+        'swarming': {
+          'shards': 3,
+        },
+      },
     },
   },
   'system_webview_wpt': {
@@ -3420,6 +3543,9 @@
           '--xvfb',
           '--jobs=1',
         ],
+      },
+      'mac-rel-cft': {
+        'ci_only': True,
       },
     },
     'remove_from': [
@@ -3556,6 +3682,11 @@
       'linux-chromeos-rel': {
         'swarming': {
           'shards': 2,
+        },
+      },
+      'mac-rel-cft': {
+        'swarming': {
+          'inverse_quickrun_shards': 2,
         },
       },
     },
@@ -3715,6 +3846,7 @@
   'webdriver_tests_suite': {
     'remove_from': [
       'Linux Tests',  # https://crbug.com/929689, https://crbug.com/936557
+      'linux-rel-cft',
     ],
   },
   'webgl2_conformance_d3d11_passthrough_tests': {

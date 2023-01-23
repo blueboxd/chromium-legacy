@@ -73,6 +73,7 @@ namespace content {
 class AttributionDataHostManager;
 class AttributionObserver;
 class AttributionTrigger;
+class TriggerAttestation;
 
 enum class RateLimitResult : int;
 
@@ -115,8 +116,7 @@ class MockAttributionHost : public AttributionHost {
       void,
       RegisterNavigationDataHost,
       (mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
-       const blink::AttributionSrcToken& attribution_src_token,
-       blink::mojom::AttributionNavigationType),
+       const blink::AttributionSrcToken& attribution_src_token),
       (override));
 
  private:
@@ -153,7 +153,9 @@ class MockDataHost : public blink::mojom::AttributionDataHost {
       attribution_reporting::SourceRegistration) override;
   void TriggerDataAvailable(
       attribution_reporting::SuitableOrigin reporting_origin,
-      attribution_reporting::TriggerRegistration) override;
+      attribution_reporting::TriggerRegistration,
+      absl::optional<attribution_reporting::TriggerAttestation> attestation)
+      override;
 
   size_t min_source_data_count_ = 0;
   std::vector<attribution_reporting::SourceRegistration> source_data_;

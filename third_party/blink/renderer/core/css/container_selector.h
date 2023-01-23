@@ -26,8 +26,7 @@ class CORE_EXPORT ContainerSelector {
  public:
   ContainerSelector() = default;
   explicit ContainerSelector(WTF::HashTableDeletedValueType) {
-    WTF::HashTraits<AtomicString>::ConstructDeletedValue(
-        name_, false /* zero_value */);
+    WTF::HashTraits<AtomicString>::ConstructDeletedValue(name_);
   }
   explicit ContainerSelector(PhysicalAxes physical_axes)
       : physical_axes_(physical_axes) {}
@@ -80,26 +79,14 @@ class CORE_EXPORT ContainerSelector {
 namespace WTF {
 
 template <>
-struct DefaultHash<blink::ContainerSelector> {
-  STATIC_ONLY(DefaultHash);
+struct HashTraits<blink::ContainerSelector>
+    : SimpleClassHashTraits<blink::ContainerSelector> {
   static unsigned GetHash(const blink::ContainerSelector& selector) {
     return selector.GetHash();
   }
-
-  static bool Equal(const blink::ContainerSelector& a,
-                    const blink::ContainerSelector& b) {
-    return a == b;
-  }
-
-  static const bool safe_to_compare_to_empty_or_deleted =
-      DefaultHash<AtomicString>::safe_to_compare_to_empty_or_deleted;
-};
-
-template <>
-struct HashTraits<blink::ContainerSelector>
-    : SimpleClassHashTraits<blink::ContainerSelector> {
+  static constexpr bool kSafeToCompareToEmptyOrDeleted =
+      HashTraits<AtomicString>::kSafeToCompareToEmptyOrDeleted;
   static const bool kEmptyValueIsZero = false;
-  static const bool kNeedsDestruction = true;
 };
 
 }  // namespace WTF

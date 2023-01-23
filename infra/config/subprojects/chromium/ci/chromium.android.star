@@ -590,6 +590,9 @@ ci.builder(
         category = "builder_tester|arm64",
         short_name = "10",
     ),
+
+    # TODO(crbug.com/1366956): remove this after confirm py3 works on this builder.
+    omit_python2 = True,
 )
 
 ci.builder(
@@ -1184,6 +1187,9 @@ ci.builder(
         short_name = "N",
     ),
     execution_timeout = 4 * time.hour,
+
+    # TODO(crbug.com/1366956): remove this after confirm py3 works on this builder.
+    omit_python2 = True,
 )
 
 ci.thin_tester(
@@ -1251,6 +1257,9 @@ ci.builder(
     ),
     cq_mirrors_console_view = "mirrors",
     execution_timeout = 4 * time.hour,
+
+    # TODO(crbug.com/1366956): remove this after confirm py3 works on this builder.
+    omit_python2 = True,
 )
 
 ci.builder(
@@ -1282,6 +1291,9 @@ ci.builder(
         category = "builder_tester|x86",
         short_name = "P",
     ),
+
+    # TODO(crbug.com/1366956): remove this after confirm py3 works on this builder.
+    omit_python2 = True,
 )
 
 # TODO(crbug.com/1137474): Update the console view config once on CQ
@@ -1316,6 +1328,9 @@ ci.builder(
         category = "builder_tester|x86",
         short_name = "11",
     ),
+
+    # TODO(crbug.com/1366956): remove this after confirm py3 works on this builder.
+    omit_python2 = True,
 )
 
 ci.builder(
@@ -1346,6 +1361,45 @@ ci.builder(
     console_view_entry = consoles.console_view_entry(
         category = "on_cq|x64",
         short_name = "12",
+    ),
+    execution_timeout = 4 * time.hour,
+
+    # TODO(crbug.com/1366956): remove this after confirm py3 works on this builder.
+    omit_python2 = True,
+)
+
+ci.builder(
+    name = "android-13-x64-rel",
+    # TODO(crbug.com/1405331): Enable on branches once stable
+    #branch_selector = branches.STANDARD_MILESTONE,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "x64_builder",
+        ),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    # TODO(crbug.com/1405331): Enable sheriff once tests are stable
+    sheriff_rotations = args.ignore_default(None),
+    # TODO(crbug.com/1405331): Enable tree_closing once compile are stable
+    #tree_closing = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "builder_tester|x64",
+        short_name = "13",
     ),
     execution_timeout = 4 * time.hour,
 

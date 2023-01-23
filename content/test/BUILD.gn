@@ -1427,6 +1427,7 @@ test("content_browsertests") {
     "../browser/renderer_host/render_widget_host_view_child_frame_browsertest.cc",
     "../browser/renderer_host/scroll_into_view_browsertest.cc",
     "../browser/renderer_host/sec_fetch_browsertest.cc",
+    "../browser/renderer_host/speculative_render_view_host_browsertest.cc",
     "../browser/renderer_host/unassigned_site_instance_browsertest.cc",
     "../browser/resource_loading_browsertest.cc",
     "../browser/screen_details/screen_details_browsertest.cc",
@@ -2528,6 +2529,7 @@ test("content_unittests") {
     "../browser/webid/federated_auth_request_impl_logout_unittest.cc",
     "../browser/webid/federated_auth_request_impl_multiple_frames_unittest.cc",
     "../browser/webid/federated_auth_request_impl_unittest.cc",
+    "../browser/webid/federated_auth_user_info_request_unittest.cc",
     "../browser/webid/idp_network_request_manager_unittest.cc",
     "../browser/webid/test/delegated_idp_network_request_manager.cc",
     "../browser/webid/test/delegated_idp_network_request_manager.h",
@@ -2900,6 +2902,7 @@ test("content_unittests") {
       "../renderer/pepper/event_conversion_unittest.cc",
       "../renderer/pepper/host_var_tracker_unittest.cc",
       "../renderer/pepper/mock_resource.h",
+      "../renderer/pepper/resource_creation_impl_unittest.cc",
       "../renderer/pepper/v8_var_converter_unittest.cc",
     ]
     deps += [

@@ -4119,6 +4119,19 @@ chromium-metrics-reviews@google.com.
   <token key="TabletOrClamshell" variants="DisplayModes"/>
 </histogram>
 
+<histogram name="Ash.Projector.OnDeviceToServerSpeechRecognitionFallbackReason"
+    enum="OnDeviceToServerSpeechRecognitionFallbackReason"
+    expires_after="2023-12-17">
+  <owner>xiqiruan@chromium.org</owner>
+  <owner>yilkal@chromium.org</owner>
+  <owner>cros-projector@google.com</owner>
+  <summary>
+    Records the fallback reason of using server based speech recognition instead
+    of on device speech recogniton. This metric is recorded on server based
+    speech recognition in projector session.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Projector.PendingScreencastBatchIOTaskDuration" units="ms"
     expires_after="2023-10-17">
   <owner>xiqiruan@chromium.org</owner>
@@ -4397,6 +4410,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Ash.Shelf.Palette.Assistant.CircledPercentage" units="%"
     expires_after="2021-12-12">
+  <obsolete>
+    Deprecated in M111. No longer needed since metalayer was deprecated in M110.
+  </obsolete>
   <owner>amehfooz@chromium.org</owner>
   <owner>cros-status-area@google.com</owner>
   <owner>gzadina@chromium.org</owner>
@@ -4423,6 +4439,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Ash.Shelf.Palette.Assistant.GestureDuration" units="ms"
     expires_after="2021-12-12">
+  <obsolete>
+    Deprecated in M111. No longer needed since metalayer was deprecated in M110.
+  </obsolete>
   <owner>amehfooz@chromium.org</owner>
   <owner>cros-status-area@google.com</owner>
   <owner>gzadina@chromium.org</owner>
@@ -4434,6 +4453,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Ash.Shelf.Palette.Assistant.GestureInterval" units="ms"
     expires_after="2021-12-12">
+  <obsolete>
+    Deprecated in M111. No longer needed since metalayer was deprecated in M110.
+  </obsolete>
   <owner>amehfooz@chromium.org</owner>
   <owner>cros-status-area@google.com</owner>
   <owner>gzadina@chromium.org</owner>
@@ -4447,6 +4469,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Ash.Shelf.Palette.Assistant.GesturesPerSession" units="units"
     expires_after="2021-12-12">
+  <obsolete>
+    Deprecated in M111. No longer needed since metalayer was deprecated in M110.
+  </obsolete>
   <owner>amehfooz@chromium.org</owner>
   <owner>cros-status-area@google.com</owner>
   <owner>gzadina@chromium.org</owner>
@@ -4459,6 +4484,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Ash.Shelf.Palette.Assistant.GesturesPerSession.Recognized"
     units="units" expires_after="2021-12-12">
+  <obsolete>
+    Deprecated in M111. No longer needed since metalayer was deprecated in M110.
+  </obsolete>
   <owner>amehfooz@chromium.org</owner>
   <owner>cros-status-area@google.com</owner>
   <owner>gzadina@chromium.org</owner>
@@ -4471,6 +4499,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Ash.Shelf.Palette.Assistant.GestureType"
     enum="AssistantGestureType" expires_after="2023-05-01">
+  <obsolete>
+    Deprecated in M111. No longer needed since metalayer was deprecated in M110.
+  </obsolete>
   <owner>amehfooz@chromium.org</owner>
   <owner>cros-status-area@google.com</owner>
   <owner>gzadina@chromium.org</owner>
@@ -4481,6 +4512,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Ash.Shelf.Palette.Assistant.HighlighterLength" units="dp"
     expires_after="2021-12-12">
+  <obsolete>
+    Deprecated in M111. No longer needed since metalayer was deprecated in M110.
+  </obsolete>
   <owner>amehfooz@chromium.org</owner>
   <owner>cros-status-area@google.com</owner>
   <owner>gzadina@chromium.org</owner>

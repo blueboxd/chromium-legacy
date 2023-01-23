@@ -1456,7 +1456,7 @@
               'cores': '8',
             },
           ],
-          'shards': 2,
+          'shards': 8,
         },
       },
       'content_browsertests': {
@@ -1466,6 +1466,7 @@
               'cores': '8',
             },
           ],
+          'shards': 5,
         },
       },
       'content_unittests': {
@@ -1484,6 +1485,7 @@
               'cores': '8',
             },
           ],
+          'shards': 3,
         },
       },
       'net_unittests': {
@@ -2248,7 +2250,29 @@
           '--disable-field-trial-config',
         ],
         'test': 'android_browsertests',
-      }
+      },
+      'webview_cts_tests_no_field_trial': {
+        'args': [
+          '--disable-field-trial-config',
+        ],
+        'swarming': {
+          'shards': 2,
+          'cipd_packages': [
+            {
+              "cipd_package": 'chromium/android_webview/tools/cts_archive',
+              'location': 'android_webview/tools/cts_archive',
+              'revision': 'C4m9-gZKvvtS0-KQ9cMRi6wEfZH_TeWSiXEgsgtGtsMC',
+            }
+          ]
+        },
+        'test': 'webview_cts_tests',
+      },
+      'webview_ui_test_app_test_apk_no_field_trial': {
+        'args': [
+          '--disable-field-trial-config',
+        ],
+        'test': 'webview_ui_test_app_test_apk',
+      },
     },
     'fieldtrial_browser_tests': {
       'browser_tests_no_field_trial': {
@@ -3685,6 +3709,13 @@
         ],
         'android_args': [
           '$$MAGIC_SUBSTITUTION_GPUTelemetryNoRootForUnrootedDevices',
+        ],
+        'lacros_args': [
+          '--extra-browser-args=--enable-features=UseOzonePlatform --ozone-platform=wayland',
+          '--xvfb',
+          '--no-xvfb',
+          '--use-weston',
+          '--weston-use-gl',
         ],
         'mixins': [
           'has_native_resultdb_integration',
@@ -6161,6 +6192,20 @@
       # 'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
     ],
 
+
+    # The same as gpu_fyi_chromeos_release_telemetry_tests, but using
+    # passthrough instead of validating since the Lacros bots are actually
+    # Lacros-like Linux bots, and Linux uses the passthrough decoder.
+    # Additionally, we use GLES instead of GL since that's what is supported.
+    'gpu_fyi_lacros_release_telemetry_tests': [
+      'gpu_common_and_optional_telemetry_tests',
+      'gpu_mediapipe_passthrough_telemetry_tests',
+      'gpu_passthrough_telemetry_tests',
+      'gpu_webcodecs_telemetry_test',
+      'gpu_webgl2_conformance_gles_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_gles_passthrough_telemetry_tests',
+    ],
+
     'gpu_fyi_linux_debug_gtests': [
       'gpu_common_gtests_passthrough',
       'gpu_gles2_conform_gtests',
@@ -6510,6 +6555,14 @@
       'linux_flavor_specific_chromium_gtests': {},
       'system_webview_shell_instrumentation_tests': {}, # Not an experimental test
       'webview_ui_instrumentation_tests': {},
+    },
+
+    'chromeos_octopus_skylab_tests': {
+      'chromeos_chrome_all_tast_tests': {
+        'variants': [
+          'CROS_OCTOPUS_RELEASE_CHROME_FROM_TLS',
+        ]
+      },
     },
 
     'chromeos_trogdor64_skylab_tests': {

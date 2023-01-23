@@ -84,7 +84,6 @@
 #import "ios/chrome/browser/voice/voice_search_navigations_tab_helper.h"
 #import "ios/chrome/browser/web/annotations/annotations_tab_helper.h"
 #import "ios/chrome/browser/web/blocked_popup_tab_helper.h"
-#import "ios/chrome/browser/web/error_page_controller_bridge.h"
 #import "ios/chrome/browser/web/font_size/font_size_tab_helper.h"
 #import "ios/chrome/browser/web/image_fetch/image_fetch_tab_helper.h"
 #import "ios/chrome/browser/web/invalid_url_tab_helper.h"
@@ -140,7 +139,6 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
       web_state);
   password_manager::WellKnownChangePasswordTabHelper::CreateForWebState(
       web_state);
-  ErrorPageControllerBridge::CreateForWebState(web_state);
 
   InvalidUrlTabHelper::CreateForWebState(web_state);
 
@@ -196,19 +194,8 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
 
   UniqueIDDataTabHelper::CreateForWebState(web_state);
 
-  PasswordTabHelper::CreateForWebState(web_state);
-
-  AutofillTabHelper::CreateForWebState(
-      web_state,
-      PasswordTabHelper::FromWebState(web_state)->GetPasswordManager());
-
   // Depends on favicon::WebFaviconDriver, must be created after it.
-    SearchEngineTabHelper::CreateForWebState(web_state);
-
-  FormSuggestionTabHelper::CreateForWebState(web_state, @[
-    PasswordTabHelper::FromWebState(web_state)->GetSuggestionProvider(),
-    AutofillTabHelper::FromWebState(web_state)->GetSuggestionProvider(),
-  ]);
+  SearchEngineTabHelper::CreateForWebState(web_state);
 
   ukm::InitializeSourceUrlRecorderForWebState(web_state);
 
@@ -237,6 +224,16 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     PagePlaceholderTabHelper::CreateForWebState(web_state);
     PrintTabHelper::CreateForWebState(web_state);
     ChromeIOSTranslateClient::CreateForWebState(web_state);
+
+    PasswordTabHelper::CreateForWebState(web_state);
+    AutofillTabHelper::CreateForWebState(
+        web_state,
+        PasswordTabHelper::FromWebState(web_state)->GetPasswordManager());
+
+    FormSuggestionTabHelper::CreateForWebState(web_state, @[
+      PasswordTabHelper::FromWebState(web_state)->GetSuggestionProvider(),
+      AutofillTabHelper::FromWebState(web_state)->GetSuggestionProvider(),
+    ]);
   }
 
   InfobarBadgeTabHelper::CreateForWebState(web_state);

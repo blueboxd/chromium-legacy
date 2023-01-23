@@ -208,7 +208,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kChromeSharingHubLaunchAdjacent,
     &kChromeSurveyNextAndroid,
     &kCommandLineOnNonRooted,
-    &kConditionalTabStripAndroid,
     &kContextMenuEnableLensShoppingAllowlist,
     &kContextMenuGoogleLensChip,
     &kContextMenuSearchWithGoogleLens,
@@ -339,6 +338,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &page_info::kPageInfoAboutThisSiteEn,
     &page_info::kPageInfoAboutThisSiteMoreInfo,
     &page_info::kPageInfoAboutThisSiteNonEn,
+    &page_info::kPageInfoAboutThisSiteImprovedBottomSheet,
     &password_manager::features::kBiometricTouchToFill,
     &password_manager::features::kEnablePasswordsAccountStorage,
     &password_manager::features::kLeakDetectionUnauthenticated,
@@ -478,10 +478,6 @@ BASE_FEATURE(kBackgroundThreadPool,
 
 BASE_FEATURE(kBaselineGM3SurfaceColors,
              "BaselineGM3SurfaceColors",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kConditionalTabStripAndroid,
-             "ConditionalTabStripAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Used in downstream code.

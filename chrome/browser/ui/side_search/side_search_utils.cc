@@ -111,10 +111,6 @@ bool IsSidePanelWebContents(content::WebContents* web_contents) {
   return !!SideSearchSideContentsHelper::FromWebContents(web_contents);
 }
 
-bool IsDSESupportEnabled(const Profile* profile) {
-  return IsSideSearchEnabled(profile);
-}
-
 bool IsEnabledForBrowser(const Browser* browser) {
   return IsSideSearchEnabled(browser->profile()) && browser->is_type_normal();
 }
@@ -128,7 +124,6 @@ bool IsSearchWebInSidePanelSupported(const Browser* browser) {
           ->GetDefaultSearchProvider();
   DCHECK(default_provider);
   return IsEnabledForBrowser(browser) &&
-         IsDSESupportEnabled(browser->profile()) &&
          default_provider->IsSideSearchSupported() &&
          base::FeatureList::IsEnabled(features::kSearchWebInSidePanel);
 }
@@ -136,6 +131,5 @@ bool IsSearchWebInSidePanelSupported(const Browser* browser) {
 
 bool IsSideSearchEnabled(const Profile* profile) {
   return !profile->IsOffTheRecord() &&
-         base::FeatureList::IsEnabled(features::kSideSearch) &&
          profile->GetPrefs()->GetBoolean(side_search_prefs::kSideSearchEnabled);
 }

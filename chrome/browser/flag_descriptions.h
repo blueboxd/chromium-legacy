@@ -57,9 +57,6 @@ extern const char kPdfUseSkiaRendererName[];
 extern const char kPdfUseSkiaRendererDescription[];
 #endif
 
-extern const char kAccountIdMigrationName[];
-extern const char kAccountIdMigrationDescription[];
-
 extern const char kAddEduAccountFromAccountSettingsForSupervisedUsersName[];
 extern const char
     kAddEduAccountFromAccountSettingsForSupervisedUsersDescription[];
@@ -395,9 +392,6 @@ extern const char kClientStorageAccessContextAuditingDescription[];
 
 extern const char kClosedTabCacheName[];
 extern const char kClosedTabCacheDescription[];
-
-extern const char kConditionalTabStripAndroidName[];
-extern const char kConditionalTabStripAndroidDescription[];
 
 extern const char kClearCrossSiteCrossBrowsingContextGroupWindowNameName[];
 extern const char
@@ -872,6 +866,9 @@ extern const char kGlobalMediaControlsCrOSUpdatedUIDescription[];
 extern const char kGlobalMediaControlsModernUIName[];
 extern const char kGlobalMediaControlsModernUIDescription[];
 
+extern const char kGoogleOneOfferFilesBannerName[];
+extern const char kGoogleOneOfferFilesBannerDescription[];
+
 extern const char kOpenscreenCastStreamingSessionName[];
 extern const char kOpenscreenCastStreamingSessionDescription[];
 
@@ -1159,6 +1156,9 @@ extern const char kOmniboxMlLogUrlScoringSignalsDescription[];
 
 extern const char kOmniboxMlRelevanceScoringName[];
 extern const char kOmniboxMlRelevanceScoringDescription[];
+
+extern const char kOmniboxMlUrlScoringModelName[];
+extern const char kOmniboxMlUrlScoringModelDescription[];
 
 extern const char kOmniboxModernizeVisualUpdateName[];
 extern const char kOmniboxModernizeVisualUpdateDescription[];
@@ -1506,9 +1506,6 @@ extern const char kSecurePaymentConfirmationDebugDescription[];
 
 extern const char kSendTabToSelfSigninPromoName[];
 extern const char kSendTabToSelfSigninPromoDescription[];
-
-extern const char kSidePanelImprovedClobberingName[];
-extern const char kSidePanelImprovedClobberingDescription[];
 
 extern const char kSidePanelJourneysFlagId[];
 extern const char kSidePanelJourneysName[];
@@ -2165,6 +2162,9 @@ extern const char kPageInfoHistoryDescription[];
 extern const char kPageInfoStoreInfoName[];
 extern const char kPageInfoStoreInfoDescription[];
 
+extern const char kPageInfoAboutThisSiteImprovedBottomSheetName[];
+extern const char kPageInfoAboutThisSiteImprovedBottomSheetDescription[];
+
 extern const char kPersistShareHubOnAppSwitchName[];
 extern const char kPersistShareHubOnAppSwitchDescription[];
 
@@ -2509,6 +2509,9 @@ extern const char kSharingDesktopSharePreviewDescription[];
 
 extern const char kSharingDesktopShareToGoogleCollectionsName[];
 extern const char kSharingDesktopShareToGoogleCollectionsDescription[];
+
+extern const char kWebAppManifestImmediateUpdatingName[];
+extern const char kWebAppManifestImmediateUpdatingDescription[];
 
 extern const char kWebAuthenticationPermitEnterpriseAttestationName[];
 extern const char kWebAuthenticationPermitEnterpriseAttestationDescription[];
@@ -3242,15 +3245,6 @@ extern const char kEnableHardwareMirrorModeDescription[];
 extern const char kLockScreenNotificationName[];
 extern const char kLockScreenNotificationDescription[];
 
-extern const char kMediaAppCustomColorsName[];
-extern const char kMediaAppCustomColorsDescription[];
-
-extern const char kMediaAppPhotosIntegrationImageName[];
-extern const char kMediaAppPhotosIntegrationImageDescription[];
-
-extern const char kMediaAppPhotosIntegrationVideoName[];
-extern const char kMediaAppPhotosIntegrationVideoDescription[];
-
 extern const char kMeteredShowToggleName[];
 extern const char kMeteredShowToggleDescription[];
 
@@ -3622,9 +3616,6 @@ extern const char kZeroCopyVideoCaptureDescription[];
 #if defined(TOOLKIT_VIEWS)
 extern const char kRevampedPasswordManagementBubbleName[];
 extern const char kRevampedPasswordManagementBubbleDescription[];
-
-extern const char kSideSearchName[];
-extern const char kSideSearchDescription[];
 
 extern const char kSearchWebInSidePanelName[];
 extern const char kSearchWebInSidePanelDescription[];

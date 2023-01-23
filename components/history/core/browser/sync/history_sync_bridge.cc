@@ -169,6 +169,9 @@ VisitRow MakeVisitRow(const sync_pb::HistorySpecifics& specifics,
   row.originator_visit_id =
       specifics.redirect_entries(redirect_index).originator_visit_id();
 
+  // Definitionally, any visit from Sync is known to sync.
+  row.is_known_to_sync = true;
+
   // Reconstruct the page transition - first get the core type.
   int page_transition = syncer::FromSyncPageTransition(
       specifics.page_transition().core_transition());
@@ -278,6 +281,7 @@ std::unique_ptr<syncer::EntityData> MakeEntityData(
     bool redirect_chain_middle_trimmed,
     const GURL& referrer_url,
     const std::vector<GURL>& favicon_urls,
+    int64_t local_cluster_id,
     std::vector<VisitID>* included_visit_ids) {
   DCHECK(!local_cache_guid.empty());
   DCHECK(!redirect_visits.empty());
@@ -401,6 +405,8 @@ std::unique_ptr<syncer::EntityData> MakeEntityData(
       history->set_favicon_url(url.spec());
     }
   }
+
+  history->set_originator_cluster_id(local_cluster_id);
 
   // The entity name is used for debugging purposes; choose something that's a
   // decent tradeoff between "unique" and "readable".
@@ -993,12 +999,17 @@ HistorySyncBridge::QueryRedirectChainAndMakeEntityData(
     // Convert the current subchain into a SyncEntity.
     GURL referrer_url =
         GetURLForVisit(annotated_visits.front().visit_row.referring_visit);
+    // Note: `favicon_urls` may legitimately be empty, that's fine.
     std::vector<GURL> favicon_urls = history_backend_->GetFaviconURLsForURL(
         annotated_visits.back().url_row.url());
-    // Note: `favicon_urls` may legitimately be empty, that's fine.
-    entities.push_back(MakeEntityData(GetLocalCacheGuid(), annotated_visits,
-                                      chain_middle_trimmed, referrer_url,
-                                      favicon_urls, included_visit_ids));
+    // Note: `local_cluster_id` can legitimately be 0 and only get it for the
+    // first visit, as the cluster id for everything in the redirect chain
+    // should be the same (except potentially in unit tests).
+    int64_t local_cluster_id = history_backend_->GetClusterIdContainingVisit(
+        redirect_visits.front().visit_id);
+    entities.push_back(MakeEntityData(
+        GetLocalCacheGuid(), annotated_visits, chain_middle_trimmed,
+        referrer_url, favicon_urls, local_cluster_id, included_visit_ids));
   }
   return entities;
 }
@@ -1050,6 +1061,21 @@ bool HistorySyncBridge::AddEntityInBackend(
       return false;
     }
     referring_visit_id = added_visit_id;
+
+    // If the sending client supports syncing its clusters, add the appropriate
+    // details to history.
+    DCHECK(!specifics.originator_cache_guid().empty());
+    if (specifics.originator_cluster_id() > 0) {
+      // Populate the visit to a synced cluster.
+      history::ClusterVisit cluster_visit;
+      cluster_visit.annotated_visit.visit_row = visit_row;
+      cluster_visit.annotated_visit.visit_row.visit_id = added_visit_id;
+      // TODO(b/264457591): Refactor some of the cluster visit details to
+      //   History so it can be appropriately populated here.
+      history_backend_->AddVisitToSyncedCluster(
+          cluster_visit, specifics.originator_cache_guid(),
+          specifics.originator_cluster_id());
+    }
 
     // Remapping chain extremities (i.e. first and last visit in the chain) via
     // `id_remapper`: The first visit in the chain can refer to a visit outside

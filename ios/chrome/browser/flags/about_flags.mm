@@ -1219,6 +1219,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"promos-manager-uses-fet", flag_descriptions::kPromosManagerUsesFETName,
      flag_descriptions::kPromosManagerUsesFETDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kPromosManagerUsesFET)},
+    {"enable-accessibility-identifier-to-omnibox-leading-image",
+     flag_descriptions::kEnableAccessibilityIdentifierToOmniboxLeadingImageName,
+     flag_descriptions::
+         kEnableAccessibilityIdentifierToOmniboxLeadingImageDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kEnableAccessibilityIdentifierToOmniboxLeadingImage)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -1381,11 +1387,11 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
   switch ([defaults integerForKey:metrics_reporting_key]) {
     case 1:
       // Metrics reporting forced.
-      [testing_policies setValue:@(YES) forKey:metrics_reporting_key];
+      [testing_policies setValue:@YES forKey:metrics_reporting_key];
       break;
     case 2:
       // Metrics reporting disabled.
-      [testing_policies setValue:@(NO) forKey:metrics_reporting_key];
+      [testing_policies setValue:@NO forKey:metrics_reporting_key];
       break;
     default:
       // Metrics reporting not managed.

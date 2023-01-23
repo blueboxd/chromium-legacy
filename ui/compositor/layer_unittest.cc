@@ -148,6 +148,9 @@ class LayerWithRealCompositorTest : public testing::Test {
   }
 
   Compositor* GetCompositor() { return compositor_host_->GetCompositor(); }
+  cc::LayerTreeHost* GetLayerTreeHost() {
+    return compositor_host_->GetLayerTreeHost();
+  }
 
   void ResetCompositor() {
     compositor_host_.reset();
@@ -1206,9 +1209,9 @@ TEST_F(LayerWithNullDelegateTest, Visibility) {
   l3->set_delegate(&delegate);
 
   // Layers should initially be drawn.
-  EXPECT_TRUE(l1->IsDrawn());
-  EXPECT_TRUE(l2->IsDrawn());
-  EXPECT_TRUE(l3->IsDrawn());
+  EXPECT_TRUE(l1->IsVisible());
+  EXPECT_TRUE(l2->IsVisible());
+  EXPECT_TRUE(l3->IsVisible());
   EXPECT_FALSE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_FALSE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_FALSE(l3->cc_layer_for_testing()->hide_layer_and_subtree());
@@ -1218,25 +1221,25 @@ TEST_F(LayerWithNullDelegateTest, Visibility) {
   Draw();
 
   l1->SetVisible(false);
-  EXPECT_FALSE(l1->IsDrawn());
-  EXPECT_FALSE(l2->IsDrawn());
-  EXPECT_FALSE(l3->IsDrawn());
+  EXPECT_FALSE(l1->IsVisible());
+  EXPECT_FALSE(l2->IsVisible());
+  EXPECT_FALSE(l3->IsVisible());
   EXPECT_TRUE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_FALSE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_FALSE(l3->cc_layer_for_testing()->hide_layer_and_subtree());
 
   l3->SetVisible(false);
-  EXPECT_FALSE(l1->IsDrawn());
-  EXPECT_FALSE(l2->IsDrawn());
-  EXPECT_FALSE(l3->IsDrawn());
+  EXPECT_FALSE(l1->IsVisible());
+  EXPECT_FALSE(l2->IsVisible());
+  EXPECT_FALSE(l3->IsVisible());
   EXPECT_TRUE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_FALSE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_TRUE(l3->cc_layer_for_testing()->hide_layer_and_subtree());
 
   l1->SetVisible(true);
-  EXPECT_TRUE(l1->IsDrawn());
-  EXPECT_TRUE(l2->IsDrawn());
-  EXPECT_FALSE(l3->IsDrawn());
+  EXPECT_TRUE(l1->IsVisible());
+  EXPECT_TRUE(l2->IsVisible());
+  EXPECT_FALSE(l3->IsVisible());
   EXPECT_FALSE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_FALSE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_TRUE(l3->cc_layer_for_testing()->hide_layer_and_subtree());
@@ -1256,9 +1259,9 @@ TEST_F(LayerWithNullDelegateTest, MirroringVisibility) {
   l2_mirror->set_delegate(&delegate);
 
   // Layers should initially be drawn.
-  EXPECT_TRUE(l1->IsDrawn());
-  EXPECT_TRUE(l2->IsDrawn());
-  EXPECT_TRUE(l2_mirror->IsDrawn());
+  EXPECT_TRUE(l1->IsVisible());
+  EXPECT_TRUE(l2->IsVisible());
+  EXPECT_TRUE(l2_mirror->IsVisible());
   EXPECT_FALSE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_FALSE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_FALSE(l2_mirror->cc_layer_for_testing()->hide_layer_and_subtree());
@@ -1271,9 +1274,9 @@ TEST_F(LayerWithNullDelegateTest, MirroringVisibility) {
   l1->SetVisible(false);
 
   // Since the entire subtree is hidden, no layer should be drawn.
-  EXPECT_FALSE(l1->IsDrawn());
-  EXPECT_FALSE(l2->IsDrawn());
-  EXPECT_FALSE(l2_mirror->IsDrawn());
+  EXPECT_FALSE(l1->IsVisible());
+  EXPECT_FALSE(l2->IsVisible());
+  EXPECT_FALSE(l2_mirror->IsVisible());
 
   // The visibitily property for the subtree is rooted at |l1|.
   EXPECT_TRUE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
@@ -1285,9 +1288,9 @@ TEST_F(LayerWithNullDelegateTest, MirroringVisibility) {
   l2->SetVisible(false);
 
   // None of the layers are drawn since the visibility is false at every node.
-  EXPECT_FALSE(l1->IsDrawn());
-  EXPECT_FALSE(l2->IsDrawn());
-  EXPECT_FALSE(l2_mirror->IsDrawn());
+  EXPECT_FALSE(l1->IsVisible());
+  EXPECT_FALSE(l2->IsVisible());
+  EXPECT_FALSE(l2_mirror->IsVisible());
 
   // Visibility property is set on every node and hence their subtree is also
   // hidden.
@@ -1298,9 +1301,9 @@ TEST_F(LayerWithNullDelegateTest, MirroringVisibility) {
   // Setting visibility on the root layer should make that layer visible and its
   // subtree ready for visibility.
   l1->SetVisible(true);
-  EXPECT_TRUE(l1->IsDrawn());
-  EXPECT_FALSE(l2->IsDrawn());
-  EXPECT_FALSE(l2_mirror->IsDrawn());
+  EXPECT_TRUE(l1->IsVisible());
+  EXPECT_FALSE(l2->IsVisible());
+  EXPECT_FALSE(l2_mirror->IsVisible());
   EXPECT_FALSE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_TRUE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_TRUE(l2_mirror->cc_layer_for_testing()->hide_layer_and_subtree());
@@ -1308,9 +1311,9 @@ TEST_F(LayerWithNullDelegateTest, MirroringVisibility) {
   // Setting visibility on the mirrored layer should not effect its source
   // layer.
   l2_mirror->SetVisible(true);
-  EXPECT_TRUE(l1->IsDrawn());
-  EXPECT_FALSE(l2->IsDrawn());
-  EXPECT_TRUE(l2_mirror->IsDrawn());
+  EXPECT_TRUE(l1->IsVisible());
+  EXPECT_FALSE(l2->IsVisible());
+  EXPECT_TRUE(l2_mirror->IsVisible());
   EXPECT_FALSE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_TRUE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_FALSE(l2_mirror->cc_layer_for_testing()->hide_layer_and_subtree());
@@ -1318,9 +1321,9 @@ TEST_F(LayerWithNullDelegateTest, MirroringVisibility) {
   // Setting visibility on the source layer should keep the mirror layer in
   // sync and not cause any invalid state.
   l2->SetVisible(true);
-  EXPECT_TRUE(l1->IsDrawn());
-  EXPECT_TRUE(l2->IsDrawn());
-  EXPECT_TRUE(l2_mirror->IsDrawn());
+  EXPECT_TRUE(l1->IsVisible());
+  EXPECT_TRUE(l2->IsVisible());
+  EXPECT_TRUE(l2_mirror->IsVisible());
   EXPECT_FALSE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_FALSE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_FALSE(l2_mirror->cc_layer_for_testing()->hide_layer_and_subtree());
@@ -1328,9 +1331,9 @@ TEST_F(LayerWithNullDelegateTest, MirroringVisibility) {
   // Setting visibility on the mirrored layer should not effect its source
   // layer.
   l2_mirror->SetVisible(false);
-  EXPECT_TRUE(l1->IsDrawn());
-  EXPECT_TRUE(l2->IsDrawn());
-  EXPECT_FALSE(l2_mirror->IsDrawn());
+  EXPECT_TRUE(l1->IsVisible());
+  EXPECT_TRUE(l2->IsVisible());
+  EXPECT_FALSE(l2_mirror->IsVisible());
   EXPECT_FALSE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_FALSE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_TRUE(l2_mirror->cc_layer_for_testing()->hide_layer_and_subtree());
@@ -1338,9 +1341,9 @@ TEST_F(LayerWithNullDelegateTest, MirroringVisibility) {
   // Setting source layer's visibility to true should update the mirror layer
   // even if the source layer did not change in the process.
   l2->SetVisible(true);
-  EXPECT_TRUE(l1->IsDrawn());
-  EXPECT_TRUE(l2->IsDrawn());
-  EXPECT_TRUE(l2_mirror->IsDrawn());
+  EXPECT_TRUE(l1->IsVisible());
+  EXPECT_TRUE(l2->IsVisible());
+  EXPECT_TRUE(l2_mirror->IsVisible());
   EXPECT_FALSE(l1->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_FALSE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
   EXPECT_FALSE(l2_mirror->cc_layer_for_testing()->hide_layer_and_subtree());
@@ -1349,9 +1352,9 @@ TEST_F(LayerWithNullDelegateTest, MirroringVisibility) {
   // shouldn't affect the visibility of |l2_mirror|.
   l2_mirror->set_sync_visibility_with_source(false);
   l2->SetVisible(false);
-  EXPECT_FALSE(l2->IsDrawn());
+  EXPECT_FALSE(l2->IsVisible());
   EXPECT_TRUE(l2->cc_layer_for_testing()->hide_layer_and_subtree());
-  EXPECT_TRUE(l2_mirror->IsDrawn());
+  EXPECT_TRUE(l2_mirror->IsVisible());
   EXPECT_FALSE(l2_mirror->cc_layer_for_testing()->hide_layer_and_subtree());
 }
 
@@ -3362,6 +3365,18 @@ TEST_F(LayerWithRealCompositorTest, CompositorAnimationObserverTest) {
   EXPECT_FALSE(animation_observer.shutdown());
   ResetCompositor();
   EXPECT_TRUE(animation_observer.shutdown());
+}
+
+TEST_F(LayerWithRealCompositorTest, NoContentNoDraw) {
+  std::unique_ptr<Layer> root =
+      CreateNoTextureLayer(gfx::Rect(0, 0, 1000, 1000));
+  WaitForDraw();
+  ASSERT_FALSE(GetLayerTreeHost()->CommitRequested());
+  TestCompositorAnimationObserver animation_observer(GetCompositor());
+  root->SetBounds({10, 10, 1000, 1000});
+  EXPECT_FALSE(GetLayerTreeHost()->CommitRequested());
+  root->SetBounds({100, 100});
+  EXPECT_FALSE(GetLayerTreeHost()->CommitRequested());
 }
 
 }  // namespace ui

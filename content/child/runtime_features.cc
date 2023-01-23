@@ -4,6 +4,7 @@
 
 #include "content/child/runtime_features.h"
 
+#include <string>
 #include <vector>
 
 #include "base/base_switches.h"
@@ -46,10 +47,6 @@
 #include "base/android/build_info.h"
 #endif
 
-#if BUILDFLAG(IS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 using blink::WebRuntimeFeatures;
 
 namespace {
@@ -67,9 +64,7 @@ void SetRuntimeFeatureDefaultsForPlatform(
   WebRuntimeFeatures::EnableCompositedSelectionUpdate(true);
 #endif
 #if BUILDFLAG(IS_WIN)
-  if (base::win::GetVersion() >= base::win::Version::WIN10) {
-    WebRuntimeFeatures::EnableWebBluetooth(true);
-  }
+  WebRuntimeFeatures::EnableWebBluetooth(true);
 #endif
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -225,7 +220,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableFedCmMultipleIdentityProviders,
      features::kFedCmMultipleIdentityProviders, kDefault},
     {wf::EnableFedCmRpContext, features::kFedCmRpContext, kDefault},
-    {wf::EnableFedCmUserInfo, features::kFedCmUserInfo, kDefault},
+    {wf::EnableFedCmUserInfo, features::kFedCmUserInfo, kSetOnlyIfOverridden},
     {wf::EnableFedCmSelectiveDisclosure, features::kFedCmSelectiveDisclosure,
      kDefault},
     {wf::EnableFencedFrames, features::kPrivacySandboxAdsAPIsOverride,
@@ -289,6 +284,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      features::kWebOTPAssertionFeaturePolicy, kSetOnlyIfOverridden},
     {wf::EnableWebUSB, features::kWebUsb},
     {wf::EnableWebXR, features::kWebXr},
+    {wf::EnableWebXRFrontFacing, device::features::kWebXrIncubations},
     {wf::EnableWebXRHandInput, device::features::kWebXrHandInput},
     {wf::EnableWebXRImageTracking, device::features::kWebXrIncubations},
     {wf::EnableWebXRLayers, device::features::kWebXrLayers},

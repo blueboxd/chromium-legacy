@@ -23,6 +23,7 @@
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/navigator_delegate.h"
 #include "content/browser/renderer_host/render_frame_host_manager.h"
+#include "content/browser/renderer_host/render_view_host_enums.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
@@ -30,6 +31,7 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-forward.h"
+#include "url/origin.h"
 
 namespace blink {
 namespace mojom {
@@ -38,6 +40,7 @@ enum class TreeScopeType;
 }  // namespace mojom
 
 struct FramePolicy;
+class StorageKey;
 }  // namespace blink
 
 namespace content {
@@ -272,14 +275,33 @@ class CONTENT_EXPORT FrameTree {
 
   using RenderViewHostMapId = base::IdType32<class RenderViewHostMap>;
 
-  // SiteInstanceGroup IDs are used to look up RenderViewHosts, since there is
-  // one RenderViewHost per SiteInstanceGroup in a given FrameTree.
+  // A map to store RenderViewHosts, keyed by SiteInstanceGroup ID.
+  // This map does not cover all RenderViewHosts in a FrameTree. See
+  // `speculative_render_view_host_`.
   using RenderViewHostMap = std::unordered_map<RenderViewHostMapId,
                                                RenderViewHostImpl*,
                                                RenderViewHostMapId::Hasher>;
+  // TODO(yangsharon, crbug.com/1336305): Change this to ForEachRenderViewHost
+  // to include `speculative_render_view_host_`.
   const RenderViewHostMap& render_view_hosts() const {
     return render_view_host_map_;
   }
+
+  // Speculative RenderViewHost accessors.
+  RenderViewHostImpl* speculative_render_view_host() const {
+    return speculative_render_view_host_.get();
+  }
+  void set_speculative_render_view_host(
+      base::WeakPtr<RenderViewHostImpl> render_view_host) {
+    speculative_render_view_host_ = render_view_host;
+  }
+
+  // Moves `speculative_render_view_host_` to `render_view_host_map_`. This
+  // should be called every time a main-frame same-SiteInstanceGroup speculative
+  // RenderFrameHost gets swapped in and becomes the active RenderFrameHost.
+  // This overwrites the previous RenderViewHost for the SiteInstanceGroup in
+  // `render_view_host_map_`, if one exists.
+  void MakeSpeculativeRVHCurrent();
 
   // Returns the FrameTreeNode with the given |frame_tree_node_id| if it is part
   // of this FrameTree.
@@ -391,15 +413,21 @@ class CONTENT_EXPORT FrameTree {
   //
   // The RenderFrameHostImpls and the RenderFrameProxyHosts will share ownership
   // of this object.
+  // `create_case` indicates whether or not the RenderViewHost being created is
+  // speculative or not. It should only be registered with the FrameTree if it
+  // is not speculative.
   scoped_refptr<RenderViewHostImpl> CreateRenderViewHost(
       SiteInstanceImpl* site_instance,
       int32_t main_frame_routing_id,
       bool renderer_initiated_creation,
-      scoped_refptr<BrowsingContextState> main_browsing_context_state);
+      scoped_refptr<BrowsingContextState> main_browsing_context_state,
+      CreateRenderViewHostCase create_case);
 
   // Returns the existing RenderViewHost for a new RenderFrameHost.
   // There should always be such a RenderViewHost, because the main frame
   // RenderFrameHost for each SiteInstance should be created before subframes.
+  // Note that this will never return `speculative_render_view_host_`. If that
+  // is needed, call `speculative_render_view_host()` instead.
   scoped_refptr<RenderViewHostImpl> GetRenderViewHost(SiteInstanceGroup* group);
 
   // Returns the ID used for the RenderViewHost associated with
@@ -511,6 +539,20 @@ class CONTENT_EXPORT FrameTree {
   // each inner FrameTree is attached.
   void FocusOuterFrameTrees();
 
+  // This should only be called by NavigationRequest when it detects that an
+  // origin is participating in the deprecation trial.
+  //
+  // TODO(crbug.com/1407150): Remove this when deprecation trial is complete.
+  void RegisterOriginForUnpartitionedSessionStorageAccess(
+      const url::Origin& origin);
+
+  // This should be used for all session storage related bindings as it adjusts
+  // the storage key used depending on the deprecation trial.
+  //
+  // TODO(crbug.com/1407150): Remove this when deprecation trial is complete.
+  const blink::StorageKey GetSessionStorageKey(
+      const blink::StorageKey& storage_key);
+
  private:
   friend class FrameTreeTest;
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest, RemoveFocusedFrame);
@@ -555,6 +597,33 @@ class CONTENT_EXPORT FrameTree {
   // more RenderFrameHosts or RenderFrameProxyHosts using it.
   RenderViewHostMap render_view_host_map_;
 
+  // A speculative RenderViewHost is created for all speculative cross-page
+  // same-SiteInstanceGroup RenderFrameHosts. When the corresponding
+  // RenderFrameHost gets committed and becomes the current RenderFrameHost,
+  // `speculative_render_view_host_` will be moved to `render_view_host_map_`,
+  // overwriting the previous RenderViewHost of the same SiteInstanceGroup, if
+  // applicable. This field will also be reset at that time, or if the
+  // speculative RenderFrameHost gets deleted.
+  //
+  // For any given FrameTree, there will be at most one
+  // `speculative_render_view_host_`, because only main-frame speculative
+  // RenderFrameHosts have speculative RenderViewHosts, and there is at most one
+  // such RenderFrameHost per FrameTree at a time.
+  // This is a WeakPtr, since the RenderViewHost is owned by the
+  // RenderFrameHostImpl, not the FrameTree. This implies that if the owning
+  // RenderFrameHostImpl gets deleted, this will too.
+  //
+  // This supports but is independent of RenderDocument, which introduces cases
+  // where there may be more than one RenderViewHost per SiteInstanceGroup, such
+  // as cross-page same-SiteInstanceGroup navigations. The speculative
+  // RenderFrameHost has an associated RenderViewHost, but it cannot be put in
+  // `render_view_host_map_` when it is created, as the existing RenderViewHost
+  // will be incorrectly overwritten.
+  // TODO(yangsharon, crbug.com/1336305): Expand support to include
+  // cross-SiteInstanceGroup main-frame navigations, so all main-frame
+  // navigations use speculative RenderViewHost.
+  base::WeakPtr<RenderViewHostImpl> speculative_render_view_host_;
+
   // Indicates type of frame tree.
   const Type type_;
 
@@ -581,6 +650,13 @@ class CONTENT_EXPORT FrameTree {
   // `root()` method, even while `root_` is running its destructor.
   // For that reason, we want to destroy |root_| before any other fields.
   FrameTreeNode root_;
+
+  // Origins in this set have enabled a deprecation trial that prevents the
+  // partitioning of session storage when embedded as a third-party iframe.
+  // This list persists for the lifetime of the associated tab.
+  //
+  // TODO(crbug.com/1407150): Remove this when deprecation trial is complete.
+  std::set<url::Origin> unpartitioned_session_storage_origins_;
 
   base::WeakPtrFactory<FrameTree> weak_ptr_factory_{this};
 };

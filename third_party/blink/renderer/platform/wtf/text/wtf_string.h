@@ -672,10 +672,10 @@ void String::PrependTo(BufferType& result,
 }
 
 template <typename T>
-struct DefaultHash;
+struct HashTraits;
 // Defined in string_hash.h.
 template <>
-struct DefaultHash<String>;
+struct HashTraits<String>;
 
 // Shared global empty string.
 WTF_EXPORT extern const String& g_empty_string;
@@ -685,7 +685,9 @@ WTF_EXPORT extern const String& g_xmlns_with_colon;
 // Table representing common HTML strings of type '\n<space>*'.
 class WTF_EXPORT NewlineThenWhitespaceStringsTable {
  public:
-  static constexpr size_t kTableSize = 128;
+  // The constant is kept small to minimize the overhead of the table (496
+  // bytes).
+  static constexpr size_t kTableSize = 32;
 
   static void Init();
 
@@ -695,7 +697,7 @@ class WTF_EXPORT NewlineThenWhitespaceStringsTable {
     return g_table_[string_length];
   }
 
-  static bool IsCommon(const StringView& view);
+  static bool IsNewlineThenWhitespaces(const StringView& view);
 
  private:
   static const String (&g_table_)[kTableSize];

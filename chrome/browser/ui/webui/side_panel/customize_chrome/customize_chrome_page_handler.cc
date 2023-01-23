@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
+#include "chrome/browser/ui/search/ntp_user_data_types.h"
 #include "chrome/browser/ui/webui/new_tab_page/ntp_pref_names.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_colors.h"
 #include "chrome/common/pref_names.h"
@@ -72,6 +73,16 @@ CustomizeChromePageHandler::CustomizeChromePageHandler(
         base::BindRepeating(&CustomizeChromePageHandler::UpdateModulesSettings,
                             base::Unretained(this)));
   }
+  pref_change_registrar_.Add(
+      ntp_prefs::kNtpUseMostVisitedTiles,
+      base::BindRepeating(
+          &CustomizeChromePageHandler::UpdateMostVisitedSettings,
+          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      ntp_prefs::kNtpShortcutsVisible,
+      base::BindRepeating(
+          &CustomizeChromePageHandler::UpdateMostVisitedSettings,
+          base::Unretained(this)));
 
   ntp_custom_background_service_observation_.Observe(
       ntp_custom_background_service_.get());
@@ -277,19 +288,20 @@ void CustomizeChromePageHandler::OpenThirdPartyThemePage(
 void CustomizeChromePageHandler::SetMostVisitedSettings(
     bool custom_links_enabled,
     bool visible) {
-  if (IsShortcutsVisible() != visible) {
-    profile_->GetPrefs()->SetBoolean(ntp_prefs::kNtpShortcutsVisible, visible);
-  }
-
   if (IsCustomLinksEnabled() != custom_links_enabled) {
     profile_->GetPrefs()->SetBoolean(ntp_prefs::kNtpUseMostVisitedTiles,
                                      !custom_links_enabled);
+    LogEvent(NTP_CUSTOMIZE_SHORTCUT_TOGGLE_TYPE);
+  }
+
+  if (IsShortcutsVisible() != visible) {
+    profile_->GetPrefs()->SetBoolean(ntp_prefs::kNtpShortcutsVisible, visible);
+    LogEvent(NTP_CUSTOMIZE_SHORTCUT_TOGGLE_VISIBILITY);
   }
 }
 
-void CustomizeChromePageHandler::GetMostVisitedSettings(
-    GetMostVisitedSettingsCallback callback) {
-  std::move(callback).Run(IsCustomLinksEnabled(), IsShortcutsVisible());
+void CustomizeChromePageHandler::UpdateMostVisitedSettings() {
+  page_->SetMostVisitedSettings(IsCustomLinksEnabled(), IsShortcutsVisible());
 }
 
 void CustomizeChromePageHandler::SetModulesVisible(bool visible) {
@@ -330,6 +342,23 @@ void CustomizeChromePageHandler::UpdateModulesSettings() {
       std::move(modules_settings),
       profile_->GetPrefs()->IsManagedPreference(prefs::kNtpModulesVisible),
       profile_->GetPrefs()->GetBoolean(prefs::kNtpModulesVisible));
+}
+
+void CustomizeChromePageHandler::LogEvent(NTPLoggingEventType event) {
+  switch (event) {
+    case NTP_CUSTOMIZE_SHORTCUT_TOGGLE_TYPE:
+      UMA_HISTOGRAM_ENUMERATION(
+          "NewTabPage.CustomizeShortcutAction",
+          CustomizeShortcutAction::CUSTOMIZE_SHORTCUT_ACTION_TOGGLE_TYPE);
+      break;
+    case NTP_CUSTOMIZE_SHORTCUT_TOGGLE_VISIBILITY:
+      UMA_HISTOGRAM_ENUMERATION(
+          "NewTabPage.CustomizeShortcutAction",
+          CustomizeShortcutAction::CUSTOMIZE_SHORTCUT_ACTION_TOGGLE_VISIBILITY);
+      break;
+    default:
+      break;
+  }
 }
 
 bool CustomizeChromePageHandler::IsCustomLinksEnabled() const {

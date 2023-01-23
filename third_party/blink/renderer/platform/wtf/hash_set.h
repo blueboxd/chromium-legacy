@@ -38,13 +38,13 @@ struct IdentityExtractor;
 // allowed; for integer keys 0 or -1 can't be used as a key. This restriction
 // can be lifted if you supply custom key traits.
 template <typename ValueArg,
-          typename TraitsArg = DefaultHashAndTraits<ValueArg>,
+          typename TraitsArg = HashTraits<ValueArg>,
           typename Allocator = PartitionAllocator>
 class HashSet {
   USE_ALLOCATOR(HashSet, Allocator);
 
  private:
-  typedef HashTraitsAdapter<ValueArg, TraitsArg> ValueTraits;
+  typedef TraitsArg ValueTraits;
   typedef typename ValueTraits::PeekInType ValuePeekInType;
 
  public:
@@ -155,14 +155,20 @@ class HashSet {
 struct IdentityExtractor {
   STATIC_ONLY(IdentityExtractor);
   template <typename T>
-  static const T& Extract(const T& t) {
+  static const T& ExtractKey(const T& t) {
+    return t;
+  }
+  template <typename T>
+  static T& ExtractKey(T& t) {
     return t;
   }
   // Assumes out points to a buffer of size at least sizeof(T).
   template <typename T>
-  static void ExtractSafe(const T& t, void* out) {
+  static void ExtractKeyToMemory(const T& t, void* out) {
     AtomicReadMemcpy<sizeof(T), alignof(T)>(out, &t);
   }
+  template <typename T>
+  static void ClearValue(const T&) {}
 };
 
 template <typename Translator>

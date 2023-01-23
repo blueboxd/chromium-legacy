@@ -780,7 +780,7 @@ void LayerTreeHostImpl::CommitComplete() {
       mutator_host_->HasSmilAnimation()) {
     frame_trackers_.StartSequence(
         FrameSequenceTrackerType::kMainThreadAnimation);
-    if (mutator_host_->HasSharedElementTransition()) {
+    if (mutator_host_->HasViewTransition()) {
       frame_trackers_.StartSequence(
           FrameSequenceTrackerType::kSETMainThreadAnimation);
     }
@@ -2546,7 +2546,7 @@ absl::optional<LayerTreeHostImpl::SubmitInfo> LayerTreeHostImpl::DrawLayers(
         FrameSequenceTrackerType::kMainThreadAnimation);
     frame_trackers_.StopSequence(
         FrameSequenceTrackerType::kSETMainThreadAnimation);
-  } else if (!mutator_host_->HasSharedElementTransition()) {
+  } else if (!mutator_host_->HasViewTransition()) {
     frame_trackers_.StopSequence(
         FrameSequenceTrackerType::kSETMainThreadAnimation);
   }
@@ -4302,7 +4302,7 @@ bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,
         FrameSequenceTrackerType::kCompositorAnimation);
   }
 
-  if (animated && mutator_host_->HasSharedElementTransition()) {
+  if (animated && mutator_host_->HasViewTransition()) {
     frame_trackers_.StartSequence(
         FrameSequenceTrackerType::kSETCompositorAnimation);
   } else {
@@ -5150,9 +5150,9 @@ void LayerTreeHostImpl::SetActiveURL(const GURL& url, ukm::SourceId source_id) {
 
 void LayerTreeHostImpl::SetUkmSmoothnessDestination(
     base::WritableSharedMemoryMapping ukm_smoothness_data) {
-  ukm_smoothness_mapping_ = std::move(ukm_smoothness_data);
   dropped_frame_counter_.SetUkmSmoothnessDestination(
-      ukm_smoothness_mapping_.GetMemoryAs<UkmSmoothnessDataShared>());
+      ukm_smoothness_data.GetMemoryAs<UkmSmoothnessDataShared>());
+  ukm_smoothness_mapping_ = std::move(ukm_smoothness_data);
 }
 
 void LayerTreeHostImpl::NotifyDidPresentCompositorFrameOnImplThread(

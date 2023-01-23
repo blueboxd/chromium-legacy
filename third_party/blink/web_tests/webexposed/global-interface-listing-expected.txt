@@ -4892,6 +4892,7 @@ interface IdentityCredential : Credential
     getter token
     method constructor
 interface IdentityProvider
+    static method getUserInfo
     static method login
     static method logout
     attribute @@toStringTag
@@ -6562,6 +6563,7 @@ interface PendingPostBeacon : PendingBeacon
 interface Performance : EventTarget
     attribute @@toStringTag
     getter eventCounts
+    getter interactionCount
     getter memory
     getter navigation
     getter onresourcetimingbufferfull

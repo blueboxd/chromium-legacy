@@ -732,6 +732,12 @@ BASE_FEATURE(kKAnonymityServiceOHTTPRequests,
              "KAnonymityServiceOHTTPRequests",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When enabled, the k-Anonymity Service can use a persistent storage to cache
+// public keys.
+BASE_FEATURE(kKAnonymityServiceStorage,
+             "KAnonymityServiceStorage",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // When enabled, removes any entry points to the history UI from Incognito mode.
 BASE_FEATURE(kUpdateHistoryEntryPointsInIncognito,
              "UpdateHistoryEntryPointsInIncognito",
@@ -1303,7 +1309,19 @@ BASE_FEATURE(kUserActivityEventLogging,
 BASE_FEATURE(kWebAppManifestIconUpdating,
              "WebAppManifestIconUpdating",
              base::FEATURE_DISABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_ANDROID)
+
+BASE_FEATURE(
+    kWebAppManifestImmediateUpdating,
+    "WebAppManifestImmediateUpdating",
+#if BUILDFLAG(IS_MAC)
+    // TODO(crbug.com/1344367): Enable on Mac. Currently disabled due to
+    // WebAppIntegration test failures likely due to app shim problems.
+    base::FEATURE_DISABLED_BY_DEFAULT
+#else
+    base::FEATURE_ENABLED_BY_DEFAULT
+#endif  // BUILDFLAG(IS_MAC)
+);
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 BASE_FEATURE(kWebAppManifestPolicyAppIdentityUpdate,
              "WebAppManifestPolicyAppIdentityUpdate",
@@ -1411,7 +1429,11 @@ bool IsParentAccessCodeForOnlineLoginEnabled() {
 // Enables omnibox trigger prerendering.
 BASE_FEATURE(kOmniboxTriggerForPrerender2,
              "OmniboxTriggerForPrerender2",
+#if BUILDFLAG(IS_ANDROID)
              base::FEATURE_ENABLED_BY_DEFAULT);
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 BASE_FEATURE(kSupportSearchSuggestionForPrerender2,
              "SupportSearchSuggestionForPrerender2",
@@ -1439,7 +1461,7 @@ BASE_FEATURE(kAutocompleteActionPredictorConfidenceCutoff,
 // TODO(crbug.com/1267731): Remove this flag once the experiments are completed.
 BASE_FEATURE(kOmniboxTriggerForNoStatePrefetch,
              "OmniboxTriggerForNoStatePrefetch",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // A feature to indicate whether setting wake time >24hours away is supported by

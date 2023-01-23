@@ -19,6 +19,7 @@
 #include "base/json/values_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
@@ -421,7 +422,9 @@ class RemoveHistoryTester {
 
  private:
   // TestingProfile owns the history service; we shouldn't delete it.
-  history::HistoryService* history_service_ = nullptr;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #constexpr-ctor-field-initializer
+  RAW_PTR_EXCLUSION history::HistoryService* history_service_ = nullptr;
 };
 
 class RemoveFaviconTester {
@@ -2984,6 +2987,35 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveFledgeJoinSettings) {
       url::Origin::Create(GURL("https://another-example.com"))));
   EXPECT_TRUE(privacy_sandbox_settings->IsFledgeJoiningAllowed(
       url::Origin::Create(GURL("http://different-example.com"))));
+}
+
+TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveTopicSettings) {
+  auto* privacy_sandbox_settings =
+      PrivacySandboxSettingsFactory::GetForProfile(GetProfile());
+  privacy_sandbox::CanonicalTopic topic_one(
+      browsing_topics::Topic(1),
+      privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY);
+  privacy_sandbox::CanonicalTopic topic_two(
+      browsing_topics::Topic(2),
+      privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY);
+  EXPECT_TRUE(privacy_sandbox_settings->IsTopicAllowed(topic_one));
+  EXPECT_TRUE(privacy_sandbox_settings->IsTopicAllowed(topic_two));
+
+  // Block topic_one.
+  privacy_sandbox_settings->SetTopicAllowed(topic_one, false);
+  EXPECT_FALSE(privacy_sandbox_settings->IsTopicAllowed(topic_one));
+  task_environment()->AdvanceClock(base::Days(1));
+  // Block topic_two.
+  privacy_sandbox_settings->SetTopicAllowed(topic_two, false);
+  EXPECT_FALSE(privacy_sandbox_settings->IsTopicAllowed(topic_two));
+
+  // Apply deletion.
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
+                                constants::DATA_TYPE_CONTENT_SETTINGS, false);
+
+  // Verify topics are unblocked after deletion.
+  EXPECT_TRUE(privacy_sandbox_settings->IsTopicAllowed(topic_one));
+  EXPECT_TRUE(privacy_sandbox_settings->IsTopicAllowed(topic_two));
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveDIPSEventsForLastHour) {

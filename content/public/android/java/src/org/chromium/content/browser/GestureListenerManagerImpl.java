@@ -51,8 +51,10 @@ public class GestureListenerManagerImpl
     private final WebContentsImpl mWebContents;
     private final ObserverList<GestureStateListener> mListeners;
     private final RewindableIterator<GestureStateListener> mIterator;
+    private final SelectionPopupControllerImpl mSelectionPopupController;
     private ViewAndroidDelegate mViewDelegate;
     private InternalAccessDelegate mScrollDelegate;
+    private final Point mRootScrollOffsetStruct = new Point();
 
     private long mNativeGestureListenerManager;
 
@@ -93,6 +95,7 @@ public class GestureListenerManagerImpl
         mWebContents = (WebContentsImpl) webContents;
         mListeners = new ObserverList<GestureStateListener>();
         mIterator = mListeners.rewindableIterator();
+        mSelectionPopupController = SelectionPopupControllerImpl.fromWebContents(mWebContents);
         mViewDelegate = mWebContents.getViewAndroidDelegate();
         mViewDelegate.addVerticalScrollDirectionChangeListener(this);
         WindowEventObserverManager.from(mWebContents).addObserver(this);
@@ -300,11 +303,11 @@ public class GestureListenerManagerImpl
      * @param scrollOffsetX Horizontal scroll offset in pixels.
      * @param scrollOffsetY Vertical scroll offset in pixels.
      */
-    private static @Nullable Point getRootScrollOffsetStruct(
-            float scrollOffsetX, float scrollOffsetY) {
+    private @Nullable Point getRootScrollOffsetStruct(float scrollOffsetX, float scrollOffsetY) {
         if (scrollOffsetX < 0 || scrollOffsetY < 0) return null;
 
-        return new Point((int) scrollOffsetX, (int) scrollOffsetY);
+        mRootScrollOffsetStruct.set((int) scrollOffsetX, (int) scrollOffsetY);
+        return mRootScrollOffsetStruct;
     }
 
     /**
@@ -335,8 +338,7 @@ public class GestureListenerManagerImpl
     }
 
     private void destroyPastePopup() {
-        SelectionPopupControllerImpl controller = getSelectionPopupController();
-        if (controller != null) controller.destroyPastePopup();
+        if (mSelectionPopupController != null) mSelectionPopupController.destroyPastePopup();
     }
 
     @CalledByNative
@@ -457,7 +459,7 @@ public class GestureListenerManagerImpl
         // Use the active scroll signal for hiding. The animation movement by
         // fling will naturally hide the ActionMode by invalidating its content
         // rect.
-        getSelectionPopupController().setScrollInProgress(isScrollInProgress());
+        mSelectionPopupController.setScrollInProgress(isScrollInProgress());
     }
 
     /**
@@ -473,10 +475,6 @@ public class GestureListenerManagerImpl
             updateOnScrollEnd();
         }
         resetFlingGesture();
-    }
-
-    private SelectionPopupControllerImpl getSelectionPopupController() {
-        return SelectionPopupControllerImpl.fromWebContents(mWebContents);
     }
 
     /**

@@ -31,7 +31,6 @@ class RenderFrameHost;
 
 namespace autofill {
 
-class AutofillableData;
 class ContentAutofillDriverFactory;
 class ContentAutofillRouter;
 
@@ -157,29 +156,15 @@ class ContentAutofillDriver : public AutofillDriver,
   // autofill::AutofillDriver:
   // These are the non-event functions from autofill::AutofillDriver. The events
   // are defined in the private part below.
-  bool IsIncognito() const override;
   bool IsInActiveFrame() const override;
   bool IsInAnyMainFrame() const override;
   bool IsPrerendering() const override;
   bool CanShowAutofillUi() const override;
   ui::AXTreeID GetAxTreeId() const override;
-  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool RendererIsAvailable() override;
   void HandleParsedForms(const std::vector<FormData>& forms) override {}
   void PopupHidden() override;
   net::IsolationInfo IsolationInfo() override;
-
-  // Triggers filling of |fill_data| into |raw_form| and |raw_field|. This event
-  // is called only by Autofill Assistant on the browser side and provides the
-  // |fill_data| itself. This is different from the usual Autofill flow, where
-  // the renderer triggers Autofill with the AskForValuesToFill() event, which
-  // displays the Autofill popup to select the fill data.
-  // FillFormForAssistant() is located in ContentAutofillDriver so that
-  // |raw_form| and |raw_field| get their meta data set analogous to
-  // AskForValuesToFill().
-  void FillFormForAssistant(const AutofillableData& fill_data,
-                            const FormData& raw_form,
-                            const FormFieldData& raw_field);
 
   // Called to inform the browser that in the field with `form_global_id` and
   // `field_global_id`, the context menu was triggered. This is different from

@@ -1358,10 +1358,12 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledWithCleanup",
+                    "name": "EnabledWithoutCleanup2022-01-20",
                     "enable_features": [
-                        "AutofillDontPreserveAutofillState",
                         "AutofillRetrieveOverallPredictionsFromCache"
+                    ],
+                    "disable_features": [
+                        "AutofillDontPreserveAutofillState"
                     ]
                 }
             ]
@@ -1403,6 +1405,27 @@
                     },
                     "enable_features": [
                         "AutofillSaveCardUiExperiment"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillSupportPoorMansPlaceholder": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillSupportPoorMansPlaceholder"
                     ]
                 }
             ]
@@ -2329,6 +2352,30 @@
                     "name": "Enabled",
                     "enable_features": [
                         "Canvas2DHibernation"
+                    ]
+                }
+            ]
+        }
+    ],
+    "CanvasColorCache": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledCacheSize8_20230120",
+                    "params": {
+                        "cache-size": "8"
+                    },
+                    "enable_features": [
+                        "CanvasColorCache"
                     ]
                 }
             ]
@@ -3279,17 +3326,6 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_20230118",
-                    "params": {
-                        "launch_stage": "prod"
-                    },
-                    "enable_features": [
-                        "FederatedService",
-                        "FederatedServiceScheduleTasks",
-                        "FederatedTimezoneCodePhh"
-                    ]
-                },
-                {
                     "name": "Enabled_Dogfood",
                     "params": {
                         "launch_stage": "dogfood"
@@ -4068,24 +4104,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DiacriticsOnPhysicalKeyboardLongpress"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DifferentWorkQueueCapacities": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "StackCapacity": "24"
-                    },
-                    "enable_features": [
-                        "DifferentWorkQueueCapacities"
                     ]
                 }
             ]
@@ -6306,6 +6324,25 @@
             ]
         }
     ],
+    "InnerHTMLParserFastpath": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "InnerHTMLParserFastpath"
+                    ]
+                }
+            ]
+        }
+    ],
     "InstallAndroidUnwindDfm": [
         {
             "platforms": [
@@ -7182,6 +7219,26 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MojoIpcz"
+                    ]
+                }
+            ]
+        }
+    ],
+    "NaCLGPURefactorings": [
+        {
+            "platforms": [
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "NewVideoDecoderAndSwapchain",
+                    "enable_features": [
+                        "PPAPISharedImagesSwapChain",
+                        "UseMojoVideoDecoderForPepper"
                     ]
                 }
             ]
@@ -8814,7 +8871,8 @@
             "platforms": [
                 "android",
                 "chromeos",
-                "fuchsia",
+                "chromeos_lacros",
+                "ios",
                 "linux",
                 "mac",
                 "windows"
@@ -8841,9 +8899,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_20220906",
+                    "name": "FixLinkPrefetchDNSAndPreconnectInNetworkService_20230120",
                     "enable_features": [
-                        "PreconnectInNetworkService"
+                        "PreconnectInNetworkService",
+                        "PrefetchDNSWithURL"
                     ]
                 }
             ]
@@ -11337,6 +11396,25 @@
             ]
         }
     ],
+    "TangibleSyncOnDesktop": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "linux",
+                "chromeos_lacros",
+                "fuchsia"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TangibleSync"
+                    ]
+                }
+            ]
+        }
+    ],
     "TerminalTmuxRollout": [
         {
             "platforms": [
@@ -11855,6 +11933,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "UseGpuSchedulerDfs"
+                    ]
+                }
+            ]
+        }
+    ],
+    "UseSimplifiedMessagePumpKqueueLoop": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UseSimplifiedMessagePumpKqueueLoop"
                     ]
                 }
             ]
@@ -13373,6 +13466,21 @@
             ]
         }
     ],
+    "WebViewBrotliSupport": [
+        {
+            "platforms": [
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebViewBrotliSupport"
+                    ]
+                }
+            ]
+        }
+    ],
     "WebViewRecordAppDataDirectorySize": [
         {
             "platforms": [
@@ -13419,6 +13527,21 @@
             ]
         }
     ],
+    "WebViewUmaUploadQualityOfServiceSetToDefault": [
+        {
+            "platforms": [
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "WebViewUmaUploadQualityOfServiceSetToDefault",
+                    "enable_features": [
+                        "WebViewUmaUploadQualityOfServiceSetToDefault"
+                    ]
+                }
+            ]
+        }
+    ],
     "WebViewUseMetricsUploadService": [
         {
             "platforms": [
@@ -13429,24 +13552,6 @@
                     "name": "WebViewUseMetricsUploadService",
                     "enable_features": [
                         "WebViewUseMetricsUploadService"
-                    ]
-                }
-            ]
-        }
-    ],
-    "WhatsNewPageExperiment": [
-        {
-            "platforms": [
-                "fuchsia",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ChromeWhatsNewUI"
                     ]
                 }
             ]

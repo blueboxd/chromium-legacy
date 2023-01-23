@@ -283,14 +283,13 @@ std::ostream& operator<<(std::ostream& out, const SetupStage stage) {
   case SetupStage::k##s: \
     return out << #s;
     PRINT(NotStarted)
-    PRINT(CalculatingFreeSpace)
-    PRINT(CalculatingRequiredSpace)
+    PRINT(GettingFreeSpace)
+    PRINT(ListingFiles)
     PRINT(Syncing)
     PRINT(Success)
-    PRINT(Disabled)
     PRINT(Stopped)
-    PRINT(CannotCalculateFreeSpace)
-    PRINT(CannotRetrieveSearchResults)
+    PRINT(CannotGetFreeSpace)
+    PRINT(CannotListFiles)
     PRINT(NotEnoughSpace)
 #undef PRINT
   }
@@ -298,6 +297,10 @@ std::ostream& operator<<(std::ostream& out, const SetupStage stage) {
   return out << "SetupStage("
              << static_cast<std::underlying_type_t<SetupStage>>(stage) << ")";
 }
+
+SetupProgress::SetupProgress() = default;
+SetupProgress::SetupProgress(const SetupProgress&) = default;
+SetupProgress& SetupProgress::operator=(const SetupProgress&) = default;
 
 // TODO(b/261530666): This was chosen arbitrarily, this should be experimented
 // with and potentially made dynamic depending on feedback of the in progress
@@ -323,8 +326,10 @@ bool DriveFsPinManager::Add(const StableId id,
 
   VLOG(3) << "Added " << id << " " << Quote(path) << " with size "
           << HumanReadableSize(size) << " to the files to pin";
-  progress_.total_bytes += size;
+  progress_.bytes_to_pin += size;
   progress_.required_space += RoundToBlockSize(size);
+  progress_.files_to_pin++;
+  DCHECK_EQ(static_cast<size_t>(progress_.files_to_pin), files_to_pin_.size());
   return true;
 }
 
@@ -352,7 +357,7 @@ bool DriveFsPinManager::Remove(const StableId id,
                << HumanReadableSize(progress.total) << " instead of "
                << HumanReadableSize(bytes_transferred) << " for " << id << " "
                << Quote(path);
-    progress_.total_bytes += bytes_transferred - progress.total;
+    progress_.bytes_to_pin += bytes_transferred - progress.total;
     progress_.required_space +=
         RoundToBlockSize(bytes_transferred) - RoundToBlockSize(progress.total);
   }
@@ -362,7 +367,7 @@ bool DriveFsPinManager::Remove(const StableId id,
       << HumanReadableSize(progress.transferred) << " to "
       << HumanReadableSize(bytes_transferred) << " for " << id << " "
       << Quote(path);
-  progress_.transferred_bytes += bytes_transferred - progress.transferred;
+  progress_.pinned_bytes += bytes_transferred - progress.transferred;
 
   VLOG(3) << "Stopped tracking " << id << " " << Quote(path);
   return true;
@@ -408,14 +413,14 @@ bool DriveFsPinManager::Update(const StableId id,
       << HumanReadableSize(progress.transferred) << " to "
       << HumanReadableSize(transferred) << " for " << id << " " << Quote(path);
 
-  progress_.transferred_bytes += transferred - progress.transferred;
+  progress_.pinned_bytes += transferred - progress.transferred;
   progress.transferred = transferred;
 
   if (total != progress.total) {
     LOG(ERROR) << "Changed expected size of " << id << " " << Quote(path)
                << " from " << HumanReadableSize(progress.total) << " to "
                << HumanReadableSize(total);
-    progress_.total_bytes += total - progress.total;
+    progress_.bytes_to_pin += total - progress.total;
     progress_.required_space +=
         RoundToBlockSize(total) - RoundToBlockSize(progress.total);
     progress.total = total;
@@ -469,6 +474,7 @@ DriveFsPinManager::~DriveFsPinManager() {
   for (Observer& observer : observers_) {
     observer.OnDrop();
   }
+  observers_.Clear();
 }
 
 void DriveFsPinManager::Start() {
@@ -481,7 +487,7 @@ void DriveFsPinManager::Start() {
 
   VLOG(1) << "Calculating free space...";
   timer_ = base::ElapsedTimer();
-  progress_.stage = SetupStage::kCalculatingFreeSpace;
+  progress_.stage = SetupStage::kGettingFreeSpace;
   NotifyProgress();
 
   space_getter_.Run(
@@ -520,7 +526,7 @@ void DriveFsPinManager::OnFreeSpaceRetrieved(const int64_t free_space) {
 
   if (free_space < 0) {
     LOG(ERROR) << "Cannot calculate free space";
-    return Complete(SetupStage::kCannotCalculateFreeSpace);
+    return Complete(SetupStage::kCannotGetFreeSpace);
   }
 
   progress_.free_space = free_space;
@@ -529,7 +535,7 @@ void DriveFsPinManager::OnFreeSpaceRetrieved(const int64_t free_space) {
 
   VLOG(1) << "Calculating required space...";
   timer_ = base::ElapsedTimer();
-  progress_.stage = SetupStage::kCalculatingRequiredSpace;
+  progress_.stage = SetupStage::kListingFiles;
   NotifyProgress();
 
   drivefs_->StartSearchQuery(search_query_.BindNewPipeAndPassReceiver(),
@@ -545,7 +551,7 @@ void DriveFsPinManager::OnSearchResultForSizeCalculation(
 
   if (error != drive::FILE_ERROR_OK || !items) {
     LOG(ERROR) << "Cannot list files: " << error;
-    return Complete(SetupStage::kCannotRetrieveSearchResults);
+    return Complete(SetupStage::kCannotListFiles);
   }
 
   if (items->empty()) {
@@ -587,10 +593,10 @@ void DriveFsPinManager::Complete(const SetupStage stage) {
   progress_.stage = stage;
   switch (stage) {
     case SetupStage::kSuccess:
-      LOG_IF(ERROR, progress_.errors > 0)
-          << "Failed to pin " << progress_.errors << " files";
+      LOG_IF(ERROR, progress_.failed_files > 0)
+          << "Failed to pin " << progress_.failed_files << " files";
       VLOG(1) << "Pinned " << progress_.pinned_files << " files and downloaded "
-              << HumanReadableSize(progress_.transferred_bytes) << " in "
+              << HumanReadableSize(progress_.pinned_bytes) << " in "
               << timer_.Elapsed().InMilliseconds() << " ms";
       VLOG(2) << "Useful events: " << progress_.useful_events;
       VLOG(2) << "Duplicated events: " << progress_.duplicated_events;
@@ -625,7 +631,7 @@ void DriveFsPinManager::StartPinning() {
 
   VLOG(1) << "Free space: " << HumanReadableSize(progress_.free_space);
   VLOG(1) << "Required space: " << HumanReadableSize(progress_.required_space);
-  VLOG(1) << "To download: " << HumanReadableSize(progress_.total_bytes);
+  VLOG(1) << "To download: " << HumanReadableSize(progress_.bytes_to_pin);
   VLOG(1) << "To pin: " << files_to_pin_.size() << " files";
   VLOG(1) << "To track: " << files_to_track_.size() << " files";
 
@@ -695,8 +701,8 @@ void DriveFsPinManager::PinSomeFiles() {
   }
 
   VLOG(1) << "Progress "
-          << Percentage(progress_.transferred_bytes, progress_.total_bytes)
-          << "%: synced " << HumanReadableSize(progress_.transferred_bytes)
+          << Percentage(progress_.pinned_bytes, progress_.bytes_to_pin)
+          << "%: synced " << HumanReadableSize(progress_.pinned_bytes)
           << " and " << progress_.pinned_files << " files, syncing "
           << files_to_track_.size() << " files";
 }
@@ -709,7 +715,7 @@ void DriveFsPinManager::OnFilePinned(const StableId id,
   if (status != drive::FILE_ERROR_OK) {
     LOG(ERROR) << "Cannot pin " << id << " " << Quote(path) << ": " << status;
     if (Remove(id, path, 0)) {
-      progress_.errors++;
+      progress_.failed_files++;
       NotifyProgress();
       PinSomeFiles();
     }
@@ -765,7 +771,7 @@ void DriveFsPinManager::OnSyncingStatusUpdate(
         if (Remove(id, event->path, 0)) {
           LOG(ERROR) << "Cannot sync " << id << " " << Quote(event->path)
                      << ": " << Quote(*event);
-          progress_.errors++;
+          progress_.failed_files++;
           progress_.useful_events++;
           NotifyProgress();
         } else {
@@ -896,7 +902,7 @@ void DriveFsPinManager::OnMetadataRetrieved(
     }
 
     VLOG(1) << "Stopped tracking " << id << " " << Quote(path);
-    progress_.errors++;
+    progress_.failed_files++;
     NotifyProgress();
     PinSomeFiles();
     return;
@@ -914,7 +920,7 @@ void DriveFsPinManager::OnMetadataRetrieved(
     }
 
     LOG(ERROR) << "Got unexpectedly unpinned: " << id << " " << Quote(path);
-    progress_.errors++;
+    progress_.failed_files++;
     NotifyProgress();
     PinSomeFiles();
     return;

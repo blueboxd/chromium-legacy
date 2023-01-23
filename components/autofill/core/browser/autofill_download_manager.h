@@ -25,7 +25,9 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/signatures.h"
 #include "components/variations/variations_ids_provider.h"
+#include "components/version_info/channel.h"
 #include "net/base/backoff_entry.h"
+#include "net/base/isolation_info.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
@@ -33,10 +35,10 @@ class PrefService;
 
 namespace autofill {
 
-class AutofillDriver;
+class AutofillClient;
 class LogManager;
 
-const size_t kMaxQueryGetSize = 10240;  // 10 KiB
+constexpr size_t kMaxQueryGetSize = 10240;  // 10 KiB
 
 // A helper to make sure that tests which modify the set of active autofill
 // experiments do not interfere with one another.
@@ -69,6 +71,7 @@ class AutofillDownloadManager {
     // Called when heuristic either successfully considered for upload and
     // not send or uploaded.
     virtual void OnUploadedPossibleFieldTypes() {}
+
     // Called when there was an error during the request.
     // |form_signature| - the signature of the requesting form.
     // |request_type| - type of request that failed.
@@ -78,7 +81,7 @@ class AutofillDownloadManager {
                                       int http_error) {}
 
    protected:
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
   };
 
   // |driver| must outlive this instance.
@@ -86,21 +89,22 @@ class AutofillDownloadManager {
   // |api_key| - API key to add to API request query parameters. Will only take
   //   effect if using API.
   AutofillDownloadManager(
-      AutofillDriver* driver,
-      Observer* observer,
+      AutofillClient* client,
       const std::string& api_key,
       IsRawMetadataUploadingEnabled is_raw_metadata_uploading_enabled,
       LogManager* log_manager);
   // |driver| must outlive this instance.
   // |observer| - observer to notify on successful completion or error.
   // Uses an API callback function that gives an empty string.
-  AutofillDownloadManager(AutofillDriver* driver, Observer* observer);
+  explicit AutofillDownloadManager(AutofillClient* client);
   virtual ~AutofillDownloadManager();
 
   // Starts a query request to Autofill servers. The observer is called with the
   // list of the fields of all requested forms.
   // |forms| - array of forms aggregated in this request.
-  virtual bool StartQueryRequest(const std::vector<FormStructure*>& forms);
+  virtual bool StartQueryRequest(const std::vector<FormStructure*>& forms,
+                                 net::IsolationInfo isolation_info,
+                                 base::WeakPtr<Observer> observer);
 
   // Starts an upload request for the given |form|.
   // |available_field_types| should contain the types for which we have data
@@ -119,7 +123,8 @@ class AutofillDownloadManager {
       const ServerFieldTypeSet& available_field_types,
       const std::string& login_form_signature,
       bool observed_submission,
-      PrefService* pref_service);
+      PrefService* pref_service,
+      base::WeakPtr<Observer> observer);
 
   // Returns true if the autofill server communication is enabled.
   bool IsEnabled() const { return autofill_server_url_.is_valid(); }
@@ -193,13 +198,9 @@ class AutofillDownloadManager {
   static void InitActiveExperiments();
   static void ResetActiveExperiments();
 
-  // The AutofillDriver that this instance will use. Must not be null, and must
+  // The AutofillClient that this instance will use. Must not be null, and must
   // outlive this instance.
-  const raw_ptr<AutofillDriver> driver_;  // WEAK
-
-  // The observer to notify when server predictions are successfully received.
-  // Must not be null.
-  const raw_ptr<AutofillDownloadManager::Observer> observer_;  // WEAK
+  const raw_ptr<AutofillClient> client_;
 
   // Callback function to retrieve API key.
   const std::string api_key_;

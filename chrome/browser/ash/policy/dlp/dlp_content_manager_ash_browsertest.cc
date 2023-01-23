@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/test/bind.h"
 #include "chrome/browser/ash/policy/dlp/dlp_content_manager_ash.h"
 
 #include <functional>
@@ -14,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_future.h"
@@ -36,6 +36,7 @@
 #include "chrome/browser/media/webrtc/fake_desktop_media_picker_factory.h"
 #include "chrome/browser/media/webrtc/tab_capture_access_handler.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/capture_mode/chrome_capture_mode_delegate.h"
 #include "chrome/browser/ui/ash/screenshot_area.h"
 #include "chrome/browser/ui/browser.h"
@@ -46,7 +47,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/test/shell_surface_builder.h"
-#include "components/exo/wm_helper_chromeos.h"
+#include "components/exo/wm_helper.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/desktop_streams_registry.h"
 #include "content/public/browser/media_stream_request.h"
@@ -399,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(ScreenshotTest, CheckRestriction_Blocked_Lacros) {
   SetupReporting();
 
   // Create a Lacros-like Exo surface.
-  exo::WMHelperChromeOS wm_helper;
+  exo::WMHelper wm_helper;
   std::unique_ptr<exo::ShellSurface> shell_surface =
       exo::test::ShellSurfaceBuilder({640, 480}).BuildShellSurface();
   shell_surface->root_surface()->window()->TrackOcclusionState();
@@ -1009,7 +1010,7 @@ IN_PROC_BROWSER_TEST_F(DlpContentManagerAshScreenShareBrowserTest,
   SetupReporting();
 
   // Create a Lacros-like Exo surface.
-  exo::WMHelperChromeOS wm_helper;
+  exo::WMHelper wm_helper;
   std::unique_ptr<exo::ShellSurface> shell_surface =
       exo::test::ShellSurfaceBuilder({640, 480}).BuildShellSurface();
   shell_surface->root_surface()->window()->TrackOcclusionState();

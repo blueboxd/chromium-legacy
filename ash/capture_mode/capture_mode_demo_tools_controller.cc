@@ -101,7 +101,7 @@ views::Widget::InitParams CreateWidgetParams(
   params.parent =
       video_recording_watcher->GetOnCaptureSurfaceWidgetParentWindow();
   params.child = true;
-  params.name = "CaptureModeDemoToolsWidget";
+  params.name = "KeyComboWidget";
   return params;
 }
 
@@ -124,14 +124,6 @@ CaptureModeDemoToolsController::~CaptureModeDemoToolsController() {
 void CaptureModeDemoToolsController::OnKeyEvent(ui::KeyEvent* event) {
   if (event->type() == ui::ET_KEY_RELEASED) {
     OnKeyUpEvent(event);
-    return;
-  }
-
-  // We will not show key combo widget if the cursor is in the input text field
-  // to respect the user privacy. This check needs to be placed after checking
-  // the key up event as the key combo widget on display will still need to be
-  // refreshed.
-  if (in_password_text_input_) {
     return;
   }
 
@@ -172,7 +164,7 @@ void CaptureModeDemoToolsController::PerformMousePressAnimation(
 }
 
 void CaptureModeDemoToolsController::RefreshBounds() {
-  demo_tools_widget_->SetBounds(CalculateBounds());
+  demo_tools_widget_->SetBounds(CalculateKeyComboWidgetBounds());
 }
 
 void CaptureModeDemoToolsController::OnTouchEvent(
@@ -237,6 +229,14 @@ void CaptureModeDemoToolsController::OnKeyUpEvent(ui::KeyEvent* event) {
 }
 
 void CaptureModeDemoToolsController::OnKeyDownEvent(ui::KeyEvent* event) {
+  // We will not show key combo widget if the cursor is in the input text field
+  // to respect the user privacy. This check needs to be placed after checking
+  // the key up event as the key combo widget on display will still need to be
+  // refreshed.
+  if (in_text_input_) {
+    return;
+  }
+
   const ui::KeyboardCode key_code = event->key_code();
 
   // Return directly if it is a repeated key event for non-modifier key.
@@ -277,15 +277,20 @@ void CaptureModeDemoToolsController::RefreshKeyComboViewer() {
   RefreshBounds();
 }
 
-gfx::Rect CaptureModeDemoToolsController::CalculateBounds() const {
+gfx::Rect CaptureModeDemoToolsController::CalculateKeyComboWidgetBounds()
+    const {
   const gfx::Size preferred_size = key_combo_view_->GetPreferredSize();
-  auto bounds = video_recording_watcher_->GetCaptureSurfaceConfineBounds();
-  int demo_tools_y = bounds.bottom() -
-                     capture_mode::kKeyWidgetDistanceFromBottom -
-                     preferred_size.height();
-  bounds.ClampToCenteredSize(preferred_size);
-  bounds.set_y(demo_tools_y);
-  return bounds;
+  const auto confine_bounds =
+      video_recording_watcher_->GetCaptureSurfaceConfineBounds();
+  const int key_combo_x =
+      preferred_size.width() > confine_bounds.width()
+          ? confine_bounds.right() - preferred_size.width() -
+                capture_mode::kKeyWidgetBorderPadding
+          : confine_bounds.CenterPoint().x() - preferred_size.width() / 2;
+  const int key_combo_y = confine_bounds.bottom() -
+                          capture_mode::kKeyWidgetDistanceFromBottom -
+                          preferred_size.height();
+  return gfx::Rect(gfx::Point(key_combo_x, key_combo_y), preferred_size);
 }
 
 bool CaptureModeDemoToolsController::ShouldResetWidget() const {
@@ -301,8 +306,8 @@ void CaptureModeDemoToolsController::AnimateToResetTheWidget() {
 
 void CaptureModeDemoToolsController::UpdateTextInputType(
     const ui::TextInputClient* client) {
-  in_password_text_input_ =
-      client && client->GetTextInputType() == ui::TEXT_INPUT_TYPE_PASSWORD;
+  in_text_input_ =
+      client && client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE;
 }
 
 void CaptureModeDemoToolsController::OnMouseHighlightAnimationEnded(

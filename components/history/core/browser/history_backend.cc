@@ -1231,7 +1231,8 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     absl::optional<std::string> originator_cache_guid,
     absl::optional<VisitID> originator_visit_id,
     absl::optional<VisitID> originator_referring_visit,
-    absl::optional<VisitID> originator_opener_visit) {
+    absl::optional<VisitID> originator_opener_visit,
+    bool is_known_to_sync) {
   // See if this URL is already in the DB.
   URLRow url_info(url);
   URLID url_id = db_->GetRowForURL(url, &url_info);
@@ -1282,6 +1283,8 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     visit_info.originator_referring_visit = *originator_referring_visit;
   if (originator_opener_visit.has_value())
     visit_info.originator_opener_visit = *originator_opener_visit;
+  visit_info.is_known_to_sync = is_known_to_sync;
+
   visit_info.visit_id = db_->AddVisit(&visit_info, visit_source);
 
   if (visit_info.visit_time < first_recorded_time_)
@@ -1544,6 +1547,7 @@ VisitID HistoryBackend::AddSyncedVisit(
   DCHECK_EQ(visit.url_id, 0);
   DCHECK(!visit.visit_time.is_null());
   DCHECK(!visit.originator_cache_guid.empty());
+  DCHECK(visit.is_known_to_sync);
 
   if (!db_) {
     return kInvalidVisitID;
@@ -1553,12 +1557,13 @@ VisitID HistoryBackend::AddSyncedVisit(
     return kInvalidVisitID;
   }
 
-  auto [url_id, visit_id] = AddPageVisit(
-      url, visit.visit_time, visit.referring_visit, visit.transition, hidden,
-      VisitSource::SOURCE_SYNCED, IsTypedIncrement(visit.transition),
-      visit.opener_visit, title, visit.visit_duration,
-      visit.originator_cache_guid, visit.originator_visit_id,
-      visit.originator_referring_visit, visit.originator_opener_visit);
+  auto [url_id, visit_id] =
+      AddPageVisit(url, visit.visit_time, visit.referring_visit,
+                   visit.transition, hidden, VisitSource::SOURCE_SYNCED,
+                   IsTypedIncrement(visit.transition), visit.opener_visit,
+                   title, visit.visit_duration, visit.originator_cache_guid,
+                   visit.originator_visit_id, visit.originator_referring_visit,
+                   visit.originator_opener_visit, visit.is_known_to_sync);
 
   if (visit_id == kInvalidVisitID) {
     // Adding the page visit failed, do not continue.
@@ -1592,6 +1597,7 @@ VisitID HistoryBackend::UpdateSyncedVisit(
   DCHECK_EQ(visit.url_id, 0);
   DCHECK(!visit.visit_time.is_null());
   DCHECK(!visit.originator_cache_guid.empty());
+  DCHECK(visit.is_known_to_sync);
 
   if (!db_) {
     return kInvalidVisitID;
@@ -2167,7 +2173,9 @@ void HistoryBackend::ReplaceClusters(
 
 int64_t HistoryBackend::ReserveNextClusterId() {
   TRACE_EVENT0("browser", "HistoryBackend::ReserveNextClusterId");
-  return db_ ? db_->ReserveNextClusterId() : 0;
+  return db_ ? db_->ReserveNextClusterId(/*originator_cache_guid=*/"",
+                                         /*originator_cluster_id=*/0)
+             : 0;
 }
 
 void HistoryBackend::AddVisitsToCluster(
@@ -2178,6 +2186,31 @@ void HistoryBackend::AddVisitsToCluster(
     return;
 
   db_->AddVisitsToCluster(cluster_id, visits);
+}
+
+void HistoryBackend::AddVisitToSyncedCluster(
+    const history::ClusterVisit& cluster_visit,
+    const std::string& originator_cache_guid,
+    int64_t originator_cluster_id) {
+  TRACE_EVENT0("browser", "HistoryBackend::AddVisitToSyncedCluster");
+  if (!db_) {
+    return;
+  }
+
+  int64_t local_cluster_id = db_->GetClusterIdForSyncedDetails(
+      originator_cache_guid, originator_cluster_id);
+  if (local_cluster_id == 0) {
+    // Reserve a new one since one with the synced details does not already
+    // exist.
+    local_cluster_id =
+        db_->ReserveNextClusterId(originator_cache_guid, originator_cluster_id);
+  }
+  if (local_cluster_id == 0) {
+    // Cluster failed to be added to the DB - unclear if/how this can happen.
+    return;
+  }
+
+  db_->AddVisitsToCluster(local_cluster_id, {cluster_visit});
 }
 
 void HistoryBackend::UpdateClusterTriggerability(
@@ -2237,6 +2270,12 @@ Cluster HistoryBackend::GetCluster(int64_t cluster_id,
   if (include_keywords_and_duplicates)
     cluster.keyword_to_data_map = db_->GetClusterKeywords(cluster_id);
   return cluster;
+}
+
+int64_t HistoryBackend::GetClusterIdContainingVisit(VisitID visit_id) {
+  TRACE_EVENT0("browser", "HistoryBackend::GetClusterIdContainingVisit");
+
+  return db_ ? db_->GetClusterIdContainingVisit(visit_id) : 0;
 }
 
 VisitRow HistoryBackend::GetRedirectChainStart(VisitRow visit) {

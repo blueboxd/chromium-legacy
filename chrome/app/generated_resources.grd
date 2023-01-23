@@ -805,6 +805,9 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_CONTENT_CONTEXT_OPEN_WITH_APP" desc="The label for an item in the content area context menu for opening a link with an app.">
             Open with <ph name="APP">$1<ex>Hangouts</ex></ph>
           </message>
+          <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FEEDBACK" desc="The name of the Autofill Feedback command in the content area context menu">
+           Provide Autofill feedback
+          </message>
         </if>
         <if expr="use_titlecase">
           <message name="IDS_CONTENT_CONTEXT_BACK" desc="In Title Case: The name of the Back command in the content area context menu">
@@ -1070,6 +1073,9 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_CONTENT_CONTEXT_GENERATEPASSWORD" desc="In Title Case: The name of the Generate Password command in the content area context menu">
             Suggest Password...
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_AUTOFILL_FEEDBACK" desc="The name of the Autofill Feedback command in the content area context menu">
+           Provide Autofill Feedback
           </message>
         </if>
 
@@ -2219,6 +2225,14 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <message name="IDS_DOWNLOAD_TOAST_CLEARED_ALL" desc="Toast message for clearing all download entries">
         Cleared all
+      </message>
+      <message name="IDS_DOWNLOAD_DEEP_SCAN"
+               desc="In the download view, the 'Scan' button when prompt for deep scan">
+        Scan
+      </message>
+      <message name="IDS_DOWNLOAD_BYPASS_DEEP_SCAN"
+               desc="In the download view, the 'Open' button when prompt for deep scan">
+        Open
       </message>
 
 
@@ -6084,10 +6098,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Google Password Manager <ph name="SEPARATOR">•</ph> <ph name="ACCOUNT">$1<ex>user@gmail.com</ex></ph>
         </message>
         <message name="IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_V2" desc="The description of the Google Password Manager's save password prompt when the user is signed in.">
-          To your Google Account, for <ph name="ACCOUNT">$1<ex>user@gmail.com</ex></ph>
+          To your Google Account, <ph name="ACCOUNT">$1<ex>user@gmail.com</ex></ph>
         </message>
         <message name="IDS_PASSWORD_MANAGER_UPDATE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_V2" desc="The description of the Google Password Manager's save password prompt when the user is signed in.">
-          In your Google Account, for <ph name="ACCOUNT">$1<ex>user@gmail.com</ex></ph>
+          In your Google Account, <ph name="ACCOUNT">$1<ex>user@gmail.com</ex></ph>
         </message>
         <message name="IDS_PASSWORD_MANAGER_SAVE_UPDATE_PASSWORD_SIGNED_OUT_MESSAGE_DESCRIPTION_V1" desc="The description of the Google Password Manager's save password prompt when the user is signed out and passwords are only stored locally.">
           Only on this device
@@ -10359,6 +10373,11 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
       <message name="IDS_SYNC_CONFIRMATION_TANGIBLE_SYNC_INFO_TITLE" desc="This string appears as a subheading on a screen, and it asks users if they want to turn on sync. This string explains to users that they can back up their Chrome data and use it on all their computers, phones, and other devices; a user's Chrome data includes their bookmarks, passwords, history, settings, and more. If there is no natural translation for the word 'stuff' in your language, the word can be translated as 'data' or similar. Maintain the level of formality that your language generally uses in the Chrome app. The tone should be informative and inviting.">
         Back up your stuff and use it on any device
       </message>
+      <if expr="chromeos_lacros">
+        <message name="IDS_SYNC_CONFIRMATION_TANGIBLE_SYNC_INFO_TITLE_LACROS" desc="This string appears as a subheading on a screen, and it asks users if they want to turn on sync. This string explains to users that they can back up their Chrome browser data and use it on all their computers, phones, and other devices; a user's Chrome data includes their bookmarks, passwords, history, settings, and more. If there is no natural translation for the word 'stuff' in your language, the word can be translated as 'data' or similar. Maintain the level of formality that your language generally uses in the Chrome app. The tone should be informative and inviting. Please keep translations consistent with TC 7137558043921529662 (Windows, Mac, Linux) and TC 3833960754549650885 (iOS).">
+          Back up your browser stuff and use it on any device
+        </message>
+      </if>
       <message name="IDS_SYNC_CONFIRMATION_TANGIBLE_SYNC_INFO_TITLE_SIGNIN_INTERCEPT_V2" desc="This string appears as a subheading on a pop-up dialog, and it asks users if they want to turn on sync. This string explains to users that they can back up their Chrome data and use it on all their computers, phones, and other devices; a user's Chrome data includes their bookmarks, passwords, history, settings, and more. If there is no natural translation for the word 'stuff' in your language, the word can be translated as 'data' or similar. Maintain the level of formality that your language generally uses in the Chrome app. The tone should be informative and inviting.">
         Turn on sync to back up your stuff and use it on any device
       </message>

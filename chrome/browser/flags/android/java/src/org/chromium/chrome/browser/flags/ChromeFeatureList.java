@@ -260,7 +260,6 @@ public abstract class ChromeFeatureList {
     public static final String COMMERCE_COUPONS = "CommerceCoupons";
     public static final String COMMERCE_MERCHANT_VIEWER = "CommerceMerchantViewer";
     public static final String COMMERCE_PRICE_TRACKING = "CommercePriceTracking";
-    public static final String CONDITIONAL_TAB_STRIP_ANDROID = "ConditionalTabStripAndroid";
     public static final String CONTACTS_PICKER_SELECT_ALL = "ContactsPickerSelectAll";
     public static final String CONTEXTUAL_PAGE_ACTIONS = "ContextualPageActions";
     public static final String CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING =
@@ -396,6 +395,8 @@ public abstract class ChromeFeatureList {
     public static final String PAGE_INFO_ABOUT_THIS_SITE_MORE_INFO =
             "PageInfoAboutThisSiteMoreInfo";
     public static final String PAGE_INFO_ABOUT_THIS_SITE_NON_EN = "PageInfoAboutThisSiteNonEn";
+    public static final String PAGE_INFO_ABOUT_THIS_SITE_IMPROVED_BOTTOMSHEET =
+            "PageInfoAboutThisSiteImprovedBottomSheet";
     public static final String PAINT_PREVIEW_DEMO = "PaintPreviewDemo";
     public static final String PAINT_PREVIEW_SHOW_ON_STARTUP = "PaintPreviewShowOnStartup";
     public static final String PASSWORD_DOMAIN_CAPABILITIES_FETCHING =
@@ -584,8 +585,6 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sCommandLineOnNonRooted =
             new CachedFlag(COMMAND_LINE_ON_NON_ROOTED, false);
     public static final CachedFlag sCommerceCoupons = new CachedFlag(COMMERCE_COUPONS, false);
-    public static final CachedFlag sConditionalTabStripAndroid =
-            new CachedFlag(CONDITIONAL_TAB_STRIP_ANDROID, false);
     public static final CachedFlag sCriticalPersistedTabData =
             new CachedFlag(CRITICAL_PERSISTED_TAB_DATA, false);
     public static final CachedFlag sDiscardOccludedBitmaps =

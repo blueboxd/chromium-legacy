@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/new_tab_page/chrome_colors/chrome_colors_factory.h"
@@ -151,6 +152,8 @@ class MockPage : public side_panel::mojom::CustomizeChromePage {
       void(std::vector<side_panel::mojom::ModuleSettingsPtr> modules_settings,
            bool managed,
            bool visible));
+  MOCK_METHOD2(SetMostVisitedSettings,
+               void(bool custom_links_enabled, bool visible));
   MOCK_METHOD1(SetTheme, void(side_panel::mojom::ThemePtr));
 
   mojo::Receiver<side_panel::mojom::CustomizeChromePage> receiver_{this};
@@ -288,6 +291,7 @@ class CustomizeChromePageHandlerTest : public testing::Test {
   }
   MockThemeService& mock_theme_service() { return *mock_theme_service_; }
   Browser& browser() { return *browser_; }
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
  protected:
   // NOTE: The initialization order of these members matters.
@@ -295,52 +299,54 @@ class CustomizeChromePageHandlerTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   testing::NiceMock<MockNtpCustomBackgroundService>
       mock_ntp_custom_background_service_;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #addr-of
   NtpCustomBackgroundServiceObserver* ntp_custom_background_service_observer_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   raw_ptr<MockNtpBackgroundService> mock_ntp_background_service_;
   content::TestWebContentsFactory web_contents_factory_;
   raw_ptr<content::WebContents> web_contents_;
   testing::NiceMock<MockPage> mock_page_;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #addr-of
   NtpBackgroundServiceObserver* ntp_background_service_observer_;
   raw_ptr<MockThemeService> mock_theme_service_;
   std::unique_ptr<Browser> browser_;
   std::unique_ptr<TestBrowserWindow> browser_window_;
+  base::HistogramTester histogram_tester_;
   std::unique_ptr<CustomizeChromePageHandler> handler_;
 };
 
 TEST_F(CustomizeChromePageHandlerTest, SetMostVisitedSettings) {
+  bool custom_links_enabled;
+  bool visible;
+  EXPECT_CALL(mock_page_, SetMostVisitedSettings)
+      .Times(4)
+      .WillRepeatedly(
+          testing::Invoke([&custom_links_enabled, &visible](
+                              bool custom_links_enabled_arg, bool visible_arg) {
+            custom_links_enabled = custom_links_enabled_arg;
+            visible = visible_arg;
+          }));
+
   profile().GetPrefs()->SetBoolean(ntp_prefs::kNtpUseMostVisitedTiles, false);
   profile().GetPrefs()->SetBoolean(ntp_prefs::kNtpShortcutsVisible, false);
 
+  histogram_tester().ExpectTotalCount("NewTabPage.CustomizeShortcutAction", 0);
+  EXPECT_FALSE(
+      profile().GetPrefs()->GetBoolean(ntp_prefs::kNtpUseMostVisitedTiles));
+  EXPECT_FALSE(
+      profile().GetPrefs()->GetBoolean(ntp_prefs::kNtpShortcutsVisible));
+
   handler().SetMostVisitedSettings(/*custom_links_enabled=*/false,
                                    /*visible=*/true);
+  mock_page_.FlushForTesting();
 
   EXPECT_TRUE(
       profile().GetPrefs()->GetBoolean(ntp_prefs::kNtpUseMostVisitedTiles));
   EXPECT_TRUE(
       profile().GetPrefs()->GetBoolean(ntp_prefs::kNtpShortcutsVisible));
-}
-
-TEST_F(CustomizeChromePageHandlerTest, GetMostVisitedSettings) {
-  profile().GetPrefs()->SetBoolean(ntp_prefs::kNtpUseMostVisitedTiles, false);
-  profile().GetPrefs()->SetBoolean(ntp_prefs::kNtpShortcutsVisible, true);
-
-  base::MockCallback<CustomizeChromePageHandler::GetMostVisitedSettingsCallback>
-      callback;
-  bool custom_links_enabled = false;
-  bool shortcuts_visible = false;
-  EXPECT_CALL(callback, Run(testing::_, testing::_))
-      .Times(1)
-      .WillOnce(testing::Invoke(
-          [&custom_links_enabled, &shortcuts_visible](
-              bool custom_links_enabled_arg, bool shortcuts_visible_arg) {
-            custom_links_enabled = custom_links_enabled_arg;
-            shortcuts_visible = shortcuts_visible_arg;
-          }));
-  handler().GetMostVisitedSettings(callback.Get());
-
-  EXPECT_TRUE(custom_links_enabled);
-  EXPECT_TRUE(shortcuts_visible);
+  histogram_tester().ExpectTotalCount("NewTabPage.CustomizeShortcutAction", 2);
 }
 
 TEST_F(CustomizeChromePageHandlerTest, GetChromeColors) {

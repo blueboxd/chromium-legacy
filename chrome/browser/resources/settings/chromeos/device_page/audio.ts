@@ -35,6 +35,9 @@ function clampPercent(percent: number): number {
 }
 
 const SettingsAudioElementBase = RouteObserverMixin(I18nMixin(PolymerElement));
+const VOLUME_ICON_OFF_LEVEL = 0;
+const VOLUME_ICON_LOUD_LEVEL = 30;
+const SETTINGS_20PX_ICON_PREFIX = 'settings20:';
 
 class SettingsAudioElement extends SettingsAudioElementBase {
   static get is() {
@@ -60,6 +63,11 @@ class SettingsAudioElement extends SettingsAudioElementBase {
         reflectToAttribute: true,
       },
 
+      isInputMuted_: {
+        type: Boolean,
+        reflectToAttribute: true,
+      },
+
       isNoiseCancellationEnabled_: {
         type: Boolean,
         observer:
@@ -68,6 +76,10 @@ class SettingsAudioElement extends SettingsAudioElementBase {
 
       isNoiseCancellationSupported_: {
         type: Boolean,
+      },
+
+      outputVolume_: {
+        type: Number,
       },
     };
   }
@@ -80,6 +92,7 @@ class SettingsAudioElement extends SettingsAudioElementBase {
   private isInputMuted_: boolean;
   private isNoiseCancellationEnabled_: boolean;
   private isNoiseCancellationSupported_: boolean;
+  private outputVolume_: number;
 
   constructor() {
     super();
@@ -115,6 +128,7 @@ class SettingsAudioElement extends SettingsAudioElementBase {
     this.isNoiseCancellationSupported_ =
         !(activeInputDevice?.noiseCancellationState ===
           AudioEffectState.NOT_SUPPORTED);
+    this.outputVolume_ = this.audioSystemProperties_.outputVolumePercent;
   }
 
   getIsOutputMutedForTest(): boolean {
@@ -227,6 +241,31 @@ class SettingsAudioElement extends SettingsAudioElementBase {
     if (route !== routes.AUDIO) {
       return;
     }
+  }
+
+  /** Handles updating the mic icon depending on the input mute state. */
+  protected getInputIcon_(): string {
+    return this.isInputMuted_ ? 'settings:mic-off' : 'cr:mic';
+  }
+
+  /**
+   * Handles updating the output icon depending on the output mute state and
+   * volume.
+   */
+  protected getOutputIcon_(): string {
+    if (this.isOutputMuted_) {
+      return SETTINGS_20PX_ICON_PREFIX + 'volume-up-off';
+    }
+
+    if (this.outputVolume_ === VOLUME_ICON_OFF_LEVEL) {
+      return SETTINGS_20PX_ICON_PREFIX + 'volume-zero';
+    }
+
+    if (this.outputVolume_ < VOLUME_ICON_LOUD_LEVEL) {
+      return SETTINGS_20PX_ICON_PREFIX + 'volume-down';
+    }
+
+    return SETTINGS_20PX_ICON_PREFIX + 'volume-up';
   }
 }
 

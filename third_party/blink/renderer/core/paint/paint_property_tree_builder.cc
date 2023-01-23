@@ -67,7 +67,7 @@
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
-#include "third_party/blink/renderer/platform/graphics/view_transition_shared_element_id.h"
+#include "third_party/blink/renderer/platform/graphics/view_transition_element_id.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "ui/gfx/geometry/outsets_f.h"
 #include "ui/gfx/geometry/transform.h"
@@ -271,7 +271,7 @@ class FragmentPaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateTransformForSVGChild(CompositingReasons);
   ALWAYS_INLINE bool NeedsEffect() const;
   ALWAYS_INLINE bool EffectCanUseCurrentClipAsOutputClip() const;
-  ALWAYS_INLINE void UpdateSharedElementTransitionEffect();
+  ALWAYS_INLINE void UpdateViewTransitionEffect();
   ALWAYS_INLINE void UpdateEffect();
   ALWAYS_INLINE void UpdateFilter();
   ALWAYS_INLINE void UpdateFragmentClip();
@@ -1153,8 +1153,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
         state.rendering_context_id = context_.rendering_context_id;
         if (handling_transform_property && style.Preserves3D() &&
             !state.rendering_context_id) {
-          state.rendering_context_id =
-              PtrHash<const LayoutObject>::GetHash(&object_);
+          state.rendering_context_id = WTF::GetHash(&object_);
         }
 
         // TODO(crbug.com/1185254): Make this work correctly for block
@@ -1385,8 +1384,15 @@ static bool NeedsEffectIgnoringClipPath(
 
   // A mask needs an effect node on the current LayoutObject to define the scope
   // of masked contents to be the current LayoutObject and its descendants.
-  if (object.StyleRef().HasMask())
+  if (style.HasMask()) {
     return true;
+  }
+
+  // The view-transition-name property when set creates a backdrop filter root.
+  // We do this by ensuring that this object needs an effect node.
+  if (style.ViewTransitionName()) {
+    return true;
+  }
 
   return false;
 }
@@ -1638,10 +1644,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateEffect() {
   }
 }
 
-void FragmentPaintPropertyTreeBuilder::UpdateSharedElementTransitionEffect() {
+void FragmentPaintPropertyTreeBuilder::UpdateViewTransitionEffect() {
   if (NeedsPaintPropertyUpdate()) {
     if (full_context_.direct_compositing_reasons &
-        CompositingReason::kViewTransitionSharedElement) {
+        CompositingReason::kViewTransitionElement) {
       auto* transition =
           ViewTransitionUtils::GetActiveTransition(object_.GetDocument());
       DCHECK(transition);
@@ -3121,7 +3127,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
       UpdateOffset();
       UpdateTransform();
     }
-    UpdateSharedElementTransitionEffect();
+    UpdateViewTransitionEffect();
     UpdateClipPathClip();
     UpdateEffect();
     UpdateCssClip();

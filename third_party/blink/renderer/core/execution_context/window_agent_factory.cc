@@ -110,8 +110,8 @@ void WindowAgentFactory::Trace(Visitor* visitor) const {
 // static
 unsigned WindowAgentFactory::SchemeAndRegistrableDomainTraits::GetHash(
     const SchemeAndRegistrableDomain& value) {
-  return WTF::HashInts(StringHash::GetHash(value.scheme),
-                       StringHash::GetHash(value.registrable_domain));
+  return WTF::HashInts(WTF::GetHash(value.scheme),
+                       WTF::GetHash(value.registrable_domain));
 }
 
 // static
@@ -135,8 +135,8 @@ bool WindowAgentFactory::SchemeAndRegistrableDomainTraits::IsDeletedValue(
 
 // static
 void WindowAgentFactory::SchemeAndRegistrableDomainTraits::
-    ConstructDeletedValue(SchemeAndRegistrableDomain& slot, bool zero_value) {
-  HashTraits<String>::ConstructDeletedValue(slot.scheme, zero_value);
+    ConstructDeletedValue(SchemeAndRegistrableDomain& slot) {
+  HashTraits<String>::ConstructDeletedValue(slot.scheme);
 }
 
 }  // namespace blink

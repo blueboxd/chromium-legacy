@@ -81,7 +81,6 @@ ALL_FINDER_COMMENTS = frozenset(FINDER_DISABLE_COMMENTS
 GIT_BLAME_REGEX = re.compile(
     r'^[\w\s]+\(.+(?P<date>\d\d\d\d-\d\d-\d\d)[^\)]+\)(?P<content>.*)$',
     re.DOTALL)
-EXPECTATION_LINE_REGEX = re.compile(r'^.*\[ .* \] .* \[ \w* \].*$', re.DOTALL)
 TAG_GROUP_REGEX = re.compile(r'# tags: \[([^\]]*)\]', re.MULTILINE | re.DOTALL)
 # Looks for cases of the group start and end comments with nothing but optional
 # whitespace between them.
@@ -217,7 +216,12 @@ class Expectations(object):
       assert match
       date = match.groupdict()['date']
       line_content = match.groupdict()['content']
-      if EXPECTATION_LINE_REGEX.match(line):
+      stripped_line_content = line_content.strip()
+      # Auto-add comments and blank space, otherwise only add if the grace
+      # period has expired.
+      if not stripped_line_content or stripped_line_content.startswith('#'):
+        content += line_content
+      else:
         if six.PY2:
           date_parts = date.split('-')
           date = datetime.date(year=int(date_parts[0]),
@@ -231,8 +235,6 @@ class Expectations(object):
         else:
           logging.debug('Omitting expectation %s because it is too new',
                         line_content.rstrip())
-      else:
-        content += line_content
     return content
 
   def RemoveExpectationsFromFile(self,
@@ -554,75 +556,6 @@ class Expectations(object):
     """
     return typ_tags
 
-  def ModifySemiStaleExpectations(
-      self, stale_expectation_map: data_types.TestExpectationMap) -> Set[str]:
-    """Modifies lines from |stale_expectation_map| in |expectation_file|.
-
-    Prompts the user for each modification and provides debug information since
-    semi-stale expectations cannot be blindly removed like fully stale ones.
-
-    Args:
-      stale_expectation_map: A data_types.TestExpectationMap containing
-          semi-stale expectations.
-
-    Returns:
-      A set of strings containing URLs of bugs associated with the modified
-      (manually modified by the user or removed by the script) expectations.
-    """
-    expectations_to_remove = []
-    expectations_to_modify = []
-    modified_urls = set()
-    for expectation_file, e, builder_map in (
-        stale_expectation_map.IterBuilderStepMaps()):
-      with open(expectation_file) as infile:
-        file_contents = infile.read()
-      line, line_number = self._GetExpectationLine(e, file_contents,
-                                                   expectation_file)
-      expectation_str = None
-      if not line:
-        logging.error(
-            'Could not find line corresponding to semi-stale expectation for '
-            '%s with tags %s and expected results %s', e.test, e.tags,
-            e.expected_results)
-        expectation_str = '[ %s ] %s [ %s ]' % (' '.join(
-            e.tags), e.test, ' '.join(e.expected_results))
-      else:
-        expectation_str = '%s (approx. line %d)' % (line, line_number)
-
-      str_dict = result_output.ConvertBuilderMapToPassOrderedStringDict(
-          builder_map)
-      print('\nSemi-stale expectation:\n%s' % expectation_str)
-      result_output.RecursivePrintToFile(str_dict, 1, sys.stdout)
-
-      response = _WaitForUserInputOnModification()
-      if response == 'r':
-        expectations_to_remove.append(e)
-      elif response == 'm':
-        expectations_to_modify.append(e)
-
-      # It's possible that the user will introduce a typo while manually
-      # modifying an expectation, which will cause a parser error. Catch that
-      # now and give them chances to fix it so that they don't lose all of their
-      # work due to an early exit.
-      while True:
-        try:
-          with open(expectation_file) as infile:
-            file_contents = infile.read()
-          _ = expectations_parser.TaggedTestListParser(file_contents)
-          break
-        except expectations_parser.ParseError as error:
-          logging.error('Got parser error: %s', error)
-          logging.error(
-              'This probably means you introduced a typo, please fix it.')
-          _WaitForAnyUserInput()
-
-      modified_urls |= self.RemoveExpectationsFromFile(expectations_to_remove,
-                                                       expectation_file,
-                                                       RemovalType.STALE)
-    for e in expectations_to_modify:
-      modified_urls |= set(e.bug.split())
-    return modified_urls
-
   def NarrowSemiStaleExpectationScope(
       self, stale_expectation_map: data_types.TestExpectationMap) -> Set[str]:
     """Narrows the scope of expectations in |stale_expectation_map|.
@@ -843,33 +776,6 @@ class Expectations(object):
     raise NotImplementedError()
 
 
-def _WaitForAnyUserInput() -> None:
-  """Waits for any user input.
-
-  Split out for testing purposes.
-  """
-  _get_input('Press any key to continue')
-
-
-def _WaitForUserInputOnModification() -> str:
-  """Waits for user input on how to modify a semi-stale expectation.
-
-  Returns:
-    One of the following string values:
-      i - Expectation should be ignored and left alone.
-      m - Expectation will be manually modified by the user.
-      r - Expectation should be removed by the script.
-  """
-  valid_inputs = ['i', 'm', 'r']
-  prompt = ('How should this expectation be handled? (i)gnore/(m)anually '
-            'modify/(r)emove: ')
-  response = _get_input(prompt).lower()
-  while response not in valid_inputs:
-    print('Invalid input, valid inputs are %s' % (', '.join(valid_inputs)))
-    response = _get_input(prompt).lower()
-  return response
-
-
 def _LineContainsGroupStartComment(line: str) -> bool:
   return FINDER_GROUP_COMMENT_START in line
 
@@ -1007,9 +913,3 @@ def _RemoveStaleComments(content: str) -> str:
     content = content.replace(match, '')
 
   return content
-
-
-def _get_input(prompt: str) -> str:
-  if sys.version_info[0] == 2:
-    return raw_input(prompt)
-  return input(prompt)

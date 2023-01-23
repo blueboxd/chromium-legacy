@@ -245,7 +245,7 @@ void CheckInstallation(UpdaterScope scope,
                     .ReadValue(kRegValueUninstallCmdLine,
                                &uninstall_cmd_line_string));
       EXPECT_TRUE(base::CommandLine::FromString(uninstall_cmd_line_string)
-                      .HasSwitch(kUninstallIfUnusedSwitch));
+                      .HasSwitch(kWakeSwitch));
 
       if (!IsSystemInstall(scope)) {
         std::wstring run_updater_wake_command;
@@ -803,17 +803,23 @@ void ExpectInterfacesRegistered(UpdaterScope scope) {
                                                      : __uuidof(IUpdaterUser),
                               IID_PPV_ARGS_Helper(&updater)));
 
-    Microsoft::WRL::ComPtr<IUnknown> updater_legacy_server;
-    ASSERT_HRESULT_SUCCEEDED(CreateLocalServer(
-        IsSystemInstall(scope) ? __uuidof(GoogleUpdate3WebSystemClass)
-                               : __uuidof(GoogleUpdate3WebUserClass),
-        updater_legacy_server));
-    Microsoft::WRL::ComPtr<IGoogleUpdate3Web> google_update;
-    ASSERT_HRESULT_SUCCEEDED(updater_legacy_server.As(&google_update));
-    Microsoft::WRL::ComPtr<IAppBundleWeb> app_bundle;
-    Microsoft::WRL::ComPtr<IDispatch> dispatch;
-    ASSERT_HRESULT_SUCCEEDED(google_update->createAppBundleWeb(&dispatch));
-    EXPECT_HRESULT_SUCCEEDED(dispatch.As(&app_bundle));
+    for (const CLSID& clsid : [&scope]() -> std::vector<CLSID> {
+           if (IsSystemInstall(scope)) {
+             return {__uuidof(GoogleUpdate3WebSystemClass),
+                     __uuidof(GoogleUpdate3WebServiceClass)};
+           } else {
+             return {__uuidof(GoogleUpdate3WebUserClass)};
+           }
+         }()) {
+      Microsoft::WRL::ComPtr<IUnknown> updater_legacy_server;
+      ASSERT_HRESULT_SUCCEEDED(CreateLocalServer(clsid, updater_legacy_server));
+      Microsoft::WRL::ComPtr<IGoogleUpdate3Web> google_update;
+      ASSERT_HRESULT_SUCCEEDED(updater_legacy_server.As(&google_update));
+      Microsoft::WRL::ComPtr<IAppBundleWeb> app_bundle;
+      Microsoft::WRL::ComPtr<IDispatch> dispatch;
+      ASSERT_HRESULT_SUCCEEDED(google_update->createAppBundleWeb(&dispatch));
+      EXPECT_HRESULT_SUCCEEDED(dispatch.As(&app_bundle));
+    }
   }
 
   {

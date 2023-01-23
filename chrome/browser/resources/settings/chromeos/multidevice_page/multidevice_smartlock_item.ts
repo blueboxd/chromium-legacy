@@ -1,0 +1,139 @@
+// Copyright 2021 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+/**
+ * @fileoverview
+ * Wrapper for multidevice-feature-item that allows displaying the Smart Lock
+ * feature row outside of the multidevice page. Manages the browser proxy and
+ * handles the feature toggle click event. Requires that the hosting page pass
+ * in an auth token.
+ */
+
+import './multidevice_feature_item.js';
+
+import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
+import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {Constructor} from '../common/types';
+import {recordSettingChange} from '../metrics_recorder.js';
+import {routes} from '../os_route.js';
+import {OsSettingsRoutes} from '../os_settings_routes.js';
+
+import {MultiDeviceBrowserProxy, MultiDeviceBrowserProxyImpl} from './multidevice_browser_proxy.js';
+import {MultiDeviceFeature, MultiDevicePageContentData, MultiDeviceSettingsMode} from './multidevice_constants.js';
+import {MultiDeviceFeatureBehavior, MultiDeviceFeatureBehaviorInterface} from './multidevice_feature_behavior.js';
+import {SettingsMultideviceFeatureItemElement} from './multidevice_feature_item.js';
+import {getTemplate} from './multidevice_smartlock_item.html.js';
+
+interface SettingsMultideviceSmartlockItemElement {
+  $: {
+    smartLockItem: SettingsMultideviceFeatureItemElement,
+  };
+}
+
+const SettingsMultideviceSmartlockItemElementBase =
+    mixinBehaviors(
+        [MultiDeviceFeatureBehavior], WebUiListenerMixin(PolymerElement)) as
+    Constructor<PolymerElement&WebUiListenerMixinInterface&
+                MultiDeviceFeatureBehaviorInterface>;
+
+class SettingsMultideviceSmartlockItemElement extends
+    SettingsMultideviceSmartlockItemElementBase {
+  static get is() {
+    return 'settings-multidevice-smartlock-item' as const;
+  }
+
+  static get template() {
+    return getTemplate();
+  }
+
+  static get properties() {
+    return {
+      /**
+       * Alias for allowing Polymer HTML bindings to routes.
+       */
+      routes: {
+        type: Object,
+        value: routes,
+      },
+
+      /**
+       * Authentication token provided by lock-screen-password-prompt-dialog.
+       */
+      authToken: {
+        type: Object,
+      },
+    };
+  }
+
+  authToken: chrome.quickUnlockPrivate.TokenInfo|undefined;
+  routes: OsSettingsRoutes|null;
+  private browserProxy_: MultiDeviceBrowserProxy;
+
+  constructor() {
+    super();
+
+    this.browserProxy_ = MultiDeviceBrowserProxyImpl.getInstance();
+  }
+
+  override ready(): void {
+    super.ready();
+
+    this.addEventListener('feature-toggle-clicked', (event) => {
+      this.onFeatureToggleClicked_(event);
+    });
+
+    this.addWebUiListener(
+        'settings.updateMultidevicePageContentData',
+        this.onPageContentDataChanged_.bind(this));
+
+    this.browserProxy_.getPageContentData().then(
+        this.onPageContentDataChanged_.bind(this));
+  }
+
+  override focus(): void {
+    this.$.smartLockItem.focus();
+  }
+
+  private onPageContentDataChanged_(newData: MultiDevicePageContentData): void {
+    this.pageContentData = newData;
+  }
+
+  private shouldShowFeature_(): boolean {
+    // We only show the feature when it is editable, because a disabled toggle
+    // is confusing for the user without greater context.
+    return this.isFeatureSupported(MultiDeviceFeature.SMART_LOCK) &&
+        this.pageContentData.mode ===
+        MultiDeviceSettingsMode.HOST_SET_VERIFIED &&
+        this.isFeatureStateEditable(MultiDeviceFeature.SMART_LOCK);
+  }
+
+  /**
+   * Attempt to enable the provided feature. The authentication token is
+   * provided by the parent element.
+   * TODO(crbug.com/1229430) refactor to avoid duplicating code from the
+   * multidevice page
+   */
+  private onFeatureToggleClicked_(
+      event: CustomEvent<{feature: MultiDeviceFeature, enabled: boolean}>):
+      void {
+    const feature = event.detail.feature;
+    const enabled = event.detail.enabled;
+
+    this.browserProxy_.setFeatureEnabledState(
+        feature, enabled, this.authToken!.token);
+    recordSettingChange();
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    [SettingsMultideviceSmartlockItemElement.is]:
+        SettingsMultideviceSmartlockItemElement;
+  }
+}
+
+customElements.define(
+    SettingsMultideviceSmartlockItemElement.is,
+    SettingsMultideviceSmartlockItemElement);

@@ -3809,6 +3809,26 @@ Connect your device to power.
         <ph name="MODIFIER_ONE">$1<ex>shift</ex></ph> <ph name="MODIFIER_TWO">$2<ex>alt</ex></ph> <ph name="KEY_ONE">$3<ex>i</ex></ph> then <ph name="KEY_TWO">$4<ex>esc</ex></ph>
       </message>
 
+      <!-- Six-Pack Keys -->
+      <message name="IDS_EVENT_REWRITER_ACCELERATOR_SIX_PACK_DELETE_DESCRIPTION" translateable="false" desc="Label for the delete six-pack-key.">
+        Delete
+      </message>
+      <message name="IDS_EVENT_REWRITER_ACCELERATOR_SIX_PACK_HOME_DESCRIPTION" translateable="false" desc="Label for the home six-pack-key.">
+        Home
+      </message>
+      <message name="IDS_EVENT_REWRITER_ACCELERATOR_SIX_PACK_PAGE_UP_DESCRIPTION" translateable="false" desc="Label for the page up six-pack-key.">
+        PageUp
+      </message>
+      <message name="IDS_EVENT_REWRITER_ACCELERATOR_SIX_PACK_END_DESCRIPTION" translateable="false" desc="Label for the end six-pack-key.">
+        End
+      </message>
+      <message name="IDS_EVENT_REWRITER_ACCELERATOR_SIX_PACK_PAGE_DOWN_DESCRIPTION" translateable="false" desc="Label for the page down six-pack-key.">
+        PageDown
+      </message>
+      <message name="IDS_EVENT_REWRITER_ACCELERATOR_SIX_PACK_INSERT_DESCRIPTION" translateable="false" desc="Label for the insert six-pack-key.">
+        Insert
+      </message>
+
       <!-- Tray scale strings -->
       <message name="IDS_ASH_STATUS_TRAY_SCALE" desc="The label used in scale setting detailed page of ash tray popup.">
         Display scale settings
@@ -4680,9 +4700,6 @@ Connect your device to power.
       <message name="IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_CALENDAR" desc="Message shown on suggestion chip in Assistant UI to initiate a query for upcoming calendar events.">
         What's on my calendar?
       </message>
-      <message name="IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN" desc="Message shown on suggestion chip in Assistant UI to initiate a contextual search for results matching screen content.">
-        What's on my screen?
-      </message>
       <message name="IDS_ASH_ASSISTANT_CHIP_WHATS_THE_WEATHER" desc="Message shown on suggestion chip in Assistant UI to initiate a query for the current weather.">
         What's the weather?
       </message>
@@ -5335,6 +5352,14 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_SAVE_TO_LINUX_FILES" desc="The label of the menu item button for selecting the root of the Linux Files path to store the captured images and videos.">
         Linux files
+      </message>
+
+      <!-- Snap Group -->
+      <message name="IDS_ASH_SNAP_GROUP_CLICK_TO_LOCK_WINDOWS" desc="Click to lock the windows.">
+        Lock the windows
+      </message>
+      <message name="IDS_ASH_SNAP_GROUP_CLICK_TO_UNLOCK_WINDOWS" desc="Click to unlock the locked windows.">
+        Unlock the windows
       </message>
 
       <!-- Switch Between TABLET/LAPTOP MODE-->

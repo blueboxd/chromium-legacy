@@ -26,8 +26,8 @@
 #error "This file requires ARC support."
 #endif
 
-using chrome_test_util::BookmarkHomeDoneButton;
 using chrome_test_util::BookmarksDeleteSwipeButton;
+using chrome_test_util::BookmarksHomeDoneButton;
 using chrome_test_util::BookmarksNavigationBarBackButton;
 using chrome_test_util::BookmarksSaveEditDoneButton;
 using chrome_test_util::BookmarksSaveEditFolderButton;
@@ -70,7 +70,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   // Change to edit mode
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
+                                   kBookmarksHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select URLs.
@@ -214,7 +214,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
   // Scroll to top to navigate away from the folder being created.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kBookmarkHomeTableViewIdentifier)]
+                                          kBookmarksHomeTableViewIdentifier)]
       performAction:ScrollToTop()];
 
   // Scroll back to the Folder being created.
@@ -236,7 +236,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   // Change to edit mode
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
+                                   kBookmarksHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select single URL.
@@ -317,7 +317,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   // Change to edit mode, using context menu.
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
+                                   kBookmarksHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Delete the Folder 1 and Folder 2 programmatically in background.
@@ -429,7 +429,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   // Change to edit mode
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
+                                   kBookmarksHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select single folder.
@@ -462,7 +462,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   // Change to edit mode
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
+                                   kBookmarksHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select single folder.
@@ -636,7 +636,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   // Change to edit mode, using context menu.
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
+                                   kBookmarksHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select multiple folders.
@@ -713,7 +713,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   // Change to edit mode
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
+                                   kBookmarksHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select Folder.
@@ -750,7 +750,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
   // Change to edit mode
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityID(
-                                   kBookmarkHomeTrailingButtonIdentifier)]
+                                   kBookmarksHomeTrailingButtonIdentifier)]
       performAction:grey_tap()];
 
   // Select Folders.
@@ -769,7 +769,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
   // Verify it shows the context menu.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kBookmarkHomeContextMenuIdentifier)]
+                                          kBookmarksHomeContextMenuIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Verify options on context menu.
@@ -815,7 +815,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
       assertWithMatcher:grey_notVisible()];
 
   // Close bookmarks
-  [[EarlGrey selectElementWithMatcher:BookmarkHomeDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarksHomeDoneButton()]
       performAction:grey_tap()];
 
   // Second, bookmark a page.
@@ -881,7 +881,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
                                                  pressReturn:NO];
 
   // Interrupt the folder name editing by tapping on done.
-  [[EarlGrey selectElementWithMatcher:BookmarkHomeDoneButton()]
+  [[EarlGrey selectElementWithMatcher:BookmarksHomeDoneButton()]
       performAction:grey_tap()];
   // Reopen bookmarks.
   [BookmarkEarlGreyUI openBookmarks];
@@ -896,7 +896,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
   // Interrupt the folder name editing by entering Folder 1
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kBookmarkHomeTableViewIdentifier)]
+                                          kBookmarksHomeTableViewIdentifier)]
       performAction:ScrollToTop()];
 
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Folder 1")]
@@ -915,7 +915,7 @@ using chrome_test_util::TappableBookmarkNodeWithLabel;
 
   // Interrupt the folder name editing by tapping on First URL.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kBookmarkHomeTableViewIdentifier)]
+                                          kBookmarksHomeTableViewIdentifier)]
       performAction:ScrollToTop()];
 
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"French URL")]

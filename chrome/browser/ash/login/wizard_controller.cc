@@ -98,6 +98,7 @@
 #include "chrome/browser/ash/login/screens/smart_privacy_protection_screen.h"
 #include "chrome/browser/ash/login/screens/sync_consent_screen.h"
 #include "chrome/browser/ash/login/screens/theme_selection_screen.h"
+#include "chrome/browser/ash/login/screens/touchpad_scroll_screen.h"
 #include "chrome/browser/ash/login/screens/tpm_error_screen.h"
 #include "chrome/browser/ash/login/screens/update_required_screen.h"
 #include "chrome/browser/ash/login/screens/update_screen.h"
@@ -182,6 +183,7 @@
 #include "chrome/browser/ui/webui/ash/login/sync_consent_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/theme_selection_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/touchpad_scroll_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/tpm_error_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/update_required_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/update_screen_handler.h"
@@ -837,7 +839,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnThemeSelectionScreenExit,
                           weak_factory_.GetWeakPtr())));
 
-  if (features::IsCryptohomeRecoveryFlowUIEnabled()) {
+  if (features::IsCryptohomeRecoveryFlowEnabled()) {
     append(std::make_unique<CryptohomeRecoveryScreen>(
         oobe_ui->GetView<CryptohomeRecoveryScreenHandler>()->AsWeakPtr(),
         base::BindRepeating(&WizardController::OnCryptohomeRecoveryScreenExit,
@@ -848,6 +850,14 @@ WizardController::CreateScreens() {
     append(std::make_unique<ChoobeScreen>(
         oobe_ui->GetView<ChoobeScreenHandler>()->AsWeakPtr(),
         base::BindRepeating(&WizardController::OnChoobeScreenExit,
+                            weak_factory_.GetWeakPtr())));
+  }
+
+  if (features::IsOobeChoobeEnabled() &&
+      features::IsOobeTouchpadScrollEnabled()) {
+    append(std::make_unique<TouchpadScrollScreen>(
+        oobe_ui->GetView<TouchpadScrollScreenHandler>()->AsWeakPtr(),
+        base::BindRepeating(&WizardController::OnTouchpadScreenExit,
                             weak_factory_.GetWeakPtr())));
   }
 
@@ -1085,6 +1095,10 @@ void WizardController::ShowChoobeScreen() {
   SetCurrentScreen(GetScreen(ChoobeScreenView::kScreenId));
 }
 
+void WizardController::ShowTouchpadScrollScreen() {
+  SetCurrentScreen(GetScreen(TouchpadScrollScreenView::kScreenId));
+}
+
 void WizardController::ShowCryptohomeRecoverySetupScreen() {
   CHECK(features::IsCryptohomeRecoverySetupEnabled());
   SetCurrentScreen(GetScreen(CryptohomeRecoverySetupScreenView::kScreenId));
@@ -1118,7 +1132,7 @@ void WizardController::ShowGuestTosScreen() {
 
 void WizardController::ShowCryptohomeRecoveryScreen(
     std::unique_ptr<UserContext> user_context) {
-  DCHECK(features::IsCryptohomeRecoveryFlowUIEnabled());
+  DCHECK(features::IsCryptohomeRecoveryFlowEnabled());
   wizard_context_->user_context = std::move(user_context);
   SetCurrentScreen(GetScreen(CryptohomeRecoveryScreenView::kScreenId));
 }
@@ -1426,6 +1440,18 @@ void WizardController::OnChoobeScreenExit(ChoobeScreen::Result result) {
       ShowThemeSelectionScreen();
       break;
     case ChoobeScreen::Result::SKIPPED:
+      ShowMarketingOptInScreen();
+      break;
+  }
+}
+
+void WizardController::OnTouchpadScreenExit(
+    TouchpadScrollScreen::Result result) {
+  OnScreenExit(TouchpadScrollScreenView::kScreenId,
+               TouchpadScrollScreen::GetResultString(result));
+  switch (result) {
+    case TouchpadScrollScreen::Result::kNotApplicable:
+    case TouchpadScrollScreen::Result::kNext:
       ShowMarketingOptInScreen();
       break;
   }

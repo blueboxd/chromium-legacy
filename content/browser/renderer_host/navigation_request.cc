@@ -23,6 +23,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/rand_util.h"
 #include "base/state_transitions.h"
 #include "base/strings/strcat.h"
@@ -51,6 +52,7 @@
 #include "content/browser/loader/navigation_early_hints_manager.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/loader/object_navigation_fallback_body_loader.h"
+#include "content/browser/loader/resource_timing_utils.h"
 #include "content/browser/navigation_or_document_handle.h"
 #include "content/browser/network/cross_origin_embedder_policy_reporter.h"
 #include "content/browser/network/cross_origin_opener_policy_reporter.h"
@@ -157,6 +159,7 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/navigation/navigation_params_mojom_traits.h"
 #include "third_party/blink/public/common/navigation/navigation_policy.h"
+#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy_features.h"
 #include "third_party/blink/public/common/permissions_policy/policy_helper_public.h"
@@ -173,6 +176,7 @@
 #include "third_party/blink/public/mojom/runtime_feature_state/runtime_feature_state.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/storage_key/ancestor_chain_bit.mojom.h"
+#include "third_party/blink/public/mojom/timing/resource_timing.mojom-forward.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "ui/compositor/compositor_lock.h"
@@ -4702,6 +4706,42 @@ network::mojom::WebSandboxFlags NavigationRequest::SandboxFlagsToCommit() {
   return policy_container_builder_->FinalPolicies().sandbox_flags;
 }
 
+void NavigationRequest::MaybeAddResourceTimingEntryForCancelledNavigation() {
+  if (!base::FeatureList::IsEnabled(
+          features::kResourceTimingForCancelledNavigationInFrame)) {
+    return;
+  }
+
+  RenderFrameHostImpl* parent_rfh = GetParentFrame();
+
+  // Do not add ResourceTiming entries if the navigated URL does not have a
+  // parent.
+  if (!parent_rfh) {
+    return;
+  }
+
+  // Some navigation are cancelled even before requesting and receiving a
+  // response. Those cases are not supported and the ResourceTiming is not
+  // reported to the parent.
+  if (!response_head_) {
+    return;
+  }
+
+  if (initiator_document_.AsRenderFrameHostIfValid() != parent_rfh) {
+    return;
+  }
+
+  blink::mojom::ResourceTimingInfoPtr timing_info =
+      GenerateResourceTimingForNavigation(
+          parent_rfh->GetLastCommittedOrigin(), *common_params_,
+          *commit_params_, *response_head_, request_context_type());
+  timing_info->response_end = base::TimeTicks::Now();
+  parent_rfh->GetAssociatedLocalFrame()
+      ->AddResourceTimingEntryFromNonNavigatedFrame(
+          std::move(timing_info),
+          frame_tree_node()->frame_owner_element_type());
+}
+
 void NavigationRequest::OnRedirectChecksComplete(
     NavigationThrottle::ThrottleCheckResult result) {
   DCHECK(result.action() != NavigationThrottle::DEFER);
@@ -4969,6 +5009,7 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
   if (result.action() == NavigationThrottle::CANCEL_AND_IGNORE ||
       result.action() == NavigationThrottle::CANCEL ||
       !response_should_be_rendered_) {
+    MaybeAddResourceTimingEntryForCancelledNavigation();
     // Reset the RenderFrameHost that had been computed for the commit of the
     // navigation.
     render_frame_host_ = nullptr;
@@ -6738,6 +6779,10 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
   SetState(READY_TO_COMMIT);
   ready_to_commit_time_ = base::TimeTicks::Now();
   RestartCommitTimeout();
+
+  if (!IsSameDocument()) {
+    MaybeRegisterOriginForUnpartitionedSessionStorageAccess();
+  }
 
   if (!IsSameDocument() && !IsPageActivation())
     UpdatePrivateNetworkRequestPolicy();
@@ -8620,6 +8665,23 @@ void NavigationRequest::ResumeCommitIfNeeded() {
     base::SequencedTaskRunner::GetCurrentDefault()->PostNonNestableTask(
         FROM_HERE, std::move(resume_commit_closure_));
   }
+}
+
+void NavigationRequest::
+    MaybeRegisterOriginForUnpartitionedSessionStorageAccess() {
+  if (!common_params_ || !response_head_ || !response_head_->headers) {
+    return;
+  }
+  if (!blink::TrialTokenValidator().RequestEnablesFeature(
+          common_params_->url, response_head_->headers.get(),
+          "DisableThirdPartySessionStoragePartitioningAfterGeneralPartitioning",
+          base::Time::Now())) {
+    return;
+  }
+  frame_tree_node()
+      ->frame_tree()
+      .RegisterOriginForUnpartitionedSessionStorageAccess(
+          url::Origin::Create(common_params_->url));
 }
 
 }  // namespace content

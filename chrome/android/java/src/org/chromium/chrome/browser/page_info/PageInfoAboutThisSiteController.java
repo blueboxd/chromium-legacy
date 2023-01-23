@@ -36,6 +36,7 @@ import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.LayoutInflaterUtils;
+import org.chromium.ui.base.PageTransition;
 import org.chromium.url.GURL;
 
 /**
@@ -108,9 +109,12 @@ public class PageInfoAboutThisSiteController implements PageInfoSubpageControlle
             GURL bottomSheetUrl = new GURL(builder.toString());
             GURL fullPageUrl = new GURL(url);
 
-            createEphemeralTabObserver(bottomSheetUrl);
+            if (ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_IMPROVED_BOTTOMSHEET)) {
+                createEphemeralTabObserver(bottomSheetUrl);
+                mEphemeralTabCoordinatorSupplier.get().addObserver(mEphemeralTabObserver);
+            }
 
-            mEphemeralTabCoordinatorSupplier.get().addObserver(mEphemeralTabObserver);
             mEphemeralTabCoordinatorSupplier.get().requestOpenSheetWithFullPageUrl(
                     bottomSheetUrl, fullPageUrl, getTitle(), /*isIncognito=*/false);
 
@@ -154,7 +158,7 @@ public class PageInfoAboutThisSiteController implements PageInfoSubpageControlle
 
     private void openInNewTab(String url) {
         new TabDelegate(/*incognito=*/false)
-                .createNewTab(new LoadUrlParams(url), TabLaunchType.FROM_CHROME_UI,
+                .createNewTab(new LoadUrlParams(url, PageTransition.LINK), TabLaunchType.FROM_LINK,
                         TabUtils.fromWebContents(mWebContents));
     }
 

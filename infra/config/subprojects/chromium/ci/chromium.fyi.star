@@ -317,7 +317,7 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-fyi-archive",
         skylab_upload_location = builder_config.skylab_upload_location(
-            gs_bucket = "lacros-amd64-generic-rel-skylab-try",
+            gs_bucket = "chromium-ci-skylab",
         ),
     ),
     os = os.LINUX_DEFAULT,
@@ -346,7 +346,7 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-fyi-archive",
         skylab_upload_location = builder_config.skylab_upload_location(
-            gs_bucket = "lacros-arm-generic-rel-skylab-try",
+            gs_bucket = "chromium-ci-skylab",
         ),
     ),
     os = os.LINUX_DEFAULT,
@@ -380,7 +380,7 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-fyi-archive",
         skylab_upload_location = builder_config.skylab_upload_location(
-            gs_bucket = "lacros-arm64-generic-rel-skylab-try",
+            gs_bucket = "chromium-ci-skylab",
         ),
     ),
     os = os.LINUX_DEFAULT,
@@ -1944,6 +1944,30 @@ fyi_mac_builder(
         short_name = "re",
     ),
     reclient_jobs = None,
+)
+
+fyi_mac_builder(
+    name = "mac10.15-wpt-content-shell-fyi-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
+        ),
+    ),
+    triggered_by = [],
+    builderless = False,
+    os = os.MAC_ANY,
+    cores = None,
+    console_view_entry = consoles.console_view_entry(
+        category = "mac",
+    ),
+    schedule = "with 5h interval",
 )
 
 fyi_mac_builder(

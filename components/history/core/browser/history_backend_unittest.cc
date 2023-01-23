@@ -4092,7 +4092,9 @@ TEST_F(HistoryBackendTest, ReserveNextClusterId_GetCluster) {
   EXPECT_FALSE(cluster.triggerability_calculated);
 }
 
-TEST_F(HistoryBackendTest, ReserveNextClusterId_AddVisitsToCluster_GetCluster) {
+TEST_F(
+    HistoryBackendTest,
+    ReserveNextClusterId_AddVisitsToCluster_GetCluster_GetClusterIdContainingVisit) {
   int64_t cluster_id = backend_->ReserveNextClusterId();
 
   AddAnnotatedVisit(1);
@@ -4106,6 +4108,9 @@ TEST_F(HistoryBackendTest, ReserveNextClusterId_AddVisitsToCluster_GetCluster) {
   backend_->AddVisitsToCluster(cluster_id, {visit_1, visit_2});
 
   VerifyCluster(backend_->GetCluster(cluster_id, false), {cluster_id, {2, 1}});
+
+  int64_t received_cluster_id = backend_->GetClusterIdContainingVisit(2);
+  EXPECT_EQ(received_cluster_id, cluster_id);
 }
 
 TEST_F(
@@ -4135,6 +4140,58 @@ TEST_F(
   EXPECT_TRUE(out_cluster.triggerability_calculated);
   EXPECT_EQ(out_cluster.keyword_to_data_map.size(), 1u);
   EXPECT_TRUE(out_cluster.keyword_to_data_map.contains(u"keyword1"));
+}
+
+TEST_F(HistoryBackendTest, AddVisitToSyncedCluster_GetCluster) {
+  std::string originator_cache_guid = "originator";
+  int64_t originator_cluster_id = 123;
+
+  const ui::PageTransition kLink = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CHAIN_START |
+      ui::PAGE_TRANSITION_CHAIN_END);
+
+  // Add 1 synced visit to cluster.
+  VisitRow foreign_visit;
+  foreign_visit.visit_time = base::Time::Now();
+  foreign_visit.transition = kLink;
+  foreign_visit.originator_cache_guid = "originator";
+  foreign_visit.is_known_to_sync = true;
+  VisitID added_id1 = backend_->AddSyncedVisit(
+      GURL("https://some.url"), u"Title", /*hidden=*/false, foreign_visit,
+      absl::nullopt, absl::nullopt);
+  history::ClusterVisit cluster_visit;
+  cluster_visit.annotated_visit.visit_row = foreign_visit;
+  cluster_visit.annotated_visit.visit_row.visit_id = added_id1;
+  backend_->AddVisitToSyncedCluster(cluster_visit, originator_cache_guid,
+                                    originator_cluster_id);
+
+  int64_t local_cluster_id =
+      backend_->db_->GetClusterIdContainingVisit(added_id1);
+  EXPECT_GT(local_cluster_id, 0);
+
+  // Add another synced visit to same cluster.
+  task_environment_.FastForwardBy(base::Seconds(1));
+
+  VisitRow foreign_visit2;
+  foreign_visit2.visit_time = base::Time::Now();
+  foreign_visit2.transition = kLink;
+  foreign_visit2.originator_cache_guid = "originator";
+  foreign_visit2.is_known_to_sync = true;
+  VisitID added_id2 = backend_->AddSyncedVisit(
+      GURL("https://some.url"), u"Title", /*hidden=*/false, foreign_visit2,
+      absl::nullopt, absl::nullopt);
+  history::ClusterVisit cluster_visit2;
+  cluster_visit2.annotated_visit.visit_row = foreign_visit2;
+  cluster_visit2.annotated_visit.visit_row.visit_id = added_id2;
+  backend_->AddVisitToSyncedCluster(cluster_visit2, originator_cache_guid,
+                                    originator_cluster_id);
+
+  EXPECT_EQ(backend_->db_->GetClusterIdContainingVisit(added_id2),
+            local_cluster_id);
+
+  Cluster out_cluster = backend_->GetCluster(
+      local_cluster_id, /*include_keywords_and_duplicates=*/false);
+  VerifyCluster(out_cluster, {local_cluster_id, {added_id2, added_id1}});
 }
 
 TEST_F(HistoryBackendTest, GetRedirectChainStart) {
@@ -4309,8 +4366,8 @@ TEST_F(HistoryBackendTest, AddSyncedVisitAddsOnlyValidURLs) {
       ui::PAGE_TRANSITION_CHAIN_END);
 
   // Note: Per AddSyncedVisit() preconditions (DCHECKs), the passed visit MUST
-  // have visit_time and originator_cache_guid, but MUST NOT have visit_id or
-  // url_id.
+  // have visit_time, originator_cache_guid, and is_known_to_sync, but MUST NOT
+  // have visit_id or url_id.
 
   // First, try to add some visits with unwanted URLs. These should *not* get
   // added to the DB.
@@ -4320,6 +4377,7 @@ TEST_F(HistoryBackendTest, AddSyncedVisitAddsOnlyValidURLs) {
   foreign_visit.visit_time = base::Time::Now();
   foreign_visit.transition = kLink;
   foreign_visit.originator_cache_guid = "originator";
+  foreign_visit.is_known_to_sync = true;
   EXPECT_EQ(kInvalidVisitID,
             backend_->AddSyncedVisit(GURL("chrome://settings"), u"Settings",
                                      /*hidden=*/false, foreign_visit,
@@ -4341,6 +4399,22 @@ TEST_F(HistoryBackendTest, AddSyncedVisitAddsOnlyValidURLs) {
       foreign_visit.transition, added_visit.transition));
   EXPECT_EQ(foreign_visit.originator_cache_guid,
             added_visit.originator_cache_guid);
+  EXPECT_TRUE(added_visit.is_known_to_sync);
+}
+
+TEST_F(HistoryBackendTest, AddSyncedVisitWritesIsKnownToSync) {
+  VisitRow foreign_visit;
+  foreign_visit.visit_time = base::Time::Now();
+  foreign_visit.originator_cache_guid = "originator";
+  foreign_visit.is_known_to_sync = true;
+
+  VisitID added_id = backend_->AddSyncedVisit(
+      GURL("https://some.url"), u"Title", /*hidden=*/false, foreign_visit,
+      absl::nullopt, absl::nullopt);
+  ASSERT_NE(added_id, kInvalidVisitID);
+  VisitRow added_visit;
+  ASSERT_TRUE(backend_->GetVisitByID(added_id, &added_visit));
+  EXPECT_TRUE(added_visit.is_known_to_sync);
 }
 
 TEST_F(HistoryBackendTest, DeleteAllForeignVisitsDoesNotDeleteLocalVisits) {
@@ -4367,6 +4441,7 @@ TEST_F(HistoryBackendTest, DeleteAllForeignVisitsDoesNotDeleteLocalVisits) {
   foreign_visit1.visit_time = base::Time::Now();
   foreign_visit1.transition = kLink;
   foreign_visit1.originator_cache_guid = "originator";
+  foreign_visit1.is_known_to_sync = true;
   VisitID foreign_visit_id1 = backend_->AddSyncedVisit(
       GURL("https://remote1.url"), u"Title 1", /*hidden=*/false, foreign_visit1,
       absl::nullopt, absl::nullopt);
@@ -4388,6 +4463,7 @@ TEST_F(HistoryBackendTest, DeleteAllForeignVisitsDoesNotDeleteLocalVisits) {
   foreign_visit2.visit_time = base::Time::Now();
   foreign_visit2.transition = kLink;
   foreign_visit2.originator_cache_guid = "originator";
+  foreign_visit2.is_known_to_sync = true;
   VisitID foreign_visit_id2 = backend_->AddSyncedVisit(
       GURL("https://remote2.url"), u"Title 2", /*hidden=*/true, foreign_visit2,
       absl::nullopt, absl::nullopt);
@@ -4438,6 +4514,7 @@ TEST_F(HistoryBackendTest, DeleteAllForeignVisitsWorksInBatches) {
     foreign_visit.visit_time = base::Time::Now();
     foreign_visit.transition = kLink;
     foreign_visit.originator_cache_guid = "originator";
+    foreign_visit.is_known_to_sync = true;
     backend_->AddSyncedVisit(GURL("https://remote.url"), /*title=*/u"",
                              /*hidden=*/false, foreign_visit, absl::nullopt,
                              absl::nullopt);
@@ -4483,6 +4560,7 @@ TEST_F(HistoryBackendTest, DeleteAllForeignVisitsDoesNotDeleteFutureVisits) {
     foreign_visit.visit_time = base::Time::Now();
     foreign_visit.transition = kLink;
     foreign_visit.originator_cache_guid = "originator";
+    foreign_visit.is_known_to_sync = true;
     backend_->AddSyncedVisit(GURL("https://remote.url"), /*title=*/u"",
                              /*hidden=*/false, foreign_visit, absl::nullopt,
                              absl::nullopt);
@@ -4510,6 +4588,7 @@ TEST_F(HistoryBackendTest, DeleteAllForeignVisitsDoesNotDeleteFutureVisits) {
     foreign_visit.visit_time = base::Time::Now();
     foreign_visit.transition = kLink;
     foreign_visit.originator_cache_guid = "originator";
+    foreign_visit.is_known_to_sync = true;
     new_foreign_visit_ids.push_back(backend_->AddSyncedVisit(
         GURL("https://remote.url"), /*title=*/u"",
         /*hidden=*/false, foreign_visit, absl::nullopt, absl::nullopt));

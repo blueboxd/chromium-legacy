@@ -1512,7 +1512,7 @@ void BrowserAutofillManager::DidShowSuggestions(bool has_autofill_suggestions,
   if (logger) {
     logger->OnDidShowSuggestions(*form_structure, *autofill_field,
                                  form_structure->form_parsed_timestamp(),
-                                 sync_state_, driver()->IsIncognito());
+                                 sync_state_, client()->IsOffTheRecord());
   }
 
   if (autofill_field->Type().group() == FieldTypeGroup::kCreditCard &&
@@ -1865,7 +1865,7 @@ const FormData& BrowserAutofillManager::last_query_form() const {
 }
 
 bool BrowserAutofillManager::ShouldUploadForm(const FormStructure& form) {
-  return IsAutofillEnabled() && !driver()->IsIncognito() &&
+  return IsAutofillEnabled() && !client()->IsOffTheRecord() &&
          form.ShouldBeUploaded();
 }
 
@@ -1971,7 +1971,7 @@ void BrowserAutofillManager::UploadVotesAndLogQuality(
   download_manager()->StartUploadRequest(
       *submitted_form, was_autofilled, non_empty_types,
       /*login_form_signature=*/std::string(), observed_submission,
-      client()->GetPrefs());
+      client()->GetPrefs(), GetWeakPtr());
 }
 
 const gfx::Image& BrowserAutofillManager::GetCardImage(

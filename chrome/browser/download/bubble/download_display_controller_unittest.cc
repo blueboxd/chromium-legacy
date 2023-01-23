@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "chrome/browser/download/bubble/download_bubble_controller.h"
 #include "chrome/browser/download/bubble/download_display.h"
 #include "chrome/browser/download/bubble/download_icon_state.h"
@@ -94,7 +95,9 @@ class FakeDownloadDisplay : public DownloadDisplay {
   bool is_active_ = false;
   bool detail_shown_ = false;
   bool is_fullscreen_ = false;
-  DownloadDisplayController* controller_ = nullptr;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #constexpr-ctor-field-initializer
+  RAW_PTR_EXCLUSION DownloadDisplayController* controller_ = nullptr;
 };
 
 class FakeDownloadBubbleUIController : public DownloadBubbleUIController {
@@ -116,6 +119,29 @@ class FakeDownloadBubbleUIController : public DownloadBubbleUIController {
   OfflineItemList offline_items_;
 };
 
+class MockDownloadCoreService : public DownloadCoreService {
+ public:
+  MOCK_METHOD(ChromeDownloadManagerDelegate*, GetDownloadManagerDelegate, ());
+  MOCK_METHOD(DownloadUIController*, GetDownloadUIController, ());
+  MOCK_METHOD(DownloadHistory*, GetDownloadHistory, ());
+  MOCK_METHOD(extensions::ExtensionDownloadsEventRouter*,
+              GetExtensionEventRouter,
+              ());
+  MOCK_METHOD(bool, HasCreatedDownloadManager, ());
+  MOCK_METHOD(int, NonMaliciousDownloadCount, (), (const));
+  MOCK_METHOD(void, CancelDownloads, ());
+  MOCK_METHOD(void,
+              SetDownloadManagerDelegateForTesting,
+              (std::unique_ptr<ChromeDownloadManagerDelegate> delegate));
+  MOCK_METHOD(bool, IsDownloadUiEnabled, ());
+  MOCK_METHOD(bool, IsDownloadObservedByExtension, ());
+};
+
+std::unique_ptr<KeyedService> BuildMockDownloadCoreService(
+    content::BrowserContext* browser_context) {
+  return std::make_unique<MockDownloadCoreService>();
+}
+
 }  // namespace
 
 class DownloadDisplayControllerTest : public testing::Test {
@@ -136,10 +162,15 @@ class DownloadDisplayControllerTest : public testing::Test {
     EXPECT_CALL(*manager_.get(), GetBrowserContext())
         .WillRepeatedly(Return(profile_.get()));
 
-    // Set test delegate to get the corresponding download prefs.
-    auto delegate = std::make_unique<ChromeDownloadManagerDelegate>(profile_);
-    DownloadCoreServiceFactory::GetForBrowserContext(profile_)
-        ->SetDownloadManagerDelegateForTesting(std::move(delegate));
+    DownloadCoreServiceFactory::GetInstance()->SetTestingFactory(
+        profile_, base::BindRepeating(&BuildMockDownloadCoreService));
+    mock_download_core_service_ = static_cast<MockDownloadCoreService*>(
+        DownloadCoreServiceFactory::GetForBrowserContext(profile_));
+    EXPECT_CALL(*mock_download_core_service(), IsDownloadUiEnabled())
+        .WillRepeatedly(Return(true));
+    delegate_ = std::make_unique<ChromeDownloadManagerDelegate>(profile_);
+    EXPECT_CALL(*mock_download_core_service(), GetDownloadManagerDelegate())
+        .WillRepeatedly(Return(delegate_.get()));
 
     display_ = std::make_unique<FakeDownloadDisplay>();
     window_ = std::make_unique<TestBrowserWindow>();
@@ -176,6 +207,9 @@ class DownloadDisplayControllerTest : public testing::Test {
     return *bubble_controller_;
   }
   Profile* profile() { return profile_; }
+  MockDownloadCoreService* mock_download_core_service() {
+    return mock_download_core_service_;
+  }
 
   void InitDownloadItem(const base::FilePath::CharType* path,
                         DownloadState state,
@@ -326,6 +360,8 @@ class DownloadDisplayControllerTest : public testing::Test {
   raw_ptr<Profile> profile_;
   std::unique_ptr<TestBrowserWindow> window_;
   std::unique_ptr<Browser> browser_;
+  MockDownloadCoreService* mock_download_core_service_;
+  std::unique_ptr<ChromeDownloadManagerDelegate> delegate_;
 };
 
 TEST_F(DownloadDisplayControllerTest, GetProgressItemsInProgress) {
@@ -824,4 +860,15 @@ TEST_F(DownloadDisplayControllerTest,
   EXPECT_TRUE(VerifyDisplayState(/*shown=*/true, /*detail_shown=*/false,
                                  /*icon_state=*/DownloadIconState::kComplete,
                                  /*is_active=*/false));
+}
+
+TEST_F(DownloadDisplayControllerTest,
+       ShowsDetailsWhenExtensionObservingDownloads) {
+  EXPECT_CALL(*mock_download_core_service(), IsDownloadObservedByExtension())
+      .WillRepeatedly(Return(true));
+  InitDownloadItem(FILE_PATH_LITERAL("/foo/bar.pdf"),
+                   download::DownloadItem::IN_PROGRESS);
+  EXPECT_TRUE(VerifyDisplayState(/*shown=*/true, /*detail_shown=*/true,
+                                 /*icon_state=*/DownloadIconState::kProgress,
+                                 /*is_active=*/true));
 }

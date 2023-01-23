@@ -303,7 +303,7 @@ void WebrtcVideoEncoderAV1::ConfigureCodecParams() {
   config_.g_lag_in_frames = 0;
   config_.g_error_resilient = 0;
   config_.g_timebase.num = 1;
-  config_.g_timebase.den = base::Time::kMicrosecondsPerSecond;
+  config_.g_timebase.den = base::Time::kMillisecondsPerSecond;
 
   config_.kf_mode = AOM_KF_DISABLED;
 
@@ -416,12 +416,12 @@ void WebrtcVideoEncoderAV1::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
     }
   }
 
-  auto duration_us = params.duration.InMicroseconds();
-  DCHECK_GT(duration_us, 0);
+  auto duration_ms = params.duration.InMilliseconds();
+  DCHECK_GT(duration_ms, 0);
   aom_codec_err_t ret = aom_codec_encode(
-      codec_.get(), image_.get(), artificial_timestamp_us_, duration_us,
+      codec_.get(), image_.get(), artificial_timestamp_ms_, duration_ms,
       (params.key_frame) ? AOM_EFLAG_FORCE_KF : 0);
-  artificial_timestamp_us_ += duration_us;
+  artificial_timestamp_ms_ += duration_ms;
   if (ret != AOM_CODEC_OK) {
     const char* error_detail = aom_codec_error_detail(codec_.get());
     LOG(ERROR) << "Encoding error: " << aom_codec_err_to_string(ret) << "\n  "

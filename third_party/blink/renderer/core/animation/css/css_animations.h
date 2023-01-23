@@ -34,6 +34,7 @@
 #include "base/check_op.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation_data.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation_update.h"
+#include "third_party/blink/renderer/core/animation/css/css_timeline_map.h"
 #include "third_party/blink/renderer/core/animation/css/css_transition_data.h"
 #include "third_party/blink/renderer/core/animation/inert_effect.h"
 #include "third_party/blink/renderer/core/animation/interpolation.h"
@@ -208,7 +209,6 @@ class CORE_EXPORT CSSAnimations final {
       return scroll_timeline_.Get();
     }
     void SetViewTimeline(const ScopedCSSName& name, CSSViewTimeline*);
-    CSSViewTimeline* GetViewTimeline(const ScopedCSSName& name) const;
     const CSSViewTimelineMap& GetViewTimelines() const {
       return view_timelines_;
     }
@@ -295,6 +295,10 @@ class CORE_EXPORT CSSAnimations final {
   static void CalculateViewTimelineUpdate(CSSAnimationUpdate&,
                                           Element& animating_element,
                                           const ComputedStyleBuilder&);
+  static CSSViewTimelineMap CalculateChangedViewTimelines(
+      Element& animating_element,
+      const CSSViewTimelineMap* existing_view_timelines,
+      const ComputedStyleBuilder&);
 
   static const TimelineData* GetTimelineData(const Element&);
 
@@ -308,6 +312,11 @@ class CORE_EXPORT CSSAnimations final {
   static CSSViewTimeline* FindViewTimelineForElement(const ScopedCSSName& name,
                                                      const CSSAnimationUpdate*,
                                                      const TimelineData*);
+  template <typename TimelineType>
+  static TimelineType* FindTimelineForElement(
+      const ScopedCSSName& name,
+      const CSSTimelineMap<TimelineType>* existing_timelines,
+      const CSSTimelineMap<TimelineType>* changed_timelines);
 
   static ScrollTimeline* FindPreviousSiblingAncestorTimeline(
       const ScopedCSSName& name,

@@ -170,8 +170,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
 class MockAutofillDownloadManager : public autofill::AutofillDownloadManager {
  public:
-  MockAutofillDownloadManager()
-      : AutofillDownloadManager(nullptr, &fake_observer) {}
+  MockAutofillDownloadManager() : AutofillDownloadManager(nullptr) {}
   MockAutofillDownloadManager(const MockAutofillDownloadManager&) = delete;
   MockAutofillDownloadManager& operator=(const MockAutofillDownloadManager&) =
       delete;
@@ -183,17 +182,9 @@ class MockAutofillDownloadManager : public autofill::AutofillDownloadManager {
                const autofill::ServerFieldTypeSet&,
                const std::string&,
                bool,
-               PrefService*),
+               PrefService*,
+               base::WeakPtr<Observer>),
               (override));
-
- private:
-  class StubObserver : public AutofillDownloadManager::Observer {
-    void OnLoadedServerPredictions(
-        std::string response,
-        const std::vector<autofill::FormSignature>& form_signatures) override {}
-  };
-
-  StubObserver fake_observer;
 };
 
 }  // namespace
@@ -608,7 +599,6 @@ TEST_P(PasswordSaveManagerImplTest, ResetPendingCredentials) {
   // Check that save manager is in None state.
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
   EXPECT_FALSE(password_save_manager_impl()->IsPasswordUpdate());
-  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   EXPECT_FALSE(password_save_manager_impl()->HasGeneratedPassword());
 }
 
@@ -729,7 +719,6 @@ TEST_P(PasswordSaveManagerImplTest, OverridePassword) {
       /*is_credential_api_save=*/false);
 
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
-  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   EXPECT_TRUE(password_save_manager_impl()->IsPasswordUpdate());
 
   PasswordForm updated_form;
@@ -844,7 +833,6 @@ TEST_P(PasswordSaveManagerImplTest, UpdateUsernameToAlreadyExisting) {
   CheckPendingCredentials(
       expected, password_save_manager_impl()->GetPendingCredentials());
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
-  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   EXPECT_TRUE(password_save_manager_impl()->IsPasswordUpdate());
 }
 
@@ -912,7 +900,6 @@ TEST_P(PasswordSaveManagerImplTest, UpdatePasswordValueToAlreadyExisting) {
 
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
   EXPECT_FALSE(password_save_manager_impl()->IsPasswordUpdate());
-  EXPECT_TRUE(password_save_manager_impl()->IsSamePassword());
 }
 
 TEST_P(PasswordSaveManagerImplTest, UpdatePasswordValueMultiplePasswordFields) {
@@ -963,7 +950,7 @@ TEST_P(PasswordSaveManagerImplTest, UpdatePasswordValueMultiplePasswordFields) {
 
   EXPECT_CALL(*mock_autofill_download_manager(),
               StartUploadRequest(UploadedAutofillTypesAre(expected_types),
-                                 false, _, _, true, nullptr));
+                                 false, _, _, true, nullptr, _));
 
   // Check that the password which was chosen by the user is saved.
   PasswordForm saved_form;
@@ -1212,7 +1199,6 @@ TEST_P(PasswordSaveManagerImplTest, HTTPAuthPasswordOverridden) {
       /*is_credential_api_save=*/false);
 
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
-  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   EXPECT_TRUE(password_save_manager_impl()->IsPasswordUpdate());
 
   // Check that the password is updated in the stored credential.
@@ -1349,7 +1335,6 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInAccountStoreOnly) {
       /*is_credential_api_save=*/false);
 
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
-  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   // An update prompt should be shown.
   EXPECT_TRUE(password_save_manager_impl()->IsPasswordUpdate());
 
@@ -1374,7 +1359,6 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInProfileStoreOnly) {
       /*is_credential_api_save=*/false);
 
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
-  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   // An update prompt should be shown.
   EXPECT_TRUE(password_save_manager_impl()->IsPasswordUpdate());
 
@@ -1414,7 +1398,6 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInBothStores) {
       /*is_credential_api_save=*/false);
 
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
-  EXPECT_FALSE(password_save_manager_impl()->IsSamePassword());
   // An update prompt should be shown.
   EXPECT_TRUE(password_save_manager_impl()->IsPasswordUpdate());
 
@@ -1483,7 +1466,6 @@ TEST_F(MultiStorePasswordSaveManagerTest, AutomaticSaveInBothStores) {
 
   // No save or update prompts should be shown.
   EXPECT_FALSE(password_save_manager_impl()->IsNewLogin());
-  EXPECT_TRUE(password_save_manager_impl()->IsSamePassword());
   EXPECT_FALSE(password_save_manager_impl()->IsPasswordUpdate());
 
   // We still should update both credentials to update the |date_last_used| and

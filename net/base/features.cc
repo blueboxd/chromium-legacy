@@ -182,7 +182,7 @@ const base::FeatureParam<int> kChromeRootStoreSysImpl{&kChromeRootStoreUsed,
 #endif /* BUILDFLAG(IS_MAC) */
 #endif /* BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED) */
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(USE_NSS_CERTS)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(USE_NSS_CERTS) || BUILDFLAG(IS_WIN)
 BASE_FEATURE(kTrustStoreTrustedLeafSupport,
              "TrustStoreTrustedLeafSupport",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -306,9 +306,11 @@ BASE_FEATURE(kThirdPartyStoragePartitioning,
 // Whether to use the new code paths needed to support partitioning Blob URLs.
 // This exists as a kill-switch in case an issue is identified with the Blob
 // URL implementation that causes breakage.
+// TODO(https://crbug.com/1407944): Kill-switch activated - investigate cause of
+// increased renderer hangs.
 BASE_FEATURE(kSupportPartitionedBlobUrl,
              "SupportPartitionedBlobUrl",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAlpsParsing, "AlpsParsing", base::FEATURE_ENABLED_BY_DEFAULT);
 

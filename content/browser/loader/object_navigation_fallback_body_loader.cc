@@ -10,6 +10,7 @@
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "content/browser/loader/resource_timing_utils.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -32,85 +33,6 @@
 namespace content {
 
 namespace {
-
-// This logic is duplicated from Performance::AllowsTimingRedirect(). Ensure
-// that any changes are synced between both copies.
-bool IsCrossOriginResponseOrHasCrossOriginRedirects(
-    const url::Origin& parent_origin,
-    const blink::mojom::CommonNavigationParams& common_params,
-    const blink::mojom::CommitNavigationParams& commit_params) {
-  DCHECK_EQ(commit_params.redirect_infos.size(),
-            commit_params.redirect_response.size());
-  for (const auto& info : commit_params.redirect_infos) {
-    if (!parent_origin.IsSameOriginWith(info.new_url)) {
-      return true;
-    }
-  }
-
-  return !parent_origin.IsSameOriginWith(common_params.url);
-}
-
-// This logic is duplicated from Performance::GenerateResourceTiming(). Ensure
-// that any changes are synced between both copies.
-blink::mojom::ResourceTimingInfoPtr GenerateResourceTiming(
-    const url::Origin& parent_origin,
-    const blink::mojom::CommonNavigationParams& common_params,
-    const blink::mojom::CommitNavigationParams& commit_params,
-    const network::mojom::URLResponseHead& response_head) {
-  // TODO(dcheng): There should be a Blink helper for populating the timing info
-  // that's exposed in //third_party/blink/common. This would allow a lot of the
-  // boilerplate to be shared.
-
-  auto timing_info = blink::mojom::ResourceTimingInfo::New();
-  const GURL& initial_url = !commit_params.original_url.is_empty()
-                                ? commit_params.original_url
-                                : common_params.url;
-  timing_info->name = initial_url.spec();
-  timing_info->start_time = common_params.navigation_start;
-  timing_info->alpn_negotiated_protocol =
-      response_head.alpn_negotiated_protocol;
-  timing_info->connection_info = net::HttpResponseInfo::ConnectionInfoToString(
-      response_head.connection_info);
-
-  // If there's no received headers end time, don't set load timing. This is the
-  // case for non-HTTP requests, requests that don't go over the wire, and
-  // certain error cases.
-  // TODO(dcheng): Is it actually possible to hit this path if
-  // `response_head.headers` is populated?
-  if (!response_head.load_timing.receive_headers_end.is_null()) {
-    timing_info->timing = response_head.load_timing;
-  }
-  // `response_end` will be populated after loading the body.
-  timing_info->context_type = blink::mojom::RequestContextType::OBJECT;
-  timing_info->allow_timing_details = response_head.timing_allow_passed;
-
-  // Only expose the response code when the response tainting is "basic" -
-  // same-origin requests throughout the redirect chain
-  if (!IsCrossOriginResponseOrHasCrossOriginRedirects(
-          parent_origin, common_params, commit_params)) {
-    timing_info->response_status = commit_params.http_response_code;
-  }
-
-  DCHECK_EQ(commit_params.redirect_infos.size(),
-            commit_params.redirect_response.size());
-
-  if (!commit_params.redirect_infos.empty()) {
-    timing_info->allow_redirect_details = timing_info->allow_timing_details;
-    timing_info->last_redirect_end_time =
-        commit_params.redirect_response.back()->load_timing.receive_headers_end;
-  } else {
-    timing_info->allow_redirect_details = false;
-    timing_info->last_redirect_end_time = base::TimeTicks();
-  }
-  // The final value for `encoded_body_size` and `decoded_body_size` will be
-  // populated after loading the body.
-  timing_info->did_reuse_connection = response_head.load_timing.socket_reused;
-  // Use url::Origin to handle cases like blob:https://.
-  timing_info->is_secure_transport = base::Contains(
-      url::GetSecureSchemes(), url::Origin::Create(common_params.url).scheme());
-  timing_info->allow_negative_values = false;
-  return timing_info;
-}
 
 std::string ExtractServerTimingValueIfNeeded(
     const network::mojom::URLResponseHead& response_head) {
@@ -146,9 +68,11 @@ void ObjectNavigationFallbackBodyLoader::CreateAndStart(
   // It's safe to snapshot the parent origin in the calculation here; if the
   // parent frame navigates, `render_frame_host_` will be deleted, which
   // triggers deletion of `this`, cancelling all remaining work.
-  blink::mojom::ResourceTimingInfoPtr timing_info = GenerateResourceTiming(
-      render_frame_host->GetParent()->GetLastCommittedOrigin(), common_params,
-      commit_params, response_head);
+  blink::mojom::ResourceTimingInfoPtr timing_info =
+      GenerateResourceTimingForNavigation(
+          render_frame_host->GetParent()->GetLastCommittedOrigin(),
+          common_params, commit_params, response_head,
+          blink::mojom::RequestContextType::OBJECT);
   std::string server_timing_value =
       ExtractServerTimingValueIfNeeded(response_head);
 
@@ -183,38 +107,6 @@ ObjectNavigationFallbackBodyLoader::ObjectNavigationFallbackBodyLoader(
   url_loader_client_receiver_.set_disconnect_handler(
       base::BindOnce(&ObjectNavigationFallbackBodyLoader::BodyLoadFailed,
                      base::Unretained(this)));
-}
-
-void ObjectNavigationFallbackBodyLoader::MaybeComplete() {
-  // Completion requires receiving the completion status from the `URLLoader`,
-  // as well as the response body being completely drained.
-  if (!status_ || response_body_drainer_)
-    return;
-
-  // At this point, `this` is done and the associated NavigationRequest and
-  // `this` must be cleaned up, no matter what else happens. Running
-  // `completion_closure_` will delete the NavigationRequest, which will delete
-  // `this`.
-  base::ScopedClosureRunner cleanup(std::move(completion_closure_));
-
-  timing_info_->response_end = status_->completion_time;
-  timing_info_->encoded_body_size = status_->encoded_body_length;
-  timing_info_->decoded_body_size = status_->decoded_body_length;
-
-  RenderFrameHostManager* render_manager =
-      navigation_request_->frame_tree_node()->render_manager();
-  if (RenderFrameProxyHost* proxy = render_manager->GetProxyToParent()) {
-    if (proxy->is_render_frame_proxy_live()) {
-      proxy->GetAssociatedRemoteFrame()
-          ->RenderFallbackContentWithResourceTiming(std::move(timing_info_),
-                                                    server_timing_value_);
-    }
-  } else {
-    render_manager->current_frame_host()
-        ->GetAssociatedLocalFrame()
-        ->RenderFallbackContentWithResourceTiming(std::move(timing_info_),
-                                                  server_timing_value_);
-  }
 }
 
 void ObjectNavigationFallbackBodyLoader::BodyLoadFailed() {
@@ -268,16 +160,36 @@ void ObjectNavigationFallbackBodyLoader::OnTransferSizeUpdated(
 
 void ObjectNavigationFallbackBodyLoader::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
-  status_ = status;
-  MaybeComplete();
+  response_body_drainer_.reset();
+  // At this point, `this` is done and the associated NavigationRequest and
+  // `this` must be cleaned up, no matter what else happens. Running
+  // `completion_closure_` will delete the NavigationRequest, which will delete
+  // `this`.
+  base::ScopedClosureRunner cleanup(std::move(completion_closure_));
+
+  timing_info_->response_end = status.completion_time;
+  timing_info_->encoded_body_size = status.encoded_body_length;
+  timing_info_->decoded_body_size = status.decoded_body_length;
+
+  RenderFrameHostManager* render_manager =
+      navigation_request_->frame_tree_node()->render_manager();
+  if (RenderFrameProxyHost* proxy = render_manager->GetProxyToParent()) {
+    if (proxy->is_render_frame_proxy_live()) {
+      proxy->GetAssociatedRemoteFrame()
+          ->RenderFallbackContentWithResourceTiming(std::move(timing_info_),
+                                                    server_timing_value_);
+    }
+  } else {
+    render_manager->current_frame_host()
+        ->GetAssociatedLocalFrame()
+        ->RenderFallbackContentWithResourceTiming(std::move(timing_info_),
+                                                  server_timing_value_);
+  }
 }
 
 void ObjectNavigationFallbackBodyLoader::OnDataAvailable(const void* data,
                                                          size_t num_bytes) {}
 
-void ObjectNavigationFallbackBodyLoader::OnDataComplete() {
-  response_body_drainer_.reset();
-  MaybeComplete();
-}
+void ObjectNavigationFallbackBodyLoader::OnDataComplete() {}
 
 }  // namespace content

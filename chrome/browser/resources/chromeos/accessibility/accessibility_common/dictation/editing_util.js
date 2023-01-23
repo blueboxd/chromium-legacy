@@ -11,25 +11,22 @@ import {LocaleInfo} from './locale_info.js';
 export class EditingUtil {
   /**
    * TODO(https://crbug.com/1331351): Add RTL support.
-   * Replaces a phrase to the left of the text caret with another phrase. If
-   * multiple instances of `deletePhrase` are present, this function will
-   * replace the one closest to the text caret. Returns an object that contains
-   * the new value and the new text caret position.
+   * Returns data needed by inputController.replacePhrase(). Calculates the new
+   * caret index and number of characters to be deleted. Only operates on the
+   * text to the left of the text caret. If multiple instances of `deletePhrase`
+   * are present, this function will operate on the one closest one to the text
+   * caret.
    * @param {string} value The current value of the text field.
    * @param {number} caretIndex
    * @param {string} deletePhrase The phrase to be deleted.
-   * @param {string} insertPhrase The phrase to be inserted.
-   * @return {!{
-   *  value: string,
-   *  caretIndex: number
+   * @return {?{
+   *  newIndex: number,
+   *  deleteLength: number,
    * }}
    */
-  static replacePhrase(value, caretIndex, deletePhrase, insertPhrase) {
+  static getReplacePhraseData(value, caretIndex, deletePhrase) {
     const leftOfCaret = value.substring(0, caretIndex);
-    const rightOfCaret = value.substring(caretIndex);
-    const performingDelete = insertPhrase === '';
     deletePhrase = deletePhrase.trim();
-    insertPhrase = insertPhrase.trim();
 
     // Find the right-most occurrence of `deletePhrase`. If we're deleting text,
     // prefer the RegExps that include a leading/trailing space to preserve
@@ -45,69 +42,49 @@ export class EditingUtil {
     const reWithTrailingSpace =
         EditingUtil.getPhraseRegexTrailingSpace_(deletePhrase);
 
-    let newLeft;
-    let newIndex = insertPhrase.length;
-    if (performingDelete && reWithLeadingSpace.test(leftOfCaret)) {
-      newLeft = leftOfCaret.replace(reWithLeadingSpace, insertPhrase);
-      newIndex += reWithLeadingSpace.exec(leftOfCaret).index;
-    } else if (performingDelete && reWithTrailingSpace.test(leftOfCaret)) {
-      newLeft = leftOfCaret.replace(reWithTrailingSpace, insertPhrase);
-      newIndex += reWithTrailingSpace.exec(leftOfCaret).index;
-    } else if (re.test(leftOfCaret)) {
-      newLeft = leftOfCaret.replace(re, insertPhrase);
-      newIndex += re.exec(leftOfCaret).index;
+    const leadingSpaceResult =
+        EditingUtil.getIndexFromRegex_(reWithLeadingSpace, leftOfCaret);
+    const trailingSpaceResult =
+        EditingUtil.getIndexFromRegex_(reWithTrailingSpace, leftOfCaret);
+    const noSpacesResult = EditingUtil.getIndexFromRegex_(re, leftOfCaret);
+
+    let newIndex = caretIndex;
+    let deleteLength = 0;
+    if (leadingSpaceResult !== -1) {
+      // Delete one extra character to preserve spacing.
+      newIndex = leadingSpaceResult;
+      deleteLength = deletePhrase.length + 1;
+    } else if (trailingSpaceResult !== -1) {
+      // Delete one extra character to preserve spacing.
+      newIndex = trailingSpaceResult;
+      deleteLength = deletePhrase.length + 1;
+    } else if (noSpacesResult !== -1) {
+      // Matched with no spacing.
+      newIndex = noSpacesResult;
+      deleteLength = deletePhrase.length;
     } else {
-      newLeft = leftOfCaret;
-      newIndex = caretIndex;
+      // No match.
+      return null;
     }
 
-    return {
-      value: newLeft + rightOfCaret,
-      caretIndex: newIndex,
-    };
+    return {newIndex, deleteLength};
   }
 
   /**
    * TODO(https://crbug.com/1331351): Add RTL support.
-   * Inserts `insertPhrase` directly before `beforePhrase` (and separates them
-   * with a space). This function operates on the text to the left of the caret.
-   * If multiple instances of `beforePhrase` are present, this function will
-   * use the one closest to the text caret. Returns an object that contains
-   * the new value and the new text caret position.
+   * Calculates the new caret index for `inputController.insertBefore`. Only
+   * operates on the text to the left of the text caret. If multiple instances
+   * of `beforePhrase` are present, this function will operate on the one
+   * closest one to the text caret.
    * @param {string} value The current value of the text field.
    * @param {number} caretIndex
-   * @param {string} insertPhrase
    * @param {string} beforePhrase
-   * @return {!{
-   *  value: string,
-   *  caretIndex: number
-   * }}
+   * @return {number}
    */
-  static insertBefore(value, caretIndex, insertPhrase, beforePhrase) {
-    const leftOfCaret = value.substring(0, caretIndex);
-    const rightOfCaret = value.substring(caretIndex);
-    insertPhrase = insertPhrase.trim();
-    beforePhrase = beforePhrase.trim();
-
-    let re;
-    let replacer;
-    if (LocaleInfo.considerSpaces()) {
-      re = EditingUtil.getPhraseRegex_(beforePhrase);
-      replacer = () => `${insertPhrase} ${beforePhrase}`;
-    } else {
-      re = EditingUtil.getPhraseRegexNoWordBoundaries_(beforePhrase);
-      replacer = () => `${insertPhrase}${beforePhrase}`;
-    }
-
-    const newLeft = leftOfCaret.replace(re, replacer);
-    const newIndex = re.test(leftOfCaret) ?
-        re.exec(leftOfCaret).index + insertPhrase.length :
-        caretIndex;
-
-    return {
-      value: newLeft + rightOfCaret,
-      caretIndex: newIndex,
-    };
+  static getInsertBeforeIndex(value, caretIndex, beforePhrase) {
+    const result =
+        EditingUtil.getReplacePhraseData(value, caretIndex, beforePhrase);
+    return result ? result.newIndex : -1;
   }
 
   /**
@@ -345,6 +322,17 @@ export class EditingUtil {
    */
   static getPhraseRegexTrailingSpace_(phrase) {
     return new RegExp(`(\\b${phrase}\\b )(?!.*\\b\\1\\b)`, 'i');
+  }
+
+  /**
+   * @param {!RegExp} re
+   * @param {string} str
+   * @return {number}
+   * @private
+   */
+  static getIndexFromRegex_(re, str) {
+    const result = re.exec(str);
+    return result ? result.index : -1;
   }
 }
 

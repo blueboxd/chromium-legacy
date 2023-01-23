@@ -2958,25 +2958,10 @@ void AutofillMetrics::LogSilentUpdatesProfileImportType(
       "Autofill.ProfileImport.SilentUpdatesProfileImportType", import_type);
 }
 
-void AutofillMetrics::LogSilentUpdatesWithRemovedPhoneNumberProfileImportType(
-    AutofillProfileImportType import_type) {
-  base::UmaHistogramEnumeration(
-      "Autofill.ProfileImport."
-      "SilentUpdatesWithRemovedPhoneNumberProfileImportType",
-      import_type);
-}
-
 void AutofillMetrics::LogNewProfileImportDecision(
     AutofillClient::SaveAddressProfileOfferUserDecision decision) {
   base::UmaHistogramEnumeration("Autofill.ProfileImport.NewProfileDecision",
                                 decision);
-}
-
-void AutofillMetrics::LogNewProfileWithComplementedCountryImportDecision(
-    AutofillClient::SaveAddressProfileOfferUserDecision decision) {
-  base::UmaHistogramEnumeration(
-      "Autofill.ProfileImport.NewProfileWithComplementedCountryDecision",
-      decision);
 }
 
 void AutofillMetrics::LogNewProfileWithIgnoredCountryImportDecision(
@@ -2985,23 +2970,10 @@ void AutofillMetrics::LogNewProfileWithIgnoredCountryImportDecision(
       "Autofill.ProfileImport.NewProfileWithIgnoredCountryDecision", decision);
 }
 
-void AutofillMetrics::LogNewProfileWithRemovedPhoneNumberImportDecision(
-    AutofillClient::SaveAddressProfileOfferUserDecision decision) {
-  base::UmaHistogramEnumeration(
-      "Autofill.ProfileImport.NewProfileWithRemovedPhoneNumberDecision",
-      decision);
-}
-
 void AutofillMetrics::LogNewProfileEditedType(ServerFieldType edited_type) {
   base::UmaHistogramEnumeration(
       "Autofill.ProfileImport.NewProfileEditedType",
       ConvertSettingsVisibleFieldTypeForMetrics(edited_type));
-}
-
-void AutofillMetrics::LogNewProfileEditedComplementedCountry() {
-  base::UmaHistogramEnumeration(
-      "Autofill.ProfileImport.NewProfileEditedComplementedCountry",
-      AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kCountry);
 }
 
 void AutofillMetrics::LogNewProfileNumberOfEditedFields(
@@ -3017,24 +2989,10 @@ void AutofillMetrics::LogProfileUpdateImportDecision(
                                 decision);
 }
 
-void AutofillMetrics::LogProfileUpdateWithComplementedCountryImportDecision(
-    AutofillClient::SaveAddressProfileOfferUserDecision decision) {
-  base::UmaHistogramEnumeration(
-      "Autofill.ProfileImport.UpdateProfileWithComplementedCountryDecision",
-      decision);
-}
-
 void AutofillMetrics::LogProfileUpdateWithIgnoredCountryImportDecision(
     AutofillClient::SaveAddressProfileOfferUserDecision decision) {
   base::UmaHistogramEnumeration(
       "Autofill.ProfileImport.UpdateProfileWithIgnoredCountryDecision",
-      decision);
-}
-
-void AutofillMetrics::LogProfileUpdateWithRemovedPhoneNumberImportDecision(
-    AutofillClient::SaveAddressProfileOfferUserDecision decision) {
-  base::UmaHistogramEnumeration(
-      "Autofill.ProfileImport.UpdateProfileWithRemovedPhoneNumberDecision",
       decision);
 }
 
@@ -3057,12 +3015,6 @@ void AutofillMetrics::LogProfileUpdateEditedType(ServerFieldType edited_type) {
   base::UmaHistogramEnumeration(
       "Autofill.ProfileImport.UpdateProfileEditedType",
       ConvertSettingsVisibleFieldTypeForMetrics(edited_type));
-}
-
-void AutofillMetrics::LogProfileUpdateEditedComplementedCountry() {
-  base::UmaHistogramEnumeration(
-      "Autofill.ProfileImport.UpdateProfileEditedComplementedCountry",
-      AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kCountry);
 }
 
 void AutofillMetrics::LogUpdateProfileNumberOfEditedFields(

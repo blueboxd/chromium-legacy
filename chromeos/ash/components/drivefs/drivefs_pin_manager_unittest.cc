@@ -165,6 +165,12 @@ class MockFreeSpace {
               (const base::FilePath&, DriveFsPinManager::SpaceResult));
 };
 
+class MockObserver : public DriveFsPinManager::Observer {
+ public:
+  MOCK_METHOD(void, OnProgress, (const SetupProgress&), (override));
+  MOCK_METHOD(void, OnDrop, (), (override));
+};
+
 }  // namespace
 
 class DriveFsPinManagerTest : public testing::Test {
@@ -231,8 +237,8 @@ TEST_F(DriveFsPinManagerTest, Add) {
   {
     const SetupProgress progress = manager.GetProgress();
     EXPECT_EQ(progress.pinned_files, 0);
-    EXPECT_EQ(progress.transferred_bytes, 0);
-    EXPECT_EQ(progress.total_bytes, 0);
+    EXPECT_EQ(progress.pinned_bytes, 0);
+    EXPECT_EQ(progress.bytes_to_pin, 0);
     EXPECT_EQ(progress.required_space, 0);
   }
 
@@ -273,8 +279,8 @@ TEST_F(DriveFsPinManagerTest, Add) {
   {
     const SetupProgress progress = manager.GetProgress();
     EXPECT_EQ(progress.pinned_files, 0);
-    EXPECT_EQ(progress.transferred_bytes, 0);
-    EXPECT_EQ(progress.total_bytes, size1);
+    EXPECT_EQ(progress.pinned_bytes, 0);
+    EXPECT_EQ(progress.bytes_to_pin, size1);
     EXPECT_EQ(progress.required_space, 698249216);
   }
 
@@ -297,8 +303,8 @@ TEST_F(DriveFsPinManagerTest, Add) {
   {
     const SetupProgress progress = manager.GetProgress();
     EXPECT_EQ(progress.pinned_files, 0);
-    EXPECT_EQ(progress.transferred_bytes, 0);
-    EXPECT_EQ(progress.total_bytes, size1 + size2);
+    EXPECT_EQ(progress.pinned_bytes, 0);
+    EXPECT_EQ(progress.bytes_to_pin, size1 + size2);
     EXPECT_EQ(progress.required_space, 777216000);
   }
 }
@@ -310,7 +316,7 @@ TEST_F(DriveFsPinManagerTest, CannotGetFreeSpace) {
 
   EXPECT_CALL(mock_drivefs_, OnStartSearchQuery(_)).Times(0);
   EXPECT_CALL(mock_drivefs_, OnGetNextPage(_)).Times(0);
-  EXPECT_CALL(mock_callback, Run(SetupStage::kCannotCalculateFreeSpace))
+  EXPECT_CALL(mock_callback, Run(SetupStage::kCannotGetFreeSpace))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   EXPECT_CALL(mock_free_space_, GetFreeSpace(gcache_dir_, _))
       .WillOnce(RunOnceCallback<1>(-1));
@@ -322,10 +328,10 @@ TEST_F(DriveFsPinManagerTest, CannotGetFreeSpace) {
   run_loop.Run();
 
   const SetupProgress progress = manager.GetProgress();
-  EXPECT_EQ(progress.stage, SetupStage::kCannotCalculateFreeSpace);
+  EXPECT_EQ(progress.stage, SetupStage::kCannotGetFreeSpace);
   EXPECT_EQ(progress.free_space, 0);
   EXPECT_EQ(progress.required_space, 0);
-  EXPECT_EQ(progress.transferred_bytes, 0);
+  EXPECT_EQ(progress.pinned_bytes, 0);
   EXPECT_EQ(progress.pinned_files, 0);
 }
 
@@ -338,7 +344,7 @@ TEST_F(DriveFsPinManagerTest, CannotListFiles) {
   EXPECT_CALL(mock_drivefs_, OnGetNextPage(_))
       .WillOnce(DoAll(PopulateNoSearchItems(),
                       Return(drive::FileError::FILE_ERROR_FAILED)));
-  EXPECT_CALL(mock_callback, Run(SetupStage::kCannotRetrieveSearchResults))
+  EXPECT_CALL(mock_callback, Run(SetupStage::kCannotListFiles))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   EXPECT_CALL(mock_free_space_, GetFreeSpace(gcache_dir_, _))
       .WillOnce(RunOnceCallback<1>(1 << 30));  // 1 GB.
@@ -350,10 +356,10 @@ TEST_F(DriveFsPinManagerTest, CannotListFiles) {
   run_loop.Run();
 
   const SetupProgress progress = manager.GetProgress();
-  EXPECT_EQ(progress.stage, SetupStage::kCannotRetrieveSearchResults);
+  EXPECT_EQ(progress.stage, SetupStage::kCannotListFiles);
   EXPECT_EQ(progress.free_space, 1 << 30);
   EXPECT_EQ(progress.required_space, 0);
-  EXPECT_EQ(progress.transferred_bytes, 0);
+  EXPECT_EQ(progress.pinned_bytes, 0);
   EXPECT_EQ(progress.pinned_files, 0);
 }
 
@@ -365,7 +371,7 @@ TEST_F(DriveFsPinManagerTest, InvalidFileList) {
   EXPECT_CALL(mock_drivefs_, OnStartSearchQuery(_)).Times(1);
   EXPECT_CALL(mock_drivefs_, OnGetNextPage(_))
       .WillOnce(Return(drive::FileError::FILE_ERROR_OK));
-  EXPECT_CALL(mock_callback, Run(SetupStage::kCannotRetrieveSearchResults))
+  EXPECT_CALL(mock_callback, Run(SetupStage::kCannotListFiles))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   EXPECT_CALL(mock_free_space_, GetFreeSpace(gcache_dir_, _))
       .WillOnce(RunOnceCallback<1>(1 << 30));  // 1 GB.
@@ -377,10 +383,10 @@ TEST_F(DriveFsPinManagerTest, InvalidFileList) {
   run_loop.Run();
 
   const SetupProgress progress = manager.GetProgress();
-  EXPECT_EQ(progress.stage, SetupStage::kCannotRetrieveSearchResults);
+  EXPECT_EQ(progress.stage, SetupStage::kCannotListFiles);
   EXPECT_EQ(progress.free_space, 1 << 30);
   EXPECT_EQ(progress.required_space, 0);
-  EXPECT_EQ(progress.transferred_bytes, 0);
+  EXPECT_EQ(progress.pinned_bytes, 0);
   EXPECT_EQ(progress.pinned_files, 0);
 }
 
@@ -415,7 +421,7 @@ TEST_F(DriveFsPinManagerTest, NotEnoughSpace) {
   EXPECT_EQ(progress.stage, SetupStage::kNotEnoughSpace);
   EXPECT_EQ(progress.free_space, 1 << 30);
   EXPECT_EQ(progress.required_space, (512 << 20) + (4 << 10));
-  EXPECT_EQ(progress.transferred_bytes, 0);
+  EXPECT_EQ(progress.pinned_bytes, 0);
   EXPECT_EQ(progress.pinned_files, 0);
 }
 
@@ -451,7 +457,7 @@ TEST_F(DriveFsPinManagerTest, JustCheckRequiredSpace) {
   EXPECT_EQ(progress.stage, SetupStage::kSuccess);
   EXPECT_EQ(progress.free_space, 1 << 30);
   EXPECT_EQ(progress.required_space, 512 << 20);
-  EXPECT_EQ(progress.transferred_bytes, 0);
+  EXPECT_EQ(progress.pinned_bytes, 0);
   EXPECT_EQ(progress.pinned_files, 0);
 }
 
@@ -648,17 +654,21 @@ TEST_F(DriveFsPinManagerTest,
   new_run_loop.Run();
 }
 
-class TestBulkPinObserver : public DriveFsPinManager::Observer {
- public:
-  TestBulkPinObserver() = default;
-
-  TestBulkPinObserver(const TestBulkPinObserver&) = delete;
-  TestBulkPinObserver& operator=(const TestBulkPinObserver&) = delete;
-
-  ~TestBulkPinObserver() override = default;
-
-  MOCK_METHOD(void, OnProgress, (const SetupProgress&), (override));
-};
+TEST_F(DriveFsPinManagerTest, OnDrop) {
+  {
+    MockObserver observer;
+    DriveFsPinManager manager(temp_dir_.GetPath(), &mock_drivefs_);
+    manager.AddObserver(&observer);
+    EXPECT_CALL(observer, OnDrop()).Times(1);
+  }
+  {
+    MockObserver observer;
+    EXPECT_CALL(observer, OnDrop()).Times(0);
+    DriveFsPinManager manager(temp_dir_.GetPath(), &mock_drivefs_);
+    manager.AddObserver(&observer);
+    manager.RemoveObserver(&observer);
+  }
+}
 
 TEST_F(DriveFsPinManagerTest,
        DISABLED_SyncingStatusUpdateProgressIsReportedBackToObserver) {
@@ -694,12 +704,12 @@ TEST_F(DriveFsPinManagerTest,
             run_loop.QuitClosure().Run();
           });
 
-  TestBulkPinObserver mock_pin_observer;
-  EXPECT_CALL(mock_pin_observer, OnProgress(_)).Times(AnyNumber());
+  MockObserver observer;
+  EXPECT_CALL(observer, OnProgress(_)).Times(AnyNumber());
 
   DriveFsPinManager manager(temp_dir_.GetPath(), &mock_drivefs_);
   manager.SetSpaceGetter(GetSpaceGetter());
-  manager.AddObserver(&mock_pin_observer);
+  manager.AddObserver(&observer);
   manager.SetCompletionCallback(mock_callback.Get());
   manager.Start();
   run_loop.Run();
@@ -714,8 +724,8 @@ TEST_F(DriveFsPinManagerTest,
   SetState(status->item_events, mojom::ItemEvent::State::kInProgress);
   status->item_events.at(0)->bytes_transferred = 10;
   EXPECT_CALL(
-      mock_pin_observer,
-      OnProgress(AllOf(Field(&SetupProgress::transferred_bytes, 10),
+      observer,
+      OnProgress(AllOf(Field(&SetupProgress::pinned_bytes, 10),
                        Field(&SetupProgress::stage, SetupStage::kSyncing))))
       .Times(1)
       .WillOnce(RunClosure(setup_progress_run_loop.QuitClosure()));
@@ -738,8 +748,8 @@ TEST_F(DriveFsPinManagerTest,
   SetState(status->item_events, mojom::ItemEvent::State::kCompleted);
   status->item_events.at(0)->bytes_transferred = 128;
   EXPECT_CALL(
-      mock_pin_observer,
-      OnProgress(AllOf(Field(&SetupProgress::transferred_bytes, 128),
+      observer,
+      OnProgress(AllOf(Field(&SetupProgress::pinned_bytes, 128),
                        Field(&SetupProgress::stage, SetupStage::kSuccess))))
       .Times(1)
       .WillOnce(RunClosure(setup_progress_run_loop.QuitClosure()));

@@ -166,7 +166,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
-import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
 import org.chromium.chrome.browser.tasks.EngagementTimeUtil;
 import org.chromium.chrome.browser.tasks.JourneyManager;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
@@ -1116,12 +1115,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             setInitialOverviewState();
         }
 
-        if (TabUiFeatureUtilities.isConditionalTabStripEnabled()
-                || ConditionalTabStripUtils.getOptOutIndicator()) {
-            ConditionalTabStripUtils.updateFeatureExpiration(
-                    mInactivityTracker.getLastBackgroundedTimeMs());
-        }
-
         Bundle savedInstanceState = getSavedInstanceState();
         if (savedInstanceState != null
                 && savedInstanceState.getBoolean(IS_INCOGNITO_SELECTED, false)) {
@@ -1458,8 +1451,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
              * enabled.
              */
             if (mStartSurfaceSupplier.get() == null
-                    || mStartSurfaceSupplier.get().getStartSurfaceState()
-                            != StartSurfaceState.SHOWN_HOMEPAGE
+                    || !mStartSurfaceSupplier.get().isHomepageShown()
                     || !ReturnToChromeUtil.shouldShowStartSurfaceHomeAsNewTab(
                             this, getCurrentTabModel().isIncognito(), isTablet())) {
                 mLayoutManager.showLayout(LayoutType.BROWSING, true);
@@ -1817,8 +1809,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             };
         }
 
-        mUndoBarPopupController = new UndoBarController(this, mTabModelSelector,
-                this::getSnackbarManager, mLayoutStateProviderSupplier, dialogVisibilitySupplier);
+        mUndoBarPopupController = new UndoBarController(
+                this, mTabModelSelector, this::getSnackbarManager, dialogVisibilitySupplier);
 
         mInactivityTracker = new ChromeInactivityTracker(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF);

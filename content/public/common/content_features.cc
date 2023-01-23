@@ -4,15 +4,13 @@
 
 #include "content/public/common/content_features.h"
 
+#include <string>
+
 #include "base/feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/common/buildflags.h"
-
-#if BUILDFLAG(IS_WIN)
-#include "base/win/windows_version.h"
-#endif
 
 namespace features {
 
@@ -80,6 +78,14 @@ BASE_FEATURE(kAvoidUnnecessaryBeforeUnloadCheckSync,
              "AvoidUnnecessaryBeforeUnloadCheckSync",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When enabled, stops canceling navigation when another navigation commits or
+// starts. This supports the same goal as kQueueNavigationsWhileWaitingForCommit
+// but for the non-queueing parts, and is disabled by default.
+// See https://crbug.com/838348 and https://crbug.com/1220337.
+BASE_FEATURE(kAvoidUnnecessaryNavigationCancellations,
+             "AvoidUnnecessaryNavigationCancellations",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Kill switch for Background Fetch.
 BASE_FEATURE(kBackgroundFetch,
              "BackgroundFetch",
@@ -88,6 +94,12 @@ BASE_FEATURE(kBackgroundFetch,
 // Enable using the BackForwardCache.
 BASE_FEATURE(kBackForwardCache,
              "BackForwardCache",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables reporting ResourceTiming entries for document, who initiated a
+// cancelled navigation in one of their <iframe>.
+BASE_FEATURE(kResourceTimingForCancelledNavigationInFrame,
+             "ResourceTimingForCancelledNavigationInFrame",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Allows pages that created a MediaSession service to stay eligible for the
@@ -331,9 +343,10 @@ BASE_FEATURE(kEnableMachineLearningModelLoaderWebPlatformApi,
 // Enables support for the PPB_VideoDecoder(Dev) API. If this feature is
 // false (and the command-line override is not set in the renderer), the API
 // will appear as unsupported if asked for by a plugin.
+// See crbug.com/1382469 for details.
 BASE_FEATURE(kSupportPepperVideoDecoderDevAPI,
-             "kSupportPepperVideoDecoderDevAPI",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             "SupportPepperVideoDecoderDevAPI",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables service workers on chrome-untrusted:// urls.
 BASE_FEATURE(kEnableServiceWorkersForChromeUntrusted,
@@ -409,9 +422,10 @@ BASE_FEATURE(kFedCmRpContext,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM API with the User Info API at the same time.
-BASE_FEATURE(kFedCmUserInfo,
-             "FedCmUserInfo",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+// Note that actual exposure of the FedCM API to web content is controlled
+// by the flag in RuntimeEnabledFeatures on the blink side. See also
+// the use of kSetOnlyIfOverridden in content/child/runtime_features.cc.
+BASE_FEATURE(kFedCmUserInfo, "FedCmUserInfo", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM API with the Selective Disclosure API at the same
 // time.
@@ -1530,11 +1544,6 @@ VideoCaptureServiceConfiguration GetVideoCaptureServiceConfiguration() {
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
   return VideoCaptureServiceConfiguration::kEnabledForBrowserProcess;
 #else
-#if BUILDFLAG(IS_WIN)
-  if (base::win::GetVersion() <= base::win::Version::WIN7) {
-    return VideoCaptureServiceConfiguration::kEnabledForBrowserProcess;
-  }
-#endif
   return base::FeatureList::IsEnabled(
              features::kRunVideoCaptureServiceInBrowserProcess)
              ? VideoCaptureServiceConfiguration::kEnabledForBrowserProcess

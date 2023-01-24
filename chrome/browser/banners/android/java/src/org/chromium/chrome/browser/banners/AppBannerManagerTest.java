@@ -125,7 +125,6 @@ import java.util.List;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@Features.EnableFeatures(ChromeFeatureList.ENABLE_IPH)
 public class AppBannerManagerTest {
     @Rule
     public ChromeTabbedActivityTestRule mTabbedActivityTestRule =
@@ -1100,7 +1099,6 @@ public class AppBannerManagerTest {
                     + ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_INFOBAR,
             "disable-features=" + ChromeFeatureList.ADD_TO_HOMESCREEN_IPH + ","
                     + ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_MESSAGE})
-    @Features.DisableFeatures(ChromeFeatureList.SNOOZABLE_IPH)
     public void
     testInProductHelp() throws Exception {
         // Visit a site that is a PWA. The ambient badge should show.
@@ -1140,7 +1138,6 @@ public class AppBannerManagerTest {
                     + ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_MESSAGE,
             "disable-features=" + ChromeFeatureList.ADD_TO_HOMESCREEN_IPH + ","
                     + ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_INFOBAR})
-    @Features.DisableFeatures(ChromeFeatureList.SNOOZABLE_IPH)
     public void
     testInProductHelp_Message() throws Exception {
         // Visit a site that is a PWA. The ambient badge should show.

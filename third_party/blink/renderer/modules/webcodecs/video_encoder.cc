@@ -37,6 +37,7 @@
 #include "media/video/offloading_video_encoder.h"
 #include "media/video/video_encode_accelerator_adapter.h"
 #include "media/video/video_encoder_fallback.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -272,7 +273,9 @@ VideoEncoderTraits::ParsedConfig* ParseConfigStatic(
 
   // https://w3c.github.io/webrtc-svc/
   if (config->hasScalabilityMode()) {
-    if (config->scalabilityMode() == "L1T2") {
+    if (config->scalabilityMode() == "L1T1") {
+      result->options.scalability_mode = media::SVCScalabilityMode::kL1T1;
+    } else if (config->scalabilityMode() == "L1T2") {
       result->options.scalability_mode = media::SVCScalabilityMode::kL1T2;
     } else if (config->scalabilityMode() == "L1T3") {
       result->options.scalability_mode = media::SVCScalabilityMode::kL1T3;
@@ -557,8 +560,7 @@ VideoEncoder::VideoEncoder(ScriptState* script_state,
                            const VideoEncoderInit* init,
                            ExceptionState& exception_state)
     : Base(script_state, init, exception_state),
-      max_active_encodes_(ComputeMaxActiveEncodes()),
-      frame_metadata_(128) {
+      max_active_encodes_(ComputeMaxActiveEncodes()) {
   UseCounter::Count(ExecutionContext::From(script_state),
                     WebFeature::kWebCodecs);
 }
@@ -875,8 +877,8 @@ void VideoEncoder::ProcessEncode(Request* request) {
       MakeUnwrappingCrossThreadHandle(request)));
 
   if (frame->metadata().frame_duration) {
-    frame_metadata_.Put(frame->timestamp(),
-                        FrameMetadata{*frame->metadata().frame_duration});
+    frame_metadata_[frame->timestamp()] =
+        FrameMetadata{*frame->metadata().frame_duration};
   }
 
   // Currently underlying encoders can't handle frame backed by textures,
@@ -1094,11 +1096,19 @@ void VideoEncoder::CallOutputCallback(
   buffer->set_is_key_frame(output.key_frame);
 
   // Get duration from |frame_metadata_|.
-  const auto it = frame_metadata_.Get(output.timestamp);
+  const auto it = frame_metadata_.find(output.timestamp);
   if (it != frame_metadata_.end()) {
     const auto duration = it->second.duration;
-    if (!duration.is_zero() && duration != media::kNoTimestamp)
+    if (!duration.is_zero() && duration != media::kNoTimestamp) {
       buffer->set_duration(duration);
+    }
+
+    // While encoding happens in presentation order, outputs may be out of order
+    // for some codec configurations. The maximum number of reordered outputs is
+    // 16, so we can clear everything before that.
+    if (it - frame_metadata_.begin() > 16) {
+      frame_metadata_.erase(frame_metadata_.begin(), it + 1);
+    }
   }
 
   auto* chunk = MakeGarbageCollected<EncodedVideoChunk>(std::move(buffer));
@@ -1205,10 +1215,15 @@ static void isConfigSupportedWithSoftwareOnly(
                           media::EncoderStatus status) {
     support->setSupported(status.is_ok());
     resolver->Resolve(support);
-    // This task runner may be destroyed without running tasks, so don't use
-    // DeleteSoon() which can leak the codec. See https://crbug.com/1376851.
-    runner->PostTask(FROM_HERE,
-                     base::DoNothingWithBoundArgs(std::move(encoder)));
+    if (base::FeatureList::IsEnabled(
+            features::kUseBlinkSchedulerTaskRunnerWithCustomDeleter)) {
+      runner->DeleteSoon(FROM_HERE, std::move(encoder));
+    } else {
+      // This task runner may be destroyed without running tasks, so don't use
+      // DeleteSoon() which can leak the codec. See https://crbug.com/1376851.
+      runner->PostTask(FROM_HERE,
+                       base::DoNothingWithBoundArgs(std::move(encoder)));
+    }
   };
 
   auto* context = ExecutionContext::From(script_state);

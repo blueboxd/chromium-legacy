@@ -46,4 +46,6 @@ CREATE INDEX aggregate_trigger_time_idx ON aggregatable_report_metadata(trigger_
 
 CREATE INDEX aggregate_report_time_idx ON aggregatable_report_metadata(report_time);
 
+INSERT INTO aggregatable_report_metadata VALUES (1,2,3,4,5,6,7,8,9);
+
 COMMIT;

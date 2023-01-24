@@ -61,9 +61,8 @@
 
 <!-- Output section -->
 <template is="dom-if" if="[[showAudioInfo]]">
-  <!-- TODO(crbug.com/1092970): Output section should be hidden if there are no
-  output devices. -->
-  <div id="output">
+  <div id="output"
+      hidden="[[getOutputHidden_(audioSystemProperties_.outputDevices)]]">
     <h2 id="audioOutputTitle">$i18n{audioOutputTitle}</h2>
     <div id="audioOutputSubsection" class="subsection">
       <div id="outputDeviceSubsection" class="settings-box">
@@ -106,8 +105,9 @@
     </div>
   </div>
   <!--TODO(b/260277007): Replace placeholder text when localization strings
-      available. Add styling. -->
-  <div id="input">
+    available. Add styling. -->
+  <div id="input"
+      hidden="[[getInputHidden_(audioSystemProperties_.inputDevices)]]">
     <h2 id="audioInputTitle">Input</h2>
     <div id="audioInputSection" class="subsection">
       <div id="audioInputDeviceSubsection" class="settings-box">

@@ -15,7 +15,6 @@
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator+protected.h"
 #import "ios/chrome/browser/ui/first_run/first_run_screen_delegate.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
-#import "ios/chrome/browser/ui/first_run/legacy_signin/legacy_signin_screen_coordinator.h"
 #import "ios/chrome/browser/ui/first_run/signin/signin_screen_coordinator.h"
 #import "ios/chrome/browser/ui/screen/screen_provider.h"
 #import "ios/chrome/browser/ui/screen/screen_type.h"
@@ -110,20 +109,15 @@
 - (InterruptibleChromeCoordinator*)createChildCoordinatorWithScreenType:
     (ScreenType)type {
   switch (type) {
-    case kLegacySignIn:
-      return [[LegacySigninScreenCoordinator alloc]
-          initWithBaseNavigationController:self.navigationController
-                                   browser:self.browser
-                                  delegate:self];
     case kSignIn:
       return [[SigninScreenCoordinator alloc]
           initWithBaseNavigationController:self.navigationController
                                    browser:self.browser
                             showFREConsent:NO
                                   delegate:self];
-    case kSignInAndSync:
+    case kSignInAndSync_DEPRECATED:
     case kTangibleSync:
-    case kWelcomeAndConsent:
+    case kWelcomeAndConsent_DEPRECATED:
     case kDefaultBrowserPromo:
     case kStepsCompleted:
       NOTREACHED() << "Type of screen not supported." << static_cast<int>(type);

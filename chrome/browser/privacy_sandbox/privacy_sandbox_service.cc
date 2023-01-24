@@ -618,9 +618,26 @@ void PrivacySandboxService::RecordPrivacySandbox4StartupMetrics() {
           PromptStartupState::kPromptNotShownDueToManagedState);
       return;
     }
+
+    case PromptSuppressedReason::kEEAFlowCompletedBeforeRowMigration: {
+      base::UmaHistogramEnumeration(
+          privacy_sandbox_prompt_startup_histogram,
+          topics_enabled
+              ? PromptStartupState::kEEAFlowCompletedWithTopicsAccepted
+              : PromptStartupState::kEEAFlowCompletedWithTopicsDeclined);
+      return;
+    }
   }
 
-  // Prompt was not suppressed at this point.
+  // Prompt was not suppressed explicitly at this point.
+
+  // Check if prompt was suppressed implicitly.
+  if (IsM1PrivacySandboxEffectivelyManaged(pref_service_)) {
+    base::UmaHistogramEnumeration(
+        privacy_sandbox_prompt_startup_histogram,
+        PromptStartupState::kPromptNotShownDueToManagedState);
+    return;
+  }
 
   // EEA
   if (privacy_sandbox::kPrivacySandboxSettings4ConsentRequired.Get()) {
@@ -1228,6 +1245,12 @@ PrivacySandboxService::GetRequiredPromptTypeInternalM1(
     return PromptType::kNone;
   }
 
+  // If an Admin controls any of the K-APIs or suppresses the prompt explicitly
+  // then don't show the prompt.
+  if (IsM1PrivacySandboxEffectivelyManaged(pref_service)) {
+    return PromptType::kNone;
+  }
+
   if (pref_service->GetBoolean(prefs::kPrivacySandboxConsentDecisionMade) ||
       pref_service->GetBoolean(prefs::kPrivacySandboxNoticeDisplayed)) {
     // If during the trials a previous consent decision was made, or the notice
@@ -1281,6 +1304,20 @@ PrivacySandboxService::GetRequiredPromptTypeInternalM1(
   }
 
   DCHECK(privacy_sandbox::kPrivacySandboxSettings4NoticeRequired.Get());
+
+  // If a user that migrated from EEA to ROW has already completed the EEA
+  // consent and notice flow, set the suppression reason as such and do not show
+  // a prompt.
+  if (pref_service->GetBoolean(prefs::kPrivacySandboxM1ConsentDecisionMade) &&
+      (pref_service->GetBoolean(
+          prefs::kPrivacySandboxM1EEANoticeAcknowledged))) {
+    pref_service->SetInteger(
+        prefs::kPrivacySandboxM1PromptSuppressed,
+        static_cast<int>(
+            PromptSuppressedReason::kEEAFlowCompletedBeforeRowMigration));
+    return PromptType::kNone;
+  }
+
   // If the notice has already been acknowledged, do not show a prompt.
   // Else, show the row notice prompt.
   if (pref_service->GetBoolean(prefs::kPrivacySandboxM1RowNoticeAcknowledged)) {
@@ -1523,4 +1560,23 @@ void PrivacySandboxService::OnAdMeasurementPrefChanged() {
                 DATA_TYPE_PRIVATE_AGGREGATION_INTERNAL,
         content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
   }
+}
+
+// static
+bool PrivacySandboxService::IsM1PrivacySandboxEffectivelyManaged(
+    PrefService* pref_service) {
+  bool is_prompt_suppressed_by_policy =
+      pref_service->IsManagedPreference(
+          prefs::kPrivacySandboxM1PromptSuppressed) &&
+      static_cast<int>(
+          PrivacySandboxService::PromptSuppressedReason::kPolicy) ==
+          pref_service->GetInteger(prefs::kPrivacySandboxM1PromptSuppressed);
+
+  return is_prompt_suppressed_by_policy ||
+         pref_service->IsManagedPreference(
+             prefs::kPrivacySandboxM1TopicsEnabled) ||
+         pref_service->IsManagedPreference(
+             prefs::kPrivacySandboxM1FledgeEnabled) ||
+         pref_service->IsManagedPreference(
+             prefs::kPrivacySandboxM1AdMeasurementEnabled);
 }

@@ -558,6 +558,7 @@ test("components_unittests") {
 
   if (!is_android) {
     deps += [
+      "//components/commerce/core:account_checker_unittests",
       "//components/commerce/core:commerce_heuristics_data_unittests",
       "//components/commerce/core:feature_list_unittests",
       "//components/commerce/core:heuristics_provider_unittests",
@@ -1060,6 +1061,7 @@ if (is_android) {
       "//components/browser_ui/client_certificate/android:junit",
       "//components/browser_ui/media/android:junit",
       "//components/browser_ui/photo_picker/android:junit",
+      "//components/browser_ui/settings/android:junit",
       "//components/browser_ui/util/android:junit",
       "//components/browser_ui/webshare/android:junit",
       "//components/browser_ui/widget/android:junit",

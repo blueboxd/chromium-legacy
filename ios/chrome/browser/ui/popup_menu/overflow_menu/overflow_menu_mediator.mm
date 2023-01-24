@@ -26,7 +26,7 @@
 #import "ios/chrome/browser/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
-#import "ios/chrome/browser/find_in_page/java_script_find_tab_helper.h"
+#import "ios/chrome/browser/find_in_page/abstract_find_tab_helper.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/follow/follow_browser_agent.h"
 #import "ios/chrome/browser/follow/follow_menu_updater.h"
@@ -1044,7 +1044,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
   NSMutableArray<OverflowMenuDestination*>* newDestinations =
       [[NSMutableArray alloc] init];
 
-  if (IsWhatsNewOverflowMenuUsed()) {
+  if (WasWhatsNewUsed()) {
     // Place What's New at the bottom of the overflow menu carousel.
     [newDestinations addObjectsFromArray:destinations];
     [newDestinations addObject:self.whatsNewDestination];
@@ -1232,12 +1232,6 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
     self.helpActionsGroup.footer = nil;
   }
 
-  if (IsPinnedTabsOverflowEnabled()) {
-    // Enable/disable items based on page state.
-    self.pinTabAction.enabled = [self isCurrentURLWebURL];
-    self.unpinTabAction.enabled = [self isCurrentURLWebURL];
-  }
-
   // The "Add to Reading List" functionality requires JavaScript execution,
   // which is paused while overlays are displayed over the web content area.
   self.readLaterAction.enabled =
@@ -1305,7 +1299,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
     return NO;
   }
 
-  auto* helper = JavaScriptFindTabHelper::FromWebState(self.webState);
+  auto* helper = GetConcreteFindTabHelperFromWebState(self.webState);
   return (helper && helper->CurrentPageSupportsFindInPage() &&
           !helper->IsFindUIActive());
 }
@@ -1836,7 +1830,10 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 
 // Dismisses the menu and opens What's New.
 - (void)openWhatsNew {
-  SetWhatsNewOverflowMenuUsed();
+  if (!WasWhatsNewUsed()) {
+    SetWhatsNewUsed();
+  }
+
   if (self.engagementTracker) {
     self.engagementTracker->NotifyEvent(
         feature_engagement::events::kViewedWhatsNew);

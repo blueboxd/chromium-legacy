@@ -22,6 +22,7 @@ build_webui("build") {
     "cards.ts",
     "categories.ts",
     "check_mark_wrapper.ts",
+    "chrome_colors.ts",
     "color.ts",
     "colors.ts",
     "hover_button.ts",
@@ -32,6 +33,7 @@ build_webui("build") {
 
   non_web_component_files = [
     "chrome_cart_proxy.ts",
+    "color_utils.ts",
     "customize_chrome_api_proxy.ts",
   ]
 

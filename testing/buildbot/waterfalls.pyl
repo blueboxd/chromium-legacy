@@ -1460,6 +1460,15 @@
         },
         'os_type': 'chromeos'
       },
+      'lacros-arm-generic-rel-skylab': {
+        'additional_compile_targets': [
+          'chrome',
+        ],
+        'test_suites': {
+          'skylab_tests': 'lacros_arm_generic_rel_skylab',
+        },
+        'os_type': 'chromeos'
+      },
       'lacros-arm64-generic-rel': {
         'additional_compile_targets': [
           'chrome',
@@ -3659,6 +3668,15 @@
       'mac10.15-wpt-content-shell-fyi-rel': {
         'mixins': [
           'mac_10.15',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'wpt_web_tests_content_shell',
+        },
+        'os_type': 'mac',
+      },
+      'mac11-wpt-content-shell-fyi-rel': {
+        'mixins': [
+          'mac_11_x64',
         ],
         'test_suites': {
           'isolated_scripts': 'wpt_web_tests_content_shell',

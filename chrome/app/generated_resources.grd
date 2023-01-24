@@ -2566,6 +2566,10 @@ are declared in tools/grit/grit_rule.gni.
                desc="Footer link in the Download Bubble">
         Show all downloads
       </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_FOOTER_TOOLTIP"
+               desc="Tooltip label for the button to open all downloads">
+        Show all downloads in a new tab
+      </message>
       <message name="IDS_DOWNLOAD_BUBBLE_DOWNLOAD_STATUS_MESSAGE_WITH_SEPARATOR"
                desc="The download status and message are separated by a symbol, in this case bullet •, with a white space before it and a white space after it. If the bullet • resembles another symbol in the language, please translate the bullet • as a symbol (A) that is not easily mistaken for a number or letter in the language and (B) that is typically used to separate elements.">
         <ph name="STATUS">$1<ex>100/120 MB</ex></ph> • <ph name="MESSAGE">$2<ex>Opening in 10 seconds...</ex></ph>
@@ -5869,6 +5873,40 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_WEB_APP_WINDOW_CONTROLS_OVERLAY_DISABLED_ALERT" desc="Status change notification that the title bar is showing after window controls overlay is disabled">
         Title bar is now showing
       </message>
+ 
+     <!-- App Home WebUI strings. -->
+      <message name="IDS_APP_HOME_TITLE" desc="Title of the new App Home page">
+        Apps
+      </message>
+
+      <message name="IDS_APP_HOME_OPEN_IN_WINDOW" desc="Label of menu entry for toggling an app to open in window from App Home context menu">
+        Open in window
+      </message>
+
+      <message name="IDS_ACCNAME_APP_HOME_OPEN_IN_WINDOW_CHECKBOX" desc="Accessibility label for the Open in window checkbox for App Home">
+        Enable opening app in window
+      </message>
+
+      <message name="IDS_APP_HOME_LAUNCH_AT_STARTUP" desc="Label of menu entry for toggling an app to run on startup from App Home context menu">
+        Launch at startup
+      </message>
+
+      <message name="IDS_ACCNAME_APP_HOME_LAUNCH_AT_STARTUP_CHECKBOX" desc="Accessibility label for the Launch at startup checkbox for App Home">
+        Enable launching app at startup
+      </message>
+
+      <message name="IDS_APP_HOME_CREATE_SHORTCUT" desc="Menu entry label for creating a shortcut for an app from context menu on App Home">
+        Create shortcut
+      </message>
+
+      <message name="IDS_APP_HOME_UNINSTALL_APP" desc="Menu entry label for uninstalling an app from context menu on App Home">
+        Uninstall
+      </message>
+
+      <message name="IDS_APP_HOME_APP_SETTINGS" desc="Menu entry label for navigation to App Settings page for an app from context menu on App Home">
+        App settings
+      </message>
+      <!-- End App Home WebUI strings. -->
 
       <message name="IDS_WEB_APP_SETTINGS_TITLE" desc="Title of web app settings page">
         App Settings
@@ -10618,9 +10656,6 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
       <message name="IDS_SAVE_PAGE_DESC_COMPLETE" desc="In the Save Page dialog, the description of saving both the HTML and all shown resources.">
         Webpage, Complete
       </message>
-      <message name="IDS_SAVE_PAGE_DESC_WEB_BUNDLE_FILE" desc="In the Save Page dialog, the description of saving both the HTML and all shown resources into a single Web Bundle file.">
-        Webpage, Single File (Web Bundle)
-      </message>
 
       <!-- General app failure messages -->
       <message name="IDS_PROFILE_ERROR_DIALOG_TITLE" desc="The title of the dialog shown when there's an error page">
@@ -14007,6 +14042,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </message>
     <message name="IDS_VERIFY_SHEET_TITLE" desc="Header shown to the user while signing in happens.">
       Verifying…
+    </message>
+    <message name="IDS_VERIFY_SHEET_TITLE_AUTO_SIGNIN" desc="Header for auto sign-in sheet. Sheet is shown to notify the user that they are signing in to a website using an account from an identity provider." translateable="false">
+      Signing in to <ph name="SITE_ETLD_PLUS_ONE">$1<ex>rp.example</ex></ph> with <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$2<ex>idp.example</ex></ph>
     </message>
 
     <!-- Input overlay strings -->

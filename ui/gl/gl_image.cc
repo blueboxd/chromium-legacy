@@ -48,22 +48,8 @@ bool GLImage::BindTexImage(unsigned target) {
   return false;
 }
 
-void GLImage::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
-                           uint64_t process_tracing_id,
-                           const std::string& dump_name) {
-  NOTREACHED();
-}
-
 GLImage::Type GLImage::GetType() const {
   return Type::NONE;
-}
-
-scoped_refptr<gfx::NativePixmap> GLImage::GetNativePixmap() {
-  return nullptr;
-}
-
-void* GLImage::GetEGLImage() const {
-  return nullptr;
 }
 
 }  // namespace gl

@@ -462,13 +462,33 @@ const NGLayoutResult* NGBlockLayoutAlgorithm::Layout() {
     result = LayoutWithInlineChildLayoutContext(first_child);
   else
     result = Layout(nullptr);
+
+  if (result->Status() == NGLayoutResult::kSuccess) {
+    return result;
+  }
+
+  // To reduce stack usage, handle non-successful results in a separate
+  // function.
+  return HandleNonsuccessfulLayoutResult(result);
+}
+
+NOINLINE const NGLayoutResult*
+NGBlockLayoutAlgorithm::HandleNonsuccessfulLayoutResult(
+    const NGLayoutResult* result) {
+  DCHECK(result->Status() != NGLayoutResult::kSuccess);
   switch (result->Status()) {
-    case NGLayoutResult::kNeedsEarlierBreak:
+    case NGLayoutResult::kNeedsEarlierBreak: {
       // If we found a good break somewhere inside this block, re-layout and
       // break at that location.
       DCHECK(result->GetEarlyBreak());
-      return RelayoutAndBreakEarlier<NGBlockLayoutAlgorithm>(
-          *result->GetEarlyBreak());
+
+      NGLayoutAlgorithmParams params(
+          Node(), container_builder_.InitialFragmentGeometry(),
+          ConstraintSpace(), BreakToken(), result->GetEarlyBreak());
+      params.column_spanner_path = column_spanner_path_;
+      NGBlockLayoutAlgorithm algorithm_with_break(params);
+      return RelayoutAndBreakEarlier(&algorithm_with_break);
+    }
     case NGLayoutResult::kNeedsRelayoutWithNoForcedTruncateAtLineClamp:
       DCHECK(!ignore_line_clamp_);
       return RelayoutIgnoringLineClamp();
@@ -648,10 +668,15 @@ inline const NGLayoutResult* NGBlockLayoutAlgorithm::Layout(
       // Ignore outside list markers because they are already set to
       // |container_builder_.UnpositionedListMarker| in the constructor, unless
       // |ListMarkerOccupiesWholeLine|, which is handled like a regular child.
-    } else if (child.IsColumnSpanAll() && ConstraintSpace().IsInColumnBfc()) {
+    } else if (child.IsColumnSpanAll() && ConstraintSpace().IsInColumnBfc() &&
+               ConstraintSpace().HasBlockFragmentation()) {
       // The child is a column spanner. If we have no breaks inside (in parallel
       // flows), we now need to finish this fragmentainer, then abort and let
-      // the column layout algorithm handle the spanner as a child.
+      // the column layout algorithm handle the spanner as a child. The
+      // HasBlockFragmentation() check above may seem redundant, but this is
+      // important if we're overflowing a clipped container. In such cases, we
+      // won't treat the spanner as one, since we shouldn't insert any breaks in
+      // that mode.
       DCHECK(!container_builder_.DidBreakSelf());
       DCHECK(!container_builder_.FoundColumnSpanner());
       DCHECK(!IsBreakInside(To<NGBlockBreakToken>(child_break_token)));

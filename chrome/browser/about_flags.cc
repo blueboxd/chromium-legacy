@@ -1904,32 +1904,11 @@ const FeatureEntry::FeatureParam kRelatedSearchesInBarNoShowDefaultChip = {
     "default_query_chip", "false"};
 const FeatureEntry::FeatureParam kRelatedSearchesInBarShowDefaultChip = {
     "default_query_chip", "true"};
-const FeatureEntry::FeatureParam
-    kRelatedSearchesInBarShowDefaultChipWith110SpEllipsis[] = {
-        {"default_query_chip", "true"},
-        {"default_query_max_width_sp", "110"}};
-const FeatureEntry::FeatureParam
-    kRelatedSearchesInBarShowDefaultChipWith115SpEllipsis[] = {
-        {"default_query_chip", "true"},
-        {"default_query_max_width_sp", "115"}};
-const FeatureEntry::FeatureParam
-    kRelatedSearchesInBarShowDefaultChipWith120SpEllipsis[] = {
-        {"default_query_chip", "true"},
-        {"default_query_max_width_sp", "120"}};
 const FeatureEntry::FeatureVariation kRelatedSearchesInBarVariations[] = {
     {"without default query chip", &kRelatedSearchesInBarNoShowDefaultChip, 1,
      nullptr},
     {"with default query chip", &kRelatedSearchesInBarShowDefaultChip, 1,
      nullptr},
-    {"with 110sp ellipsized default query chip",
-     kRelatedSearchesInBarShowDefaultChipWith110SpEllipsis,
-     std::size(kRelatedSearchesInBarShowDefaultChipWith110SpEllipsis), nullptr},
-    {"with 115sp ellipsized default query chip",
-     kRelatedSearchesInBarShowDefaultChipWith115SpEllipsis,
-     std::size(kRelatedSearchesInBarShowDefaultChipWith115SpEllipsis), nullptr},
-    {"with 120sp ellipsized default query chip",
-     kRelatedSearchesInBarShowDefaultChipWith120SpEllipsis,
-     std::size(kRelatedSearchesInBarShowDefaultChipWith120SpEllipsis), nullptr},
 };
 
 const FeatureEntry::FeatureParam kContextualSearchSuppressShortViewWith300Dp[] =
@@ -2191,29 +2170,16 @@ const FeatureEntry::FeatureVariation kFeatureNotificationGuideVariations[] = {
 };
 
 const FeatureEntry::FeatureParam
-    kNotificationPermissionRationale_show_dialog_next_start_text_variant[] = {
-        {"always_show_rationale_before_requesting_permission", "true"},
-        {"notification_permission_dialog_text_variant_2", "true"},
-        {"permission_request_interval_days", "0"},
-};
-
-const FeatureEntry::FeatureParam
     kNotificationPermissionRationale_show_dialog_next_start[] = {
         {"always_show_rationale_before_requesting_permission", "true"},
-        {"notification_permission_dialog_text_variant_2", "false"},
         {"permission_request_interval_days", "0"},
 };
 
 const FeatureEntry::FeatureVariation
     kNotificationPermissionRationaleVariations[] = {
-        {"- Show rationale dialog on next startup",
+        {"- Show rationale UI on next startup",
          kNotificationPermissionRationale_show_dialog_next_start,
          std::size(kNotificationPermissionRationale_show_dialog_next_start),
-         nullptr},
-        {"- Show rationale dialog on next startup - alternative copy",
-         kNotificationPermissionRationale_show_dialog_next_start_text_variant,
-         std::size(
-             kNotificationPermissionRationale_show_dialog_next_start_text_variant),
          nullptr},
 };
 
@@ -3174,10 +3140,17 @@ const FeatureEntry::FeatureParam
     kSafetyCheckUnusedSitePermissionsNoDelayParam[] = {
         {"unused-site-permissions-no-delay-for-testing", "true"}};
 
+const FeatureEntry::FeatureParam
+    kSafetyCheckUnusedSitePermissionsWithDelayParam[] = {
+        {"unused-site-permissions-with-delay-for-testing", "true"}};
+
 const FeatureEntry::FeatureVariation
     kSafetyCheckUnusedSitePermissionsVariations[] = {
-        {"for testing", kSafetyCheckUnusedSitePermissionsNoDelayParam,
+        {"for testing no delay", kSafetyCheckUnusedSitePermissionsNoDelayParam,
          std::size(kSafetyCheckUnusedSitePermissionsNoDelayParam), nullptr},
+        {"for testing with delay",
+         kSafetyCheckUnusedSitePermissionsWithDelayParam,
+         std::size(kSafetyCheckUnusedSitePermissionsWithDelayParam), nullptr},
 };
 #endif
 
@@ -3715,9 +3688,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableHardwareMirrorModeName,
      flag_descriptions::kEnableHardwareMirrorModeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(display::features::kEnableHardwareMirrorMode)},
-    {"enable-dns-proxy", flag_descriptions::kEnableDnsProxyName,
-     flag_descriptions::kEnableDnsProxyDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kEnableDnsProxy)},
     {"enable-edid-based-display-ids",
      flag_descriptions::kEnableEdidBasedDisplayIdsName,
      flag_descriptions::kEnableEdidBasedDisplayIdsDescription, kOsCrOS,
@@ -3726,9 +3696,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnforceAshExtensionKeeplistName,
      flag_descriptions::kEnforceAshExtensionKeeplistDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kEnforceAshExtensionKeeplist)},
-    {"dns-proxy-enable-doh", flag_descriptions::kDnsProxyEnableDOHName,
-     flag_descriptions::kDnsProxyEnableDOHDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(::features::kDnsProxyEnableDOH)},
     {"hotspot", flag_descriptions::kHotspotName,
      flag_descriptions::kHotspotDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kHotspot)},
@@ -3816,6 +3783,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"screen-saver-preview", flag_descriptions::kScreenSaverPreviewName,
      flag_descriptions::kScreenSaverPreviewDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kScreenSaverPreview)},
+    {"multi-zone-rgb-keyboard", flag_descriptions::kMultiZoneRgbKeyboardName,
+     flag_descriptions::kMultiZoneRgbKeyboardDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kMultiZoneRgbKeyboard)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -4136,9 +4106,6 @@ const FeatureEntry kFeatureEntries[] = {
          feature_engagement::kIPHDemoMode,
          feature_engagement::kIPHDemoModeChoiceVariations,
          "IPH_DemoMode")},
-    {"in-product-help-snooze", flag_descriptions::kInProductHelpSnoozeName,
-     flag_descriptions::kInProductHelpSnoozeDescription, kOsAll,
-     FEATURE_VALUE_TYPE(feature_engagement::kIPHSnooze)},
     {"in-product-help-use-client-config",
      flag_descriptions::kInProductHelpUseClientConfigName,
      flag_descriptions::kInProductHelpUseClientConfigDescription, kOsAll,
@@ -4467,6 +4434,11 @@ const FeatureEntry kFeatureEntries[] = {
          chrome::android::kNotificationPermissionVariant,
          kNotificationPermissionRationaleVariations,
          "NotificationPermissionVariant")},
+    {"notification-permission-rationale-bottom-sheet",
+     flag_descriptions::kNotificationPermissionRationaleBottomSheetName,
+     flag_descriptions::kNotificationPermissionRationaleBottomSheetDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kNotificationPermissionBottomSheet)},
     {"feature-notification-guide-skip-check-for-low-engaged-users",
      flag_descriptions::
          kFeatureNotificationGuideSkipCheckForLowEngagedUsersName,
@@ -6931,10 +6903,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kLensCameraAssistedSearch,
                                     kLensCameraAssistedSearchVariations,
                                     "LensCameraAssistedSearch")},
-
-    {"enable-iph", flag_descriptions::kEnableIphName,
-     flag_descriptions::kEnableIphDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(feature_engagement::kEnableIPH)},
 #endif  // BUILDFLAG(IS_ANDROID)
 
     {"autofill-always-return-cloud-tokenized-card",
@@ -7274,9 +7242,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNearbySharingSelfShareUIName,
      flag_descriptions::kNearbySharingSelfShareUIDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kNearbySharingSelfShareUI)},
-    {"nearby-sharing-wifilan", flag_descriptions::kNearbySharingWifiLanName,
-     flag_descriptions::kNearbySharingWifiLanDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kNearbySharingWifiLan)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

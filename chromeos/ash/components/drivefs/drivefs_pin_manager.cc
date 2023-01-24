@@ -335,40 +335,22 @@ bool DriveFsPinManager::Add(const StableId id,
 
 bool DriveFsPinManager::Remove(const StableId id,
                                const std::string& path,
-                               int64_t bytes_transferred) {
+                               int64_t transferred) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const Files::node_type node = files_to_track_.extract(id);
-  if (!node) {
+  const Files::iterator it = files_to_track_.find(id);
+  if (it == files_to_track_.end()) {
+    VLOG(3) << "Not tracked: " << id << " " << path;
     return false;
   }
 
-  DCHECK_EQ(node.key(), id);
-  const Progress& progress = node.mapped();
-
-  LOG_IF(ERROR, path != progress.path)
-      << "Changed path of " << id << " " << Quote(progress.path) << " to "
-      << Quote(path);
-
-  if (bytes_transferred < 0) {
-    bytes_transferred = progress.total;
-  } else if (progress.total != bytes_transferred) {
-    LOG(ERROR) << "Expected final progress "
-               << HumanReadableSize(progress.total) << " instead of "
-               << HumanReadableSize(bytes_transferred) << " for " << id << " "
-               << Quote(path);
-    progress_.bytes_to_pin += bytes_transferred - progress.total;
-    progress_.required_space +=
-        RoundToBlockSize(bytes_transferred) - RoundToBlockSize(progress.total);
+  if (transferred < 0) {
+    Update(*it, path, it->second.total, -1);
+  } else {
+    Update(*it, path, transferred, transferred);
   }
 
-  LOG_IF(ERROR, progress.transferred > bytes_transferred)
-      << "Progress went backwards from "
-      << HumanReadableSize(progress.transferred) << " to "
-      << HumanReadableSize(bytes_transferred) << " for " << id << " "
-      << Quote(path);
-  progress_.pinned_bytes += bytes_transferred - progress.transferred;
-
+  files_to_track_.erase(it);
   VLOG(3) << "Stopped tracking " << id << " " << Quote(path);
   return true;
 }
@@ -378,13 +360,6 @@ bool DriveFsPinManager::Update(const StableId id,
                                const int64_t transferred,
                                const int64_t total) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_GE(total, 0) << " for " << id << " " << Quote(path);
-
-  if (transferred < 0) {
-    LOG(ERROR) << "Negative transferred = " << HumanReadableSize(transferred)
-               << " for " << id << " " << Quote(path);
-    return false;
-  }
 
   const Files::iterator it = files_to_track_.find(id);
   if (it == files_to_track_.end()) {
@@ -393,30 +368,46 @@ bool DriveFsPinManager::Update(const StableId id,
   }
 
   DCHECK_EQ(it->first, id);
-  Progress& progress = it->second;
+  return Update(*it, path, transferred, total);
+}
+
+bool DriveFsPinManager::Update(Files::value_type& entry,
+                               const std::string& path,
+                               int64_t transferred,
+                               int64_t total) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  auto& [id, progress] = entry;
+  bool modified = false;
 
   if (path != progress.path) {
-    LOG(ERROR) << "Changed path of " << id << " " << Quote(progress.path)
-               << " to " << Quote(path);
+    VLOG(1) << "Changed path of " << id << " " << Quote(progress.path) << " to "
+            << Quote(path);
     progress.path = path;
+    modified = true;
   }
 
-  if (transferred == progress.transferred && total == progress.total &&
-      progress.in_progress) {
-    return false;
+  if (!progress.in_progress) {
+    LOG_IF(ERROR, progress.transferred > 0)
+        << "Queued " << id << " " << Quote(path) << " already has transferred "
+        << HumanReadableSize(progress.transferred);
+
+    progress.in_progress = true;
+    modified = true;
   }
 
-  progress.in_progress = true;
+  if (transferred != progress.transferred && transferred >= 0) {
+    LOG_IF(ERROR, transferred < progress.transferred)
+        << "Progress went backwards from "
+        << HumanReadableSize(progress.transferred) << " to "
+        << HumanReadableSize(transferred) << " for " << id << " "
+        << Quote(path);
+    progress_.pinned_bytes += transferred - progress.transferred;
+    progress.transferred = transferred;
+    modified = true;
+  }
 
-  LOG_IF(ERROR, transferred < progress.transferred)
-      << "Progress went backwards from "
-      << HumanReadableSize(progress.transferred) << " to "
-      << HumanReadableSize(transferred) << " for " << id << " " << Quote(path);
-
-  progress_.pinned_bytes += transferred - progress.transferred;
-  progress.transferred = transferred;
-
-  if (total != progress.total) {
+  if (total != progress.total && total >= 0) {
     LOG(ERROR) << "Changed expected size of " << id << " " << Quote(path)
                << " from " << HumanReadableSize(progress.total) << " to "
                << HumanReadableSize(total);
@@ -424,40 +415,10 @@ bool DriveFsPinManager::Update(const StableId id,
     progress_.required_space +=
         RoundToBlockSize(total) - RoundToBlockSize(progress.total);
     progress.total = total;
+    modified = true;
   }
 
-  return true;
-}
-
-bool DriveFsPinManager::MarkInProgress(const StableId id,
-                                       const std::string& path) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  const Files::iterator it = files_to_track_.find(id);
-  if (it == files_to_track_.end()) {
-    VLOG(3) << "Not tracked: " << id << " " << path;
-    return false;
-  }
-
-  DCHECK_EQ(it->first, id);
-  Progress& progress = it->second;
-
-  if (path != progress.path) {
-    LOG(ERROR) << "Changed path of " << id << " " << Quote(progress.path)
-               << " to " << Quote(path);
-    progress.path = path;
-  }
-
-  if (progress.in_progress) {
-    return false;
-  }
-
-  LOG_IF(ERROR, progress.transferred > 0)
-      << "Queued " << id << " " << Quote(path) << " already has transferred "
-      << HumanReadableSize(progress.transferred);
-
-  progress.in_progress = true;
-  return true;
+  return modified;
 }
 
 DriveFsPinManager::DriveFsPinManager(base::FilePath profile_path,
@@ -740,12 +701,20 @@ void DriveFsPinManager::OnSyncingStatusUpdate(
     using State = mojom::ItemEvent::State;
     switch (event->state) {
       case State::kQueued:
-        if (MarkInProgress(id, event->path)) {
-          VLOG(2) << "Queued " << id << " " << Quote(event->path) << ": "
-                  << Quote(*event);
-          VLOG_IF(1, !VLOG_IS_ON(2))
-              << "Queued " << id << " " << Quote(event->path);
+        // kQueued events come with a bytes_to_transfer field incorrectly set to
+        // zero (b/266462624). So we set it to -1 to ignore it.
+        event->bytes_to_transfer = -1;
+        [[fallthrough]];
+
+      case State::kInProgress:
+        if (Update(id, event->path, event->bytes_transferred,
+                   event->bytes_to_transfer)) {
+          VLOG(3) << Quote(event->state) << " " << id << " "
+                  << Quote(event->path) << ": " << Quote(*event);
+          VLOG_IF(2, !VLOG_IS_ON(3))
+              << Quote(event->state) << " " << id << " " << Quote(event->path);
           progress_.useful_events++;
+          NotifyProgress();
         } else {
           VLOG(3) << "Duplicated event: " << Quote(*event);
           progress_.duplicated_events++;
@@ -754,9 +723,9 @@ void DriveFsPinManager::OnSyncingStatusUpdate(
 
       case State::kCompleted:
         if (Remove(id, event->path)) {
-          VLOG(2) << "Synced " << id << " " << Quote(event->path) << ": "
+          VLOG(3) << "Synced " << id << " " << Quote(event->path) << ": "
                   << Quote(*event);
-          VLOG_IF(1, !VLOG_IS_ON(2))
+          VLOG_IF(2, !VLOG_IS_ON(3))
               << "Synced " << id << " " << Quote(event->path);
           progress_.useful_events++;
           progress_.pinned_files++;
@@ -769,24 +738,9 @@ void DriveFsPinManager::OnSyncingStatusUpdate(
 
       case State::kFailed:
         if (Remove(id, event->path, 0)) {
-          LOG(ERROR) << "Cannot sync " << id << " " << Quote(event->path)
-                     << ": " << Quote(*event);
+          LOG(ERROR) << Quote(event->state) << " " << id << " "
+                     << Quote(event->path) << ": " << Quote(*event);
           progress_.failed_files++;
-          progress_.useful_events++;
-          NotifyProgress();
-        } else {
-          VLOG(3) << "Duplicated event: " << Quote(*event);
-          progress_.duplicated_events++;
-        }
-        continue;
-
-      case State::kInProgress:
-        if (Update(id, event->path, event->bytes_transferred,
-                   event->bytes_to_transfer)) {
-          VLOG(2) << "Syncing " << id << " " << Quote(event->path) << " at "
-                  << Percentage(event->bytes_transferred,
-                                event->bytes_to_transfer)
-                  << "%: " << Quote(*event);
           progress_.useful_events++;
           NotifyProgress();
         } else {

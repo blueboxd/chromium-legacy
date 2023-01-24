@@ -421,10 +421,6 @@ gfx::Size GLImageNativePixmap::GetSize() {
   return size_;
 }
 
-void* GLImageNativePixmap::GetEGLImage() const {
-  return egl_image_;
-}
-
 bool GLImageNativePixmap::BindTexImage(unsigned target) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -434,13 +430,6 @@ bool GLImageNativePixmap::BindTexImage(unsigned target) {
 
 unsigned GLImageNativePixmap::GetInternalFormat() {
   return GLInternalFormat(format_);
-}
-
-void GLImageNativePixmap::OnMemoryDump(
-    base::trace_event::ProcessMemoryDump* pmd,
-    uint64_t process_tracing_id,
-    const std::string& dump_name) {
-  // TODO(ericrk): Implement GLImage OnMemoryDump. crbug.com/514914
 }
 
 scoped_refptr<gfx::NativePixmap> GLImageNativePixmap::GetNativePixmap() {

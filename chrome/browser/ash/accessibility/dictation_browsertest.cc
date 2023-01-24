@@ -464,6 +464,8 @@ class DictationTestBase : public InProcessBrowserTest,
     ASSERT_TRUE(selection_waiter.WaitForNotification());
   }
 
+  // TODO(b:259353252): Update this method to use testSupport JS, similar to
+  // what's done in DictationFormattedContentEditableTest::WaitForSelection.
   void SendFinalResultAndWaitForCaretBoundsChanged(const std::string& result) {
     content::AccessibilityNotificationWaiter selection_waiter(
         browser()->tab_strip_model()->GetActiveWebContents(),
@@ -545,6 +547,12 @@ class DictationTestBase : public InProcessBrowserTest,
                   }),
                   error_message)
         .Wait();
+  }
+
+  void WaitForSelection(int start, int end) {
+    std::string script =
+        base::StringPrintf("testSupport.waitForSelection(%d, %d);", start, end);
+    ExecuteAccessibilityCommonScript(script);
   }
 
   const base::flat_map<std::string, Dictation::LocaleData>
@@ -1422,24 +1430,13 @@ IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest, SmartInsertBefore) {
 }
 
 IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest, SmartSelectBetween) {
-  if (editable_type() == EditableType::kContentEditable) {
-    // TODO(b:259353252): Remove this once this command is supported in
-    // contenteditables.
-    return;
-  }
-
   SendFinalResultAndWaitForEditableValue("This is a test.", "This is a test.");
-  SendFinalResultAndWaitForSelectionChanged("select from this to test");
+  SendFinalResultAndWait("select from this to test");
+  WaitForSelection(0, 14);
   SendFinalResultAndWaitForEditableValue("Hello world", "Hello world.");
 }
 
 IN_PROC_BROWSER_TEST_P(DictationRegexCommandsTest, MoveBySentence) {
-  if (editable_type() == EditableType::kContentEditable) {
-    // TODO(b:259353252): Remove this once this command is supported in
-    // contenteditables.
-    return;
-  }
-
   SendFinalResultAndWaitForEditableValue("Hello world! Goodnight world?",
                                          "Hello world! Goodnight world?");
   SendFinalResultAndWaitForCaretBoundsChanged("move to the previous sentence");
@@ -1942,25 +1939,13 @@ IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, SmartInsertBefore) {
 }
 
 IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, SmartSelectBetween) {
-  if (editable_type() == EditableType::kContentEditable) {
-    // TODO(b:259353252): Remove this once this command is supported in
-    // contenteditables.
-    return;
-  }
-
   SendFinalResultAndWaitForEditableValue("This is a test.", "This is a test.");
-  SendFinalResultAndWaitForSelectionChanged(
-      "highlight everything between is and test");
+  SendFinalResultAndWait("highlight everything between is and test");
+  WaitForSelection(5, 14);
   SendFinalResultAndWaitForEditableValue("was a quiz", "This was a quiz.");
 }
 
 IN_PROC_BROWSER_TEST_P(DictationPumpkinTest, MoveBySentence) {
-  if (editable_type() == EditableType::kContentEditable) {
-    // TODO(b:259353252): Remove this once this command is supported in
-    // contenteditables.
-    return;
-  }
-
   SendFinalResultAndWaitForEditableValue("Hello world! Goodnight world?",
                                          "Hello world! Goodnight world?");
   SendFinalResultAndWaitForCaretBoundsChanged("one sentence back");
@@ -2238,6 +2223,28 @@ IN_PROC_BROWSER_TEST_P(DictationFormattedContentEditableTest, InsertBefore) {
   std::string command = "insert the phrase simple before test";
   std::string expected_value = "This is a simple test";
   SendFinalResultAndWaitForEditableValue(command, expected_value);
+}
+
+IN_PROC_BROWSER_TEST_P(DictationFormattedContentEditableTest, MoveBySentence) {
+  SendFinalResultAndWaitForEditableValue(", good luck.",
+                                         "This is a test, good luck.");
+  SendFinalResultAndWait("move to the previous sentence");
+  // Wait for the selection to move to the beginning of the editable.
+  WaitForSelection(0, 0);
+  SendFinalResultAndWaitForEditableValue(
+      "Good morning. ", "Good morning. This is a test, good luck.");
+  SendFinalResultAndWait("forward one sentence");
+  // Wait for the selection to move to the end of the editable.
+  WaitForSelection(40, 40);
+  SendFinalResultAndWaitForEditableValue(
+      " Have fun.", "Good morning. This is a test, good luck. Have fun.");
+}
+
+IN_PROC_BROWSER_TEST_P(DictationFormattedContentEditableTest,
+                       SmartSelectBetween) {
+  SendFinalResultAndWait("highlight everything between is and a");
+  WaitForSelection(5, 9);
+  SendFinalResultAndWaitForEditableValue("was one", "This was one test");
 }
 
 }  // namespace ash

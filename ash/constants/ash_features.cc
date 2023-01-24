@@ -705,13 +705,6 @@ BASE_FEATURE(kEnableBackgroundBlur,
              "EnableBackgroundBlur",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables the DNS proxy service providing support split and secure DNS
-// for ChromeOS.
-// TODO(b/265091596): Remove.
-BASE_FEATURE(kEnableDnsProxy,
-             "EnableDnsProxy",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables external keyboard testers in the diagnostics app.
 BASE_FEATURE(kEnableExternalKeyboardsInDiagnostics,
              "EnableExternalKeyboardsInDiagnosticsApp",
@@ -1421,6 +1414,11 @@ BASE_FEATURE(kEcheLauncherIconsInMoreAppsButton,
              "EcheLauncherIconsInMoreAppsButton",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables multi-zone rgb keyboard customization.
+BASE_FEATURE(kMultiZoneRgbKeyboard,
+             "MultiZoneRgbKeyboard",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables support for multilingual assistive typing on ChromeOS.
 BASE_FEATURE(kMultilingualTyping,
              "MultilingualTyping",
@@ -1664,6 +1662,12 @@ BASE_FEATURE(kProjectorAppDebug,
 // Controls whether the Projector exclude transcript feature is enabled.
 BASE_FEATURE(kProjectorExcludeTranscript,
              "ProjectorExcludeTranscript",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Controls whether to fold short gap between transcript into the previous
+// transcript.
+BASE_FEATURE(kProjectorFoldShortGapIntoPreviousTranscript,
+             "ProjectorFoldShortGapIntoPreviousTranscript",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether Projector's tutorial videos are displayed.
@@ -2810,6 +2814,10 @@ bool IsMinimumChromeVersionEnabled() {
   return base::FeatureList::IsEnabled(kMinimumChromeVersion);
 }
 
+bool IsMultiZoneRgbKeyboardEnabled() {
+  return base::FeatureList::IsEnabled(kMultiZoneRgbKeyboard);
+}
+
 bool IsEcheLauncherEnabled() {
   return base::FeatureList::IsEnabled(kEcheLauncher) &&
          base::FeatureList::IsEnabled(kEcheSWA);
@@ -3040,6 +3048,11 @@ bool IsProjectorViewerUseSecondaryAccountEnabled() {
 
 bool IsProjectorAccountSwitchNotificationEnabled() {
   return base::FeatureList::IsEnabled(kProjectorAccountSwitchNotification);
+}
+
+bool IsProjectorFoldShortGapIntoPreviousTranscriptEnabled() {
+  return base::FeatureList::IsEnabled(
+      kProjectorFoldShortGapIntoPreviousTranscript);
 }
 
 bool IsQuickDimEnabled() {

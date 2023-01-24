@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
+#import <algorithm>
 #import <iterator>
 #import <map>
 #import <numeric>
@@ -13,6 +14,7 @@
 #import <vector>
 
 #import "base/containers/contains.h"
+#import "base/json/values_util.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/time/time.h"
 #import "base/values.h"
@@ -27,6 +29,8 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using promos_manager::Promo;
 
 namespace {
 
@@ -61,9 +65,11 @@ void ConditionallyAppendPromoToPrefList(promos_manager::Promo promo,
 
 #pragma mark - Constructor/Destructor
 
-PromosManagerImpl::PromosManagerImpl(PrefService* local_state)
-    : local_state_(local_state) {
+PromosManagerImpl::PromosManagerImpl(PrefService* local_state,
+                                     base::Clock* clock)
+    : local_state_(local_state), clock_(clock) {
   DCHECK(local_state_);
+  DCHECK(clock_);
 }
 
 PromosManagerImpl::~PromosManagerImpl() = default;
@@ -80,6 +86,9 @@ void PromosManagerImpl::Init() {
       ActivePromos(local_state_->GetList(prefs::kIosPromosManagerActivePromos));
   single_display_active_promos_ = ActivePromos(
       local_state_->GetList(prefs::kIosPromosManagerSingleDisplayActivePromos));
+
+  InitializePendingPromos();
+
   impression_history_ = ImpressionHistory(
       local_state_->GetList(prefs::kIosPromosManagerImpressions));
 }
@@ -102,9 +111,12 @@ void PromosManagerImpl::RecordImpression(promos_manager::Promo promo) {
   impression_history_ = ImpressionHistory(
       local_state_->GetList(prefs::kIosPromosManagerImpressions));
 
-  // Auto-deregister `promo` if it's a single-display promo.
-  if (single_display_active_promos_.find(promo) !=
-      single_display_active_promos_.end()) {
+  // Auto-deregister `promo`.
+  // Edge case: Possible to remove two instances of promo in
+  // `single_display_active_promos_` and `single_display_pending_promos_` that
+  // match the same type.
+  if (base::Contains(single_display_active_promos_, promo) ||
+      base::Contains(single_display_pending_promos_, promo)) {
     DeregisterPromo(promo);
   }
 }
@@ -127,6 +139,24 @@ void PromosManagerImpl::RegisterPromoForSingleDisplay(
       local_state_->GetList(prefs::kIosPromosManagerSingleDisplayActivePromos));
 }
 
+void PromosManagerImpl::RegisterPromoForSingleDisplay(
+    promos_manager::Promo promo,
+    base::TimeDelta becomes_active_after_period) {
+  DCHECK(local_state_);
+
+  // update the pending promos saved in pref.
+  ScopedDictPrefUpdate pending_promos_update(
+      local_state_, prefs::kIosPromosManagerSingleDisplayPendingPromos);
+  std::string promo_name = promos_manager::NameForPromo(promo);
+  base::Time becomes_active_time = clock_->Now() + becomes_active_after_period;
+  pending_promos_update->Set(promo_name,
+                             base::TimeToValue(becomes_active_time));
+
+  // keep the in-memory pending promos up-to-date to avoid reading from pref
+  // frequently.
+  single_display_pending_promos_[promo] = becomes_active_time;
+}
+
 void PromosManagerImpl::DeregisterPromo(promos_manager::Promo promo) {
   DCHECK(local_state_);
 
@@ -134,9 +164,12 @@ void PromosManagerImpl::DeregisterPromo(promos_manager::Promo promo) {
       local_state_, prefs::kIosPromosManagerActivePromos);
   ScopedListPrefUpdate single_display_promos_update(
       local_state_, prefs::kIosPromosManagerSingleDisplayActivePromos);
+  ScopedDictPrefUpdate pending_promos_update(
+      local_state_, prefs::kIosPromosManagerSingleDisplayPendingPromos);
 
   base::Value::List& active_promos = active_promos_update.Get();
   base::Value::List& single_display_promos = single_display_promos_update.Get();
+  base::Value::Dict& pending_promos = pending_promos_update.Get();
 
   std::string promo_name = promos_manager::NameForPromo(promo);
 
@@ -144,11 +177,13 @@ void PromosManagerImpl::DeregisterPromo(promos_manager::Promo promo) {
   // promos lists.
   active_promos.EraseValue(base::Value(promo_name));
   single_display_promos.EraseValue(base::Value(promo_name));
+  pending_promos.Remove(promo_name);
 
   active_promos_ =
       ActivePromos(local_state_->GetList(prefs::kIosPromosManagerActivePromos));
   single_display_active_promos_ = ActivePromos(
       local_state_->GetList(prefs::kIosPromosManagerSingleDisplayActivePromos));
+  single_display_pending_promos_.erase(promo);
 }
 
 void PromosManagerImpl::InitializePromoImpressionLimits(
@@ -157,31 +192,53 @@ void PromosManagerImpl::InitializePromoImpressionLimits(
   promo_impression_limits_ = std::move(promo_impression_limits);
 }
 
-absl::optional<promos_manager::Promo> PromosManagerImpl::NextPromoForDisplay()
-    const {
-  // Construct a superset including active (1) single-display and
-  // (2) continuous-display promo campaigns.
-  std::set<promos_manager::Promo> all_active_promos(active_promos_);
+// TODO: write unit test.
+absl::optional<promos_manager::Promo> PromosManagerImpl::NextPromoForDisplay() {
+  // Construct a map with the promo from (1) single-display and
+  // (2) continuous-display promo campaigns. (3) single-display pending promos
+  // that has become active, as keys. The value is the context that will be used
+  // for ranking purpose.
+  std::map<promos_manager::Promo, PromoContext> active_promos_with_context;
+  for (const auto& promo : active_promos_) {
+    active_promos_with_context[promo] = PromoContext{
+        .was_pending = false,
+    };
+  }
 
   // Non-destructively insert the single-display promos into
   // `all_active_promos`.
-  all_active_promos.insert(single_display_active_promos_.begin(),
-                           single_display_active_promos_.end());
+  for (const auto& promo : single_display_active_promos_) {
+    active_promos_with_context[promo] = PromoContext{
+        .was_pending = false,
+    };
+  }
 
-  std::vector<promos_manager::Promo> least_recently_shown_promos =
-      LeastRecentlyShown(all_active_promos, impression_history_);
+  // Insert the pending promos that have become active.
+  // Possibly overrides the same promo from `single_display_active_promos_`, as
+  // the pending promo has higher priority in current use cases.
+  const base::Time now = clock_->Now();
+  for (const auto& [promo, time] : single_display_pending_promos_) {
+    if (time < now) {
+      active_promos_with_context[promo] = PromoContext{
+          .was_pending = true,
+      };
+    }
+  }
 
-  if (least_recently_shown_promos.empty())
+  std::vector<promos_manager::Promo> sorted_promos =
+      SortPromos(active_promos_with_context);
+
+  if (sorted_promos.empty()) {
     return absl::nullopt;
+  }
 
-  for (promos_manager::Promo promo : least_recently_shown_promos)
+  for (promos_manager::Promo promo : sorted_promos) {
     if (CanShowPromo(promo, impression_history_))
       return promo;
+  }
 
   return absl::nullopt;
 }
-
-#pragma mark - Private
 
 std::vector<promos_manager::Impression> PromosManagerImpl::ImpressionHistory(
     const base::Value::List& stored_impression_history) {
@@ -214,7 +271,7 @@ std::vector<promos_manager::Impression> PromosManagerImpl::ImpressionHistory(
 }
 
 std::set<promos_manager::Promo> PromosManagerImpl::ActivePromos(
-    const base::Value::List& stored_active_promos) {
+    const base::Value::List& stored_active_promos) const {
   std::set<promos_manager::Promo> active_promos;
 
   for (size_t i = 0; i < stored_active_promos.size(); ++i) {
@@ -229,6 +286,31 @@ std::set<promos_manager::Promo> PromosManagerImpl::ActivePromos(
   }
 
   return active_promos;
+}
+
+// Should only be called in the `init` to avoid excessive reading from pref.
+void PromosManagerImpl::InitializePendingPromos() {
+  DCHECK(local_state_);
+
+  single_display_pending_promos_.clear();
+
+  const base::Value::Dict& stored_pending_promos =
+      local_state_->GetDict(prefs::kIosPromosManagerSingleDisplayPendingPromos);
+
+  for (const auto [name, value] : stored_pending_promos) {
+    absl::optional<promos_manager::Promo> promo =
+        promos_manager::PromoForName(name);
+    // Skip malformed promo data.
+    if (!promo.has_value()) {
+      continue;
+    }
+    absl::optional<base::Time> becomes_active_time = ValueToTime(value);
+    // Skip malformed time data.
+    if (!becomes_active_time.has_value()) {
+      continue;
+    }
+    single_display_pending_promos_[promo.value()] = becomes_active_time.value();
+  }
 }
 
 NSArray<ImpressionLimit*>* PromosManagerImpl::PromoImpressionLimits(
@@ -414,55 +496,74 @@ int PromosManagerImpl::TotalImpressionCount(
   return std::accumulate(counts.begin(), counts.end(), 0);
 }
 
-std::vector<promos_manager::Promo> PromosManagerImpl::LeastRecentlyShown(
-    const std::set<promos_manager::Promo>& active_promos,
-    const std::vector<promos_manager::Impression>& sorted_impressions) const {
-  std::vector<promos_manager::Promo>
-      active_promos_sorted_by_least_recently_shown;
+// Sort the promos in the order that they will be displayed.
+// Based on the Promo's context, type, and the recently shown time.
+std::vector<promos_manager::Promo> PromosManagerImpl::SortPromos(
+    const std::map<promos_manager::Promo, PromoContext>&
+        promos_to_sort_with_context) const {
+  std::vector<std::pair<promos_manager::Promo, PromoContext>>
+      promos_list_to_sort;
 
-  // If there are no active promos, and no impression history, return an empty
-  // array. (This is seldom expected to happen, if ever, as Promos Manager will
-  // launch with promos_manager::Promo::DefaultBrowser continuously running.)
-  if (active_promos.empty() && sorted_impressions.empty())
-    return active_promos_sorted_by_least_recently_shown;
-
-  for (promos_manager::Impression impression : sorted_impressions) {
-    // The resulting, sorted array only needs to contain the active promos. Once
-    // all active promos are accounted for in
-    // `active_promos_sorted_by_least_recently_shown`, we can short-circuit and
-    // return `active_promos_sorted_by_least_recently_shown`.
-    if (active_promos_sorted_by_least_recently_shown.size() ==
-        active_promos.size())
-      break;
-
-    // If the current impression's promo already exists in
-    // `active_promos_sorted_by_least_recently_shown`, move onto the next
-    // impression.
-    if (base::Contains(active_promos_sorted_by_least_recently_shown,
-                       impression.promo)) {
-      continue;
-    }
-
-    if (active_promos.count(impression.promo))
-      active_promos_sorted_by_least_recently_shown.push_back(impression.promo);
+  for (const auto& it : promos_to_sort_with_context) {
+    promos_list_to_sort.push_back(
+        std::pair<promos_manager::Promo, PromoContext>(it.first, it.second));
   }
 
-  // It's possible some active promos have never been seen (so no impressions
-  // exist for the promo). In that case, add them to the end of the resulting
-  // array, before the array is reversed. Those never-before-seen promos will
-  // end up at the front of the resulting array after reversal.
-  //
-  // Never-before-seen promos are considered less recently seen than previously
-  // seen promos.
-  for (promos_manager::Promo unseen_promo : active_promos) {
-    if (!base::Contains(active_promos_sorted_by_least_recently_shown,
-                        unseen_promo)) {
-      active_promos_sorted_by_least_recently_shown.push_back(unseen_promo);
+  const std::vector<promos_manager::Impression>& impression_history =
+      impression_history_;
+
+  // The order: PostRestoreSignIn types are shown first, then Promos with
+  // pending state, then Promos without pending state in least-recently-shown
+  // order.
+  auto compare_promo = [&impression_history](
+                           std::pair<promos_manager::Promo, PromoContext> lhs,
+                           std::pair<promos_manager::Promo, PromoContext> rhs) {
+    // PostRestoreSignIn types are to be displayed first.
+    if (lhs.first == Promo::PostRestoreSignInFullscreen ||
+        lhs.first == Promo::PostRestoreSignInAlert) {
+      return true;
     }
+    if (rhs.first == Promo::PostRestoreSignInFullscreen ||
+        rhs.first == Promo::PostRestoreSignInAlert) {
+      return false;
+    }
+    // prefer the promo with pending state to the other without.
+    if (lhs.second.was_pending && !rhs.second.was_pending) {
+      return true;
+    }
+    if (!lhs.second.was_pending && rhs.second.was_pending) {
+      return false;
+    }
+    // Tied after comparing the type and pending state, break using the most
+    // recently shown times, prefer the promo that was shown less recently.
+    auto lhs_impression =
+        std::find_if(impression_history.begin(), impression_history.end(),
+                     [lhs](promos_manager::Impression impression) {
+                       return impression.promo == lhs.first;
+                     });
+    // If the promo is unseen, make it show first.
+    if (lhs_impression == impression_history.end()) {
+      return true;
+    }
+    auto rhs_impression =
+        std::find_if(impression_history.begin(), impression_history.end(),
+                     [rhs](promos_manager::Impression impression) {
+                       return impression.promo == rhs.first;
+                     });
+    if (rhs_impression == impression_history.end()) {
+      return false;
+    }
+    // Both promos are seen. `impression_history` is in the most recently seen
+    // order. larger iterator = less recently seen = displayed first
+    return lhs_impression > rhs_impression;
+  };
+
+  sort(promos_list_to_sort.begin(), promos_list_to_sort.end(), compare_promo);
+
+  std::vector<promos_manager::Promo> sorted_promos;
+  for (const auto& it : promos_list_to_sort) {
+    sorted_promos.push_back(it.first);
   }
 
-  std::reverse(active_promos_sorted_by_least_recently_shown.begin(),
-               active_promos_sorted_by_least_recently_shown.end());
-
-  return active_promos_sorted_by_least_recently_shown;
+  return sorted_promos;
 }

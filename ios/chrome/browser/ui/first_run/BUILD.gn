@@ -5,8 +5,6 @@
 source_set("field_trial") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "fre_field_trial.cc",
-    "fre_field_trial.h",
     "ios_first_run_field_trials.cc",
     "ios_first_run_field_trials.h",
     "trending_queries_field_trial.cc",
@@ -93,7 +91,6 @@ source_set("first_run") {
     "//ios/chrome/browser/ui/elements:elements_internal",
     "//ios/chrome/browser/ui/fancy_ui",
     "//ios/chrome/browser/ui/first_run/default_browser",
-    "//ios/chrome/browser/ui/first_run/legacy_signin",
     "//ios/chrome/browser/ui/first_run/signin",
     "//ios/chrome/browser/ui/first_run/tangible_sync",
     "//ios/chrome/browser/ui/first_run/welcome",
@@ -223,7 +220,6 @@ source_set("eg2_tests") {
   testonly = true
   sources = [
     "enterprise_loading_screen_egtest.mm",
-    "first_run_egtest.mm",
     "first_run_two_steps_egtest.mm",
   ]
   deps = [

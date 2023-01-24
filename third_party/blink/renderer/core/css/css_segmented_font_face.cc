@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/css/css_segmented_font_face.h"
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "third_party/blink/renderer/core/css/cascade_layer_map.h"
@@ -112,8 +113,9 @@ scoped_refptr<FontData> CSSSegmentedFontFace::GetFontData(
   }
 
   bool is_unique_match = false;
-  FontCacheKey key =
-      font_description.CacheKey(FontFaceCreationParams(), is_unique_match);
+  bool is_generic_family = false;
+  FontCacheKey key = font_description.CacheKey(
+      FontFaceCreationParams(), is_unique_match, is_generic_family);
 
   // font_data_table_ caches FontData and SegmentedFontData instances, which
   // provide SimpleFontData objects containing FontPlatformData objects. In the
@@ -266,7 +268,7 @@ bool CascadePriorityHigherThan(const FontFace& new_font_face,
   // here, possibly caused by ExecutionContext or Document lifecycle issues.
   // TODO(crbug.com/1250831): Find out the root cause and fix it.
   if (!new_font_face.GetDocument() || !existing_font_face.GetDocument()) {
-    NOTREACHED();
+    base::debug::DumpWithoutCrashing();
     // In the buggy case, to ensure a stable ordering, font faces without a
     // document are considered higher priority.
     return !new_font_face.GetDocument();

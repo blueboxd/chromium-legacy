@@ -129,9 +129,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kWebNfc,
     &features::kIncognitoDownloadsWarning,
     &features::kIncognitoNtpRevamp,
-    &feature_engagement::kEnableIPH,
     &feature_engagement::kIPHNewTabPageHomeButtonFeature,
-    &feature_engagement::kIPHSnooze,
     &feature_engagement::kIPHTabSwitcherButtonFeature,
     &feature_engagement::kUseClientConfigIPH,
     &feature_guide::features::kFeatureNotificationGuide,
@@ -236,6 +234,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kLensCameraAssistedSearch,
     &kLensOnQuickActionSearchWidget,
     &kNotificationPermissionVariant,
+    &kNotificationPermissionBottomSheet,
     &kPageAnnotationsService,
     &kBookmarksImprovedSaveFlow,
     &kBookmarksRefresh,
@@ -286,7 +285,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kTestDefaultDisabled,
     &kTestDefaultEnabled,
     &kToolbarMicIphAndroid,
-    &kToolbarPhoneOptimizations,
     &kToolbarScrollAblationAndroid,
     &kTrustedWebActivityPostMessage,
     &kTrustedWebActivityQualityEnforcement,
@@ -727,6 +725,10 @@ BASE_FEATURE(kNotificationPermissionVariant,
              "NotificationPermissionVariant",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kNotificationPermissionBottomSheet,
+             "NotificationPermissionBottomSheet",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kInstanceSwitcher,
              "InstanceSwitcher",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -922,10 +924,6 @@ BASE_FEATURE(kTestDefaultEnabled,
 BASE_FEATURE(kToolbarMicIphAndroid,
              "ToolbarMicIphAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kToolbarPhoneOptimizations,
-             "ToolbarPhoneOptimizations",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kToolbarScrollAblationAndroid,
              "ToolbarScrollAblationAndroid",

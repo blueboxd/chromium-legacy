@@ -1061,11 +1061,6 @@ const char kEnableGpuServiceLoggingName[] = "Enable gpu service logging";
 const char kEnableGpuServiceLoggingDescription[] =
     "Enable printing the actual GL driver calls.";
 
-const char kEnableIphName[] = "Enable IPH";
-const char kEnableIphDescription[] =
-    "Enables the ability to show IPH. When disabled, IPHs are disabled system "
-    "wide.";
-
 const char kEnableIsolatedWebAppsName[] = "Enable Isolated Web Apps";
 const char kEnableIsolatedWebAppsDescription[] =
     "Enables experimental support for isolated web apps. "
@@ -3755,6 +3750,13 @@ const char kNotificationPermissionRationaleDescription[] =
     "Configure the dialog shown before requesting notification permission. "
     "Only works with builds targeting Android T.";
 
+const char kNotificationPermissionRationaleBottomSheetName[] =
+    "Notification Permission Rationale Bottom Sheet UI";
+const char kNotificationPermissionRationaleBottomSheetDescription[] =
+    "Enable the alternative bottom sheet UI for the notification permission "
+    "flow. "
+    "Only works with builds targeting Android T+.";
+
 const char kOfflinePagesLivePageSharingName[] =
     "Enables live page sharing of offline pages";
 const char kOfflinePagesLivePageSharingDescription[] =
@@ -5128,11 +5130,6 @@ const char kDisableDnsProxyDescription[] =
     "Turns off DNS proxying and SecureDNS for ChromeOS (only). Does not impact "
     "Chrome browser.";
 
-const char kEnableDnsProxyName[] = "Enable DNS proxy service";
-const char kEnableDnsProxyDescription[] =
-    "When enabled, standard DNS queries will be proxied through the system "
-    "service";
-
 const char kEnableEdidBasedDisplayIdsName[] = "Enable EDID-based display IDs";
 const char kEnableEdidBasedDisplayIdsDescription[] =
     "When enabled, a display's ID will be produced by hashing certain values "
@@ -5140,12 +5137,6 @@ const char kEnableEdidBasedDisplayIdsDescription[] =
     "consistently identify previously connected displays, regardless of the "
     "physical port they were connected to, and load user display layouts more "
     "accurately.";
-
-const char kDnsProxyEnableDOHName[] =
-    "Enable DNS-over-HTTPS in the DNS proxy service";
-const char kDnsProxyEnableDOHDescription[] =
-    "When enabled, the DNS proxy will perform DNS-over-HTTPS in accordance "
-    "with the ChromeOS SecureDNS settings.";
 
 const char kEnableExternalKeyboardsInDiagnosticsAppName[] =
     "Enable external keyboards in the Diagnostics App";
@@ -5672,6 +5663,11 @@ const char kMicrophoneMuteSwitchDeviceDescription[] =
     "flag does not affect the toggle functionality, it only affects how the "
     "System UI handles the mute toggle state.";
 
+const char kMultiZoneRgbKeyboardName[] =
+    "Enable multi-zone RGB keyboard customization";
+const char kMultiZoneRgbKeyboardDescription[] =
+    "Enable multi-zone RGB keyboard customization on supported devices.";
+
 const char kMultilingualTypingName[] = "Multilingual typing on CrOS";
 const char kMultilingualTypingDescription[] =
     "Enables support for multilingual assistive typing on ChromeOS.";
@@ -5691,10 +5687,6 @@ const char kNearbySharingSelfShareUIName[] = "Nearby Sharing Self Share UI";
 const char kNearbySharingSelfShareUIDescription[] =
     "Enables UI features for Self Share to allow seamless sharing between a "
     "user's own devices.";
-
-const char kNearbySharingWifiLanName[] = "Nearby Sharing WifiLan";
-const char kNearbySharingWifiLanDescription[] =
-    "Enables WifiLan as a Nearby Share transfer medium.";
 
 const char kOobeHidDetectionRevampName[] = "OOBE HID Detection Revamp";
 const char kOobeHidDetectionRevampDescription[] =

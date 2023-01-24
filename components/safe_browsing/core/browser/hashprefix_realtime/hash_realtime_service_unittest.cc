@@ -10,11 +10,14 @@
 #include "base/strings/escape.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "components/safe_browsing/core/browser/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_utils.h"
+#include "components/safe_browsing/core/browser/verdict_cache_manager.h"
 #include "components/safe_browsing/core/common/proto/safebrowsingv5_alpha1.pb.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/google_api_keys.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -24,6 +27,14 @@
 
 namespace safe_browsing {
 
+namespace {
+// These two URLs have the same hash prefix. They were determined via a for loop
+// up to 100,000 looking for the first two "https://example.a#" URLs whose hash
+// prefixes matched.
+constexpr char kUrlWithMatchingHashPrefix1[] = "https://example.a23549";
+constexpr char kUrlWithMatchingHashPrefix2[] = "https://example.a3945";
+}  // namespace
+
 class HashRealTimeServiceTest : public PlatformTest {
  public:
   void CreateHashRealTimeService() {
@@ -32,11 +43,24 @@ class HashRealTimeServiceTest : public PlatformTest {
     test_shared_loader_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             test_url_loader_factory_.get());
-    service_ =
-        std::make_unique<HashRealTimeService>(test_shared_loader_factory_);
+    content_setting_map_ = base::MakeRefCounted<HostContentSettingsMap>(
+        &test_pref_service_, /*is_off_the_record=*/false,
+        /*store_last_modified=*/false, /*restore_session=*/false,
+        /*should_record_metrics=*/false);
+    VerdictCacheManager* cache_manager_ptr = nullptr;
+    if (include_cache_manager_) {
+      cache_manager_ = std::make_unique<VerdictCacheManager>(
+          /*history_service=*/nullptr, content_setting_map_.get(),
+          &test_pref_service_,
+          /*sync_observer=*/nullptr);
+      cache_manager_ptr = cache_manager_.get();
+    }
+    service_ = std::make_unique<HashRealTimeService>(
+        test_shared_loader_factory_, cache_manager_ptr);
   }
   void SetUp() override {
     PlatformTest::SetUp();
+    HostContentSettingsMap::RegisterProfilePrefs(test_pref_service_.registry());
     CreateHashRealTimeService();
     std::string key = google_apis::GetAPIKey();
     key_param_ =
@@ -46,6 +70,10 @@ class HashRealTimeServiceTest : public PlatformTest {
             : "";
   }
   void TearDown() override {
+    cache_manager_.reset();
+    if (content_setting_map_) {
+      content_setting_map_->ShutdownOnUIThread();
+    }
     service_->Shutdown();
     PlatformTest::TearDown();
   }
@@ -68,6 +96,10 @@ class HashRealTimeServiceTest : public PlatformTest {
       hash_prefixes.push_back(hash_realtime_utils::GetHashPrefix(full_hash));
     }
     return hash_prefixes;
+  }
+  std::set<HashPrefixStr> UrlToHashPrefixesAsSet(const GURL& url) {
+    auto hash_prefixes = UrlToHashPrefixes(url);
+    return std::set(hash_prefixes.begin(), hash_prefixes.end());
   }
   FullHashStr UrlToSingleHashPrefix(const GURL& url) {
     auto hash_prefixes = UrlToHashPrefixes(url);
@@ -101,6 +133,53 @@ class HashRealTimeServiceTest : public PlatformTest {
     cache_duration->set_seconds(300);
     SetUpLookupResponseHelper(request_url, response);
   }
+  void ResetMetrics() {
+    histogram_tester_ = std::make_unique<base::HistogramTester>();
+  }
+  void CheckPreRequestMetrics(bool expect_cache_hit_all_prefixes) {
+    histogram_tester_->ExpectTotalCount(
+        /*name=*/"SafeBrowsing.HPRT.GetCache.Time", /*expected_count=*/1);
+    histogram_tester_->ExpectUniqueSample(
+        /*name=*/"SafeBrowsing.HPRT.CacheHitAllPrefixes",
+        /*sample=*/expect_cache_hit_all_prefixes,
+        /*expected_bucket_count=*/1);
+  }
+  void CheckPostRequestMetrics(int expected_threat_info_size) {
+    histogram_tester_->ExpectUniqueSample(
+        /*name=*/"SafeBrowsing.HPRT.ThreatInfoSize",
+        /*sample=*/expected_threat_info_size,
+        /*expected_bucket_count=*/1);
+  }
+  void CheckRequestMetrics(
+      int expected_prefix_count,
+      int expected_network_result,
+      HashRealTimeService::OperationResult expected_operation_result,
+      absl::optional<bool> expected_found_unmatched_full_hashes) {
+    histogram_tester_->ExpectUniqueSample(
+        /*name=*/"SafeBrowsing.HPRT.Request.CountOfPrefixes",
+        /*sample=*/expected_prefix_count,
+        /*expected_bucket_count=*/1);
+    histogram_tester_->ExpectTotalCount(
+        /*name=*/"SafeBrowsing.HPRT.Network.Time", /*expected_count=*/1);
+    histogram_tester_->ExpectUniqueSample(
+        /*name=*/"SafeBrowsing.HPRT.Network.Result",
+        /*sample=*/expected_network_result,
+        /*expected_bucket_count=*/1);
+    histogram_tester_->ExpectUniqueSample(
+        /*name=*/"SafeBrowsing.HPRT.OperationResult",
+        /*sample=*/expected_operation_result,
+        /*expected_bucket_count=*/1);
+    if (expected_found_unmatched_full_hashes.has_value()) {
+      histogram_tester_->ExpectUniqueSample(
+          /*name=*/"SafeBrowsing.HPRT.FoundUnmatchedFullHashes",
+          /*sample=*/expected_found_unmatched_full_hashes.value(),
+          /*expected_bucket_count=*/1);
+    } else {
+      histogram_tester_->ExpectTotalCount(
+          /*name=*/"SafeBrowsing.HPRT.FoundUnmatchedFullHashes",
+          /*expected_count=*/0);
+    }
+  }
   V5::FullHash CreateFullHashProto(
       std::vector<V5::ThreatType> threat_types,
       std::string full_hash,
@@ -124,13 +203,16 @@ class HashRealTimeServiceTest : public PlatformTest {
   }
   void StartSuccessRequest(
       const GURL& url,
+      const std::set<FullHashStr>& cached_hash_prefixes,
       base::MockCallback<HPRTLookupResponseCallback>& response_callback,
       const std::vector<V5::FullHash>& response_full_hashes,
       SBThreatType expected_threat_type) {
     // Intercept search hashes request URL.
     auto request = std::make_unique<V5::SearchHashesRequest>();
-    for (const auto& hash_prefix : UrlToHashPrefixes(url)) {
-      request->add_hash_prefixes(hash_prefix);
+    for (const auto& hash_prefix : UrlToHashPrefixesAsSet(url)) {
+      if (!base::Contains(cached_hash_prefixes, hash_prefix)) {
+        request->add_hash_prefixes(hash_prefix);
+      }
     }
     std::string expected_url = GetExpectedRequestUrl(request);
     test_url_loader_factory_->SetInterceptor(base::BindLambdaForTesting(
@@ -152,26 +234,53 @@ class HashRealTimeServiceTest : public PlatformTest {
     service_->StartLookup(url, response_callback.Get(),
                           base::SequencedTaskRunner::GetCurrentDefault());
   }
+  // Starts a lookup on |url| that is expected to succeed, simulating the server
+  // response as |response_full_hashes|. Confirms that |expected_threat_type| is
+  // returned through the lookup's callback. |cached_hash_prefixes| can be empty
+  // or can specify which hash prefixes are already in the cache and should
+  // therefore not be sent in the request.
   void RunRequestSuccessTest(const GURL& url,
+                             const std::set<FullHashStr>& cached_hash_prefixes,
                              std::vector<V5::FullHash> response_full_hashes,
-                             SBThreatType expected_threat_type) {
+                             SBThreatType expected_threat_type,
+                             int expected_prefix_count,
+                             int expected_threat_info_size,
+                             bool expected_found_unmatched_full_hashes) {
     auto num_requests = test_url_loader_factory_->total_requests();
     base::MockCallback<HPRTLookupResponseCallback> response_callback;
-    StartSuccessRequest(url, response_callback, response_full_hashes,
-                        expected_threat_type);
+    StartSuccessRequest(url, cached_hash_prefixes, response_callback,
+                        response_full_hashes, expected_threat_type);
     task_environment_.RunUntilIdle();
+
+    CheckPreRequestMetrics(/*expect_cache_hit_all_prefixes=*/false);
+    CheckRequestMetrics(
+        /*expected_prefix_count=*/expected_prefix_count,
+        /*expected_network_result=*/200,
+        /*expected_operation_result=*/
+        HashRealTimeService::OperationResult::kSuccess,
+        /*expected_found_unmatched_full_hashes=*/
+        expected_found_unmatched_full_hashes);
+    CheckPostRequestMetrics(expected_threat_info_size);
+    ResetMetrics();
+
     EXPECT_EQ(test_url_loader_factory_->total_requests(), num_requests + 1u);
   }
+  // Starts a lookup on |url| that is expected to fail. The simulated server
+  // response body can be specified either by |response_full_hashes| or by
+  // |custom_response|. |status| represents the simulated server response code.
+  // Confirms that the lookup fails.
   void RunRequestFailureTest(
       const GURL& url,
       const absl::optional<std::vector<V5::FullHash>>& response_full_hashes,
       const absl::optional<std::string>& custom_response,
-      net::HttpStatusCode status) {
+      net::HttpStatusCode status,
+      int expected_prefix_count,
+      HashRealTimeService::OperationResult expected_operation_result) {
     auto num_requests = test_url_loader_factory_->total_requests();
 
     // Set up request and response.
     auto request = std::make_unique<V5::SearchHashesRequest>();
-    for (const auto& hash_prefix : UrlToHashPrefixes(url)) {
+    for (const auto& hash_prefix : UrlToHashPrefixesAsSet(url)) {
       request->add_hash_prefixes(hash_prefix);
     }
     std::string expected_url = GetExpectedRequestUrl(request);
@@ -196,13 +305,48 @@ class HashRealTimeServiceTest : public PlatformTest {
                           base::SequencedTaskRunner::GetCurrentDefault());
     task_environment_.RunUntilIdle();
 
+    CheckPreRequestMetrics(/*expect_cache_hit_all_prefixes=*/false);
+    CheckRequestMetrics(
+        /*expected_prefix_count=*/expected_prefix_count,
+        /*expected_network_result=*/status,
+        /*expected_operation_result=*/
+        expected_operation_result, /*expected_found_unmatched_full_hashes=*/
+        absl::nullopt);
+    ResetMetrics();
+
     EXPECT_EQ(test_url_loader_factory_->total_requests(), num_requests + 1u);
+  }
+  // Starts a lookup on |url| that should already be found entirely in the cache
+  // and therefore not require a request to be sent. Confirms that the lookup's
+  // callback is called with the |expected_threat_type| and that no requests are
+  // made.
+  void RunFullyCachedRequestTest(const GURL& url,
+                                 SBThreatType expected_threat_type,
+                                 int expected_threat_info_size) {
+    auto num_requests = test_url_loader_factory_->total_requests();
+    base::MockCallback<HPRTLookupResponseCallback> response_callback;
+    // Confirm request response will be called once with the relevant threat
+    // type.
+    EXPECT_CALL(response_callback,
+                Run(/*is_lookup_successful=*/true,
+                    /*sb_threat_type=*/testing::Optional(expected_threat_type)))
+        .Times(1);
+    service_->StartLookup(url, response_callback.Get(),
+                          base::SequencedTaskRunner::GetCurrentDefault());
+    task_environment_.RunUntilIdle();
+
+    CheckPreRequestMetrics(/*expect_cache_hit_all_prefixes=*/true);
+    CheckPostRequestMetrics(
+        /*expected_threat_info_size=*/expected_threat_info_size);
+    ResetMetrics();
+
+    EXPECT_EQ(test_url_loader_factory_->total_requests(), num_requests);
   }
   void RunSimpleRequest(const GURL& url,
                         const std::vector<V5::FullHash>& response_full_hashes) {
     // Set up request response.
     auto request = std::make_unique<V5::SearchHashesRequest>();
-    for (const auto& hash_prefix : UrlToHashPrefixes(url)) {
+    for (const auto& hash_prefix : UrlToHashPrefixesAsSet(url)) {
       request->add_hash_prefixes(hash_prefix);
     }
     std::string expected_url = GetExpectedRequestUrl(request);
@@ -232,8 +376,19 @@ class HashRealTimeServiceTest : public PlatformTest {
   std::unique_ptr<network::TestURLLoaderFactory> test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   std::string key_param_;
+  std::unique_ptr<VerdictCacheManager> cache_manager_;
+  scoped_refptr<HostContentSettingsMap> content_setting_map_;
+  sync_preferences::TestingPrefServiceSyncable test_pref_service_;
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  std::unique_ptr<base::HistogramTester> histogram_tester_ =
+      std::make_unique<base::HistogramTester>();
+  bool include_cache_manager_ = true;
+};
+
+class HashRealTimeServiceNoCacheManagerTest : public HashRealTimeServiceTest {
+ public:
+  HashRealTimeServiceNoCacheManagerTest() { include_cache_manager_ = false; }
 };
 
 TEST_F(HashRealTimeServiceTest, TestCanCheckUrl) {
@@ -268,86 +423,116 @@ TEST_F(HashRealTimeServiceTest, TestCanCheckUrl) {
 TEST_F(HashRealTimeServiceTest, TestLookup_OneHash_Safe) {
   GURL url = GURL("https://example.test");
   RunRequestSuccessTest(
-      /*url=*/url, /*response_full_hashes=*/{},
-      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_SAFE);
+      /*url=*/url, /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/{},
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_SAFE,
+      /*expected_prefix_count=*/1,
+      /*expected_threat_info_size=*/0,
+      /*expected_found_unmatched_full_hashes=*/false);
 }
 
 TEST_F(HashRealTimeServiceTest, TestLookup_OneHash_Phishing) {
   GURL url = GURL("https://example.test");
   RunRequestSuccessTest(
-      /*url=*/url, /*response_full_hashes=*/
+      /*url=*/url, /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
       {CreateFullHashProto({V5::ThreatType::SOCIAL_ENGINEERING},
                            UrlToSingleFullHash(url))},
-      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_PHISHING);
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_PHISHING,
+      /*expected_prefix_count=*/1,
+      /*expected_threat_info_size=*/1,
+      /*expected_found_unmatched_full_hashes=*/false);
 }
 
 TEST_F(HashRealTimeServiceTest, TestLookup_OneHash_Malware) {
   GURL url = GURL("https://example.test");
   RunRequestSuccessTest(
-      /*url=*/url, /*response_full_hashes=*/
+      /*url=*/url, /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
       {CreateFullHashProto({V5::ThreatType::MALWARE},
                            UrlToSingleFullHash(url))},
-      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_MALWARE);
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_MALWARE,
+      /*expected_prefix_count=*/1,
+      /*expected_threat_info_size=*/1,
+      /*expected_found_unmatched_full_hashes=*/false);
 }
 
 TEST_F(HashRealTimeServiceTest, TestLookup_OneHash_UnwantedSoftware) {
   GURL url = GURL("https://example.test");
   RunRequestSuccessTest(
-      /*url=*/url, /*response_full_hashes=*/
+      /*url=*/url, /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
       {CreateFullHashProto({V5::ThreatType::UNWANTED_SOFTWARE},
                            UrlToSingleFullHash(url))},
-      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_UNWANTED);
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_UNWANTED,
+      /*expected_prefix_count=*/1,
+      /*expected_threat_info_size=*/1,
+      /*expected_found_unmatched_full_hashes=*/false);
 }
 
 TEST_F(HashRealTimeServiceTest, TestLookup_OneHash_Suspicious) {
   GURL url = GURL("https://example.test");
   RunRequestSuccessTest(
-      /*url=*/url, /*response_full_hashes=*/
+      /*url=*/url, /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
       {CreateFullHashProto({V5::ThreatType::SUSPICIOUS},
                            UrlToSingleFullHash(url))},
-      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_SUSPICIOUS_SITE);
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_SUSPICIOUS_SITE,
+      /*expected_prefix_count=*/1,
+      /*expected_threat_info_size=*/1,
+      /*expected_found_unmatched_full_hashes=*/false);
 }
 
 TEST_F(HashRealTimeServiceTest, TestLookup_OneHash_Billing) {
   GURL url = GURL("https://example.test");
   RunRequestSuccessTest(
-      /*url=*/url, /*response_full_hashes=*/
+      /*url=*/url, /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
       {CreateFullHashProto({V5::ThreatType::TRICK_TO_BILL},
                            UrlToSingleFullHash(url))},
-      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_BILLING);
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_BILLING,
+      /*expected_prefix_count=*/1,
+      /*expected_threat_info_size=*/1,
+      /*expected_found_unmatched_full_hashes=*/false);
 }
 
 TEST_F(HashRealTimeServiceTest, TestLookup_OneHash_IrrelevantThreatType) {
   GURL url = GURL("https://example.test");
   RunRequestSuccessTest(
-      /*url=*/url, /*response_full_hashes=*/
+      /*url=*/url, /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
       {CreateFullHashProto({V5::ThreatType::API_ABUSE},
                            UrlToSingleFullHash(url))},
-      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_SAFE);
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_SAFE,
+      /*expected_prefix_count=*/1,
+      /*expected_threat_info_size=*/0,
+      /*expected_found_unmatched_full_hashes=*/false);
 }
 
 TEST_F(HashRealTimeServiceTest, TestLookup_OverlappingHashPrefixes) {
-  GURL url1 = GURL("https://example.a23549");
-  GURL url2 = GURL("https://example.a3945");
+  GURL url1 = GURL(kUrlWithMatchingHashPrefix1);
+  GURL url2 = GURL(kUrlWithMatchingHashPrefix2);
   // To make sure this test is a useful test, sanity check that the URL hash
   // prefixes are indeed the same.
   EXPECT_EQ(UrlToSingleHashPrefix(url1), UrlToSingleHashPrefix(url2));
   RunRequestSuccessTest(
-      /*url=*/url1, /*response_full_hashes=*/
+      /*url=*/url1, /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
       {CreateFullHashProto({V5::ThreatType::SOCIAL_ENGINEERING},
                            UrlToSingleFullHash(url2))},
-      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_SAFE);
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_SAFE,
+      /*expected_prefix_count=*/1,
+      /*expected_threat_info_size=*/0,
+      /*expected_found_unmatched_full_hashes=*/false);
 }
 
 TEST_F(HashRealTimeServiceTest, TestLookup_MaxHashes_Phishing) {
   GURL url = GURL("https://a.b.c.d.e.f.g/1/2/3/4/5/6?param=x");
+  // |expected_prefix_count| is 30 because this is the maximum number of host
+  // suffix and path prefix combinations, as described in
+  // https://developers.google.com/safe-browsing/v4/urls-hashing#suffixprefix-expressions.
   RunRequestSuccessTest(
-      /*url=*/url, /*response_full_hashes=*/
+      /*url=*/url, /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
       {CreateFullHashProto({V5::ThreatType::SOCIAL_ENGINEERING},
                            UrlToFullHashes(url)[0]),
        CreateFullHashProto({V5::ThreatType::SOCIAL_ENGINEERING},
                            UrlToFullHashes(url)[15])},
-      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_PHISHING);
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_PHISHING,
+      /*expected_prefix_count=*/30,
+      /*expected_threat_info_size=*/2,
+      /*expected_found_unmatched_full_hashes=*/false);
 }
 
 TEST_F(HashRealTimeServiceTest,
@@ -355,8 +540,11 @@ TEST_F(HashRealTimeServiceTest,
   GURL url = GURL("https://a.b.c.d.e.f.g/1/2/3/4/5/6?param=x");
   std::string non_matching_full_hash =
       UrlToHashPrefixes(url)[0] + "1111111111111111111111111111";
+  // |expected_prefix_count| is 30 because this is the maximum number of host
+  // suffix and path prefix combinations, as described in
+  // https://developers.google.com/safe-browsing/v4/urls-hashing#suffixprefix-expressions.
   RunRequestSuccessTest(
-      /*url=*/url, /*response_full_hashes=*/
+      /*url=*/url, /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
       {CreateFullHashProto({V5::ThreatType::SOCIAL_ENGINEERING},
                            UrlToFullHashes(url)[0]),
        CreateFullHashProto({V5::ThreatType::MALWARE}, UrlToFullHashes(url)[2]),
@@ -376,14 +564,20 @@ TEST_F(HashRealTimeServiceTest,
        CreateFullHashProto(
            {V5::ThreatType::SOCIAL_ENGINEERING, V5::ThreatType::MALWARE},
            non_matching_full_hash)},
-      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_PHISHING);
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_PHISHING,
+      /*expected_prefix_count=*/30,
+      /*expected_threat_info_size=*/9,
+      /*expected_found_unmatched_full_hashes=*/false);
 }
 
 TEST_F(HashRealTimeServiceTest, TestLookup_MaxHashes_OnlyIrrelevant) {
   GURL url = GURL("https://a.b.c.d.e.f.g/1/2/3/4/5/6?param=x");
   std::string rest_of_hash = "1111111111111111111111111111";
+  // |expected_prefix_count| is 30 because this is the maximum number of host
+  // suffix and path prefix combinations, as described in
+  // https://developers.google.com/safe-browsing/v4/urls-hashing#suffixprefix-expressions.
   RunRequestSuccessTest(
-      /*url=*/url, /*response_full_hashes=*/
+      /*url=*/url, /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
       {CreateFullHashProto({V5::ThreatType::SOCIAL_ENGINEERING},
                            UrlToHashPrefixes(url)[0] + rest_of_hash),
        CreateFullHashProto({V5::ThreatType::MALWARE},
@@ -401,18 +595,24 @@ TEST_F(HashRealTimeServiceTest, TestLookup_MaxHashes_OnlyIrrelevant) {
            UrlToHashPrefixes(url)[8] + rest_of_hash),
        CreateFullHashProto({V5::ThreatType::SOCIAL_ENGINEERING},
                            UrlToHashPrefixes(url)[15] + rest_of_hash)},
-      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_SAFE);
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_SAFE,
+      /*expected_prefix_count=*/30,
+      /*expected_threat_info_size=*/0,
+      /*expected_found_unmatched_full_hashes=*/false);
 }
 
 TEST_F(HashRealTimeServiceTest, TestLookup_CompetingSeverities) {
   GURL url = GURL("https://example.test");
   RunRequestSuccessTest(
-      /*url=*/url, /*response_full_hashes=*/
+      /*url=*/url, /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
       {CreateFullHashProto(
           {V5::ThreatType::UNWANTED_SOFTWARE, V5::ThreatType::MALWARE,
            V5::ThreatType::SOCIAL_ENGINEERING},
           UrlToSingleFullHash(url))},
-      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_MALWARE);
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_MALWARE,
+      /*expected_prefix_count=*/1,
+      /*expected_threat_info_size=*/3,
+      /*expected_found_unmatched_full_hashes=*/false);
 }
 
 TEST_F(HashRealTimeServiceTest, TestLookup_Attributes) {
@@ -423,12 +623,15 @@ TEST_F(HashRealTimeServiceTest, TestLookup_Attributes) {
       {V5::ThreatAttribute::FRAME_ONLY}};
   RunRequestSuccessTest(
       /*url=*/url,
-      /*response_full_hashes=*/
+      /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
       {CreateFullHashProto(
           {V5::ThreatType::UNWANTED_SOFTWARE, V5::ThreatType::MALWARE,
            V5::ThreatType::SOCIAL_ENGINEERING},
           UrlToSingleFullHash(url), attributes)},
-      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_MALWARE);
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_MALWARE,
+      /*expected_prefix_count=*/1,
+      /*expected_threat_info_size=*/3,
+      /*expected_found_unmatched_full_hashes=*/false);
 }
 
 TEST_F(HashRealTimeServiceTest, TestLookup_InvalidThreatTypes) {
@@ -436,9 +639,12 @@ TEST_F(HashRealTimeServiceTest, TestLookup_InvalidThreatTypes) {
                          SBThreatType expected_threat_type,
                          int expected_threat_info_size) {
     RunRequestSuccessTest(
-        /*url=*/url, /*response_full_hashes=*/
+        /*url=*/url, /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
         {CreateFullHashProto(threat_types, UrlToSingleFullHash(url))},
-        /*expected_threat_type=*/expected_threat_type);
+        /*expected_threat_type=*/expected_threat_type,
+        /*expected_prefix_count=*/1,
+        /*expected_threat_info_size=*/expected_threat_info_size,
+        /*expected_found_unmatched_full_hashes=*/false);
   };
   // Sanity check the static casting on a valid threat type is not filtered out.
   run_test(GURL("https://example.test1"), {static_cast<V5::ThreatType>(2)},
@@ -474,12 +680,15 @@ TEST_F(HashRealTimeServiceTest, TestLookup_InvalidAttributes) {
         {static_cast<V5::ThreatAttribute>(-2)}};
     RunRequestSuccessTest(
         /*url=*/url,
-        /*response_full_hashes=*/
+        /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
         {CreateFullHashProto(
             {V5::ThreatType::UNWANTED_SOFTWARE, V5::ThreatType::MALWARE,
              V5::ThreatType::SOCIAL_ENGINEERING},
             UrlToSingleFullHash(url), attributes)},
-        /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_UNWANTED);
+        /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_UNWANTED,
+        /*expected_prefix_count=*/1,
+        /*expected_threat_info_size=*/1,
+        /*expected_found_unmatched_full_hashes=*/false);
   }
   // Threat types are the same.
   {
@@ -491,13 +700,49 @@ TEST_F(HashRealTimeServiceTest, TestLookup_InvalidAttributes) {
         {static_cast<V5::ThreatAttribute>(-2)}};
     RunRequestSuccessTest(
         /*url=*/url,
-        /*response_full_hashes=*/
+        /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
         {CreateFullHashProto({V5::ThreatType::UNWANTED_SOFTWARE,
                               V5::ThreatType::UNWANTED_SOFTWARE,
                               V5::ThreatType::UNWANTED_SOFTWARE,
                               V5::ThreatType::UNWANTED_SOFTWARE},
                              UrlToSingleFullHash(url), attributes)},
-        /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_UNWANTED);
+        /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_UNWANTED,
+        /*expected_prefix_count=*/1,
+        /*expected_threat_info_size=*/2,
+        /*expected_found_unmatched_full_hashes=*/false);
+  }
+}
+
+TEST_F(HashRealTimeServiceTest, TestLookup_UnmatchedFullHashesInResponse) {
+  // The code should still function properly even if the server sends back
+  // FullHash objects that don't match the requested hash prefixes.
+  {
+    GURL url = GURL("https://example.test1");
+    GURL other_url = GURL("https://example.test2");
+    RunRequestSuccessTest(
+        /*url=*/url,
+        /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
+        {CreateFullHashProto({V5::ThreatType::MALWARE},
+                             UrlToSingleFullHash(other_url))},
+        /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_SAFE,
+        /*expected_prefix_count=*/1,
+        /*expected_threat_info_size=*/0,
+        /*expected_found_unmatched_full_hashes=*/true);
+  }
+  {
+    GURL url = GURL("https://example.test3");
+    GURL other_url = GURL("https://example.test4");
+    RunRequestSuccessTest(
+        /*url=*/url,
+        /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
+        {CreateFullHashProto({V5::ThreatType::MALWARE},
+                             UrlToSingleFullHash(other_url)),
+         CreateFullHashProto({V5::ThreatType::UNWANTED_SOFTWARE},
+                             UrlToSingleFullHash(url))},
+        /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_UNWANTED,
+        /*expected_prefix_count=*/1,
+        /*expected_threat_info_size=*/1,
+        /*expected_found_unmatched_full_hashes=*/true);
   }
 }
 
@@ -507,23 +752,29 @@ TEST_F(HashRealTimeServiceTest, TestLookup_DuplicateFullHashesInResponse) {
   GURL url1 = GURL("https://example.test1");
   RunRequestSuccessTest(
       /*url=*/url1,
-      /*response_full_hashes=*/
+      /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
       {CreateFullHashProto({V5::ThreatType::MALWARE},
                            UrlToSingleFullHash(url1)),
        CreateFullHashProto({V5::ThreatType::UNWANTED_SOFTWARE},
                            UrlToSingleFullHash(url1))},
-      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_MALWARE);
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_MALWARE,
+      /*expected_prefix_count=*/1,
+      /*expected_threat_info_size=*/2,
+      /*expected_found_unmatched_full_hashes=*/false);
   // Run it with the server responses backwards as well to confirm order doesn't
   // matter.
   GURL url2 = GURL("https://example.test2");
   RunRequestSuccessTest(
       /*url=*/url2,
-      /*response_full_hashes=*/
+      /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
       {CreateFullHashProto({V5::ThreatType::UNWANTED_SOFTWARE},
                            UrlToSingleFullHash(url2)),
        CreateFullHashProto({V5::ThreatType::MALWARE},
                            UrlToSingleFullHash(url2))},
-      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_MALWARE);
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_MALWARE,
+      /*expected_prefix_count=*/1,
+      /*expected_threat_info_size=*/2,
+      /*expected_found_unmatched_full_hashes=*/false);
 }
 
 TEST_F(HashRealTimeServiceTest, TestLookup_DuplicateFullHashDetailsInResponse) {
@@ -532,12 +783,15 @@ TEST_F(HashRealTimeServiceTest, TestLookup_DuplicateFullHashDetailsInResponse) {
   GURL url = GURL("https://example.test");
   RunRequestSuccessTest(
       /*url=*/url,
-      /*response_full_hashes=*/
+      /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
       {CreateFullHashProto(
           {V5::ThreatType::UNWANTED_SOFTWARE, V5::ThreatType::UNWANTED_SOFTWARE,
            V5::ThreatType::MALWARE, V5::ThreatType::UNWANTED_SOFTWARE},
           UrlToSingleFullHash(url))},
-      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_MALWARE);
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_MALWARE,
+      /*expected_prefix_count=*/1,
+      /*expected_threat_info_size=*/4,
+      /*expected_found_unmatched_full_hashes=*/false);
 }
 
 TEST_F(HashRealTimeServiceTest, TestLookupFailure_Error) {
@@ -545,14 +799,18 @@ TEST_F(HashRealTimeServiceTest, TestLookupFailure_Error) {
   RunRequestFailureTest(
       /*url=*/url, /*response_full_hashes=*/absl::nullopt,
       /*custom_response=*/absl::nullopt,
-      /*status=*/net::HTTP_INTERNAL_SERVER_ERROR);
+      /*status=*/net::HTTP_INTERNAL_SERVER_ERROR, /*expected_prefix_count=*/1,
+      /*expected_operation_result=*/
+      HashRealTimeService::OperationResult::kNetworkError);
 }
 TEST_F(HashRealTimeServiceTest, TestLookupFailure_ParseResponse) {
   GURL url = GURL("https://example.test");
   RunRequestFailureTest(
       /*url=*/url, /*response_full_hashes=*/absl::nullopt,
       /*custom_response=*/"howdy",
-      /*status=*/net::HTTP_OK);
+      /*status=*/net::HTTP_OK, /*expected_prefix_count=*/1,
+      /*expected_operation_result=*/
+      HashRealTimeService::OperationResult::kParseError);
 }
 TEST_F(HashRealTimeServiceTest, TestLookupFailure_IncorrectFullHashLength) {
   GURL url = GURL("https://example.test");
@@ -562,7 +820,9 @@ TEST_F(HashRealTimeServiceTest, TestLookupFailure_IncorrectFullHashLength) {
       absl::optional<std::vector<V5::FullHash>>({CreateFullHashProto(
           {V5::ThreatType::SOCIAL_ENGINEERING}, short_full_hash)}),
       /*custom_response=*/absl::nullopt,
-      /*status=*/net::HTTP_OK);
+      /*status=*/net::HTTP_OK, /*expected_prefix_count=*/1,
+      /*expected_operation_result=*/
+      HashRealTimeService::OperationResult::kIncorrectFullHashLengthError);
 }
 TEST_F(HashRealTimeServiceTest, TestLookupFailure_MissingCacheDuration) {
   GURL url = GURL("https://example.test");
@@ -573,26 +833,191 @@ TEST_F(HashRealTimeServiceTest, TestLookupFailure_MissingCacheDuration) {
   RunRequestFailureTest(
       /*url=*/url, /*response_full_hashes=*/{},
       /*custom_response=*/response_str,
-      /*status=*/net::HTTP_OK);
+      /*status=*/net::HTTP_OK, /*expected_prefix_count=*/1,
+      /*expected_operation_result=*/
+      HashRealTimeService::OperationResult::kNoCacheDurationError);
+}
+
+TEST_F(HashRealTimeServiceTest, TestFullyCached_OneHash_Safe) {
+  GURL url = GURL("https://example.test");
+  RunSimpleRequest(
+      /*url=*/url, /*response_full_hashes=*/{});
+  ResetMetrics();
+  RunFullyCachedRequestTest(
+      /*url=*/url,
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_SAFE,
+      /*expected_threat_info_size=*/0);
+}
+
+TEST_F(HashRealTimeServiceTest, TestFullyCached_OneHash_Phishing) {
+  GURL url = GURL("https://example.test");
+  RunSimpleRequest(
+      /*url=*/url, /*response_full_hashes=*/
+      {CreateFullHashProto({V5::ThreatType::SOCIAL_ENGINEERING},
+                           UrlToSingleFullHash(url))});
+  ResetMetrics();
+  RunFullyCachedRequestTest(
+      /*url=*/url,
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_PHISHING,
+      /*expected_threat_info_size=*/1);
+}
+
+TEST_F(HashRealTimeServiceTest, TestFullyCached_MaxHashes) {
+  GURL url = GURL("https://a.b.c.d.e.f.g/1/2/3/4/5/6?param=x");
+  RunSimpleRequest(
+      /*url=*/url, /*response_full_hashes=*/
+      {CreateFullHashProto({V5::ThreatType::SOCIAL_ENGINEERING},
+                           UrlToFullHashes(url)[0]),
+       CreateFullHashProto(
+           {V5::ThreatType::MALWARE, V5::ThreatType::SOCIAL_ENGINEERING},
+           UrlToFullHashes(url)[2]),
+       CreateFullHashProto({V5::ThreatType::API_ABUSE,
+                            V5::ThreatType::POTENTIALLY_HARMFUL_APPLICATION},
+                           UrlToFullHashes(url)[4])});
+  ResetMetrics();
+  RunFullyCachedRequestTest(
+      /*url=*/url,
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_PHISHING,
+      /*expected_threat_info_size=*/3);
+}
+
+TEST_F(HashRealTimeServiceTest, TestFullyCached_OverlappingHashPrefixes) {
+  GURL url1 = GURL(kUrlWithMatchingHashPrefix1);
+  GURL url2 = GURL(kUrlWithMatchingHashPrefix2);
+  // To make sure this test is a useful test, sanity check that the URL hash
+  // prefixes are indeed the same.
+  EXPECT_EQ(UrlToSingleHashPrefix(url1), UrlToSingleHashPrefix(url2));
+  // Start a lookup for url1, which is a phishing page.
+  RunRequestSuccessTest(
+      /*url=*/url1,
+      /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/
+      {CreateFullHashProto({V5::ThreatType::SOCIAL_ENGINEERING},
+                           UrlToSingleFullHash(url1))},
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_PHISHING,
+      /*expected_prefix_count=*/1, /*expected_threat_info_size=*/1,
+      /*expected_found_unmatched_full_hashes=*/false);
+  ResetMetrics();
+  // Start a lookup for url2. This has the same hash prefix as url1, so the
+  // results are fully cached, and no request is sent.
+  RunFullyCachedRequestTest(
+      /*url=*/url2,
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_SAFE,
+      /*expected_threat_info_size=*/0);
+}
+
+// Since phishing is more severe than unwanted software, the results from the
+// second request should be used rather than the cached results.
+TEST_F(HashRealTimeServiceTest, TestPartiallyCached_RequestResultsUsed) {
+  GURL url1 = GURL("https://e.f.g/1/2/");
+  RunSimpleRequest(
+      /*url=*/url1, /*response_full_hashes=*/
+      {CreateFullHashProto({V5::ThreatType::UNWANTED_SOFTWARE},
+                           UrlToFullHashes(url1).back())});
+  ResetMetrics();
+  GURL url2 = GURL("https://a.b.c.d.e.f.g/1/2/3/4/5/6?param=x");
+  RunRequestSuccessTest(
+      /*url=*/url2, /*cached_hash_prefixes=*/UrlToHashPrefixesAsSet(url1),
+      /*response_full_hashes=*/
+      {CreateFullHashProto({V5::ThreatType::SOCIAL_ENGINEERING},
+                           UrlToFullHashes(url2).back())},
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_PHISHING,
+      /*expected_prefix_count=*/24, /*expected_threat_info_size=*/2,
+      /*expected_found_unmatched_full_hashes=*/false);
+}
+
+// Since phishing is more severe than unwanted software, the cached results
+// should be used rather than the results from the second request.
+TEST_F(HashRealTimeServiceTest, TestPartiallyCached_CachedResultsUsed) {
+  GURL url1 = GURL("https://e.f.g/1/2/");
+  RunSimpleRequest(
+      /*url=*/url1, /*response_full_hashes=*/
+      {CreateFullHashProto({V5::ThreatType::SOCIAL_ENGINEERING},
+                           UrlToFullHashes(url1).back())});
+  ResetMetrics();
+  GURL url2 = GURL("https://a.b.c.d.e.f.g/1/2/3/4/5/6?param=x");
+  RunRequestSuccessTest(
+      /*url=*/url2, /*cached_hash_prefixes=*/UrlToHashPrefixesAsSet(url1),
+      /*response_full_hashes=*/
+      {CreateFullHashProto({V5::ThreatType::UNWANTED_SOFTWARE},
+                           UrlToFullHashes(url2).back())},
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_PHISHING,
+      /*expected_prefix_count=*/24, /*expected_threat_info_size=*/2,
+      /*expected_found_unmatched_full_hashes=*/false);
+}
+
+TEST_F(HashRealTimeServiceTest, TestCacheDuration) {
+  GURL url = GURL("https://example.test");
+  RunSimpleRequest(
+      /*url=*/url, /*response_full_hashes=*/{});
+  ResetMetrics();
+  // Time = 200 seconds. Re-check the URL, which should be cached.
+  task_environment_.FastForwardBy(base::Seconds(200));
+  RunFullyCachedRequestTest(
+      /*url=*/url,
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_SAFE,
+      /*expected_threat_info_size=*/0);
+  // Time = 300 seconds. Re-check the URL, which should no longer be cached and
+  // therefore should send a request.
+  task_environment_.FastForwardBy(base::Seconds(100));
+  RunRequestSuccessTest(
+      /*url=*/url, /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/{},
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_SAFE,
+      /*expected_prefix_count=*/1,
+      /*expected_threat_info_size=*/0,
+      /*expected_found_unmatched_full_hashes=*/false);
+}
+
+TEST_F(HashRealTimeServiceNoCacheManagerTest, TestNoCaching) {
+  GURL url = GURL("https://example.test");
+  RunSimpleRequest(
+      /*url=*/url, /*response_full_hashes=*/
+      {CreateFullHashProto({V5::ThreatType::SOCIAL_ENGINEERING},
+                           UrlToSingleFullHash(url))});
+  ResetMetrics();
+  RunRequestSuccessTest(
+      /*url=*/url, /*cached_hash_prefixes=*/{}, /*response_full_hashes=*/{},
+      /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_SAFE,
+      /*expected_prefix_count=*/1,
+      /*expected_threat_info_size=*/0,
+      /*expected_found_unmatched_full_hashes=*/false);
 }
 
 TEST_F(HashRealTimeServiceTest, TestShutdown) {
-  GURL url = GURL("https://example.test");
-  // Set up request response.
-  auto request = std::make_unique<V5::SearchHashesRequest>();
-  for (const auto& hash_prefix : UrlToHashPrefixes(url)) {
-    request->add_hash_prefixes(hash_prefix);
+  {
+    GURL url = GURL("https://example.test");
+    // Set up request response.
+    auto request = std::make_unique<V5::SearchHashesRequest>();
+    for (const auto& hash_prefix : UrlToHashPrefixesAsSet(url)) {
+      request->add_hash_prefixes(hash_prefix);
+    }
+    std::string expected_url = GetExpectedRequestUrl(request);
+    SetUpLookupResponse(/*request_url=*/expected_url,
+                        /*full_hashes=*/{});
+    // Start lookup, setting up the expectation that the response_callback is
+    // not called due to shutdown. It should still send the initial request
+    // since it happens before Shutdown.
+    base::MockCallback<HPRTLookupResponseCallback> response_callback;
+    EXPECT_CALL(response_callback, Run(testing::_, testing::_)).Times(0);
+    service_->StartLookup(url, response_callback.Get(),
+                          base::SequencedTaskRunner::GetCurrentDefault());
+    histogram_tester_->ExpectTotalCount(
+        /*name=*/"SafeBrowsing.HPRT.Request.CountOfPrefixes",
+        /*expected_count=*/1);
   }
-  std::string expected_url = GetExpectedRequestUrl(request);
-  SetUpLookupResponse(/*request_url=*/expected_url,
-                      /*full_hashes=*/{});
-  // Start lookup, setting up the expectation that the response_callback is
-  // not called due to shutdown.
-  base::MockCallback<HPRTLookupResponseCallback> response_callback;
-  EXPECT_CALL(response_callback, Run(testing::_, testing::_)).Times(0);
-  service_->StartLookup(url, response_callback.Get(),
-                        base::SequencedTaskRunner::GetCurrentDefault());
+  ResetMetrics();
   service_->Shutdown();
+  {
+    // A new lookup should also not have the response_callback called (due to
+    // shutdown). It should not even trigger a request.
+    GURL url = GURL("https://example.test");
+    base::MockCallback<HPRTLookupResponseCallback> response_callback;
+    EXPECT_CALL(response_callback, Run(testing::_, testing::_)).Times(0);
+    service_->StartLookup(url, response_callback.Get(),
+                          base::SequencedTaskRunner::GetCurrentDefault());
+    histogram_tester_->ExpectTotalCount(
+        /*name=*/"SafeBrowsing.HPRT.Request.CountOfPrefixes",
+        /*expected_count=*/0);
+  }
   task_environment_.RunUntilIdle();
 }
 
@@ -601,26 +1026,33 @@ TEST_F(HashRealTimeServiceTest, TestLookup_MultipleRequestsAtOnce) {
   GURL url2 = GURL("https://example.test2");
   base::MockCallback<HPRTLookupResponseCallback> response_callback1;
   StartSuccessRequest(
-      /*url=*/url1,
+      /*url=*/url1, /*cached_hash_prefixes=*/{},
       /*response_callback=*/response_callback1, /*response_full_hashes=*/
       {CreateFullHashProto({V5::ThreatType::SOCIAL_ENGINEERING},
                            UrlToSingleFullHash(url1))},
       /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_PHISHING);
   base::MockCallback<HPRTLookupResponseCallback> response_callback2;
   StartSuccessRequest(
-      /*url=*/url2,
+      /*url=*/url2, /*cached_hash_prefixes=*/{},
       /*response_callback=*/response_callback2, /*response_full_hashes=*/
       {CreateFullHashProto({V5::ThreatType::MALWARE},
                            UrlToSingleFullHash(url2))},
       /*expected_threat_type=*/SBThreatType::SB_THREAT_TYPE_URL_MALWARE);
+
+  histogram_tester_->ExpectTotalCount(
+      /*name=*/"SafeBrowsing.HPRT.Network.Result",
+      /*expected_count=*/0);
   task_environment_.RunUntilIdle();
+  histogram_tester_->ExpectTotalCount(
+      /*name=*/"SafeBrowsing.HPRT.Network.Result",
+      /*expected_count=*/2);
 }
 
 TEST_F(HashRealTimeServiceTest, TestBackoffMode) {
   auto perform_lookup = [this](bool make_fail) {
     GURL url = GURL("https://example.test");
     auto request = std::make_unique<V5::SearchHashesRequest>();
-    for (const auto& hash_prefix : UrlToHashPrefixes(url)) {
+    for (const auto& hash_prefix : UrlToHashPrefixesAsSet(url)) {
       request->add_hash_prefixes(hash_prefix);
     }
     std::string request_url = GetExpectedRequestUrl(request);
@@ -643,6 +1075,11 @@ TEST_F(HashRealTimeServiceTest, TestBackoffMode) {
   };
   auto assert_backoff_mode_status = [this](bool expected_backoff_mode_status) {
     EXPECT_EQ(service_->IsInBackoffMode(), expected_backoff_mode_status);
+    histogram_tester_->ExpectUniqueSample(
+        /*name=*/"SafeBrowsing.HPRT.Backoff.State",
+        /*sample=*/expected_backoff_mode_status,
+        /*expected_bucket_count=*/1);
+    ResetMetrics();
   };
 
   // Failing lookups 1 and 2 don't trigger backoff mode. Lookup 3 does.

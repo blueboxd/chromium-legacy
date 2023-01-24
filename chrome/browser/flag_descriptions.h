@@ -671,9 +671,6 @@ extern const char kEnableFencedFramesDescription[];
 extern const char kEnableGamepadButtonAxisEventsName[];
 extern const char kEnableGamepadButtonAxisEventsDescription[];
 
-extern const char kEnableIphName[];
-extern const char kEnableIphDescription[];
-
 extern const char kEnableIsolatedWebAppsName[];
 extern const char kEnableIsolatedWebAppsDescription[];
 
@@ -2153,6 +2150,9 @@ extern const char kNetworkServiceInProcessDescription[];
 extern const char kNotificationPermissionRationaleName[];
 extern const char kNotificationPermissionRationaleDescription[];
 
+extern const char kNotificationPermissionRationaleBottomSheetName[];
+extern const char kNotificationPermissionRationaleBottomSheetDescription[];
+
 extern const char kOfflinePagesLivePageSharingName[];
 extern const char kOfflinePagesLivePageSharingDescription[];
 
@@ -2937,14 +2937,8 @@ extern const char kEnableCrOSActionRecorderDescription[];
 extern const char kDisableDnsProxyName[];
 extern const char kDisableDnsProxyDescription[];
 
-extern const char kEnableDnsProxyName[];
-extern const char kEnableDnsProxyDescription[];
-
 extern const char kEnableEdidBasedDisplayIdsName[];
 extern const char kEnableEdidBasedDisplayIdsDescription[];
-
-extern const char kDnsProxyEnableDOHName[];
-extern const char kDnsProxyEnableDOHDescription[];
 
 extern const char kEnableExternalKeyboardsInDiagnosticsAppName[];
 extern const char kEnableExternalKeyboardsInDiagnosticsAppDescription[];
@@ -3254,6 +3248,9 @@ extern const char kMicrophoneMuteNotificationsDescription[];
 extern const char kMicrophoneMuteSwitchDeviceName[];
 extern const char kMicrophoneMuteSwitchDeviceDescription[];
 
+extern const char kMultiZoneRgbKeyboardName[];
+extern const char kMultiZoneRgbKeyboardDescription[];
+
 extern const char kMultilingualTypingName[];
 extern const char kMultilingualTypingDescription[];
 
@@ -3265,9 +3262,6 @@ extern const char kNearbySharingSelfShareAutoAcceptDescription[];
 
 extern const char kNearbySharingSelfShareUIName[];
 extern const char kNearbySharingSelfShareUIDescription[];
-
-extern const char kNearbySharingWifiLanName[];
-extern const char kNearbySharingWifiLanDescription[];
 
 extern const char kOobeHidDetectionRevampName[];
 extern const char kOobeHidDetectionRevampDescription[];

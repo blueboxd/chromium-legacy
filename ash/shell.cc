@@ -55,7 +55,6 @@
 #include "ash/display/display_shutdown_observer.h"
 #include "ash/display/event_transformation_handler.h"
 #include "ash/display/mouse_cursor_event_filter.h"
-#include "ash/display/persistent_window_controller.h"
 #include "ash/display/privacy_screen_controller.h"
 #include "ash/display/projecting_observer.h"
 #include "ash/display/refresh_rate_throttle_controller.h"
@@ -181,6 +180,8 @@
 #include "ash/wm/immersive_context_ash.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/multi_display/multi_display_metrics_controller.h"
+#include "ash/wm/multi_display/persistent_window_controller.h"
 #include "ash/wm/multitask_menu_nudge_controller.h"
 #include "ash/wm/native_cursor_manager_ash.h"
 #include "ash/wm/overlay_event_filter.h"
@@ -859,6 +860,9 @@ Shell::~Shell() {
   system_tray_model_.reset();
   system_sounds_delegate_.reset();
 
+  // MultiDisplayMetricsController has a dependency on `mru_window_tracker_`.
+  multi_display_metrics_controller_.reset();
+
   // MruWindowTracker must be destroyed after all windows have been deleted to
   // avoid a possible crash when Shell is destroyed from a non-normal shutdown
   // path. (crbug.com/485438).
@@ -1402,6 +1406,10 @@ void Shell::Init(
       std::make_unique<FullscreenMagnifierController>();
   mru_window_tracker_ = std::make_unique<MruWindowTracker>();
   assistant_controller_ = std::make_unique<AssistantControllerImpl>();
+
+  // MultiDisplayMetricsController has a dependency on `mru_window_tracker_`.
+  multi_display_metrics_controller_ =
+      std::make_unique<MultiDisplayMetricsController>();
 
   // |assistant_controller_| is put before |ambient_controller_| as it will be
   // used by the latter.

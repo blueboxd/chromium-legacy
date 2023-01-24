@@ -365,6 +365,8 @@ public abstract class ChromeFeatureList {
     public static final String METRICS_SETTINGS_ANDROID = "MetricsSettingsAndroid";
     public static final String MODAL_PERMISSION_DIALOG_VIEW = "ModalPermissionDialogView";
     public static final String NOTIFICATION_PERMISSION_VARIANT = "NotificationPermissionVariant";
+    public static final String NOTIFICATION_PERMISSION_BOTTOM_SHEET =
+            "NotificationPermissionBottomSheet";
     public static final String OFFLINE_PAGES_DESCRIPTIVE_FAIL_STATUS =
             "OfflinePagesDescriptiveFailStatus";
     public static final String OFFLINE_PAGES_DESCRIPTIVE_PENDING_STATUS =
@@ -468,10 +470,9 @@ public abstract class ChromeFeatureList {
             "SkipServiceWorkerForInstallPromot";
     public static final String SMART_SUGGESTION_FOR_LARGE_DOWNLOADS =
             "SmartSuggestionForLargeDownloads";
-    public static final String SNOOZABLE_IPH = "IPH_Snooze";
+    public static final String SPLIT_COMPOSITOR_TASK = "SplitCompositorTask";
     public static final String SPLIT_CACHE_BY_NETWORK_ISOLATION_KEY =
             "SplitCacheByNetworkIsolationKey";
-    public static final String SPLIT_COMPOSITOR_TASK = "SplitCompositorTask";
     public static final String START_SURFACE_ANDROID = "StartSurfaceAndroid";
     public static final String START_SURFACE_DISABLED_FEED_IMPROVEMENT =
             "StartSurfaceDisabledFeedImprovement";
@@ -500,7 +501,6 @@ public abstract class ChromeFeatureList {
     public static final String TEST_DEFAULT_DISABLED = "TestDefaultDisabled";
     public static final String TEST_DEFAULT_ENABLED = "TestDefaultEnabled";
     public static final String TOOLBAR_MIC_IPH_ANDROID = "ToolbarMicIphAndroid";
-    public static final String TOOLBAR_PHONE_OPTIMIZATIONS = "ToolbarPhoneOptimizations";
     public static final String TOOLBAR_SCROLL_ABLATION_ANDROID = "ToolbarScrollAblationAndroid";
     public static final String TOOLBAR_USE_HARDWARE_BITMAP_DRAW = "ToolbarUseHardwareBitmapDraw";
     public static final String TRANSLATE_ASSIST_CONTENT = "TranslateAssistContent";

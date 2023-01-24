@@ -58,6 +58,7 @@ namespace {
 
 using ::testing::AllOf;
 using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::IsEmpty;
 using ::testing::IsTrue;
@@ -1054,7 +1055,7 @@ TEST_F(AttributionStorageTest,
                       DefaultAggregatableHistogramContributions()))));
 }
 
-TEST_F(AttributionStorageTest, NeverAttributeImpression_RateLimitsNotChanged) {
+TEST_F(AttributionStorageTest, NeverAttributeImpression_RateLimitsChanged) {
   delegate()->set_rate_limits({
       .time_window = base::TimeDelta::Max(),
       .max_source_registration_reporting_origins =
@@ -1065,31 +1066,20 @@ TEST_F(AttributionStorageTest, NeverAttributeImpression_RateLimitsNotChanged) {
 
   delegate()->set_randomized_response(
       std::vector<AttributionStorageDelegate::FakeReport>{});
-  storage()->StoreSource(SourceBuilder().SetSourceEventId(5).Build());
+  storage()->StoreSource(TestAggregatableSourceProvider()
+                             .GetBuilder()
+                             .SetSourceEventId(5)
+                             .Build());
   delegate()->set_randomized_response(absl::nullopt);
 
-  const auto conversion = DefaultTrigger();
-  EXPECT_EQ(AttributionTrigger::EventLevelResult::kDroppedForNoise,
-            MaybeCreateAndStoreEventLevelReport(conversion));
-
-  SourceBuilder builder;
-  builder.SetSourceEventId(7);
-  builder.SetPriority(100);
-  storage()->StoreSource(builder.Build());
-  EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
-            MaybeCreateAndStoreEventLevelReport(conversion));
-
-  storage()->StoreSource(SourceBuilder().SetSourceEventId(9).Build());
-  EXPECT_EQ(AttributionTrigger::EventLevelResult::kExcessiveAttributions,
-            MaybeCreateAndStoreEventLevelReport(conversion));
-
-  const AttributionReport expected_report =
-      GetExpectedEventLevelReport(builder.BuildStored(), conversion);
-
-  task_environment_.FastForwardBy(kReportDelay);
-
-  EXPECT_THAT(storage()->GetAttributionReports(base::Time::Now()),
-              ElementsAre(expected_report));
+  EXPECT_THAT(
+      storage()->MaybeCreateAndStoreReport(
+          DefaultAggregatableTriggerBuilder().Build()),
+      AllOf(
+          CreateReportEventLevelStatusIs(
+              AttributionTrigger::EventLevelResult::kExcessiveAttributions),
+          CreateReportAggregatableStatusIs(
+              AttributionTrigger::AggregatableResult::kExcessiveAttributions)));
 }
 
 TEST_F(AttributionStorageTest,
@@ -1099,7 +1089,7 @@ TEST_F(AttributionStorageTest,
       .max_source_registration_reporting_origins =
           std::numeric_limits<int64_t>::max(),
       .max_attribution_reporting_origins = std::numeric_limits<int64_t>::max(),
-      .max_attributions = 1,
+      .max_attributions = 2,
   });
 
   SourceBuilder builder = TestAggregatableSourceProvider().GetBuilder();
@@ -1400,6 +1390,13 @@ TEST_F(AttributionStorageTest, MultipleImpressions_CorrectDeactivation) {
 
 TEST_F(AttributionStorageTest, FalselyAttributeImpression_ReportStored) {
   delegate()->set_max_attributions_per_source(1);
+  delegate()->set_rate_limits({
+      .time_window = base::TimeDelta::Max(),
+      .max_source_registration_reporting_origins =
+          std::numeric_limits<int64_t>::max(),
+      .max_attribution_reporting_origins = std::numeric_limits<int64_t>::max(),
+      .max_attributions = 2,
+  });
 
   const base::Time fake_report_time = base::Time::Now() + kReportDelay;
   const base::Time fake_trigger_time = fake_report_time - base::Microseconds(1);
@@ -1442,15 +1439,25 @@ TEST_F(AttributionStorageTest, FalselyAttributeImpression_ReportStored) {
       ElementsAre(SourceActiveStateIs(
           StoredSource::ActiveState::kReachedEventLevelAttributionLimit)));
 
+  AttributionTrigger trigger = DefaultAggregatableTriggerBuilder().Build();
+
   // The falsely attributed impression should only be eligible for further
   // aggregatable reports, but not event-level reports.
   EXPECT_THAT(
-      storage()->MaybeCreateAndStoreReport(
-          DefaultAggregatableTriggerBuilder().Build()),
+      storage()->MaybeCreateAndStoreReport(trigger),
       AllOf(CreateReportEventLevelStatusIs(
                 AttributionTrigger::EventLevelResult::kFalselyAttributedSource),
             CreateReportAggregatableStatusIs(
                 AttributionTrigger::AggregatableResult::kSuccess)));
+
+  // Rate limit changed.
+  EXPECT_THAT(
+      storage()->MaybeCreateAndStoreReport(trigger),
+      AllOf(
+          CreateReportEventLevelStatusIs(
+              AttributionTrigger::EventLevelResult::kFalselyAttributedSource),
+          CreateReportAggregatableStatusIs(
+              AttributionTrigger::AggregatableResult::kExcessiveAttributions)));
 
   // The source's aggregatable budget consumed changes between the two
   // GetAttributionReports() calls due to the aggregatable trigger, which
@@ -2699,6 +2706,7 @@ TEST_F(AttributionStorageTest, NoMatchingTriggerData_ReturnsError) {
               /*debug_reporting=*/false,
               ::aggregation_service::mojom::AggregationCoordinator::kDefault),
           /*destination_origin=*/origin,
+          /*attestation=*/absl::nullopt,
           /*is_within_fenced_frame=*/false)));
 
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()), IsEmpty());
@@ -2792,6 +2800,7 @@ TEST_F(AttributionStorageTest, MatchingTriggerData_UsesCorrectData) {
               /*debug_reporting=*/false,
               ::aggregation_service::mojom::AggregationCoordinator::kDefault),
           /*destination_origin=*/origin,
+          /*attestation=*/absl::nullopt,
           /*is_within_fenced_frame=*/false)));
 
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()),
@@ -2841,7 +2850,8 @@ TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
           aggregatable_values,
           /*debug_reporting=*/false,
           ::aggregation_service::mojom::AggregationCoordinator::kDefault),
-      /*destination_origin=*/origin, /*is_within_fenced_frame=*/false);
+      /*destination_origin=*/origin, /*attestation=*/absl::nullopt,
+      /*is_within_fenced_frame=*/false);
 
   AttributionTrigger trigger2(
       /*reporting_origin=*/origin,
@@ -2859,7 +2869,8 @@ TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
           aggregatable_values,
           /*debug_reporting=*/false,
           ::aggregation_service::mojom::AggregationCoordinator::kDefault),
-      /*destination_origin=*/origin, /*is_within_fenced_frame=*/false);
+      /*destination_origin=*/origin, /*attestation=*/absl::nullopt,
+      /*is_within_fenced_frame=*/false);
 
   AttributionTrigger trigger3(
       /*reporting_origin=*/origin,
@@ -2876,6 +2887,7 @@ TEST_F(AttributionStorageTest, TopLevelTriggerFiltering) {
           /*debug_reporting=*/false,
           ::aggregation_service::mojom::AggregationCoordinator::kDefault),
       /*destination_origin=*/origin,
+      /*attestation=*/absl::nullopt,
       /*is_within_fenced_frame=*/false);
 
   EXPECT_THAT(storage()->MaybeCreateAndStoreReport(trigger1),
@@ -2913,6 +2925,25 @@ TEST_F(AttributionStorageTest,
             NewEventLevelReportIs(absl::nullopt),
             NewAggregatableReportIs(absl::nullopt)));
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Now()), IsEmpty());
+}
+
+TEST_F(AttributionStorageTest,
+       AggregatableAttributionNoAggregationKeys_NoContributions) {
+  storage()->StoreSource(SourceBuilder().Build());
+
+  AttributionTrigger trigger =
+      DefaultAggregatableTriggerBuilder(/*histogram_values=*/{5})
+          .SetTriggerData(5)
+          .Build();
+
+  EXPECT_THAT(
+      storage()->MaybeCreateAndStoreReport(trigger),
+      AllOf(CreateReportEventLevelStatusIs(
+                AttributionTrigger::EventLevelResult::kSuccess),
+            CreateReportAggregatableStatusIs(
+                AttributionTrigger::AggregatableResult::kNoHistograms),
+            NewEventLevelReportIs(Optional(EventLevelDataIs(TriggerDataIs(5)))),
+            NewAggregatableReportIs(Eq(absl::nullopt))));
 }
 
 TEST_F(AttributionStorageTest, AggregatableAttribution_ReportsScheduled) {
@@ -3097,6 +3128,32 @@ TEST_F(AttributionStorageTest, AggregationCoordinator_RoundTrip) {
                          /*delete_end=*/base::Time::Max(),
                          /*filter=*/base::NullCallback());
   }
+}
+
+TEST_F(AttributionStorageTest, MaxAttributions_BoundedBySourceTimeWindow) {
+  constexpr base::TimeDelta kTimeWindow = base::Days(1);
+  delegate()->set_rate_limits({
+      .time_window = kTimeWindow,
+      .max_source_registration_reporting_origins =
+          std::numeric_limits<int64_t>::max(),
+      .max_attribution_reporting_origins = std::numeric_limits<int64_t>::max(),
+      .max_attributions = 1,
+  });
+
+  storage()->StoreSource(SourceBuilder().SetExpiry(base::Days(7)).Build());
+
+  AttributionTrigger trigger = DefaultTrigger();
+
+  constexpr base::TimeDelta kTriggerDelay = base::Minutes(1);
+  task_environment_.FastForwardBy(kTriggerDelay);
+  EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
+            MaybeCreateAndStoreEventLevelReport(trigger));
+  EXPECT_EQ(AttributionTrigger::EventLevelResult::kExcessiveAttributions,
+            MaybeCreateAndStoreEventLevelReport(trigger));
+
+  task_environment_.FastForwardBy(kTimeWindow - kTriggerDelay);
+  EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
+            MaybeCreateAndStoreEventLevelReport(trigger));
 }
 
 }  // namespace content

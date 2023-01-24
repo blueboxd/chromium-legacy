@@ -21,6 +21,11 @@ const char kAppStoreRatingDescription[] =
     "When enabled, App Store Rating promo will be presented to eligible "
     "users.";
 
+const char kAutofillAccountProfilesUnionViewName[] =
+    "Enable compatibility with GAS";
+const char kAutofillAccountProfilesUnionViewDescription[] =
+    "When enabled, the GAS profiles would start up showing in settings";
+
 const char kAutofillBrandingIOSName[] = "Autofill Branding on iOS";
 const char kAutofillBrandingIOSDescription[] =
     "Adds the Chrome logo in the form input suggestions bar. Full color by "
@@ -608,6 +613,18 @@ const char kOmniboxOnFocusSuggestionsDescription[] =
     "Configures Omnibox on-focus suggestions - suggestions displayed on-focus "
     "before the user has typed any input. This provides overrides for the "
     "default suggestion locations.";
+
+const char kOmniboxReportAssistedQueryStatsName[] =
+    "Omnibox Assisted Query Stats param";
+const char kOmniboxReportAssistedQueryStatsDescription[] =
+    "Enables reporting the Assisted Query Stats param in search destination "
+    "URLs originated from the Omnibox.";
+
+const char kOmniboxReportSearchboxStatsName[] =
+    "Omnibox Searchbox Stats proto param";
+const char kOmniboxReportSearchboxStatsDescription[] =
+    "Enables reporting the serialized Searchbox Stats proto param in search "
+    "destination URLs originated from the Omnibox.";
 
 const char kOmniboxUIMaxAutocompleteMatchesName[] =
     "Omnibox UI Max Autocomplete Matches";

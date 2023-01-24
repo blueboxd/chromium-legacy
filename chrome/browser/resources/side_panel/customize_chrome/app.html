@@ -35,7 +35,8 @@
   customize-chrome-shortcuts,
   customize-chrome-cards,
   customize-chrome-categories,
-  customize-chrome-themes {
+  customize-chrome-themes,
+  customize-chrome-chrome-colors {
     display: block;
     max-width: 320px;
     width: 100%;
@@ -58,10 +59,14 @@
   </div>
   <customize-chrome-categories on-back-click="onBackClick_"
       on-collection-select="onCollectionSelect_" page-name="categories"
-      id="categoriesPage" on-local-image-upload="onLocalImageUpload_">
+      id="categoriesPage" on-local-image-upload="onLocalImageUpload_"
+      on-chrome-colors-select="onChromeColorsSelect_">
   </customize-chrome-categories>
   <customize-chrome-themes on-back-click="onBackClick_"
       page-name="themes" id="themesPage" 
       selected-collection="[[selectedCollection_]]">
   </customize-chrome-themes>
+  <customize-chrome-chrome-colors on-back-click="onBackClick_"
+      page-name="chrome-colors" id="chromeColorsPage">
+  </customize-chrome-chrome-colors>
 </iron-pages>

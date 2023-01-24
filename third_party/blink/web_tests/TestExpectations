@@ -2266,8 +2266,6 @@ crbug.com/538717 http/tests/permissions/chromium/test-request-multiple-window.ht
 crbug.com/538717 http/tests/permissions/chromium/test-request-multiple-worker.html [ Failure Pass Timeout ]
 crbug.com/538717 http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
 
-crbug.com/548765 http/tests/devtools/console-fetch-logging.js [ Failure Pass ]
-
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Failure Pass ]
 
 crbug.com/663847 fast/events/context-no-deselect.html [ Failure Pass ]
@@ -3033,8 +3031,6 @@ crbug.com/626703 [ Mac11-arm64 ] wpt_internal/webxr/ar/iframe-oopif.sub.https.ht
 crbug.com/626703 [ Mac12-arm64 ] wpt_internal/webxr/ar/iframe-oopif.sub.https.html [ Failure Timeout ]
 crbug.com/626703 [ Mac12 ] external/wpt/html/cross-origin-opener-policy/resource-popup.https.html [ Timeout ]
 crbug.com/626703 external/wpt/webcodecs/videoFrame-serialization.crossAgentCluster.html [ Timeout ]
-crbug.com/626703 [ Debug Mac12 ] external/wpt/url/a-element.html?exclude=(file|javascript|mailto) [ Crash Failure ]
-crbug.com/1404285 [ Mac ] virtual/compute-pressure/external/wpt/compute-pressure/compute_pressure_disconnect_immediately.tentative.https.window.html [ Crash Failure ]
 crbug.com/626703 [ Win11 ] wpt_internal/geolocation-api/watchPosition-page-visibility.https.html [ Timeout ]
 crbug.com/626703 [ Win10.20h2 ] external/wpt/web-animations/idlharness.window.html [ Crash Failure ]
 crbug.com/626703 [ Mac11 ] external/wpt/performance-timeline/tentative/include-frames-from-child-cross-origin-grandchild.sub.html [ Timeout ]
@@ -4408,7 +4404,6 @@ crbug.com/1008483 virtual/backface-visibility-interop/external/wpt/css/css-trans
 
 # Swiftshader issue.
 crbug.com/1048149 external/wpt/html/browsers/the-window-object/open-close/open-features-non-integer-innerwidth.html [ Crash Timeout ]
-crbug.com/1048149 external/wpt/html/browsers/the-window-object/open-close/open-features-non-integer-screeny.html [ Crash Timeout ]
 crbug.com/1048149 external/wpt/html/browsers/the-window-object/open-close/open-features-non-integer-width.html [ Crash Timeout ]
 
 # SwANGLE issues
@@ -5329,7 +5324,7 @@ crbug.com/1249176 [ Mac11-arm64 ] external/wpt/html/canvas/element/manual/drawin
 crbug.com/1249176 [ Mac12-arm64 ] external/wpt/html/canvas/element/manual/drawing-images-to-the-canvas/image-orientation/drawImage-from-blob.tentative.html [ Failure ]
 crbug.com/1249176 [ Mac11-arm64 ] external/wpt/largest-contentful-paint/image-src-change.html [ Failure ]
 crbug.com/1249176 [ Mac11-arm64 ] http/tests/images/document-policy-oversized-images-forced-layout.php [ Failure ]
-crbug.com/1249176 [ Mac11-arm64 ] transforms/transformed-document-element.html [ Failure ]
+crbug.com/1249176 [ Mac ] transforms/transformed-document-element.html [ Failure ]
 crbug.com/1249176 [ Mac11-arm64 ] virtual/threaded/http/tests/devtools/tracing/timeline-paint/paint-profiler-update.js [ Failure ]
 crbug.com/1249176 [ Mac12-arm64 ] virtual/threaded/http/tests/devtools/tracing/timeline-paint/paint-profiler-update.js [ Failure Pass ]
 crbug.com/1249176 [ Mac11-arm64 ] webaudio/codec-tests/webm/webm-decode.html [ Failure ]
@@ -6263,9 +6258,6 @@ crbug.com/1360691 [ Debug Linux ] fast/canvas/disconnected-canvas-lost-gpu-conte
 # Sheriff 2022-09-09
 crbug.com/1361956 [ Linux ] fast/dom/Element/scrollTop-scrollLeft-body.html [ Pass Timeout ]
 
-# Investigate timeouts on bots
-crbug.com/1366717 http/tests/inspector-protocol/storage/indexed-db-storage-key-track-untrack.js [ Failure Pass ]
-
 crbug.com/1367113 fast/dom/shadow/event-path-load.html [ Crash Failure Pass Timeout ]
 crbug.com/1367113 http/tests/security/cors-check-for-cached-image.html [ Crash Failure Pass Timeout ]
 crbug.com/1367113 paint/images/animated-gif-last-frame-crash.html [ Crash Failure Pass Timeout ]
@@ -6940,7 +6932,16 @@ http/tests/security/cross-frame-access-port-explicit-domain.html [ Failure Pass 
 http/tests/security/cross-frame-access-protocol-explicit-domain.html [ Failure Pass ]
 http/tests/security/canvas-remote-read-remote-image-document-domain.html [ Failure Pass ]
 
+# Expect failure not to break when logging
+crbug.com/1366717 http/tests/inspector-protocol/storage/indexed-db-storage-key-track-untrack.js [ Failure Pass ]
+
 # Sheriff 2023-01-20
-crbug.com/1408919 [ Mac ] virtual/text-antialias/capitalize-boundaries.html [ Failure Pass ]
 crbug.com/1408967 [ Fuchsia ] fast/block/float/float-in-float-painting.html [ Failure Pass ]
 crbug.com/1408967 [ Fuchsia ] fast/layers/opacity-transforms.html [ Failure Pass ]
+
+# Sheriff 2023-01-23
+crbug.com/1409463 external/wpt/html/browsers/the-window-object/open-close/open-features-non-integer-screeny.html [ Failure Pass Crash Timeout ]
+
+# Sheriff 2023-01-24
+crbug.com/1409804 [ Mac ] fast/backgrounds/repeat/negative-offset-repeat-transformed.html [ Failure ]
+crbug.com/1409804 [ Mac ] fast/borders/border-image-rotate-transform.html [ Failure ]

@@ -438,6 +438,11 @@
     "expiry_milestone": 113
   },
   {
+      "name": "autofill-account-profiles-union-view",
+      "owners": [ "vidhanj", "koerber" ],
+      "expiry_milestone": 120
+  },
+  {
       "name": "autofill-address-verification-in-save-prompt",
       "owners": [ "mamir", "koerber" ],
       "expiry_milestone": 106
@@ -653,7 +658,7 @@
   {
     "name": "back-forward-cache",
     "owners": [ "bfcache-dev@chromium.org" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 120
   },
   {
     "name": "back-gesture-refactor-activity-android",
@@ -703,7 +708,7 @@
   {
     "name": "block-insecure-private-network-requests",
     "owners": [ "titouan", "chrome-security-owp-team@google.com" ],
-    "expiry_milestone": 111
+    "expiry_milestone": 114
   },
   {
     "name": "bluetooth-coredump",
@@ -3785,7 +3790,7 @@
   {
     "name": "files-inline-sync-status",
     "owners": [ "simmonsjosh@google.com", "benhartney@google.com", "msalomao" ],
-    "expiry_milestone": 111
+    "expiry_milestone": 115
   },
   {
     "name": "files-search-v2",
@@ -4776,6 +4781,11 @@
     "expiry_milestone": 84
   },
   {
+    "name": "multi-zone-rgb-keyboard",
+    "owners": [ "jasontt", "assistive-eng@google.com"],
+    "expiry_milestone": 120
+  },
+  {
     "name": "multiline-fade-truncating-label",
     "owners": [ "christianxu", "stkhapugin", "bling-flags@google.com"],
     "expiry_milestone": 120
@@ -4804,11 +4814,6 @@
     "name": "nearby-sharing-self-share-ui",
     "owners": [ "hansenmichael@google.com", "chromeos-cross-device-eng@google.com" ],
     "expiry_milestone": 115
-  },
-  {
-    "name": "nearby-sharing-wifilan",
-    "owners": [ "nohle@google.com", "chromeos-cross-device-eng@google.com" ],
-    "expiry_milestone": 105
   },
   {
     "name": "network-service-in-process",
@@ -4860,9 +4865,14 @@
     "expiry_milestone": 115
   },
   {
+    "name": "notification-permission-rationale-bottom-sheet",
+    "owners": ["shaktisahu", "salg"],
+    "expiry_milestone": 114
+  },
+  {
     "name": "notification-permission-rationale-dialog",
     "owners": ["shaktisahu", "salg"],
-    "expiry_milestone": 110
+    "expiry_milestone": 114
   },
   {
     "name": "notification-scheduler",

@@ -109,6 +109,8 @@ class ReadAnythingAppController
   std::string GetTextContent(ui::AXNodeID ax_node_id) const;
   std::string GetTextDirection(ui::AXNodeID ax_node_id) const;
   std::string GetUrl(ui::AXNodeID ax_node_id) const;
+  bool ShouldBold(ui::AXNodeID ax_node_id) const;
+  bool IsOverline(ui::AXNodeID ax_node_id) const;
   void OnConnected();
   void OnLinkClicked(ui::AXNodeID ax_node_id) const;
 
@@ -119,7 +121,8 @@ class ReadAnythingAppController
                           const ui::AXTreeID& tree_id);
 
   // Called when distillation has completed.
-  void OnAXTreeDistilled(const std::vector<ui::AXNodeID>& content_node_ids);
+  void OnAXTreeDistilled(const ui::AXTreeID& tree_id,
+                         const std::vector<ui::AXNodeID>& content_node_ids);
 
   // Helper functions for the rendering algorithm. Post-process the AXTree and
   // cache values before sending an `updateContent` notification to the Read

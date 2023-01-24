@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/modules/mediastream/apply_constraints_request.h"
 #include "third_party/blink/renderer/modules/mediastream/browser_capture_media_stream_track.h"
 #include "third_party/blink/renderer/modules/mediastream/media_constraints_impl.h"
-#include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_utils.h"
@@ -366,6 +365,13 @@ void TransferredMediaStreamTrack::BeingTransferred(
   }
   // TODO(https://crbug.com/1288839): Save and forward to track_ once it's
   // initialized.
+}
+
+bool TransferredMediaStreamTrack::TransferAllowed(String& message) const {
+  if (track_) {
+    return track_->TransferAllowed(message);
+  }
+  return clone_list_.empty();
 }
 
 void TransferredMediaStreamTrack::AddObserver(Observer* observer) {

@@ -22,6 +22,10 @@ extern const char kAdaptiveSuggestionsCountDescription[];
 extern const char kAppStoreRatingName[];
 extern const char kAppStoreRatingDescription[];
 
+// Title and description for the flag to enable compatibility with GAS profiles.
+extern const char kAutofillAccountProfilesUnionViewName[];
+extern const char kAutofillAccountProfilesUnionViewDescription[];
+
 // Title and description for the flag to enable Chrome branding on form input
 // suggestions.
 extern const char kAutofillBrandingIOSName[];
@@ -547,6 +551,14 @@ extern const char kOmniboxOnDeviceTailSuggestionsDescription[];
 // Title and description for the flag to control Omnibox on-focus suggestions.
 extern const char kOmniboxOnFocusSuggestionsName[];
 extern const char kOmniboxOnFocusSuggestionsDescription[];
+
+// Title and description for assisted query stats param reporting.
+extern const char kOmniboxReportAssistedQueryStatsName[];
+extern const char kOmniboxReportAssistedQueryStatsDescription[];
+
+// Title and description for searchbox stats flag.
+extern const char kOmniboxReportSearchboxStatsName[];
+extern const char kOmniboxReportSearchboxStatsDescription[];
 
 // Title and description for the flag to change the max number of autocomplete
 // matches in the omnibox popup.

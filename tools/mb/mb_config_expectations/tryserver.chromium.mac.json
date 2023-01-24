@@ -201,8 +201,8 @@
       "target_cpu": "x64",
       "target_environment": "catalyst",
       "target_os": "ios",
-      "use_goma": true,
-      "use_libfuzzer": true
+      "use_libfuzzer": true,
+      "use_remoteexec": true
     }
   },
   "ios-device": {
@@ -216,7 +216,7 @@
       "target_cpu": "arm64",
       "target_environment": "device",
       "target_os": "ios",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "ios-fieldtrial-rel": {
@@ -262,9 +262,9 @@
       "target_os": "ios",
       "use_allocator_shim": false,
       "use_crash_key_stubs": true,
-      "use_goma": true,
       "use_partition_alloc": false,
-      "use_platform_icu_alternatives": true
+      "use_platform_icu_alternatives": true,
+      "use_remoteexec": true
     }
   },
   "ios-simulator": {
@@ -278,7 +278,7 @@
       "target_environment": "simulator",
       "target_os": "ios",
       "use_clang_coverage": true,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "ios-simulator-code-coverage": {
@@ -325,9 +325,9 @@
       "target_os": "ios",
       "use_allocator_shim": false,
       "use_crash_key_stubs": true,
-      "use_goma": true,
       "use_partition_alloc": false,
-      "use_platform_icu_alternatives": true
+      "use_platform_icu_alternatives": true,
+      "use_remoteexec": true
     }
   },
   "ios-simulator-full-configs": {
@@ -341,7 +341,7 @@
       "target_environment": "simulator",
       "target_os": "ios",
       "use_clang_coverage": true,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "ios-simulator-inverse-fieldtrials-fyi": {
@@ -378,7 +378,7 @@
       "target_cpu": "x64",
       "target_environment": "simulator",
       "target_os": "ios",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "ios-simulator-rts": {
@@ -416,7 +416,7 @@
       "target_cpu": "x64",
       "target_environment": "simulator",
       "target_os": "ios",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "ios16-beta-simulator": {
@@ -428,7 +428,7 @@
       "target_cpu": "x64",
       "target_environment": "simulator",
       "target_os": "ios",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "ios16-sdk-simulator": {
@@ -535,7 +535,7 @@
       "proprietary_codecs": true,
       "symbol_level": 0,
       "use_clang_coverage": true,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "mac-rel-inverse-fyi": {
@@ -548,7 +548,16 @@
       "proprietary_codecs": true,
       "symbol_level": 0,
       "use_clang_coverage": true,
-      "use_goma": true
+      "use_remoteexec": true
+    }
+  },
+  "mac10.15-wpt-content-shell-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 1,
+      "use_remoteexec": true
     }
   },
   "mac11-arm64-rel": {
@@ -657,7 +666,7 @@
       "is_debug": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "mac_chromium_compile_rel_ng": {

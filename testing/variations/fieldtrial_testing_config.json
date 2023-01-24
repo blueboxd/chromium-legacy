@@ -374,7 +374,6 @@
                         "CacheSiteIsolationMemoryThreshold",
                         "MojoAvoidRandomPipeId",
                         "NewSigninRequestHeaderCheckOrder",
-                        "ToolbarPhoneOptimizations",
                         "UseGetrandomForRandBytes"
                     ]
                 }
@@ -3319,6 +3318,21 @@
             ]
         }
     ],
+    "CrOSEventSequenceLogging": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableEventSequenceLogging"
+                    ]
+                }
+            ]
+        }
+    ],
     "CrOSFederatedServiceV0Task": [
         {
             "platforms": [
@@ -3647,6 +3661,30 @@
                     "name": "Enabled",
                     "enable_features": [
                         "DeferredShaping"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DeferredSyncStartupCustomDelay": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled0Seconds",
+                    "params": {
+                        "DeferredSyncStartupCustomDelayInSeconds": "0"
+                    },
+                    "enable_features": [
+                        "DeferredSyncStartupCustomDelay"
                     ]
                 }
             ]
@@ -4122,21 +4160,6 @@
                     "name": "Enabled",
                     "disable_features": [
                         "UseGles2ForOopR"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DisableIPH": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Disabled",
-                    "disable_features": [
-                        "EnableIPH"
                     ]
                 }
             ]
@@ -6167,8 +6190,7 @@
                     "name": "EnableMetaExperiment",
                     "params": {
                         "AllowedRandomTypes": "0",
-                        "EnableActiveSampling": "true",
-                        "Gen": "9",
+                        "Gen": "10",
                         "Rho": "1"
                     },
                     "enable_features": [
@@ -6753,16 +6775,16 @@
             ],
             "experiments": [
                 {
-                    "name": "EnabledWithNewFlowAndIPH_V2",
+                    "name": "EnabledWithDecisionInBrowser_V2",
                     "enable_features": [
                         "AppIconInIntentChip",
-                        "IPH_IntentChip",
-                        "IntentChipSkipsPicker",
-                        "LinkCapturingInfoBar",
                         "LinkCapturingUiUpdate"
                     ],
                     "disable_features": [
-                        "LinkCapturingAutoDisplayIntentPicker"
+                        "IPH_IntentChip",
+                        "IntentChipSkipsPicker",
+                        "LinkCapturingAutoDisplayIntentPicker",
+                        "LinkCapturingInfoBar"
                     ]
                 }
             ]
@@ -7661,6 +7683,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
+                        "EnableSuggestionsScrollingOnIPad",
                         "OmniboxFocusTriggersContextualWebZeroSuggest",
                         "OmniboxFocusTriggersSRPZeroSuggest",
                         "OmniboxMostVisitedTiles"
@@ -8891,6 +8914,7 @@
         {
             "platforms": [
                 "android",
+                "android_webview",
                 "chromeos",
                 "fuchsia",
                 "linux",
@@ -9188,6 +9212,8 @@
                         "FencedFrames",
                         "FencedFramesAPIChanges",
                         "InterestGroupStorage",
+                        "KAnonymityService",
+                        "KAnonymityServiceOHTTPRequests",
                         "NoncedPartitionedCookies",
                         "PrivacySandboxAdsAPIs",
                         "PrivateAggregationApi",
@@ -10869,16 +10895,10 @@
                         "IPH_DownloadHome_event_trigger": "name:download_home_iph_trigger;comparator:==0;window:90;storage:360",
                         "IPH_DownloadHome_event_used": "name:download_home_opened;comparator:==0;window:90;storage:360",
                         "IPH_DownloadHome_session_rate": "==0",
-                        "IPH_TabSwitcherButton_availability": ">=14",
-                        "IPH_TabSwitcherButton_event_trigger": "name:tab_switcher_iph_triggered;comparator:==0;window:90;storage:90",
-                        "IPH_TabSwitcherButton_event_used": "name:tab_switcher_button_clicked;comparator:==0;window:14;storage:90",
-                        "IPH_TabSwitcherButton_session_rate": "<1",
                         "snooze_params": "max_limit:3,snooze_interval:7"
                     },
                     "enable_features": [
-                        "IPH_DownloadHome",
-                        "IPH_Snooze",
-                        "IPH_TabSwitcherButton"
+                        "IPH_DownloadHome"
                     ]
                 }
             ]
@@ -11814,6 +11834,36 @@
                     "name": "Enabled",
                     "enable_features": [
                         "UnifiedSidePanel"
+                    ]
+                }
+            ]
+        }
+    ],
+    "UseAVCaptureDeviceDiscoverySession": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UseAVCaptureDeviceDiscoverySession"
+                    ]
+                }
+            ]
+        }
+    ],
+    "UseAVCaptureDeviceDiscoverySessionDeviceMonitor": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UseAVCaptureDeviceDiscoverySessionDeviceMonitor"
                     ]
                 }
             ]
@@ -13552,6 +13602,24 @@
                     "name": "WebViewUseMetricsUploadService",
                     "enable_features": [
                         "WebViewUseMetricsUploadService"
+                    ]
+                }
+            ]
+        }
+    ],
+    "WhatsNewIOS": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_Module_Based_UI",
+                    "params": {
+                        "whats_new_module_based_layout": "true"
+                    },
+                    "enable_features": [
+                        "WhatsNewIOS"
                     ]
                 }
             ]

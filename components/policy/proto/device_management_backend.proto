@@ -4009,6 +4009,14 @@ message CertProvUploadProofOfPossessionRequest {
   optional bytes signature = 1;
 }
 
+// The client should try again later.
+message CertProvTryLaterInstruction {
+  // The delay after which the client should retry on its own.
+  // It should also be observing the invalidation for the certificate
+  // provisioning process.
+  optional int64 delay_ms = 1;
+}
+
 // The client should perform an authorization step.
 message CertProvAuthorizeInstruction {
   // The verified access challenge.
@@ -4018,15 +4026,14 @@ message CertProvAuthorizeInstruction {
 // The client should provide a proof-of-possession signature generated using
 // the private key.
 message CertProvProofOfPossessionInstruction {
-  // Algorithm to sign data with for CSR creation.
-  optional SigningAlgorithm signing_algorithm = 1;
+  reserved 1;
 
   // Data to sign for CSR creation.
-  // For SigningAlgorithm RSA_PKCS1_V1_5, the client will perform PKCS#1 v1.5
-  // padding on `data_to_sign`. `data_to_sign` is expected to already contain a
-  // PKCS#1 DigestInfo prefix - the client will not attempt to add such a
-  // prefix. Also `data_to_sign` must be shorter than (key_size-11) bytes. If no
-  // other key size was specified in the
+  // The signing algorithm is currently RSA_PKCS1_V1_5. The client will perform
+  // PKCS#1 v1.5 padding on `data_to_sign`. `data_to_sign` is expected to
+  // already contain a PKCS#1 DigestInfo prefix - the client will not attempt to
+  // add such a prefix. Also `data_to_sign` must be shorter than (key_size-11)
+  // bytes. If no other key size was specified in the
   // RequiredClientCertificateFor{User,Device} policy, 2048 bits is assumed.
   optional bytes data_to_sign = 2;
 }
@@ -4048,8 +4055,12 @@ message CertProvNextActionResponse {
 
   // One of the instructions must be filled.
   // If no instruction is available yet, the server should fill
-  // `ClientCertificateProvisioningResponse.try_again_later instead`.
+  // `try_again_later_ms`.
   oneof instruction {
+    // If filled, the request can currently not be processed and the client
+    // is supposed to continue later using StartOrContinueRequest.
+    CertProvTryLaterInstruction try_later_instruction = 5;
+
     CertProvAuthorizeInstruction authorize_instruction = 2;
     CertProvProofOfPossessionInstruction proof_of_possession_instruction = 3;
     CertProvImportCertificateInstruction import_certificate_instruction = 4;
@@ -4131,6 +4142,8 @@ message ClientCertificateProvisioningResponse {
   // is supposed to try again later using the same data.
   // The value is the number of milliseconds when the client should
   // automatically retry.
+  // Used in "Static" flow only. The "Dynamic" flow uses the
+  // `try_again_later_ms` field in `CertProvNextActionResponse`.
   optional int64 try_again_later = 1;
 
   oneof response {

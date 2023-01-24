@@ -85,7 +85,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/storage/blink_storage_key.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
-#include "third_party/blink/renderer/platform/wtf/gc_plugin_ignore.h"
+#include "third_party/blink/renderer/platform/wtf/gc_plugin.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 
@@ -661,6 +661,13 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   AtomicString origin_calculation_debug_info_;
 
   blink::BlinkStorageKey storage_key_;
+  // The storage key here is the one the browser process believes the renderer
+  // should use when binding session storage. This may differ from
+  // `storage_key_` as a deprecation trial can prevent the partitioning of
+  // session storage.
+  //
+  // TODO(crbug.com/1407150): Remove this when deprecation trial is complete.
+  blink::BlinkStorageKey session_storage_key_;
   WebNavigationType navigation_type_;
 
   DocumentLoadTiming document_load_timing_;

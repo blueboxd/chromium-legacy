@@ -61,7 +61,7 @@ absl::optional<StorageKey> StorageKey::Deserialize(base::StringPiece in) {
 
   url::Origin key_origin;
   net::SchemefulSite key_top_level_site;
-  std::unique_ptr<base::UnguessableToken> nonce;
+  absl::optional<base::UnguessableToken> nonce;
   blink::mojom::AncestorChainBit ancestor_chain_bit;
 
   if (pos_first_caret == std::string::npos) {
@@ -166,6 +166,10 @@ absl::optional<StorageKey> StorageKey::Deserialize(base::StringPiece in) {
       // separator.
       key_origin = url::Origin::Create(GURL(in.substr(0, pos_first_caret)));
 
+      if (key_origin.opaque()) {
+        return absl::nullopt;
+      }
+
       // The first high 64 bits of the nonce are next, between the two
       // separators.
       int length_of_high = pos_second_caret - (pos_first_caret + 2);
@@ -185,15 +189,16 @@ absl::optional<StorageKey> StorageKey::Deserialize(base::StringPiece in) {
       if (!base::StringToUint64(low_digits, &nonce_low))
         return absl::nullopt;
 
-      nonce = std::make_unique<base::UnguessableToken>(
-          base::UnguessableToken::Deserialize(nonce_high, nonce_low));
+      nonce = base::UnguessableToken::Deserialize2(nonce_high, nonce_low);
 
-      if (key_origin.opaque() || !nonce || nonce->is_empty())
+      if (!nonce.has_value()) {
         return absl::nullopt;
+      }
 
       // This constructor makes a copy of the nonce, so getting the raw pointer
       // is safe.
-      return StorageKey(key_origin, net::SchemefulSite(key_origin), nonce.get(),
+      return StorageKey(key_origin, net::SchemefulSite(key_origin),
+                        &nonce.value(),
                         blink::mojom::AncestorChainBit::kSameSite);
     }
     default: {
@@ -269,6 +274,31 @@ StorageKey StorageKey::WithOrigin(const url::Origin& origin) const {
   return CreateWithOptionalNonce(origin, top_level_site_,
                                  base::OptionalToPtr(nonce_),
                                  ancestor_chain_bit_);
+}
+
+StorageKey::StorageKey(const url::Origin& origin,
+                       const net::SchemefulSite& top_level_site,
+                       const base::UnguessableToken* nonce,
+                       blink::mojom::AncestorChainBit ancestor_chain_bit)
+    : origin_(origin),
+      top_level_site_(IsThirdPartyStoragePartitioningEnabled()
+                          ? top_level_site
+                          : net::SchemefulSite(origin)),
+      top_level_site_if_third_party_enabled_(top_level_site),
+      nonce_(base::OptionalFromPtr(nonce)),
+      ancestor_chain_bit_(IsThirdPartyStoragePartitioningEnabled()
+                              ? ancestor_chain_bit
+                              : blink::mojom::AncestorChainBit::kSameSite),
+      ancestor_chain_bit_if_third_party_enabled_(ancestor_chain_bit) {
+  // If we're setting a `nonce`, the `top_level_site` must be the same as
+  // the `origin` and the `ancestor_chain_bit` must be kSameSite. We don't
+  // serialize those pieces of information so have to check to prevent
+  // mistaken reliance on what is supposed to be an invariant.
+  if (nonce) {
+    DCHECK(!nonce->is_empty());
+    DCHECK_EQ(top_level_site, net::SchemefulSite(origin));
+    DCHECK_EQ(ancestor_chain_bit, blink::mojom::AncestorChainBit::kSameSite);
+  }
 }
 
 std::string StorageKey::Serialize() const {

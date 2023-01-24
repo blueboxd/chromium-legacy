@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/storage/blink_storage_key.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "base/test/gtest_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
 #include "net/base/features.h"
@@ -173,7 +174,10 @@ TEST(BlinkStorageKey, CreateFromStringForTesting) {
 
 // Test that BlinkStorageKey's top_level_site getter returns origin's site when
 // storage partitioning is disabled.
-TEST(BlinkStorageKey, TopLevelSiteGetter) {
+TEST(BlinkStorageKey, TopLevelSiteGetterWithPartitioningDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      net::features::kThirdPartyStoragePartitioning);
   url::Origin origin1 = url::Origin::Create(GURL("https://example.com"));
   url::Origin origin2 = url::Origin::Create(GURL("https://test.example"));
 
@@ -234,6 +238,45 @@ TEST(BlinkStorageKeyTest, CopyWithForceEnabledThirdPartyStoragePartitioning) {
               BlinkSchemefulSite(origin2));
     EXPECT_EQ(storage_key_with_3psp.GetAncestorChainBit(),
               mojom::blink::AncestorChainBit::kCrossSite);
+  }
+}
+
+TEST(BlinkStorageKeyTest, NonceRequiresMatchingOriginSiteAndSameSite) {
+  scoped_refptr<const SecurityOrigin> origin =
+      SecurityOrigin::CreateFromString("https://foo.com");
+  const BlinkSchemefulSite site(origin);
+  const BlinkSchemefulSite opaque_site;
+  const BlinkSchemefulSite other_site(
+      SecurityOrigin::CreateFromString("https://notfoo.com"));
+  base::UnguessableToken nonce = base::UnguessableToken::Create();
+
+  for (const bool toggle : {false, true}) {
+    base::test::ScopedFeatureList scope_feature_list;
+    scope_feature_list.InitWithFeatureState(
+        net::features::kThirdPartyStoragePartitioning, toggle);
+
+    // A nonce key with a matching origin/site that's SameSite works.
+    (void)BlinkStorageKey(origin, site, &nonce,
+                          mojom::blink::AncestorChainBit::kSameSite);
+
+    // A nonce key with a non-matching origin/site that's SameSite fails.
+    EXPECT_DCHECK_DEATH(
+        BlinkStorageKey(origin, opaque_site, &nonce,
+                        mojom::blink::AncestorChainBit::kSameSite));
+    EXPECT_DCHECK_DEATH(BlinkStorageKey(
+        origin, other_site, &nonce, mojom::blink::AncestorChainBit::kSameSite));
+
+    // A nonce key with a matching origin/site that's CrossSite fails.
+    EXPECT_DCHECK_DEATH(BlinkStorageKey(
+        origin, site, &nonce, mojom::blink::AncestorChainBit::kCrossSite));
+
+    // A nonce key with a non-matching origin/site that's CrossSite fails.
+    EXPECT_DCHECK_DEATH(
+        BlinkStorageKey(origin, opaque_site, &nonce,
+                        mojom::blink::AncestorChainBit::kCrossSite));
+    EXPECT_DCHECK_DEATH(
+        BlinkStorageKey(origin, other_site, &nonce,
+                        mojom::blink::AncestorChainBit::kCrossSite));
   }
 }
 

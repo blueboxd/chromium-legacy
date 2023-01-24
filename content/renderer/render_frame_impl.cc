@@ -989,6 +989,8 @@ void FillMiscNavigationParams(
         commit_params.origin_to_commit.value();
   }
   navigation_params->storage_key = std::move(commit_params.storage_key);
+  navigation_params->session_storage_key =
+      std::move(commit_params.session_storage_key);
   navigation_params->frame_policy = commit_params.frame_policy;
 
   if (common_params.navigation_type == blink::mojom::NavigationType::RESTORE) {
@@ -5954,10 +5956,8 @@ void RenderFrameImpl::CheckIfAudioSinkExistsAndIsAuthorized(
   std::move(
       blink::ConvertToOutputDeviceStatusCB(std::move(completion_callback)))
       .Run(blink::AudioDeviceFactory::GetInstance()
-               ->GetOutputDeviceInfo(
-                   GetWebFrame()->GetLocalFrameToken(),
-                   media::AudioSinkParameters(base::UnguessableToken(),
-                                              sink_id.Utf8()))
+               ->GetOutputDeviceInfo(GetWebFrame()->GetLocalFrameToken(),
+                                     sink_id.Utf8())
                .device_status());
 }
 

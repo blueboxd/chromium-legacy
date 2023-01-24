@@ -967,6 +967,10 @@
       "wpt_internal/storage/quota/partitioned-webkitTemporaryStorage-usage-details.tentative.sub.html",
       "wpt_internal/storage/quota/partitioned-webkitPersistentStorage-quota-usage-details.tentative.sub.html",
       "wpt_internal/storage/quota/partitioned-webkitStorageInfo-temporary-quota-usage-details.tentative.sub.html",
+      "wpt_internal/webstorage/storage-deprecation-trial-disabled-local.sub.https.html",
+      "wpt_internal/webstorage/storage-deprecation-trial-disabled-session.sub.https.html",
+      "wpt_internal/webstorage/storage-deprecation-trial-enabled-local.sub.https.html",
+      "wpt_internal/webstorage/storage-deprecation-trial-enabled-session.sub.https.html",
       "external/wpt/FileAPI/BlobURL/cross-partition.tentative.https.html",
       "external/wpt/storage/partitioned-estimate-usage-details-caches.tentative.https.sub.html",
       "external/wpt/storage/partitioned-estimate-usage-details-indexeddb.tentative.https.sub.html",
@@ -1343,6 +1347,18 @@
     "expires": "Jul 1, 2023"
   },
   {
+    "prefix": "shared-storage-fenced-frame-mparch-reportevent-limit",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "wpt_internal/shared_storage_reportevent_limit/"
+    ],
+    "exclusive_tests": [
+      "wpt_internal/shared_storage_reportevent_limit/"
+    ],
+    "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,SharedStorageReportEventLimit"],
+    "expires": "Jul 1, 2023"
+  },
+  {
     "prefix": "shared-storage-fenced-frame-mparch-selecturl-limit",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
@@ -1376,7 +1392,7 @@
       "wpt_internal/fenced_frame",
       "http/tests/inspector-protocol/fenced-frame"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,NoncedPartitionedCookies,Fledge,InterestGroupStorage,AdInterestGroupAPI,AllowURNsInIframes,BiddingAndScoringDebugReportingAPI",
+    "args": ["--enable-features=FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,NoncedPartitionedCookies,Fledge,InterestGroupStorage,AdInterestGroupAPI,AllowURNsInIframes,BiddingAndScoringDebugReportingAPI,ComputePressure",
              "--enable-blink-features=FencedFramesAPIChanges"],
     "expires": "Jul 1, 2023"
   },
@@ -1731,6 +1747,15 @@
     ],
     "exclusive_tests": "ALL",
     "args": ["--enable-features=ExtendScriptResourceLifetime"],
+    "expires": "Jul 1, 2023"
+  },
+  {
+    "prefix": "webcodecs-without-task-runner-with-custom-deleter",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/webcodecs"
+    ],
+    "args": ["--disable-features=UseBlinkSchedulerTaskRunnerWithCustomDeleter"],
     "expires": "Jul 1, 2023"
   }
 ]

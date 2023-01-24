@@ -123,7 +123,7 @@ export class XfConflictDialog extends HTMLElement {
   /**
    * The conflict dialog has no title. Remove the <cr-dialog> title child that
    * would focus, remove its <dialog> aria-labelledby and aria-describedby, so
-   * ARIA announces the #message element that is the initial focus.
+   * ARIA announces the #message (that is the initial focus) once.
    *
    * Per https://w3c.github.io/aria-practices/#dialog_roles_states_props, adds
    * aria-modal='true' meaning all content outside the <dialog> is inert.
@@ -181,8 +181,8 @@ export class XfConflictDialog extends HTMLElement {
       this.getReplaceButton().innerText = str('CONFLICT_DIALOG_REPLACE');
     }
 
-    this.toggleAttribute('checked', checked);
     this.getCheckboxElement().focus();
+    this.toggleAttribute('checked', checked);
   }
 
   /**

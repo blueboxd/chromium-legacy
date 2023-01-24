@@ -161,28 +161,6 @@ chromium-metrics-reviews@google.com.
   <variant name="WorkerProcess" summary=""/>
 </variants>
 
-<variants name="UrlParamFilterClassificationRole">
-  <variant name=".Destination"
-      summary="parameters classified as having the destination role">
-    <obsolete>
-      Obsolete and no longer written as of m109.
-    </obsolete>
-  </variant>
-  <variant name=".Invalid"
-      summary="parameters with an unknown role, likely indicating a
-               compatibility issue">
-    <obsolete>
-      Obsolete and no longer written as of m109.
-    </obsolete>
-  </variant>
-  <variant name=".Source"
-      summary="parameters classified as having the source role">
-    <obsolete>
-      Obsolete and no longer written as of m109.
-    </obsolete>
-  </variant>
-</variants>
-
 <variants name="VoiceIntentTargetVariant">
   <variant name="Assistant" summary="Assistant voice transcription."/>
   <variant name="System" summary="System voice transcription."/>
@@ -212,7 +190,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="AccessCodeCast.Discovery.AddSinkResult.New"
-    enum="AccessCodeCastAddSinkResult" expires_after="2023-05-14">
+    enum="AccessCodeCastAddSinkResult" expires_after="2023-07-23">
   <owner>bzielinski@google.com</owner>
   <owner>cros-edu-eng@google.com</owner>
   <summary>
@@ -235,7 +213,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AccessCodeCast.Discovery.CastModeOnSuccess"
-    enum="AccessCodeCastCastMode" expires_after="2023-05-14">
+    enum="AccessCodeCastCastMode" expires_after="2023-07-23">
   <owner>bzielinski@google.com</owner>
   <owner>cros-edu-eng@google.com</owner>
   <summary>
@@ -279,7 +257,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AccessCodeCast.Ui.AccessCodeInputTime" units="ms"
-    expires_after="2023-05-14">
+    expires_after="2023-07-23">
   <owner>bzielinski@google.com</owner>
   <owner>cros-edu-eng@google.com</owner>
   <summary>
@@ -291,7 +269,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AccessCodeCast.Ui.AccessCodeNotFoundCount" units="instances"
-    expires_after="2023-03-12">
+    expires_after="2023-07-23">
   <owner>bzielinski@google.com</owner>
   <owner>cros-edu-eng@google.com</owner>
   <summary>
@@ -303,7 +281,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AccessCodeCast.Ui.CastAttemptLength" units="ms"
-    expires_after="2023-05-14">
+    expires_after="2023-07-23">
   <owner>bzielinski@google.com</owner>
   <owner>cros-edu-eng@google.com</owner>
   <summary>
@@ -315,7 +293,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AccessCodeCast.Ui.DialogCloseReason"
-    enum="AccessCodeCastDialogCloseReason" expires_after="2023-05-14">
+    enum="AccessCodeCastDialogCloseReason" expires_after="2023-07-23">
   <owner>bzielinski@google.com</owner>
   <owner>cros-edu-eng@google.com</owner>
   <summary>
@@ -325,7 +303,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AccessCodeCast.Ui.DialogLoadTime" units="ms"
-    expires_after="2023-05-14">
+    expires_after="2023-07-23">
   <owner>bzielinski@google.com</owner>
   <owner>cros-edu-eng@google.com</owner>
   <summary>
@@ -336,7 +314,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AccessCodeCast.Ui.DialogOpenLocation"
-    enum="AccessCodeCastDialogOpenLocation" expires_after="2023-05-14">
+    enum="AccessCodeCastDialogOpenLocation" expires_after="2023-07-23">
   <owner>bzielinski@google.com</owner>
   <owner>cros-edu-eng@google.com</owner>
   <summary>
@@ -10084,18 +10062,6 @@ chromium-metrics-reviews@google.com.
   <owner>csharp@chromium.org</owner>
   <summary>
     Enumeration of errors that happened when reading Preferences files.
-  </summary>
-</histogram>
-
-<histogram name="Preloading.AnchorElementPreloader.PreloadingTriggered"
-    enum="AnchorElementPreloaderType" expires_after="2023-06-04">
-  <owner>jacobstanley@google.com</owner>
-  <owner>spelchat@chromium.org</owner>
-  <owner>curranmax@chromium.org</owner>
-  <owner>chrome-brapp-loading@google.com</owner>
-  <summary>
-    Logged once for each preconnection request sent to the browser. Associated
-    with the Source ID of the page triggering the preconnection.
   </summary>
 </histogram>
 

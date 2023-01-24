@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_manager/open_with_browser.h"
 #include "chrome/browser/ash/file_system_provider/mount_path_util.h"
@@ -18,7 +20,9 @@
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_ui.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/drive_upload_handler.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/one_drive_upload_handler.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/services/app_service/public/cpp/types_util.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
 #include "extensions/browser/entry_info.h"
 #include "ui/gfx/geometry/size.h"
@@ -31,10 +35,13 @@ typedef base::OnceCallback<void(
 
 namespace {
 
+using ash::file_system_provider::ProvidedFileSystemInfo;
+using ash::file_system_provider::ProviderId;
+using ash::file_system_provider::Service;
 using file_manager::file_tasks::kDriveTaskResultMetricName;
 using file_manager::file_tasks::OfficeTaskResult;
 
-const char kOpenWebActionId[] = "OPEN_WEB";
+const char kOneDriveUrlActionId[] = "HIDDEN_ONEDRIVE_URL";
 
 // Open a hosted MS Office file e.g. .docx, from a url hosted in
 // DriveFS. Check the file was successfully uploaded to DriveFS.
@@ -70,7 +77,7 @@ void OpenAlreadyHostedDriveUrl(drive::FileError error,
   }
 }
 
-void OpenODFSUrl(const storage::FileSystemURL& url) {
+void OpenODFSUrl(Profile* profile, const storage::FileSystemURL& url) {
   if (!url.is_valid()) {
     LOG(ERROR) << "Invalid uploaded file URL";
     return;
@@ -81,19 +88,45 @@ void OpenODFSUrl(const storage::FileSystemURL& url) {
     return;
   }
 
-  parser.file_system()->ExecuteAction(
-      {parser.file_path()}, kOpenWebActionId,
-      base::BindOnce([](base::File::Error result) {
-        if (result != base::File::Error::FILE_OK) {
-          LOG(ERROR) << "Error executing action: " << result;
-          // TODO(cassycc): Run GetUserFallbackChoice().
-        }
-      }));
+  parser.file_system()->GetActions(
+      {parser.file_path()},
+      base::BindOnce(
+          [](base::WeakPtr<Profile> profile_weak_ptr,
+             const file_system_provider::Actions& actions,
+             base::File::Error result) {
+            if (result != base::File::Error::FILE_OK) {
+              return;
+            }
+            Profile* profile = profile_weak_ptr.get();
+            if (!profile) {
+              return;
+            }
+            for (const file_system_provider::Action& action : actions) {
+              if (action.id == kOneDriveUrlActionId) {
+                // Custom actions are used to pass a OneDrive URL as the "title"
+                // attribute to be opened using an installed web app.
+                GURL url(action.title);
+                if (!url.is_valid()) {
+                  return;
+                }
+
+                auto* proxy =
+                    apps::AppServiceProxyFactory::GetForProfile(profile);
+                proxy->LaunchAppWithUrl(web_app::kMicrosoftOfficeAppId,
+                                        /*event_flags=*/ui::EF_NONE, url,
+                                        apps::LaunchSource::kFromFileManager,
+                                        /*window_info=*/nullptr);
+                return;
+              }
+            }
+          },
+          profile->GetWeakPtr()));
 }
 
-void OpenODFSUrls(const std::vector<storage::FileSystemURL>& file_urls) {
+void OpenODFSUrls(Profile* profile,
+                  const std::vector<storage::FileSystemURL>& file_urls) {
   for (const auto& file_url : file_urls) {
-    OpenODFSUrl(file_url);
+    OpenODFSUrl(profile, file_url);
   }
 }
 
@@ -124,8 +157,18 @@ void StartUpload(Profile* profile,
     }
   } else if (cloud_provider == CloudProvider::kOneDrive) {
     for (const auto& file_url : file_urls) {
-      OneDriveUploadHandler::Upload(profile, file_url,
-                                    base::BindOnce(&OpenODFSUrl));
+      OneDriveUploadHandler::Upload(
+          profile, file_url,
+          base::BindOnce(
+              [](base::WeakPtr<Profile> profile_weak_ptr,
+                 const storage::FileSystemURL& url) {
+                Profile* profile = profile_weak_ptr.get();
+                if (!profile) {
+                  return;
+                }
+                OpenODFSUrl(profile, url);
+              },
+              profile->GetWeakPtr()));
     }
   }
 }
@@ -310,6 +353,12 @@ bool OpenFilesWithCloudProvider(
     return CloudUploadDialog::SetUpAndShowDialog(
         profile, file_urls, mojom::DialogPage::kFileHandlerDialog);
   }
+
+  if (ShouldFixUpOffice(profile, cloud_provider)) {
+    // TODO(cassycc): Use page specifically for fix up.
+    CloudUploadDialog::SetUpAndShowDialog(profile, file_urls,
+                                          mojom::DialogPage::kOneDriveSetup);
+  }
   OpenOrMoveFiles(profile, file_urls, cloud_provider);
   return true;
 }
@@ -324,11 +373,17 @@ void OpenOrMoveFiles(Profile* profile,
   } else if (cloud_provider == CloudProvider::kOneDrive &&
              FileIsOnODFS(profile, file_urls.front())) {
     // The files are on OneDrive already.
-    OpenODFSUrls(file_urls);
+    OpenODFSUrls(profile, file_urls);
   } else {
     // The files need to be moved.
     ConfirmMoveOrStartUpload(profile, file_urls, cloud_provider);
   }
+}
+
+bool ShouldFixUpOffice(Profile* profile, const CloudProvider cloud_provider) {
+  return cloud_provider == CloudProvider::kOneDrive &&
+         !(CloudUploadDialog::IsODFSMounted(profile) &&
+           CloudUploadDialog::IsOfficeWebAppInstalled(profile));
 }
 
 void GetEntriesFromFilePathsAndMimeTypes(
@@ -438,6 +493,8 @@ bool CloudUploadDialog::SetUpAndShowDialog(
     args->file_names.push_back(file_url.path().BaseName().value());
   }
   args->dialog_page = dialog_page;
+  args->first_time_setup =
+      !file_manager::file_tasks::OfficeSetupComplete(profile);
 
   // The pointer is managed by an instance of `views::WebDialogView` and
   // removed in `SystemWebDialogDelegate::OnDialogClosed`.
@@ -461,6 +518,31 @@ bool CloudUploadDialog::SetUpAndShowDialog(
                nullptr);
   }
   return true;
+}
+
+bool CloudUploadDialog::IsODFSMounted(Profile* profile) {
+  Service* service = Service::Get(profile);
+  ProviderId provider_id = ProviderId::CreateFromExtensionId(
+      file_manager::file_tasks::kODFSExtensionId);
+  std::vector<ProvidedFileSystemInfo> file_systems =
+      service->GetProvidedFileSystemInfoList(provider_id);
+
+  // Assume any file system mounted by ODFS is the correct one.
+  return !file_systems.empty();
+}
+
+bool CloudUploadDialog::IsOfficeWebAppInstalled(Profile* profile) {
+  if (!apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile)) {
+    return false;
+  }
+  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
+  bool installed = false;
+  proxy->AppRegistryCache().ForOneApp(
+      web_app::kMicrosoftOfficeAppId,
+      [&installed](const apps::AppUpdate& update) {
+        installed = apps_util::IsInstalled(update.Readiness());
+      });
+  return installed;
 }
 
 void CloudUploadDialog::OnDialogShown(content::WebUI* webui) {

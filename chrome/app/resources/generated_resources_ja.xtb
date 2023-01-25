@@ -1884,7 +1884,7 @@
 <translation id="270921614578699633">次の平均:</translation>
 <translation id="2709516037105925701">自動入力</translation>
 <translation id="2710101514844343743">使用状況データと診断データ</translation>
-<translation id="271033894570825754">新しいファイル</translation>
+<translation id="271033894570825754">New</translation>
 <translation id="2711073837061989559">試用版</translation>
 <translation id="2712173769900027643">許可をリクエスト</translation>
 <translation id="2712207122921938368">別のデバイスでパスキーを作成する</translation>
@@ -2103,7 +2103,7 @@
 <translation id="2889064240420137087">次のプログラムでリンクを開く...</translation>
 <translation id="2891566119238851894">サイドパネルで検索を開きます。サイドパネルで検索が開いていません。</translation>
 <translation id="2891922230654533301">デバイスを使用して <ph name="APP_NAME" /> にログインしますか？</translation>
-<translation id="2893013536106749396">関心のある事柄についての最新情報を知らせてくれるカードを選んでください</translation>
+<translation id="2893013536106749396">関心のある事柄についての最新情報を表示するカードを選んでください</translation>
 <translation id="2893168226686371498">既定のブラウザ</translation>
 <translation id="2893180576842394309">検索やその他の Google サービスをカスタマイズするために、Google で履歴が使用されることがあります</translation>
 <translation id="2894757982205307093">グループにタブを追加</translation>
@@ -3602,7 +3602,7 @@
 <translation id="4324577459193912240">ファイルが不完全です</translation>
 <translation id="4325237902968425115"><ph name="LINUX_APP_NAME" /> をアンインストールしています...</translation>
 <translation id="4330191372652740264">氷水</translation>
-<translation id="4330387663455830245"><ph name="LANGUAGE" /> を翻訳しない</translation>
+<translation id="4330387663455830245"><ph name="LANGUAGE" />を翻訳しない</translation>
 <translation id="4332976768901252016">保護者による使用制限を設定する</translation>
 <translation id="4333854382783149454">PKCS #1 SHA-1 with RSA 暗号化</translation>
 <translation id="4336434711095810371">データをすべて消去</translation>
@@ -4013,7 +4013,7 @@
 <translation id="4707337002099455863">すべてのサイトで常に許可</translation>
 <translation id="4708849949179781599"><ph name="PRODUCT_NAME" /> を終了</translation>
 <translation id="4711638718396952945">設定を復元</translation>
-<translation id="4713409221649555176">すべてのウィンドウを閉じるときに削除</translation>
+<translation id="4713409221649555176">すべてのウィンドウを閉じるときに削除する</translation>
 <translation id="47158868804223727">グループ名をクリックして展開または折りたたむことができます</translation>
 <translation id="4716483597559580346">セキュリティ強化に向けて Powerwash を実行する</translation>
 <translation id="471880041731876836">このサイトへのアクセスが許可されていません</translation>
@@ -4359,7 +4359,7 @@
 <translation id="5051836348807686060">選択した言語ではスペルチェックを使用できません</translation>
 <translation id="5052499409147950210">サイトの編集</translation>
 <translation id="505347685865235222">名前のないグループ - <ph name="GROUP_CONTENT_STRING" /></translation>
-<translation id="5054374119096692193">[<ph name="BEGIN_LINK" />Chrome をカスタマイズ<ph name="END_LINK" />] ですべてのカード オプションをご覧ください</translation>
+<translation id="5054374119096692193">[<ph name="BEGIN_LINK" />このページをカスタマイズ<ph name="END_LINK" />] ですべてのカード オプションを確認できます</translation>
 <translation id="5056950756634735043">コンテナに接続しています</translation>
 <translation id="5057110919553308744">拡張機能をクリックしたとき</translation>
 <translation id="5059241099014281248">ログイン制限</translation>
@@ -4489,7 +4489,7 @@
 <translation id="5177549709747445269">モバイルデータ接続を使用しています</translation>
 <translation id="5178667623289523808">前を検索</translation>
 <translation id="5181140330217080051">ダウンロードしています</translation>
-<translation id="5181172023548002891"><ph name="ACCOUNT" /> の Google パスワード マネージャーに移動</translation>
+<translation id="5181172023548002891"><ph name="ACCOUNT" /> の Google パスワード マネージャー</translation>
 <translation id="5184063094292164363">JavaScript コンソール(&amp;J)</translation>
 <translation id="5184209580557088469">このユーザー名のチケットはすでに設定されています</translation>
 <translation id="5184662919967270437">デバイスを更新しています</translation>
@@ -4593,7 +4593,7 @@
 <translation id="5280426389926346830">ショートカットを作成しますか？</translation>
 <translation id="5281013262333731149">次で開く: <ph name="OPEN_BROWSER" /></translation>
 <translation id="528208740344463258">Android アプリをダウンロードして使用するには、まずこの必須のアップデートをインストールする必要があります。<ph name="DEVICE_TYPE" /> の更新中、ご利用いただくことはできません。インストールが完了すると、<ph name="DEVICE_TYPE" /> は再起動されます。</translation>
-<translation id="5282733140964383898">「トラッキング拒否」を有効にすると、閲覧トラフィックにリクエストが含まれるようになります。ウェブサイトがリクエストに応答するかどうか、またリクエストがどのように解釈されるかによって、この影響は異なります。たとえば、このリクエストに対応して、ユーザーが過去にアクセスしたウェブサイトに関係なく広告を表示するウェブサイトもあります。トラッキングを拒否しても、多くのウェブサイトではユーザーの閲覧データが収集され利用されるのが現状です。たとえば、セキュリティの強化、ウェブサイトでのコンテンツ、サービス、広告、おすすめ情報の表示、レポート統計情報の作成などにこれらのデータが利用されます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
+<translation id="5282733140964383898">「Do Not Track」を有効にすると、閲覧トラフィックにリクエストが含まれるようになります。ウェブサイトがリクエストに応答するかどうか、またリクエストがどのように解釈されるかによって、この影響は異なります。たとえば、このリクエストに対応して、ユーザーが過去にアクセスしたウェブサイトに関係なく広告を表示するウェブサイトもあります。トラッキングを拒否しても、多くのウェブサイトではユーザーの閲覧データが収集され利用されるのが現状です。たとえば、セキュリティの強化、ウェブサイトでのコンテンツ、サービス、広告、おすすめ情報の表示、レポート統計情報の作成などにこれらのデータが利用されます。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="5283677936944177147">デバイスの機種またはシリアル番号を特定できませんでした。</translation>
 <translation id="5284445933715251131">ダウンロードを続行</translation>
 <translation id="5285635972691565180">ディスプレイ <ph name="DISPLAY_ID" /></translation>
@@ -4615,7 +4615,7 @@
 <translation id="5297082477358294722">パスワードが保存されました。保存パスワードの表示と管理は <ph name="SAVED_PASSWORDS_STORE" /> で行えます。</translation>
 <translation id="5297946558563358707">誰かに画面を見られたときには、画面の右下にプライバシー アイ アイコンが表示されます</translation>
 <translation id="5298219193514155779">テーマの作成者:</translation>
-<translation id="5299109548848736476">トラッキング拒否</translation>
+<translation id="5299109548848736476">Do Not Track</translation>
 <translation id="5299558715747014286">タブグループの表示と管理</translation>
 <translation id="5300287940468717207">サイトの権限をリセットしますか。</translation>
 <translation id="5300426565656326054">ブラウザベースの広告のカスタマイズ</translation>
@@ -7373,7 +7373,7 @@
 <translation id="7906440585529721295">ローカルデータは削除されます</translation>
 <translation id="7907837847548254634">フォーカス中の項目をハイライト表示する</translation>
 <translation id="7908378463497120834">外部ストレージ デバイスの少なくとも 1 つのパーティションがマウントできませんでした。</translation>
-<translation id="7908835530772972485">すべてのウィンドウを閉じるときにデータを削除します</translation>
+<translation id="7908835530772972485">すべてのウィンドウを閉じるときにデータを削除する</translation>
 <translation id="7909324225945368569">プロフィールの名前を変更</translation>
 <translation id="7909969815743704077">シークレット モードでダウンロード</translation>
 <translation id="7909986151924474987">このプロファイルを再インストールできなくなる可能性があります</translation>
@@ -7857,7 +7857,7 @@
 <translation id="8338952601723052325">デベロッパーのウェブサイト</translation>
 <translation id="833986336429795709">このリンクを開くにはアプリを選択します</translation>
 <translation id="8340547030807793004"><ph name="DEVICE" /> に対するその他の操作</translation>
-<translation id="8341557223534936723">{NUM_SITES,plural, =1{最近、通知を多数受け取った <ph name="BEGIN_BOLD" />1 件のサイト<ph name="END_BOLD" />を確認する}other{最近、通知を多数受け取った <ph name="BEGIN_BOLD" />{NUM_SITES} 件のサイト<ph name="END_BOLD" />を確認する}}</translation>
+<translation id="8341557223534936723">{NUM_SITES,plural, =1{最近、通知を多数送信した <ph name="BEGIN_BOLD" />1 件のサイト<ph name="END_BOLD" />を確認する}other{最近、通知を多数送信した <ph name="BEGIN_BOLD" />{NUM_SITES} 件のサイト<ph name="END_BOLD" />を確認する}}</translation>
 <translation id="8342221978608739536">試していない</translation>
 <translation id="8342399870062010251">メモリセーバーの詳細</translation>
 <translation id="8342861492835240085">コレクションを選択</translation>
@@ -8325,7 +8325,7 @@
 <translation id="8786824282808281903">このアイコンが表示されているときは、お子様は本人確認や購入の承認に指紋認証を使用できます。</translation>
 <translation id="8787575090331305835">{NUM_TABS,plural, =1{名前のないグループ - 1 個のタブ}other{名前のないグループ - # 個のタブ}}</translation>
 <translation id="8791157330927639737">更新の詳細</translation>
-<translation id="8791534160414513928">閲覧トラフィックと一緒に「トラッキング拒否」リクエストを送信する</translation>
+<translation id="8791534160414513928">閲覧トラフィックと一緒に「Do Not Track」リクエストを送信する</translation>
 <translation id="879413103056696865">アクセス ポイントが有効な場合、<ph name="PHONE_NAME" /> は次のように動作します。</translation>
 <translation id="8795916974678578410">新規ウインドウ</translation>
 <translation id="8797459392481275117">このサイトは翻訳しない</translation>

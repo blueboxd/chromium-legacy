@@ -895,7 +895,7 @@ Comprova les contrasenyes sempre que vulguis al <ph name="GOOGLE_PASSWORD_MANAGE
       Això no afecta les aplicacions ni el contingut d'altres dispositius.</translation>
 <translation id="1809734401532861917">Afegeix les adreces d'interès, l'historial, les contrasenyes i altres opcions de configuració a <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1810366086647840386">Servidor d'imatges</translation>
-<translation id="1811908311154949291">Marc tancat d'incògnit: <ph name="FENCEDFRAME_SITE" /></translation>
+<translation id="1811908311154949291">Marc delimitat d'incògnit: <ph name="FENCEDFRAME_SITE" /></translation>
 <translation id="1813278315230285598">Serveis</translation>
 <translation id="18139523105317219">Nom de la part EDI</translation>
 <translation id="1815083418640426271">Enganxa com a text sense format</translation>
@@ -1744,7 +1744,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> no s'ha pogut connectar a <ph name="NETWORK_ID" />. Seleccioneu una altra xarxa o bé torneu-ho a provar.</translation>
 <translation id="2553440850688409052">Amaga aquest connector</translation>
 <translation id="2554553592469060349">El fitxer seleccionat és massa gran (mida màxima: 3 MB).</translation>
-<translation id="25568951186001797">Marc tancat: <ph name="FENCEDFRAME_SITE" /></translation>
+<translation id="25568951186001797">Marc delimitat: <ph name="FENCEDFRAME_SITE" /></translation>
 <translation id="2558569818338050235">El teu historial de navegació afecta els anuncis que veus</translation>
 <translation id="2559889124253841528">Desa al dispositiu</translation>
 <translation id="2564520396658920462">L'execució de JavaScript amb AppleScript està desactivada. Per activar-la, ves a la barra de menú i selecciona Visualitza &gt; Desenvolupador &gt; Permet JavaScript des d'Apple Events. Per obtenir més informació, consulta: https://support.google.com/chrome/?p=applescript.</translation>
@@ -8338,7 +8338,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8786824282808281903">Quan el teu fill vegi aquesta icona, podrà utilitzar una empremta digital per identificar-se o aprovar compres.</translation>
 <translation id="8787575090331305835">{NUM_TABS,plural, =1{Grup sense nom (1 pestanya)}other{Grup sense nom (# pestanyes)}}</translation>
 <translation id="8791157330927639737">Més informació sobre les actualitzacions</translation>
-<translation id="8791534160414513928">Envia una sol·licitud de no seguiment amb el trànsit de navegació</translation>
+<translation id="8791534160414513928">Envia una sol·licitud "Do Not Track" amb el trànsit de navegació</translation>
 <translation id="879413103056696865">Mentre el punt d'accés Wi-Fi estigui activat, el telèfon <ph name="PHONE_NAME" />:</translation>
 <translation id="8795916974678578410">Finestra nova</translation>
 <translation id="8797459392481275117">No tradueixis mai aquest lloc</translation>
@@ -8814,7 +8814,7 @@ Obtén informació sobre les dades que Google recull i sobre el motiu pel qual h
 <translation id="93343527085570547">Ves a la <ph name="BEGIN_LINK1" />pàgina d'ajuda legal<ph name="END_LINK1" /> per sol·licitar canvis de contingut per motius legals. Pot ser que s'enviï determinada informació del compte i del sistema a Google. Farem servir la informació que ens proporcionis per ajudar-te a resoldre problemes tècnics i millorar el nostre servei de conformitat amb la nostra <ph name="BEGIN_LINK2" />política de privadesa<ph name="END_LINK2" /> i les nostres <ph name="BEGIN_LINK3" />condicions del servei<ph name="END_LINK3" />.</translation>
 <translation id="93393615658292258">Només la contrasenya</translation>
 <translation id="934244546219308557">Posa nom a aquest grup</translation>
-<translation id="934503638756687833">Si cal, també se suprimiran elements no inclosos en aquesta llista. Obtén més informació sobre la &lt;a href="<ph name="URL" />"&gt;protecció contra programari no desitjat&lt;/a&gt; a l'informe de privadesa de Chrome.</translation>
+<translation id="934503638756687833">Si cal, també se suprimiran elements no inclosos en aquesta llista. Obtén més informació sobre la &lt;a href="<ph name="URL" />"&gt;protecció contra programari no desitjat&lt;/a&gt; al llibre blanc de privadesa de Chrome.</translation>
 <translation id="93480724622239549">Error</translation>
 <translation id="935854577147268200">El telèfon Smart Lock ha canviat. Introdueix la contrasenya per actualitzar Smart Lock. La propera vegada, <ph name="DEVICE_TYPE" /> es desbloquejarà amb el telèfon. Pots desactivar Smart Lock a Configuració.</translation>
 <translation id="936646668635477464">Càmera i micròfon</translation>

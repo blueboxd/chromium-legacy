@@ -6715,7 +6715,7 @@
 <translation id="727441411541283857"><ph name="PERCENTAGE" />% - <ph name="TIME" /> մինչև լրիվ լիցքավորվելը</translation>
 <translation id="727952162645687754">Ներբեռնման սխալ</translation>
 <translation id="7280041992884344566">Վնասաբեր ծրագրեր որոնելիս սխալ առաջացավ</translation>
-<translation id="7280649757394340890">Տեքստի հնչեցման կարգավորումներ</translation>
+<translation id="7280649757394340890">Տեքստի հնչեցման կարգա­վորումներ</translation>
 <translation id="7280877790564589615">Թույլտվության հարցումն ուղարկված է</translation>
 <translation id="7282547042039404307">Հարթ</translation>
 <translation id="7282992757463864530">Տեղեկագոտի</translation>
@@ -8342,7 +8342,7 @@
 <translation id="8786824282808281903">Այս պատկերակը ցույց է տալիս, որ ձեր երեխան կարող է մատնահետքի միջոցով հաստատել իր ինքնությունը և գնումները։</translation>
 <translation id="8787575090331305835">{NUM_TABS,plural, =1{Անանուն խումբ – 1 ներդիր}one{Անանուն խումբ – # ներդիր}other{Անանուն խումբ – # ներդիր}}</translation>
 <translation id="8791157330927639737">Իմանալ ավելին թարմացման մասին</translation>
-<translation id="8791534160414513928">Ուղարկել «Չհետևել» հարցումը ելքային հոսքի հետ</translation>
+<translation id="8791534160414513928">Ուղարկել «Do Not Track» հարցումը ելքային հոսքի հետ</translation>
 <translation id="879413103056696865">Երբ միացնեք թեժ կետը, «<ph name="PHONE_NAME" />» սարքը՝</translation>
 <translation id="8795916974678578410">New Window</translation>
 <translation id="8797459392481275117">Երբեք չթարգմանել այս կայքը</translation>

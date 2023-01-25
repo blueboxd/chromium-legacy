@@ -2852,7 +2852,7 @@ Saskaņā ar domēna <ph name="DOMAIN" /> prasībām viedkartei ir jābūt ievie
 <translation id="3616741288025931835">&amp;Dzēst pārlūkošanas datus...</translation>
 <translation id="3617891479562106823">Fona attēli nav pieejami. Vēlāk mēģiniet vēlreiz.</translation>
 <translation id="3619115746895587757">Kapučīno</translation>
-<translation id="3621807901162200696">Palīdzēt uzlabot Chrome OS funkcijas un veiktspēju</translation>
+<translation id="3621807901162200696">Palīdzēt uzlabot ChromeOS funkcijas un veiktspēju</translation>
 <translation id="362266093274784978">{COUNT,plural, =1{lietotne}zero{# lietotņu}one{# lietotne}other{# lietotnes}}</translation>
 <translation id="362333465072914957">Tiek gaidīts sertifikāts no sertifikāta izdevējiestādes</translation>
 <translation id="3624567683873126087">Atbloķēt ierīci un pierakstīties Google kontā</translation>
@@ -7222,7 +7222,7 @@ Lai noņemtu piešķīrumu, nospiediet piešķirto slēdzi vai taustiņu.</trans
 <translation id="7751619076382363711">Jūs neesat noņēmis nevienu vietni</translation>
 <translation id="7753735457098489144">Instalēšana neizdevās, jo trūkst krātuves vietas. Lai atbrīvotu vietu, izdzēsiet failus no šīs ierīces.</translation>
 <translation id="7754347746598978109">Nedrīkst izmantot JavaScript</translation>
-<translation id="7754704193130578113">Jautāt, kur saglabāt ikvienu failu pirms lejuplādēšanas</translation>
+<translation id="7754704193130578113">Pirms lejupielādes jautāt, kur saglabāt katru failu</translation>
 <translation id="7755134875397410803">Lai palīdzētu jums paveikt uzdevumus, Google saņems to vietņu vietrāžus URL un saturu, kurās izmantosiet Asistentu, kā arī informāciju, ko iesniegsiet, izmantojot Asistentu. Šī informācija var tikt glabāta jūsu Google kontā. Chrome iestatījumos varat izslēgt Asistentu. <ph name="LEARN_MORE" />.</translation>
 <translation id="7755287808199759310">Lai atbloķētu, vēsieties pie vecāka</translation>
 <translation id="7757592200364144203">Mainīt ierīces nosaukumu</translation>

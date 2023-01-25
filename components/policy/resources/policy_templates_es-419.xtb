@@ -1704,7 +1704,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="2625026032335150744">Marcar la opción para conservar los datos de navegación existentes de forma predeterminada</translation>
 <translation id="2625398797484317969">Configuración de los controles de Respuestas rápidas.</translation>
-<translation id="2626748638108838507">Revertir el dispositivo a la versión de destino si la versión actual del SO es más reciente que la de destino El dispositivo usa Powerwash, pero las configuraciones de red de todo el dispositivo sin certificados se conservan y este se vuelve a inscribir automáticamente.
+<translation id="2626748638108838507">Revierte el dispositivo a la versión de destino si la versión actual del SO es más reciente que la de destino. Powerwash se usa en el dispositivo , pero las configuraciones de red de todo el dispositivo sin certificados se conservan y este se vuelve a inscribir automáticamente.
           Compatible con la reversión de <ph name="PRODUCT_OS_NAME" /> 106 y versiones posteriores. En el caso de los clientes más antiguos, es posible que la preservación de las redes no funcione y que el dispositivo no se vuelva a inscribir automáticamente.</translation>
 <translation id="262740370354162807">Habilitar el envío de documentos a <ph name="CLOUD_PRINT_NAME" /></translation>
 <translation id="2633084400146331575">Habilitar los comentarios de voz</translation>
@@ -3785,9 +3785,9 @@ Si estableces esta política, <ph name="PRODUCT_OS_NAME" /> solo permitirá que 
 
       * Si <ph name="FILTER_PLACEHOLDER" /> incluye las secciones <ph name="ISSUER_STRING_VALUE" /> y <ph name="SUBJECT_STRING_VALUE" />, solo se seleccionarán certificados de cliente que cumplan con ambas condiciones.
 
-      * Si <ph name="FILTER_PLACEHOLDER" /> incluye la sección <ph name="SUBJECT_STRING_VALUE" /> con el valor <ph name="FILTER_STRING_ORGANIZATION" />, el certificado deberá contar con al menos una unidad organizacional que coincida con el valor indicado para ser elegido.
+      * Si <ph name="FILTER_PLACEHOLDER" /> incluye la sección <ph name="SUBJECT_STRING_VALUE" /> con el valor <ph name="FILTER_STRING_ORGANIZATION" />, el certificado deberá contar con al menos una unidad organizativa que coincida con el valor indicado para ser elegido.
 
-      * Si <ph name="FILTER_PLACEHOLDER" /> incluye una sección <ph name="SUBJECT_STRING_VALUE" /> con el valor <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />, el certificado deberá contar con al menos una unidad organizacional que coincida con el valor indicado para ser elegido.
+      * Si <ph name="FILTER_PLACEHOLDER" /> incluye una sección <ph name="SUBJECT_STRING_VALUE" /> con el valor <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />, el certificado deberá contar con al menos una unidad organizativa que coincida con el valor indicado para ser elegido.
 
       * Si estableces <ph name="FILTER_PLACEHOLDER" /> como <ph name="EMPTY_DICTIONARY" />, no se aplicarán restricciones adicionales a la selección de certificados de cliente. Ten en cuenta que se seguirán aplicando los filtros que proporciona el servidor web.
 
@@ -8239,9 +8239,9 @@ Si no se establece, se usará el comportamiento nuevo al igual que en el resto d
 
       * Si <ph name="FILTER_PLACEHOLDER" /> incluye las secciones <ph name="ISSUER_STRING_VALUE" /> y <ph name="SUBJECT_STRING_VALUE" />, solo se seleccionarán certificados de cliente que cumplan con ambas condiciones.
 
-      * Si <ph name="FILTER_PLACEHOLDER" /> incluye la sección <ph name="SUBJECT_STRING_VALUE" /> con el valor <ph name="FILTER_STRING_ORGANIZATION" />, el certificado deberá contar con al menos una unidad organizacional que coincida con el valor indicado para ser elegido.
+      * Si <ph name="FILTER_PLACEHOLDER" /> incluye la sección <ph name="SUBJECT_STRING_VALUE" /> con el valor <ph name="FILTER_STRING_ORGANIZATION" />, el certificado deberá contar con al menos una unidad organizativa que coincida con el valor indicado para ser elegido.
 
-      * Si <ph name="FILTER_PLACEHOLDER" /> incluye una sección <ph name="SUBJECT_STRING_VALUE" /> con el valor <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />, el certificado deberá contar con al menos una unidad organizacional que coincida con el valor indicado para ser elegido.
+      * Si <ph name="FILTER_PLACEHOLDER" /> incluye una sección <ph name="SUBJECT_STRING_VALUE" /> con el valor <ph name="FILTER_STRING_ORGANIZATIONAL_UNIT" />, el certificado deberá contar con al menos una unidad organizativa que coincida con el valor indicado para ser elegido.
 
       * Si estableces <ph name="FILTER_PLACEHOLDER" /> como <ph name="EMPTY_DICTIONARY" />, no se aplicarán restricciones adicionales a la selección de certificados de cliente. Ten en cuenta que se seguirán aplicando los filtros que proporciona el servidor web.
 

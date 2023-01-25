@@ -1165,7 +1165,7 @@
 <translation id="2060375639911876205">移除 eSIM 卡設定檔</translation>
 <translation id="2061366302742593739">沒有可顯示的內容</translation>
 <translation id="2062354623176996748">如果不希望系統在你使用網路時儲存你的瀏覽記錄，請使用無痕式視窗</translation>
-<translation id="206308717637808771">在關閉所有視窗後刪除資料。資料的處理方式與處理目前瀏覽網站的方式相同</translation>
+<translation id="206308717637808771">在關閉所有視窗後刪除資料。資料的處理方式與目前瀏覽的網站相同</translation>
 <translation id="2065405795449409761">Chrome 目前受到自動測試軟體控制。</translation>
 <translation id="2071393345806050157">沒有本機記錄檔案。</translation>
 <translation id="2071692954027939183">系統已按照你的習慣自動封鎖通知</translation>
@@ -3405,7 +3405,7 @@
 <translation id="4115002065223188701">偵測不到網路</translation>
 <translation id="4115378294792113321">洋紅色</translation>
 <translation id="4116704186509653070">重新開啟</translation>
-<translation id="4117714603282104018">觸控板觸動回饋</translation>
+<translation id="4117714603282104018">觸控板觸覺回饋</translation>
 <translation id="4118579674665737931">請重新啟動裝置，然後再試一次。</translation>
 <translation id="412022815379960229">只要在登入狀態下，就能開始透過 Google 相簿探索你的回憶集錦。</translation>
 <translation id="4120388883569225797">無法重設這個安全金鑰</translation>
@@ -3608,7 +3608,7 @@
 <translation id="4324577459193912240">檔案未完成下載</translation>
 <translation id="4325237902968425115">正在解除安裝「<ph name="LINUX_APP_NAME" />」...</translation>
 <translation id="4330191372652740264">冰水</translation>
-<translation id="4330387663455830245">一律不翻譯<ph name="LANGUAGE" />內容</translation>
+<translation id="4330387663455830245">一律不翻譯<ph name="LANGUAGE" /></translation>
 <translation id="4332976768901252016">設定家長監護功能</translation>
 <translation id="4333854382783149454">PKCS #1 SHA-1 (使用 RSA 加密)</translation>
 <translation id="4336434711095810371">清除所有資料</translation>
@@ -5159,7 +5159,7 @@
 <translation id="5804241973901381774">權限</translation>
 <translation id="5805268472388605531">按住鍵盤按鍵即可查看重音符號和特殊字元</translation>
 <translation id="5805697420284793859">視窗管理員</translation>
-<translation id="5806447147478173900">所顯示網站使用的總儲存空間：<ph name="TOTAL_USAGE" /></translation>
+<translation id="5806447147478173900">以下網站使用的總儲存空間：<ph name="TOTAL_USAGE" /></translation>
 <translation id="5806773519584576205">0° (預設)</translation>
 <translation id="5809835394668218762">可對 <ph name="WEBSITE" /> 執行的其他動作</translation>
 <translation id="5810603387504252966">必須前往 chrome://flags 啟用 #borealis-enabled</translation>
@@ -6066,7 +6066,7 @@
 <translation id="6666559645296300656">正在取消 Linux 升級</translation>
 <translation id="6667086124612170548">檔案過大，無法下載到這部裝置</translation>
 <translation id="666731172850799929">在「<ph name="APP_NAME" />」中開啟</translation>
-<translation id="6669195257625975787">資料的處理方式與處理目前瀏覽網站的方式相同</translation>
+<translation id="6669195257625975787">資料的處理方式與目前瀏覽的網站相同</translation>
 <translation id="6670142487971298264">現在可以使用「<ph name="APP_NAME" />」了</translation>
 <translation id="6670767097276846646">部分擴充功能可以將搜尋引擎新增至 Chrome</translation>
 <translation id="6671320560732140690">{COUNT,plural, =1{1 個地址}other{# 個地址}}</translation>
@@ -6118,7 +6118,7 @@
 <translation id="671619610707606484">這會清除網站儲存的資料，共 <ph name="TOTAL_USAGE" /></translation>
 <translation id="6716798148881908873">網路連線已中斷。請檢查網路連線，或改用其他 Wi-Fi 網路。</translation>
 <translation id="671928215901716392">鎖定螢幕</translation>
-<translation id="6721744718589119342">我們可能會透過電子郵件提供更新資訊或要求你提供更多資訊</translation>
+<translation id="6721744718589119342">我們可能會透過電子郵件要求提供更多資訊，或告知最新消息</translation>
 <translation id="6721972322305477112">檔案(&amp;F)</translation>
 <translation id="672208878794563299">這個網站下次會再詢問你。</translation>
 <translation id="6723661294526996303">匯入書籤和設定...</translation>
@@ -7575,7 +7575,7 @@
 <translation id="8064015586118426197">ChromeOS Flex</translation>
 <translation id="8064279191081105977">「<ph name="GROUP_NAME" />」群組 - <ph name="GROUP_CONTENTS" /> - <ph name="COLLAPSED_STATE" /></translation>
 <translation id="8066444921260601116">連線對話方塊</translation>
-<translation id="8070662218171013510">觸動回饋</translation>
+<translation id="8070662218171013510">觸覺回饋</translation>
 <translation id="8071432093239591881">以圖片形式列印</translation>
 <translation id="8073499153683482226"><ph name="BEGIN_PARAGRAPH1" />應用程式資料泛指應用程式依據開發人員設定所儲存的任何資料，包括聯絡人、訊息和相片等。<ph name="END_PARAGRAPH1" />
     <ph name="BEGIN_PARAGRAPH2" />備份資料不會計入貴子女帳戶的雲端硬碟儲存空間配額。<ph name="END_PARAGRAPH2" />
@@ -8335,7 +8335,7 @@
 <translation id="8786824282808281903">如果你的孩子看到這個圖示，就表示他們可以透過指紋進行身分認證或購買交易。</translation>
 <translation id="8787575090331305835">{NUM_TABS,plural, =1{未命名的群組 - 1 個分頁}other{未命名的群組 - # 個分頁}}</translation>
 <translation id="8791157330927639737">進一步瞭解如何更新</translation>
-<translation id="8791534160414513928">將「不追蹤」要求與瀏覽流量一併送出</translation>
+<translation id="8791534160414513928">將「Do Not Track」要求與瀏覽流量一併送出</translation>
 <translation id="879413103056696865">無線基地台開啟時，你的「<ph name="PHONE_NAME" />」會：</translation>
 <translation id="8795916974678578410">開新視窗</translation>
 <translation id="8797459392481275117">一律不翻譯這個網站的內容</translation>

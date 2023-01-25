@@ -38,7 +38,7 @@
 <translation id="10614374240317010">Сайты, пароли для которых не сохраняются</translation>
 <translation id="1064054731605354900">A3x5</translation>
 <translation id="106701514854093668">Закладки на компьютере</translation>
-<translation id="1068672505746868501">Не переводить страницы на этом языке: <ph name="SOURCE_LANGUAGE" /></translation>
+<translation id="1068672505746868501">Не переводить <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070853536588271387">Гибридные автомобили и транспортные средства, работающие на альтернативном топливе</translation>
 <translation id="1070901266639972381">До ночи</translation>
 <translation id="1072594122896439679">Музыка и аудио</translation>
@@ -1363,7 +1363,7 @@
 <translation id="4441832193888514600">Игнорируется, так как правило может быть настроено только на уровне облака.</translation>
 <translation id="4450893287417543264">Больше не показывать</translation>
 <translation id="4451135742916150903">Разрешено отправлять запрос на подключение к HID-устройствам</translation>
-<translation id="4452328064229197696">Пароль, который вы только что использовали, был раскрыт в результате утечки данных. Чтобы защитить свои аккаунты, проверьте сохраненные пароли в Менеджере паролей Google.</translation>
+<translation id="4452328064229197696">Пароль, который вы только что использовали, был раскрыт в результате утечки данных. Чтобы защитить свои аккаунты, проверьте сохраненные пароли в Google Менеджере паролей.</translation>
 <translation id="4455222631300069614">Смените пароль прямо сейчас</translation>
 <translation id="4460315069258617173">Пока вкладки этого сайта открыты, доступ разрешен</translation>
 <translation id="4464826014807964867">Веб-сайты со сведениями от вашей организации</translation>
@@ -1578,7 +1578,7 @@
 <translation id="4995474875135717171">Изменен:</translation>
 <translation id="4995749490935861684"><ph name="CUSTOMIZE_SEARCH_ENGINES_FOCUSED_FRIENDLY_MATCH_TEXT" />. Нажмите Tab, а затем Ввод, чтобы настроить поиск по сайту и задать поисковую систему по умолчанию.</translation>
 <translation id="5002932099480077015">Chrome будет хранить на этом устройстве данные карты для быстрого заполнения форм.</translation>
-<translation id="5011561501798487822">Обнаружен язык</translation>
+<translation id="5011561501798487822">Автоматически определенный язык</translation>
 <translation id="5015510746216210676">Имя компьютера:</translation>
 <translation id="5017554619425969104">Скопированный текст</translation>
 <translation id="5017828934289857214">Напомнить позже</translation>
@@ -1864,7 +1864,7 @@
 <translation id="571510845185711675">Ветеринария</translation>
 <translation id="5720705177508910913">Текущий пользователь</translation>
 <translation id="5723287205918986743">Военная промышленность</translation>
-<translation id="5725567311035061582">Управлять файлами cookie и данными сайтов</translation>
+<translation id="5725567311035061582">Управление файлами cookie и данными сайтов</translation>
 <translation id="5730040223043577876">Chrome рекомендует сбросить пароль, если вы использовали его на других сайтах.</translation>
 <translation id="5736165827969430182">Горная и металлургическая промышленность</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Сохраните карту в аккаунте Google}one{Сохраните карты в аккаунте Google}few{Сохраните карты в аккаунте Google}many{Сохраните карты в аккаунте Google}other{Сохраните карты в аккаунте Google}}</translation>
@@ -2661,7 +2661,7 @@
 <translation id="7716424297397655342">Не удалось загрузить сайт из кеша</translation>
 <translation id="7723047071702270851">Измените данные карты</translation>
 <translation id="7734285854693414638">Быстро создать форму в Google Формах</translation>
-<translation id="773466115871691567">Переводить страницы на этом языке: <ph name="SOURCE_LANGUAGE" /></translation>
+<translation id="773466115871691567">Всегда переводить <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7736959720849233795">Копировать адрес ссылки</translation>
 <translation id="7740996059027112821">Стандартный</translation>
 <translation id="77424286611022110">Этот сайт показывает навязчивую или вводящую в заблуждение рекламу. <ph name="LEARN_MORE_LINK_TEXT" /></translation>

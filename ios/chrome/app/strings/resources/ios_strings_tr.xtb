@@ -49,7 +49,7 @@ Arama motorunuz <ph name="DSE_NAME" />. Arama geçmişinizi silmek için arama m
 <translation id="1281818060020671000">Veri Yönetimi</translation>
 <translation id="1282311502488501110">Oturum Açma</translation>
 <translation id="1283524564873030414">Son 24 Saat</translation>
-<translation id="1285320974508926690">Bu siteyi hiçbir zaman çevirme</translation>
+<translation id="1285320974508926690">Bu siteyi asla çevirme</translation>
 <translation id="1291506870746876680">Bu siteden ayrıldığınızda <ph name="BEGIN_BOLD" />"<ph name="SITE_NAME" />"<ph name="END_BOLD" /> izinleri kapalı ayarına sıfırlanır.</translation>
 <translation id="1312721752506309252">Gelişmiş Koruma açık</translation>
 <translation id="1321993286294231467">Resim kaydetme hatası.</translation>
@@ -876,7 +876,7 @@ Gizli moddayken siteler, örneğin reklamları kişiselleştirmek amacıyla fark
 <translation id="7554791636758816595">Yeni Sekme</translation>
 <translation id="7561196759112975576">Her zaman</translation>
 <translation id="7583004045319035904">Gizli sekmelerinizin kilidini açmak için <ph name="BIOMETRIC_AUTHENITCATION_TYPE" /> kullanın.</translation>
-<translation id="7600965453749440009"><ph name="LANGUAGE" /> dilini asla çevirme</translation>
+<translation id="7600965453749440009">Bu dili (<ph name="LANGUAGE" />) asla çevirme</translation>
 <translation id="7603852183842204213">Engellen Pop-up'lar (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7607521702806708809">Şifreyi Sil</translation>
 <translation id="7638584964844754484">Yanlış parola</translation>
@@ -1006,7 +1006,7 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <translation id="8558480467877843976">Artık mesajlardaki, dokümanlardaki ve diğer uygulamalardaki bağlantılara göz attığınızda veya dokunduğunuzda Chrome'u kullanabilirsiniz.</translation>
 <translation id="8588404856427128947">Kapalı</translation>
 <translation id="8590913940444621808">Asla Sorma</translation>
-<translation id="8591976964826315682">Gizli modda üçüncü taraf çerezleri engelle</translation>
+<translation id="8591976964826315682">Gizli modda üçüncü taraf çerezlerini engelle</translation>
 <translation id="8605219856220328675">Sekmeyi kapat.</translation>
 <translation id="8620640915598389714">Düzenle</translation>
 <translation id="8626393685701737946">Varsayılan site görünümünü Ayarlar &gt; İçerik Ayarları bölümünden masaüstü olarak değiştirebilirsiniz</translation>

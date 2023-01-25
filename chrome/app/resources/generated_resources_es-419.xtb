@@ -892,7 +892,7 @@ Es posible que se apliquen a esta cuenta los permisos que otorgaste a apps. Pued
     Esta acción no afecta las apps ni el contenido que se encuentra en otros dispositivos.</translation>
 <translation id="1809734401532861917">Agregar mis favoritos, historial, contraseñas y otras opciones de configuración a <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="1810366086647840386">Servidor de la imagen</translation>
-<translation id="1811908311154949291">Marco incógnito cercado: <ph name="FENCEDFRAME_SITE" /></translation>
+<translation id="1811908311154949291">Marco vallado incógnito: <ph name="FENCEDFRAME_SITE" /></translation>
 <translation id="1813278315230285598">Servicios</translation>
 <translation id="18139523105317219">Nombre de parte EDI</translation>
 <translation id="1815083418640426271">Pegar como texto sin formato</translation>
@@ -1619,7 +1619,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="245322989586167203">Por lo general los sitios se conectan a puertos en serie para habilitar funciones de transferencia de datos, como la configuración de la red</translation>
 <translation id="2453706416476934374">Para que <ph name="SUPERVISED_USER_NAME" /> obtenga respuestas personalizadas cuando haga preguntas, permite que Asistente acceda a una captura de pantalla de lo que sucede en el dispositivo de <ph name="SUPERVISED_USER_NAME" />. También puede acceder a información sobre las canciones o los videos que se estén reproduciendo.</translation>
 <translation id="2453860139492968684">Finalizar</translation>
-<translation id="2454206500483040640">Particionadas</translation>
+<translation id="2454206500483040640">Con particiones</translation>
 <translation id="2454247629720664989">Palabra clave</translation>
 <translation id="2454524890947537054">¿Apruebas la solicitud de acceso al sitio web?</translation>
 <translation id="245650153866130664">Para actualizar un ticket automáticamente, marca la opción "Recordar contraseña". Esta solo se almacenará en el dispositivo.</translation>
@@ -1741,7 +1741,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> no se pudo conectar a <ph name="NETWORK_ID" />. Selecciona otra red o inténtalo de nuevo.</translation>
 <translation id="2553440850688409052">Ocultar este complemento</translation>
 <translation id="2554553592469060349">El archivo seleccionado es demasiado grande (tamaño máximo: 3 MB).</translation>
-<translation id="25568951186001797">Marco cercado: <ph name="FENCEDFRAME_SITE" /></translation>
+<translation id="25568951186001797">Marco vallado: <ph name="FENCEDFRAME_SITE" /></translation>
 <translation id="2558569818338050235">Tu historial de navegación afecta los anuncios que ves.</translation>
 <translation id="2559889124253841528">Guardar en el dispositivo</translation>
 <translation id="2564520396658920462">La ejecución de JavaScript mediante AppleScript está desactivada. Para activarla, en la barra de menú, visita Ver &gt; Desarrollador &gt; Permitir JavaScript para eventos de Apple. Obtener más información en https://support.google.com/chrome/?p=applescript</translation>
@@ -2981,7 +2981,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3739254215541673094">¿Abrir <ph name="APPLICATION" />?</translation>
 <translation id="3741056951918180319">Puedes hacer clic en la extensión en cualquier momento para usarla en el sitio que desees</translation>
 <translation id="3742235229730461951">Disposición del teclado coreano</translation>
-<translation id="3742666961763734085">No se encontró ninguna unidad organizacional con ese nombre. Vuelve a intentarlo.</translation>
+<translation id="3742666961763734085">No se encontró ninguna unidad organizativa con ese nombre. Vuelve a intentarlo.</translation>
 <translation id="3743842571276656710">Ingresa el PIN para vincular con <ph name="DEVICE_NAME" /></translation>
 <translation id="3747077776423672805">Para quitar apps, ve a Configuración &gt; Google Play Store &gt; Administrar preferencias de Android &gt; Apps o Administrador de aplicaciones. Luego, presiona la app que quieras desinstalar (es posible que debas deslizar el dedo hacia la derecha o la izquierda para encontrarla). A continuación, presiona Desinstalar o Inhabilitar.</translation>
 <translation id="3747603683749989726">¿Quieres activar la seguridad mejorada?</translation>
@@ -3013,7 +3013,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="377050016711188788">Helado</translation>
 <translation id="3771290962915251154">Se inhabilitó esta configuración porque los controles parentales están activados</translation>
 <translation id="3771294271822695279">Archivos de video</translation>
-<translation id="3771851622616482156">Saldrás de este sitio, incluso si está en pestañas abiertas</translation>
+<translation id="3771851622616482156">Saldrás de este sitio, incluso si está en pestañas abiertas.</translation>
 <translation id="3772046291955677288">Leí y acepté las <ph name="BEGIN_LINK1" />Condiciones del Servicio de Google<ph name="END_LINK1" /> y las <ph name="BEGIN_LINK2" />Condiciones del Servicio Adicionales de Chrome y Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="3774166835015494435">Notificaciones y fotos recientes</translation>
 <translation id="3775432569830822555">Certificado del servidor SSL</translation>
@@ -4754,7 +4754,7 @@ Puedes asignar varios interruptores a esta acción.</translation>
 <translation id="5429818411180678468">Ancho completo</translation>
 <translation id="5430931332414098647">Conexión instantánea mediante dispositivo móvil</translation>
 <translation id="5431318178759467895">Color</translation>
-<translation id="543338862236136125">Editar la contraseña</translation>
+<translation id="543338862236136125">Editar contraseña</translation>
 <translation id="5434065355175441495">PKCS N. º 1, Encriptación RSA</translation>
 <translation id="5435779377906857208">Siempre permitir que <ph name="HOST" /> acceda a tu ubicación</translation>
 <translation id="5436492226391861498">Esperando túnel proxy...</translation>
@@ -6161,7 +6161,7 @@ Tienes # contraseñas hackeadas más. El Administrador de contraseñas de Go
 <translation id="6762833852331690540">Sí</translation>
 <translation id="676560328519657314">Tus formas de pago de Google Pay</translation>
 <translation id="6767566652486411142">Elegir otro idioma…</translation>
-<translation id="6767639283522617719">No se puede unir al dominio. Asegúrate de que sea correcta la configuración de la unidad organizacional.</translation>
+<translation id="6767639283522617719">No se puede unir al dominio. Asegúrate de que sea correcta la configuración de la unidad organizativa.</translation>
 <translation id="6768034047581882264">No puede mostrar contenido no seguro</translation>
 <translation id="6770042910635026163">Los sitios que visitas y definen tus intereses</translation>
 <translation id="6770602306803890733">Mejora la seguridad para ti y todos los usuarios de la Web</translation>
@@ -7118,7 +7118,7 @@ Tienes # contraseñas hackeadas más. El Administrador de contraseñas de Go
 <translation id="766635563210446220">No se pudieron importar las contraseñas. Revisa <ph name="FILENAME" /> y asegúrate de que tenga el formato correcto. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="7666531788977935712">Se habilitó el botón Continuar</translation>
 <translation id="7668002322287525834">{NUM_WEEKS,plural, =1{Devuelve el dispositivo <ph name="DEVICE_TYPE" /> en el transcurso de {NUM_WEEKS} semana}other{Devuelve el dispositivo <ph name="DEVICE_TYPE" /> en el transcurso de {NUM_WEEKS} semanas}}</translation>
-<translation id="7668423670802040666">En el Administrador de contraseñas de Google de <ph name="ACCOUNT" /></translation>
+<translation id="7668423670802040666">En el Administrador de contraseñas de Google de <ph name="ACCOUNT" /></translation>
 <translation id="7668648754769651616">Las funciones de accesibilidad hacen que tu dispositivo sea más fácil de usar. Para acceder a la Configuración rápida, selecciona la hora en la parte inferior de la pantalla.</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{El PIN es incorrecto. Te queda un intento.}other{El PIN es incorrecto. Te quedan # intentos.}}</translation>
 <translation id="7670434942695515800">Para obtener el mejor rendimiento, actualiza Linux y usa la versión más reciente. Te recomendamos realizar una copia de seguridad de tus archivos en caso de que la actualización no pueda completarse. Cuando empiece la actualización, se apagará Linux. Guarda los archivos que estén abiertos antes de continuar. <ph name="LINK_START" />Más información<ph name="LINK_END" /></translation>
@@ -8336,7 +8336,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8786824282808281903">Cuando vea este ícono, tu hijo podrá identificarse o aprobar compras con su huella dactilar.</translation>
 <translation id="8787575090331305835">{NUM_TABS,plural, =1{Grupo sin nombre - 1 pestaña}other{Grupo sin nombre - # pestañas}}</translation>
 <translation id="8791157330927639737">Más información sobre la actualización</translation>
-<translation id="8791534160414513928">Enviar solicitud de "No realizar seguimiento" con el tráfico de navegación</translation>
+<translation id="8791534160414513928">Enviar solicitud de "Do Not Track" con el tráfico de navegación</translation>
 <translation id="879413103056696865">Mientras el hotspot esté activado, tu número <ph name="PHONE_NAME" /> podrá:</translation>
 <translation id="8795916974678578410">Nueva ventana</translation>
 <translation id="8797459392481275117">Nunca traducir este sitio</translation>

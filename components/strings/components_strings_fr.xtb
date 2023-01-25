@@ -51,7 +51,7 @@
 <translation id="1096545575934602868">Ce champ ne peut pas contenir plus de <ph name="MAX_ITEMS_LIMIT" /> entrées. Toutes les entrées supplémentaires seront supprimées.</translation>
 <translation id="1100782917270858593">Bouton "Reprendre votre parcours", appuyez sur Entrée pour reprendre votre parcours et voir les activités pertinentes dans votre historique Chrome</translation>
 <translation id="1101672080107056897">Action en cas d'erreur</translation>
-<translation id="1103523840287552314">Toujours traduire les pages en <ph name="LANGUAGE" /></translation>
+<translation id="1103523840287552314">Toujours traduire les pages rédigées en <ph name="LANGUAGE" /></translation>
 <translation id="1108464073729874771">A3x4</translation>
 <translation id="1110994991967754504">Sélectionnez une autorisation pour <ph name="PERMISSION_NAME" /></translation>
 <translation id="1112828774174131240">Antiquités et objets de collection</translation>
@@ -301,7 +301,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="1662550410081243962">Enregistrer et saisir les modes de paiement</translation>
 <translation id="1663943134801823270">Les cartes et les adresses proviennent de Chrome. Vous pouvez les gérer dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">Les pages en <ph name="SOURCE_LANGUAGE" /> seront désormais traduites en <ph name="TARGET_LANGUAGE" />.</translation>
-<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> à <ph name="TARGET_LANGUAGE" /></translation>
+<translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> vers <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Bord court en premier</translation>
 <translation id="168693727862418163">La valeur de la règle n'a pas été validée par rapport à son schéma et sera ignorée.</translation>
 <translation id="168841957122794586">Le certificat du serveur contient une clé de chiffrement faible.</translation>
@@ -2234,7 +2234,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="6709888928011386878">Instruments de musique</translation>
 <translation id="6710213216561001401">Précédent</translation>
 <translation id="6710594484020273272">&lt;Saisissez le terme de recherche&gt;</translation>
-<translation id="671076103358959139">Jeton d'inscription :</translation>
+<translation id="671076103358959139">Jeton d'enregistrement :</translation>
 <translation id="6711464428925977395">Le serveur proxy présente une erreur, ou l'adresse est incorrecte.</translation>
 <translation id="6716672519412350405"><ph name="URL" /> cherche à créer un plan 3D de votre environnement et à suivre la position de la caméra</translation>
 <translation id="6718612893943028815">Utiliser la caméra ?</translation>
@@ -2341,7 +2341,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="6979440798594660689">Coupé (par défaut)</translation>
 <translation id="6989763994942163495">Afficher les paramètres avancés…</translation>
 <translation id="6992499368826755835">Secteur de l'automobile</translation>
-<translation id="6996312675313362352">Toujours traduire les pages en <ph name="ORIGINAL_LANGUAGE" /></translation>
+<translation id="6996312675313362352">Toujours traduire les pages rédigées en <ph name="ORIGINAL_LANGUAGE" /></translation>
 <translation id="6999969238895751684">Industrie du divertissement et des loisirs</translation>
 <translation id="7003335073762455340">Vous suivez ce produit. Cette page est enregistrée dans <ph name="LAST_BOOKMARKS_FOLDER" />.</translation>
 <translation id="7004583254764674281">Utiliser Windows Hello pour confirmer les cartes plus rapidement</translation>
@@ -2663,7 +2663,7 @@ Informations supplémentaires :
 <translation id="7716424297397655342">Impossible de charger ce site à partir du cache</translation>
 <translation id="7723047071702270851">Modifier la carte</translation>
 <translation id="7734285854693414638">Créez rapidement un formulaire dans Google Forms</translation>
-<translation id="773466115871691567">Toujours traduire les pages en <ph name="SOURCE_LANGUAGE" /></translation>
+<translation id="773466115871691567">Toujours traduire les pages rédigées en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7736959720849233795">Copier l'adresse du lien</translation>
 <translation id="7740996059027112821">Standard</translation>
 <translation id="77424286611022110">Ce site affiche des annonces intrusives ou trompeuses. <ph name="LEARN_MORE_LINK_TEXT" /></translation>

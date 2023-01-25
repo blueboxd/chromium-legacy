@@ -1284,6 +1284,13 @@
   'win10': {
     'swarming': {
       'dimensions': {
+        'os': 'Windows-10-19042|Windows-10-19045',
+      },
+    },
+  },
+  'win10-20h2': {
+    'swarming': {
+      'dimensions': {
         'os': 'Windows-10-19042',
       },
     },
@@ -1317,7 +1324,7 @@
   'win10_intel_hd_630_experimental': {
     'swarming': {
       'dimensions': {
-        'gpu': '8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141',
+        'gpu': '8086:9bc5-31.0.101.2111',
         'os': 'Windows-10',
         'pool': 'chromium.tests.gpu',
       },
@@ -1326,7 +1333,7 @@
   'win10_intel_hd_630_stable': {
     'swarming': {
       'dimensions': {
-        'gpu': '8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141',
+        'gpu': '8086:9bc5-31.0.101.2111',
         'os': 'Windows-10',
         'pool': 'chromium.tests.gpu',
       },
@@ -1339,7 +1346,7 @@
       # to trigger tests on multiple configurations.
       'dimension_sets': [
         {
-          'gpu': '8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141',
+        'gpu': '8086:9bc5-31.0.101.2111',
           'os': 'Windows-10',
           'pool': 'chromium.tests.gpu',
         },

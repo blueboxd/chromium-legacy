@@ -391,7 +391,7 @@ Txartel adimenduna sartuta edukitzea eskatzen du <ph name="DOMAIN" /> domeinuak.
 <translation id="1374844444528092021">"<ph name="NETWORK_NAME" />" sareak eskatu duen ziurtagiria ez dago instalatuta edo ez da baliozkoa. Lortu beste ziurtagiri bat eta saiatu berriro konektatzen.</translation>
 <translation id="1375321115329958930">Gordetako pasahitzak</translation>
 <translation id="1375557162880614858">ChromeVox (ChromeOS Flex-en pantaila-irakurgailu integratua) aktibatu nahi duzu?</translation>
-<translation id="1375938286942050085">Konfiguratu da. Ondoren, prestatu gailua jokoetan aritzeko.</translation>
+<translation id="1375938286942050085">Konfiguratu da. Ondoren, prestatu gailua bideojokoetan aritzeko.</translation>
 <translation id="137651782282853227">Hemen agertuko dira gordetako helbideak</translation>
 <translation id="1376771218494401509">Eman izena &amp;leihoari…</translation>
 <translation id="1377600615067678409">Saltatu, momentuz</translation>
@@ -645,7 +645,7 @@ Baliteke aplikazioei emandako baimenak kontu honi aplikatzea. <ph name="APPS_LIN
 <translation id="1596286373007273895">Erabilgarri</translation>
 <translation id="1596709061955594992">Bluetootha desaktibatuta dago. Aktiba ezazu gailu erabilgarriak ikusteko.</translation>
 <translation id="1598233202702788831">Administratzaileak desgaitu ditu eguneratzeak.</translation>
-<translation id="1600857548979126453">Atzitu orriaren araztailearen backenda</translation>
+<translation id="1600857548979126453">Atzitu orriaren araztailearen backend-a</translation>
 <translation id="1601560923496285236">Aplikatu</translation>
 <translation id="1602085790802918092">Makina birtuala abiarazten</translation>
 <translation id="1603411913360944381">Ahaztu <ph name="DEVICE_NAME" /></translation>
@@ -895,7 +895,7 @@ Baliteke aplikazioei emandako baimenak kontu honi aplikatzea. <ph name="APPS_LIN
     Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translation>
 <translation id="1809734401532861917">Gehitu laster-markak, historia, pasahitzak eta ezarpenak <ph name="USER_EMAIL_ADDRESS" /> profilean</translation>
 <translation id="1810366086647840386">Irudiaren zerbitzaria</translation>
-<translation id="1811908311154949291">Ezkutuko moduko marko hermetikoa (<ph name="FENCEDFRAME_SITE" />)</translation>
+<translation id="1811908311154949291">Ezkutuko moduko marko mugarritua (<ph name="FENCEDFRAME_SITE" />)</translation>
 <translation id="1813278315230285598">Zerbitzuak</translation>
 <translation id="18139523105317219">EDI alderdiaren izena</translation>
 <translation id="1815083418640426271">Itsatsi testu arrunt gisa</translation>
@@ -1744,7 +1744,7 @@ Voice Match-ekin, Google-ren Laguntzailea zerbitzuak <ph name="SUPERVISED_USER_N
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> programak ezin izan da konektatu <ph name="NETWORK_ID" /> sarera. Hautatu beste sare bat edo saiatu berriro.</translation>
 <translation id="2553440850688409052">Ezkutatu plugina</translation>
 <translation id="2554553592469060349">Hautatutako fitxategia handiegia da (3 MB gehienez).</translation>
-<translation id="25568951186001797">Marko hermetikoa (<ph name="FENCEDFRAME_SITE" />)</translation>
+<translation id="25568951186001797">Marko mugarritua (<ph name="FENCEDFRAME_SITE" />)</translation>
 <translation id="2558569818338050235">Arakatze-historiak agertzen zaizkizun iragarkietan eragina du</translation>
 <translation id="2559889124253841528">Gorde gailuan</translation>
 <translation id="2564520396658920462">Desaktibatuta dago AppleScript bitartez JavaScript exekutatzeko aukera. Aktibatzeko, joan menu-barrara eta sakatu Ikusi &gt; Garatzailea &gt; Baimendu JavaScript Apple gertaeretan. Informazio gehiago lortzeko, joan https://support.google.com/chrome/?p=applescript helbidera.</translation>
@@ -2237,7 +2237,7 @@ Txartel adimenduna sartuta edukitzea eskatzen du <ph name="DOMAIN" /> domeinuak.
 <translation id="3008272652534848354">Berrezarri baimenak</translation>
 <translation id="3008694618228964140">{NUM_DAYS,plural, =1{Gaur wifi-sare batera konektatzeko eta eguneratze bat deskargatzeko eskatzen du <ph name="MANAGER" /> domeinuak. Bestela, deskarga ezazu neurtutako konexio batetik (baliteke zerbait ordaindu behar izatea).}other{Epemuga baino lehen wifi-sare batera konektatzeko eta eguneratze bat deskargatzeko eskatzen du <ph name="MANAGER" /> domeinuak. Bestela, deskargatu eguneratzea neurtutako konexio batetik (baliteke zerbait ordaindu behar izatea).}}</translation>
 <translation id="3009178788565917040">Irteera</translation>
-<translation id="3009300415590184725">Ziur mugikorreko datuen zerbitzua konfiguratzeko prozesua bertan behera utzi nahi duzula?</translation>
+<translation id="3009300415590184725">Ziur mugikorretarako datu-zerbitzua konfiguratzeko prozesua bertan behera utzi nahi duzula?</translation>
 <translation id="3009779501245596802">Datu-base indexatuak</translation>
 <translation id="3010234549896186761">{COUNT,plural, =0{Pasahitzek konplexuak dirudite}=1{{COUNT} pasahitz ez da segurua}other{{COUNT} pasahitz ez dira seguruak}}</translation>
 <translation id="3010279545267083280">Pasahitza ezabatu da</translation>
@@ -3165,7 +3165,7 @@ Txartel adimenduna sartuta edukitzea eskatzen du <ph name="DOMAIN" /> domeinuak.
 <translation id="3895090224522145010">Kerberos-eko erabiltzaile-izena</translation>
 <translation id="389521680295183045">Webguneek gailua noiz erabiltzen ari zaren jakitea eska dezakete</translation>
 <translation id="3897298432557662720">{COUNT,plural, =1{irudi bat}other{# irudi}}</translation>
-<translation id="3897746662269329507"><ph name="DEVICE_TYPE" /> gailua jokoak erabiltzeko dago diseinatuta. Orain, "Arakatu" aplikazioa irekiko da; bertan, ehunka joko berri atzi ditzakezu, bai eta jokoen eskaintzak ikusi eta gailuak jokoetarako dakartzan eginbideak ezagutu ere.</translation>
+<translation id="3897746662269329507"><ph name="DEVICE_TYPE" /> gailua bideojokoak erabiltzeko dago diseinatuta. Orain, "Arakatu" aplikazioa irekiko da; bertan, ehunka bideojoko berri atzi ditzakezu, bai eta bideojokoen eskaintzak ikusi eta gailuak bideojokoetarako dakartzan eginbideak ezagutu ere.</translation>
 <translation id="3898233949376129212">Gailuaren hizkuntza</translation>
 <translation id="3898327728850887246"><ph name="SITE_NAME" /> webguneak hauetarako baimena nahi du: <ph name="FIRST_PERMISSION" /> eta <ph name="SECOND_PERMISSION" /></translation>
 <translation id="3898743717925399322"><ph name="WEBSITE" /> webguneko pasahitza gailu honetan eta Google-ko kontuan gordeta dago. Zein ezabatu nahi duzu?</translation>
@@ -5784,7 +5784,7 @@ Txartel adimenduna sartuta edukitzea eskatzen du <ph name="DOMAIN" /> domeinuak.
 <translation id="6400360390396538896">Beti <ph name="ORIGIN" /> webgunean</translation>
 <translation id="6401458660421980302">Fitxa beste gailu batera bidaltzeko, hasi saioa Chrome-n bertan</translation>
 <translation id="6401597285454423070">Ordenagailuak Trusted Platform Module (TPM) bat daukan segurtasun-gailu bat du; Chrome OS-ren ezinbesteko segurtasun-eginbideak inplementatzeko erabiltzen da gailu hori. Informazio gehiago lortzeko, joan Chromebook-en laguntza-zentrora: https://support.google.com/chromebook/?p=tpm</translation>
-<translation id="6404187344102273690">Chromebook-eko jokoak</translation>
+<translation id="6404187344102273690">Chromebook-eko bideojokoak</translation>
 <translation id="6404511346730675251">Editatu laster-marka</translation>
 <translation id="6406303162637086258">Simulatu arakatzailea berrabiaraztea</translation>
 <translation id="6406506848690869874">Sinkronizazioa</translation>
@@ -6473,7 +6473,7 @@ Inoiz Voice Match erabiltzeari utzi nahi badiozu, ken ezazu Laguntzailea zerbitz
 <translation id="7019805045859631636">Bizkorra</translation>
 <translation id="7022562585984256452">Orri nagusia ezarri duzu.</translation>
 <translation id="7025082428878635038">Keinuekin nabigatzeko modu berri bat aurkeztu nahi dizugu</translation>
-<translation id="7025190659207909717">Datu-konexioaren zerbitzu-kudeaketa</translation>
+<translation id="7025190659207909717">Mugikorretarako datu-zerbitzuaren kudeaketa</translation>
 <translation id="7025895441903756761">Segurtasuna eta pribatutasuna</translation>
 <translation id="7027258625819743915">{COUNT,plural, =0{Ireki guztiak &amp;ezkutuko moduko leiho batean}=1{Ireki &amp;ezkutuko moduko leiho batean}other{Ireki guztiak ({COUNT}) &amp;ezkutuko moduko leiho batean}}</translation>
 <translation id="7029307918966275733">Crostini ez dago instalatuta. Zerrendak ikusi nahi badituzu, instalatu Crostini.</translation>
@@ -7024,7 +7024,7 @@ Inoiz Voice Match erabiltzeari utzi nahi badiozu, ken ezazu Laguntzailea zerbitz
 <translation id="7583948862126372804">Kopurua</translation>
 <translation id="7585106857920830898">Zure erakundeko segurtasun-gidalerroekin egiaztatzen…</translation>
 <translation id="7586498138629385861">Chrome-ren aplikazioak irekita dauden bitartean, Chrome-k abian jarraituko du.</translation>
-<translation id="758895749110326677">Lagundu Chromebook-eko jokoak hobetzen</translation>
+<translation id="758895749110326677">Lagundu Chromebook-eko bideojokoak hobetzen</translation>
 <translation id="7589461650300748890">Ene! Kontuz ibili.</translation>
 <translation id="7593653750169415785">Automatikoki blokeatu dira, behin baino gehiagotan baztertu dituzulako jakinarazpenak</translation>
 <translation id="7594725637786616550">Erabili Powerwash fabrikako ezarpenak berrezartzeko, <ph name="DEVICE_TYPE" /> hasierako egoerara lehenera dadin.</translation>
@@ -8335,7 +8335,7 @@ Txartel adimenduna sartuta edukitzea eskatzen du <ph name="DOMAIN" /> domeinuak.
 <translation id="8786824282808281903">Haurrak ikono hau ikusten duenean, hatz-marka bat erabil daiteke identitatea identifikatzeko edo erosketak onartzeko.</translation>
 <translation id="8787575090331305835">{NUM_TABS,plural, =1{Talde izengabea: 1 fitxa}other{Talde izengabea: # fitxa}}</translation>
 <translation id="8791157330927639737">Lortu eguneratzeari buruzko informazio gehiago</translation>
-<translation id="8791534160414513928">Arakatze-trafikoari buruzko informazioarekin batera, bidali "Ez egin jarraipena" eskaera</translation>
+<translation id="8791534160414513928">Arakatze-trafikoari buruzko informazioarekin batera, bidali "Do Not Track" eskaera</translation>
 <translation id="879413103056696865">Wifi-gunea aktibatuta dagoen bitartean, <ph name="PHONE_NAME" /> telefonoak hau egingo du:</translation>
 <translation id="8795916974678578410">Leiho berria</translation>
 <translation id="8797459392481275117">Ez itzuli inoiz webgune hau</translation>

@@ -1972,7 +1972,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2783321960289401138">Utwórz skrót...</translation>
 <translation id="2783829359200813069">Wybieranie typów szyfrowania</translation>
 <translation id="2783952358106015700">Użyj klucza bezpieczeństwa w: <ph name="APP_NAME" /></translation>
-<translation id="2785267875302712148">Sprawdzanie hasła</translation>
+<translation id="2785267875302712148">Sprawdzanie haseł</translation>
 <translation id="2785873697295365461">Deskryptory plików</translation>
 <translation id="2785975315093449168">GTK</translation>
 <translation id="2787022501752539710">Zachowaj lokalne dane przeglądania (m.in. zakładki, hasła i historię)</translation>
@@ -3596,7 +3596,7 @@ Domena <ph name="DOMAIN" /> wymaga, by karta inteligentna pozostała w gnieźdz
 <translation id="4324577459193912240">Plik niekompletny</translation>
 <translation id="4325237902968425115">Odinstalowuję aplikację <ph name="LINUX_APP_NAME" />...</translation>
 <translation id="4330191372652740264">Woda z lodem</translation>
-<translation id="4330387663455830245">Nigdy nie tłumacz z tego języka: <ph name="LANGUAGE" /></translation>
+<translation id="4330387663455830245">Nigdy nie tłumacz z języka: <ph name="LANGUAGE" /></translation>
 <translation id="4332976768901252016">Konfigurowanie kontroli rodzicielskiej</translation>
 <translation id="4333854382783149454">PKCS #1, SHA-1 z szyfrowaniem RSA</translation>
 <translation id="4336434711095810371">Wyczyść wszystkie dane</translation>
@@ -5569,7 +5569,7 @@ Aby pomniejszyć, naciśnij Ctrl + Alt + zmniejsz jasność.</translation>
 <translation id="6202304368170870640">Kodu PIN możesz używać do logowania się lub do odblokowywania urządzenia.</translation>
 <translation id="6206199626856438589">Wylogujemy Cię z wyświetlonych stron, także na otwartych kartach</translation>
 <translation id="6206311232642889873">Kop&amp;iuj grafikę</translation>
-<translation id="6206521455877863927">W tym strony z tej samej domeny, np. google.com i mail.google.com. Strony, które przeglądasz, mogą zapisywać dane na Twoim urządzeniu.</translation>
+<translation id="6206521455877863927">Strony, które przeglądasz, w tym strony z tej samej domeny, np. google.com i mail.google.com, mogą zapisywać dane na Twoim urządzeniu.</translation>
 <translation id="6207200176136643843">Przywróć domyślny poziom powiększenia</translation>
 <translation id="6207806976844244951">Zapisz w Menedżerze haseł Google (<ph name="EMAIL" />)</translation>
 <translation id="6207937957461833379">Kraj/region</translation>
@@ -6481,7 +6481,7 @@ Masz jeszcze # przejętego hasła. Menedżer haseł Google zaleca, aby jak najs
 <translation id="7039326228527141150">Dostęp do urządzeń USB od <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Logowanie karty inteligentnej firmy Microsoft</translation>
 <translation id="7039951224110875196">Utwórz konto Google dla dziecka</translation>
-<translation id="7042116641003232070">Zezwolono na zapisywanie danych na urządzeniu</translation>
+<translation id="7042116641003232070">Może zapisywać dane na urządzeniu</translation>
 <translation id="7043108582968290193">Gotowe. Nie ma niezgodnych aplikacji.</translation>
 <translation id="7044124535091449260">Więcej informacji o uprawnieniach dostępu do stron</translation>
 <translation id="7044207729381622209">Wylogujemy Cię z tych stron, także na otwartych kartach</translation>
@@ -8276,7 +8276,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8741944563400125534">Przewodnik po konfiguracji Switch Access</translation>
 <translation id="8742998548129056176">Są to ogólne informacje o tym urządzeniu i o jego używaniu (takie jak poziom naładowania baterii, aktywność w systemie i aplikacjach oraz błędy). Wykorzystamy je do ulepszania Androida. Niektóre informacje zbiorcze pomogą nam też udoskonalić aplikacje Google lub zostaną wykorzystane przez naszych partnerów, na przykład deweloperów aplikacji na Androida, do tworzenia lepszych aplikacji i produktów.</translation>
 <translation id="8744641000906923997">Rōmaji</translation>
-<translation id="8745034592125932220">Nie zezwolono na zapisywanie danych na urządzeniu</translation>
+<translation id="8745034592125932220">Nie może zapisywać danych na urządzeniu</translation>
 <translation id="8746654918629346731">Prośba o zainstalowanie „<ph name="EXTENSION_NAME" />” już została przez Ciebie wysłana</translation>
 <translation id="874689135111202667">{0,plural, =1{Przesłać jeden plik do tej witryny?}few{Przesłać # pliki do tej witryny?}many{Przesłać # plików do tej witryny?}other{Przesłać # pliku do tej witryny?}}</translation>
 <translation id="8749805710397399240">Nie można przesłać ekranu Twojego urządzenia. Sprawdź uprawnienia rejestrowania zawartości ekranu w Preferencjach systemowych.</translation>
@@ -8329,7 +8329,7 @@ Domena <ph name="DOMAIN" /> wymaga, by karta inteligentna pozostała w gnieźdz
 <translation id="8786824282808281903">Gdy Twoje dziecko zobaczy tę ikonę, będzie mogło użyć odcisku palca do identyfikacji lub zatwierdzenia płatności.</translation>
 <translation id="8787575090331305835">{NUM_TABS,plural, =1{Grupa bez nazwy – 1 karta}few{Grupa bez nazwy – # karty}many{Grupa bez nazwy – # kart}other{Grupa bez nazwy – # karty}}</translation>
 <translation id="8791157330927639737">Więcej informacji o aktualizacjach</translation>
-<translation id="8791534160414513928">Wysyłaj żądanie „Bez śledzenia” podczas przeglądania</translation>
+<translation id="8791534160414513928">Wysyłaj żądanie „Do Not Track” podczas przeglądania</translation>
 <translation id="879413103056696865">Gdy hotspot jest włączony, <ph name="PHONE_NAME" />:</translation>
 <translation id="8795916974678578410">Nowe okno</translation>
 <translation id="8797459392481275117">Nigdy nie tłumacz tej strony</translation>

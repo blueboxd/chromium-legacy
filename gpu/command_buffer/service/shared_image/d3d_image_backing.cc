@@ -527,7 +527,10 @@ bool D3DImageBacking::UploadFromMemory(const std::vector<SkPixmap>& pixmaps) {
   return true;
 }
 
-bool D3DImageBacking::ReadbackToMemory(SkPixmap& pixmap) {
+bool D3DImageBacking::ReadbackToMemory(const std::vector<SkPixmap>& pixmaps) {
+  DCHECK_EQ(pixmaps.size(), 1u);
+  auto& pixmap = pixmaps[0];
+
   uint8_t* dest_memory = static_cast<uint8_t*>(pixmap.writable_addr());
   const size_t dest_stride = pixmap.info().minRowBytes();
 
@@ -951,9 +954,11 @@ bool D3DImageBacking::PresentSwapChain() {
   DCHECK_EQ(gl_textures_[0]->target(), static_cast<unsigned>(GL_TEXTURE_2D));
   api->glBindTextureFn(GL_TEXTURE_2D, gl_textures_[0]->service_id());
   DCHECK(GetGLImage());
-  if (!GetGLImage()->BindTexImage(GL_TEXTURE_2D)) {
-    LOG(ERROR) << "GLImage::BindTexImage failed";
-    return false;
+  if (auto* gl_image_d3d = gl::GLImage::ToGLImageD3D(GetGLImage())) {
+    if (!gl_image_d3d->BindTexImage(GL_TEXTURE_2D)) {
+      LOG(ERROR) << "GLImageD3D::BindTexImage failed";
+      return false;
+    }
   }
 
   TRACE_EVENT0("gpu", "D3DImageBacking::PresentSwapChain::Flush");
@@ -1003,13 +1008,8 @@ std::unique_ptr<OverlayImageRepresentation> D3DImageBacking::ProduceOverlay(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker) {
   TRACE_EVENT0("gpu", "D3DImageBacking::ProduceOverlay");
-  D3D11_TEXTURE2D_DESC desc;
-  d3d11_texture_->GetDesc(&desc);
-  if (swap_chain_ || desc.Format == DXGI_FORMAT_NV12) {
-    return std::make_unique<OverlayD3DImageRepresentation>(manager, this,
-                                                           tracker);
-  }
-  return nullptr;
+  return std::make_unique<OverlayD3DImageRepresentation>(manager, this,
+                                                         tracker);
 }
 
 absl::optional<gl::DCLayerOverlayImage>

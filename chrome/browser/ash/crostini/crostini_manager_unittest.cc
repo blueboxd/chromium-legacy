@@ -134,13 +134,6 @@ class CrostiniManagerTest : public testing::Test {
     std::move(closure).Run();
   }
 
-  void ListVmDisksSuccessCallback(base::OnceClosure closure,
-                                  CrostiniResult result,
-                                  int64_t total_size) {
-    EXPECT_GE(fake_concierge_client_->list_vm_disks_call_count(), 1);
-    std::move(closure).Run();
-  }
-
   base::ScopedFD TestFileDescriptor() {
     base::File file(base::FilePath("/dev/null"),
                     base::File::FLAG_OPEN | base::File::FLAG_WRITE);
@@ -357,15 +350,6 @@ TEST_F(CrostiniManagerTest, DestroyDiskImageSuccess) {
 
   EXPECT_TRUE(result_future.Get());
   EXPECT_GE(fake_concierge_client_->destroy_disk_image_call_count(), 1);
-}
-
-TEST_F(CrostiniManagerTest, ListVmDisksSuccess) {
-  TestFuture<CrostiniResult, int64_t> waiter;
-
-  crostini_manager()->ListVmDisks(waiter.GetCallback());
-  EXPECT_TRUE(waiter.Wait());
-
-  EXPECT_GE(fake_concierge_client_->list_vm_disks_call_count(), 1);
 }
 
 TEST_F(CrostiniManagerTest, StartTerminaVmNameError) {
@@ -1368,6 +1352,9 @@ TEST_F(CrostiniManagerRestartTest, RestartFinishesOnContainerCreatedError) {
       this);
   run_loop()->Run();
 
+  EXPECT_GE(
+      guest_os::GetContainers(profile_.get(), guest_os::VmType::TERMINA).size(),
+      1uL);
   EXPECT_GE(fake_concierge_client_->create_disk_image_call_count(), 1);
   EXPECT_GE(fake_concierge_client_->start_vm_call_count(), 1);
   EXPECT_EQ(0, restart_crostini_callback_count_);

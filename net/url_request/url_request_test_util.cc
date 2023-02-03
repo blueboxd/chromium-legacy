@@ -501,6 +501,7 @@ bool TestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
     const net::FirstPartySetMetadata& first_party_set_metadata,
     net::CookieAccessResultList& maybe_included_cookies,
     net::CookieAccessResultList& excluded_cookies) {
+  RecordCookieSettingOverrides(request.cookie_setting_overrides());
   bool allow = true;
   if (cookie_options_bit_mask_ & NO_GET_COOKIES)
     allow = false;
@@ -516,12 +517,14 @@ bool TestNetworkDelegate::OnAnnotateAndMoveUserBlockedCookies(
 
 NetworkDelegate::PrivacySetting TestNetworkDelegate::OnForcePrivacyMode(
     const URLRequest& request) const {
+  RecordCookieSettingOverrides(request.cookie_setting_overrides());
   return NetworkDelegate::PrivacySetting::kStateAllowed;
 }
 
 bool TestNetworkDelegate::OnCanSetCookie(const URLRequest& request,
                                          const net::CanonicalCookie& cookie,
                                          CookieOptions* options) {
+  RecordCookieSettingOverrides(request.cookie_setting_overrides());
   bool allow = true;
   if (cookie_options_bit_mask_ & NO_SET_COOKIE)
     allow = false;

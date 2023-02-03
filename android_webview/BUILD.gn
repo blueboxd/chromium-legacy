@@ -13,6 +13,7 @@ import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
 import("//chrome/android/chrome_common_shared_library.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
+import("//chrome/android/expectations/expectations.gni")
 import("//chrome/android/trichrome.gni")
 import("//components/safe_browsing/buildflags.gni")
 import("//components/spellcheck/spellcheck_build_features.gni")
@@ -32,13 +33,6 @@ if (enable_resource_allowlist_generation) {
   system_webview_pak_allowlist =
       "$target_gen_dir/system_webview_pak_allowlist.txt"
 }
-
-# Having //clank present causes different flags because of how play services
-# is wired up.
-# The channel is required because manifest entries vary based on channel.
-_verify_android_configuration =
-    !is_java_debug && !enable_chrome_android_internal &&
-    android_channel == "stable"
 
 template("standalone_system_webview_apk_tmpl") {
   system_webview_apk_or_module_tmpl(target_name) {
@@ -96,7 +90,9 @@ standalone_system_webview_apk_tmpl("system_webview_no_weblayer_apk") {
       [ "//third_party/androidx:androidx_recyclerview_recyclerview_java" ]
 }
 
+_main_webview_bundle_target = ":system_webview_bundle"
 if (android_64bit_target_cpu && skip_secondary_abi_for_cq) {
+  _main_webview_bundle_target = ":system_webview_64_bundle"
   group("system_webview_bundle") {
     deps = [ ":system_webview_64_bundle" ]
   }
@@ -107,7 +103,7 @@ if (android_64bit_target_cpu && skip_secondary_abi_for_cq) {
       is_base_module = true
       bundle_target = ":system_webview_bundle"
 
-      if (_verify_android_configuration) {
+      if (enable_manifest_verification) {
         expected_android_manifest =
             "expectations/system_webview_bundle.AndroidManifest.expected"
       }
@@ -191,10 +187,9 @@ if (android_64bit_target_cpu) {
 template("trichrome_webview_tmpl") {
   system_webview_apk_or_module_tmpl(target_name) {
     forward_variables_from(invoker, "*")
+    is_trichrome = true
     min_sdk_version = 29
-
     deps = upstream_only_webview_deps
-    use_trichrome_library = true
   }
 }
 
@@ -249,7 +244,7 @@ if (enable_webview_bundles) {
       android_manifest_dep =
           "//android_webview/nonembedded:trichrome_webview_manifest"
 
-      if (_verify_android_configuration) {
+      if (enable_manifest_verification) {
         expected_android_manifest =
             "expectations/trichrome_webview_bundle.AndroidManifest.expected"
       }
@@ -262,6 +257,10 @@ if (enable_webview_bundles) {
       uncompress_dex = true
       min_sdk_version = 29
       static_library_provider = "//chrome/android:trichrome_library_apk"
+      if (enable_libs_and_assets_verification) {
+        expected_libs_and_assets =
+            "expectations/$target_name.$target_cpu.libs_and_assets.expected"
+      }
     }
   }
 
@@ -272,6 +271,10 @@ if (enable_webview_bundles) {
       uncompress_dex = true
       min_sdk_version = 29
       static_library_provider = "//chrome/android:trichrome_library_64_apk"
+      if (enable_libs_and_assets_verification) {
+        expected_libs_and_assets =
+            "expectations/$target_name.$target_cpu.libs_and_assets.expected"
+      }
     }
 
     trichrome_webview_tmpl("trichrome_webview_64_base_bundle_module") {
@@ -309,7 +312,7 @@ if (android_64bit_target_cpu && !skip_secondary_abi_for_cq) {
       android_manifest = trichrome_webview_64_32_android_manifest
       android_manifest_dep =
           "//android_webview/nonembedded:trichrome_webview_64_32_manifest"
-      use_trichrome_library = true
+      is_trichrome = true
       is_64_bit_browser = true
       include_32_bit_webview = true
 
@@ -338,6 +341,10 @@ if (android_64bit_target_cpu && !skip_secondary_abi_for_cq) {
       uncompress_dex = true
       min_sdk_version = 29
       static_library_provider = "//chrome/android:trichrome_library_64_32_apk"
+      if (enable_libs_and_assets_verification) {
+        expected_libs_and_assets =
+            "expectations/$target_name.$target_cpu.libs_and_assets.expected"
+      }
     }
   }
 
@@ -347,7 +354,7 @@ if (android_64bit_target_cpu && !skip_secondary_abi_for_cq) {
       android_manifest = trichrome_webview_32_android_manifest
       android_manifest_dep =
           "//android_webview/nonembedded:trichrome_webview_32_manifest"
-      use_trichrome_library = true
+      is_trichrome = true
       is_64_bit_browser = false
       include_64_bit_webview = false
 
@@ -376,7 +383,18 @@ if (android_64bit_target_cpu && !skip_secondary_abi_for_cq) {
       uncompress_dex = true
       min_sdk_version = 29
       static_library_provider = "//chrome/android:trichrome_library_32_apk"
+      if (enable_libs_and_assets_verification) {
+        expected_libs_and_assets =
+            "expectations/$target_name.$target_cpu.libs_and_assets.expected"
+      }
     }
+  }
+}
+
+if (allow_jni_multiplexing && current_toolchain == default_toolchain) {
+  generate_jni_registration("webview_jni_registration") {
+    targets = [ _main_webview_bundle_target ]
+    enable_jni_multiplexing = true
   }
 }
 
@@ -390,6 +408,9 @@ template("libwebviewchromium_tmpl") {
       "//android_webview/nonembedded",
       "//third_party/blink/public:blink",
     ]
+    if (allow_jni_multiplexing) {
+      deps += [ ":webview_jni_registration($default_toolchain)" ]
+    }
     configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
     configs += [
       "//build/config/android:hide_all_but_jni",
@@ -421,6 +442,10 @@ template("webview_alternate_library") {
       "//android_webview/lib:webview_entry_point",
       "//android_webview/nonembedded",
     ]
+    if (allow_jni_multiplexing) {
+      deps += [ ":webview_jni_registration($default_toolchain)" ]
+      enable_jni_multiplexing = true
+    }
     is_webview = true
   }
 }
@@ -610,6 +635,7 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/JsResultHandler.java",
     "java/src/org/chromium/android_webview/JsResultReceiver.java",
     "java/src/org/chromium/android_webview/ManifestMetadataUtil.java",
+    "java/src/org/chromium/android_webview/NoopSafeModeAction.java",
     "java/src/org/chromium/android_webview/NullAwViewMethods.java",
     "java/src/org/chromium/android_webview/OverScrollGlow.java",
     "java/src/org/chromium/android_webview/PopupTouchHandleDrawable.java",
@@ -659,6 +685,7 @@ android_library("browser_java") {
     "//base:base_java",
     "//base:jni_java",
     "//build/android:build_java",
+    "//cc/mojom:mojom_java",
     "//components/android_autofill/browser:java",
     "//components/autofill/android:autofill_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",

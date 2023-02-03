@@ -2,9 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// The FieldTrial class handles the lower level configuration of running A/B
+// tests.
+//
+// Most server-side experiments should be configured using Features which
+// have a simpler interface. See base/feature_list.h for details on
+// configurating a Feature for an experiment.
+
+// In certain cases you may still need to use FieldTrial directly. This is
+// generally for either:
+// - Client-configured experiments:
+//     The experiment is controlled directly in the code. For example, if the
+//     server controlled behavior is not yet available. See below documentation.
+// - Synthetic field trials:
+//     These act like field trials for reporting purposes, but the group
+//     placement is controlled directly. See RegisterSyntheticFieldTrial().
+
+// If you have access, see go/client-side-field-trials for additional context.
+
+//------------------------------------------------------------------------------
+// Details:
+
 // FieldTrial is a class for handling details of statistical experiments
 // performed by actual users in the field (i.e., in a shipped or beta product).
-// All code is called exclusively on the UI thread currently.
+// All code is called exclusively on the UI thread currently. It only handles
+// the lower level details, server-side experiments should use
+// generally use Features (see above).
 //
 // The simplest example is an experiment to see whether one of two options
 // produces "better" results across our user population.  In that scenario, UMA
@@ -21,13 +44,8 @@
 
 //------------------------------------------------------------------------------
 // Example:  Suppose we have an experiment involving memory, such as determining
-// the impact of some pruning algorithm.
-// We assume that we already have a histogram of memory usage, such as:
-
-//   UMA_HISTOGRAM_COUNTS_1M("Memory.RendererTotal", count);
-
-// Somewhere in main thread initialization code, we'd probably define an
-// instance of a FieldTrial, with code such as:
+// the impact of some pruning algorithm. Note that using this API directly is
+// not recommended, see above.
 
 // // FieldTrials are reference counted, and persist automagically until
 // // process teardown, courtesy of their automatic registration in
@@ -40,9 +58,9 @@
 // trial->AppendGroup("LowMem", 20);   // 2% in LowMem group.
 // // Take action depending of which group we randomly land in.
 // if (trial->group_name() == "HighMem")
-//   SetPruningAlgorithm(kType1);  // Sample setting of browser state.
+//   SetPruningAlgorithm(kType1);
 // else if (trial->group_name() == "LowMem")
-//   SetPruningAlgorithm(kType2);  // Sample alternate setting.
+//   SetPruningAlgorithm(kType2);
 
 //------------------------------------------------------------------------------
 
@@ -152,7 +170,9 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
     subtle::Atomic32 activated;
 
     // On e.g. x86, alignof(uint64_t) is 4.  Ensure consistent size and
-    // alignment of `pickle_size` across platforms.
+    // alignment of `pickle_size` across platforms. This can be considered
+    // to be padding for the final 32 bit value (activated). If this struct
+    // gains or loses fields, consider if this padding is still needed.
     uint32_t padding;
 
     // Size of the pickled structure, NOT the total size of this entry.
@@ -291,9 +311,6 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
 
   virtual ~FieldTrial();
 
-  // Return the default group name of the FieldTrial.
-  const std::string& default_group_name() const { return default_group_name_; }
-
   // Marks this trial as having been registered with the FieldTrialList. Must be
   // called no more than once and before any |group()| calls have occurred.
   void SetTrialRegistered();
@@ -431,10 +448,6 @@ class BASE_EXPORT FieldTrialList {
   // The Find() method can be used to test to see if a named trial was already
   // registered, or to retrieve a pointer to it from the global map.
   static FieldTrial* Find(StringPiece trial_name);
-
-  // Returns the group number chosen for the named trial, or
-  // FieldTrial::kNotFinalized if the trial does not exist.
-  static int FindValue(StringPiece trial_name);
 
   // Returns the group name chosen for the named trial, or the empty string if
   // the trial does not exist. The first call of this function on a given field
@@ -718,12 +731,6 @@ class BASE_EXPORT FieldTrialList {
       const std::vector<FieldTrial::State>& entries);
 
   static FieldTrialList* global_;  // The singleton of this class.
-
-  // This will tell us if there is an attempt to register a field
-  // trial or check if one-time randomization is enabled without
-  // creating the FieldTrialList. This is not an error, unless a
-  // FieldTrialList is created after that.
-  static bool used_without_global_;
 
   // Lock for access to |registered_|, |observers_|,
   // |count_of_manually_created_field_trials_|.

@@ -21,13 +21,9 @@ void FidoAuthenticator::ExcludeAppIdCredentialsBeforeMakeCredential(
   std::move(callback).Run(CtapDeviceResponseCode::kSuccess, absl::nullopt);
 }
 
-void FidoAuthenticator::GetNextAssertion(
-    FidoAuthenticator::GetAssertionCallback callback) {
-  NOTREACHED();
-}
-
 void FidoAuthenticator::GetCredentialInformationForRequest(
     const CtapGetAssertionRequest& request,
+    const CtapGetAssertionOptions& options,
     GetCredentialInformationForRequestCallback callback) {
   NOTREACHED();
 }
@@ -168,21 +164,6 @@ void FidoAuthenticator::BioEnrollRename(const pin::TokenResponse&,
 void FidoAuthenticator::BioEnrollDelete(const pin::TokenResponse&,
                                         std::vector<uint8_t>,
                                         BioEnrollmentCallback) {
-  NOTREACHED();
-}
-
-void FidoAuthenticator::WriteLargeBlob(
-    LargeBlob large_blob,
-    const LargeBlobKey& large_blob_key,
-    const absl::optional<pin::TokenResponse> pin_uv_auth_token,
-    base::OnceCallback<void(CtapDeviceResponseCode)> callback) {
-  NOTREACHED();
-}
-
-void FidoAuthenticator::ReadLargeBlob(
-    const std::vector<LargeBlobKey>& large_blob_keys,
-    const absl::optional<pin::TokenResponse> pin_uv_auth_token,
-    LargeBlobReadCallback callback) {
   NOTREACHED();
 }
 

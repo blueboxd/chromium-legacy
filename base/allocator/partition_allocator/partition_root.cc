@@ -33,9 +33,9 @@
 #include "base/allocator/partition_allocator/partition_alloc_base/mac/mac_util.h"
 #endif  // PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK) && BUILDFLAG(IS_APPLE)
 
-#if BUILDFLAG(STARSCAN)
+#if BUILDFLAG(USE_STARSCAN)
 #include "base/allocator/partition_allocator/starscan/pcscan.h"
-#endif  // BUILDFLAG(STARSCAN)
+#endif
 
 #if BUILDFLAG(IS_WIN)
 #include <windows.h>
@@ -737,7 +737,7 @@ void PartitionRoot<thread_safe>::DestructForTesting() {
     uintptr_t address = SuperPagesBeginFromExtent(curr);
     size_t size =
         internal::kSuperPageSize * curr->number_of_consecutive_super_pages;
-#if !PA_CONFIG(HAS_64_BITS_POINTERS)
+#if !BUILDFLAG(HAS_64_BIT_POINTERS)
     internal::AddressPoolManager::GetInstance().MarkUnused(pool_handle, address,
                                                            size);
 #endif
@@ -754,7 +754,7 @@ void PartitionRoot<thread_safe>::EnableMac11MallocSizeHackForTesting() {
 }
 #endif  // PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK)
 
-#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) && !PA_CONFIG(HAS_64_BITS_POINTERS)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) && !BUILDFLAG(HAS_64_BIT_POINTERS)
 namespace {
 std::atomic<bool> g_reserve_brp_guard_region_called;
 // An address constructed by repeating `kQuarantinedByte` shouldn't never point
@@ -790,7 +790,7 @@ void ReserveBackupRefPtrGuardRegionIfNeeded() {
 }
 }  // namespace
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) &&
-        // !PA_CONFIG(HAS_64_BITS_POINTERS)
+        // !BUILDFLAG(HAS_64_BIT_POINTERS)
 
 template <bool thread_safe>
 void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
@@ -819,12 +819,12 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
     // running on the right hardware.
     ::partition_alloc::internal::InitializeMTESupportIfNeeded();
 
-#if PA_CONFIG(HAS_64_BITS_POINTERS)
+#if BUILDFLAG(HAS_64_BIT_POINTERS)
     // Reserve address space for partition alloc.
     internal::PartitionAddressSpace::Init();
 #endif
 
-#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) && !PA_CONFIG(HAS_64_BITS_POINTERS)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) && !BUILDFLAG(HAS_64_BIT_POINTERS)
     ReserveBackupRefPtrGuardRegionIfNeeded();
 #endif
 
@@ -906,13 +906,13 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
     PA_CHECK(!flags.allow_aligned_alloc || !flags.extras_offset);
 
     flags.quarantine_mode =
-#if BUILDFLAG(STARSCAN)
+#if BUILDFLAG(USE_STARSCAN)
         (opts.quarantine == PartitionOptions::Quarantine::kDisallowed
              ? QuarantineMode::kAlwaysDisabled
              : QuarantineMode::kDisabledByDefault);
 #else
         QuarantineMode::kAlwaysDisabled;
-#endif  // BUILDFLAG(STARSCAN)
+#endif  // BUILDFLAG(USE_STARSCAN)
 
     // We mark the sentinel slot span as free to make sure it is skipped by our
     // logic to find a new active slot span.
@@ -1291,7 +1291,7 @@ template <bool thread_safe>
 void PartitionRoot<thread_safe>::PurgeMemory(int flags) {
   {
     ::partition_alloc::internal::ScopedGuard guard{lock_};
-#if BUILDFLAG(STARSCAN)
+#if BUILDFLAG(USE_STARSCAN)
     // Avoid purging if there is PCScan task currently scheduled. Since pcscan
     // takes snapshot of all allocated pages, decommitting pages here (even
     // under the lock) is racy.
@@ -1299,7 +1299,7 @@ void PartitionRoot<thread_safe>::PurgeMemory(int flags) {
     if (PCScan::IsInProgress()) {
       return;
     }
-#endif  // BUILDFLAG(STARSCAN)
+#endif  // BUILDFLAG(USE_STARSCAN)
 
     if (flags & PurgeFlags::kDecommitEmptySlotSpans) {
       DecommitEmptySlotSpans();

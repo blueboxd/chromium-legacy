@@ -90,20 +90,6 @@ FakeDriveFsBootstrapListener::bootstrap() {
   return std::move(bootstrap_);
 }
 
-struct FakeDriveFs::FileMetadata {
-  std::string mime_type;
-  bool pinned = false;
-  bool hosted = false;
-  bool shared = false;
-  bool available_offline = false;
-  std::string original_name;
-  mojom::Capabilities capabilities;
-  mojom::FolderFeature folder_feature;
-  std::string doc_id;
-  int64_t stable_id = 0;
-  std::string alternate_url;
-};
-
 class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
  public:
   SearchQuery(base::WeakPtr<FakeDriveFs> drive_fs,
@@ -188,26 +174,33 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
         const base::FilePath path = item_ptr->path;
         const drivefs::mojom::FileMetadata* metadata = item_ptr->metadata.get();
         if (!query.empty()) {
-          return !base::Contains(base::ToLowerASCII(path.BaseName().value()),
-                                 query);
+          if (!base::Contains(base::ToLowerASCII(path.BaseName().value()),
+                              query)) {
+            return true;
+          }
         }
         if (params_->available_offline) {
-          return !metadata->available_offline && IsLocal(metadata->type);
+          if (!metadata->available_offline && IsLocal(metadata->type)) {
+            return true;
+          }
         }
         if (params_->shared_with_me) {
-          return !metadata->shared;
+          if (!metadata->shared) {
+            return true;
+          }
         }
         if (!mime_types.empty()) {
           std::string content_mime_type = metadata->content_mime_type;
-          if (content_mime_type.empty()) {
-            return true;
-          }
-          if (base::ranges::none_of(
-                  mime_types,
-                  [content_mime_type](const std::string& mime_type) {
-                    return net::MatchesMimeType(mime_type, content_mime_type);
-                  })) {
-            return true;
+          // If we do not know the MIME type the file may or may not match. Thus
+          // we only test MIME type match if we know the files MIME type.
+          if (!content_mime_type.empty()) {
+            if (base::ranges::none_of(
+                    mime_types,
+                    [content_mime_type](const std::string& mime_type) {
+                      return net::MatchesMimeType(mime_type, content_mime_type);
+                    })) {
+              return true;
+            }
           }
         }
         return false;
@@ -257,6 +250,13 @@ class FakeDriveFs::SearchQuery : public mojom::SearchQuery {
 
   base::WeakPtrFactory<SearchQuery> weak_ptr_factory_{this};
 };
+
+FakeDriveFs::FileMetadata::FileMetadata() = default;
+FakeDriveFs::FileMetadata::FileMetadata(const FakeDriveFs::FileMetadata&) =
+    default;
+FakeDriveFs::FileMetadata& FakeDriveFs::FileMetadata::operator=(
+    const FakeDriveFs::FileMetadata&) = default;
+FakeDriveFs::FileMetadata::~FileMetadata() = default;
 
 FakeDriveFs::FakeDriveFs(const base::FilePath& mount_path)
     : mount_path_(mount_path) {
@@ -320,6 +320,24 @@ void FakeDriveFs::DisplayConfirmDialog(
     drivefs::mojom::DriveFsDelegate::DisplayConfirmDialogCallback callback) {
   DCHECK(delegate_);
   delegate_->DisplayConfirmDialog(std::move(reason), std::move(callback));
+}
+
+absl::optional<bool> FakeDriveFs::IsItemPinned(const std::string& path) {
+  for (const auto& metadata : metadata_) {
+    if (metadata.first.value() == path) {
+      return metadata.second.pinned;
+    }
+  }
+  return absl::nullopt;
+}
+
+absl::optional<FakeDriveFs::FileMetadata> FakeDriveFs::GetItemMetadata(
+    const base::FilePath& path) {
+  const auto& metadata = metadata_.find(path);
+  if (metadata == metadata_.end()) {
+    return absl::nullopt;
+  }
+  return metadata->second;
 }
 
 void FakeDriveFs::Init(
@@ -594,5 +612,7 @@ void FakeDriveFs::ToggleSyncForPath(
 }
 
 void FakeDriveFs::PollHostedFilePinStates() {}
+
+void FakeDriveFs::CancelUploadByPath(const base::FilePath& path) {}
 
 }  // namespace drivefs

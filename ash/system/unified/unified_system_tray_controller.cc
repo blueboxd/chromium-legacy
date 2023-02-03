@@ -22,6 +22,7 @@
 #include "ash/system/audio/unified_volume_slider_controller.h"
 #include "ash/system/bluetooth/bluetooth_detailed_view_controller.h"
 #include "ash/system/bluetooth/bluetooth_feature_pod_controller.h"
+#include "ash/system/brightness/quick_settings_display_detailed_view_controller.h"
 #include "ash/system/brightness/unified_brightness_slider_controller.h"
 #include "ash/system/camera/autozoom_feature_pod_controller.h"
 #include "ash/system/cast/cast_feature_pod_controller.h"
@@ -40,8 +41,6 @@
 #include "ash/system/nearby_share/nearby_share_feature_pod_controller.h"
 #include "ash/system/network/network_detailed_view_controller.h"
 #include "ash/system/network/network_feature_pod_controller.h"
-#include "ash/system/network/network_feature_pod_controller_legacy.h"
-#include "ash/system/network/unified_network_detailed_view_controller.h"
 #include "ash/system/network/unified_vpn_detailed_view_controller.h"
 #include "ash/system/network/vpn_feature_pod_controller.h"
 #include "ash/system/night_light/night_light_feature_pod_controller.h"
@@ -181,7 +180,10 @@ UnifiedSystemTrayController::CreateUnifiedQuickSettingsView() {
   unified_view->AddSliderView(volume_slider_controller_->CreateView());
 
   brightness_slider_controller_ =
-      std::make_unique<UnifiedBrightnessSliderController>(model_);
+      std::make_unique<UnifiedBrightnessSliderController>(
+          model_, views::Button::PressedCallback(base::BindRepeating(
+                      &UnifiedSystemTrayController::ShowDisplayDetailedView,
+                      base::Unretained(this))));
   unified_view->AddSliderView(brightness_slider_controller_->CreateView());
 
   return unified_view;
@@ -207,7 +209,10 @@ UnifiedSystemTrayController::CreateQuickSettingsView(int max_height) {
   qs_view->AddSliderView(unified_volume_view_);
 
   brightness_slider_controller_ =
-      std::make_unique<UnifiedBrightnessSliderController>(model_);
+      std::make_unique<UnifiedBrightnessSliderController>(
+          model_, views::Button::PressedCallback(base::BindRepeating(
+                      &UnifiedSystemTrayController::ShowDisplayDetailedView,
+                      base::Unretained(this))));
   unified_brightness_view_ = brightness_slider_controller_->CreateView();
   qs_view->AddSliderView(unified_brightness_view_);
 
@@ -444,12 +449,7 @@ void UnifiedSystemTrayController::ShowNetworkDetailedView(bool force) {
 
   base::RecordAction(base::UserMetricsAction("StatusArea_Network_Detailed"));
 
-  if (ash::features::IsQuickSettingsNetworkRevampEnabled()) {
-    ShowDetailedView(std::make_unique<NetworkDetailedViewController>(this));
-  } else {
-    ShowDetailedView(
-        std::make_unique<UnifiedNetworkDetailedViewController>(this));
-  }
+  ShowDetailedView(std::make_unique<NetworkDetailedViewController>(this));
 }
 
 void UnifiedSystemTrayController::ShowBluetoothDetailedView() {
@@ -491,6 +491,12 @@ void UnifiedSystemTrayController::ShowAudioDetailedView() {
   showing_audio_detailed_view_ = true;
 }
 
+void UnifiedSystemTrayController::ShowDisplayDetailedView() {
+  ShowDetailedView(
+      std::make_unique<QuickSettingsDisplayDetailedViewController>(this));
+  showing_display_detailed_view_ = true;
+}
+
 void UnifiedSystemTrayController::ShowNotifierSettingsView() {
   if (features::IsOsSettingsAppBadgingToggleEnabled()) {
     return;
@@ -513,6 +519,7 @@ void UnifiedSystemTrayController::ShowCalendarView(
 
   showing_calendar_view_ = true;
   showing_audio_detailed_view_ = false;
+  showing_display_detailed_view_ = false;
 
   for (auto& observer : observers_) {
     observer.OnOpeningCalendarView();
@@ -533,6 +540,7 @@ void UnifiedSystemTrayController::TransitionToMainView(bool restore_focus) {
   }
 
   showing_audio_detailed_view_ = false;
+  showing_display_detailed_view_ = false;
 
   // Transfer `detailed_view_controller_` to a scoped object, which will be
   // destroyed once it's out of this method's scope (after resetting
@@ -580,6 +588,7 @@ void UnifiedSystemTrayController::EnsureCollapsed() {
 void UnifiedSystemTrayController::EnsureExpanded() {
   if (detailed_view_controller_) {
     showing_audio_detailed_view_ = false;
+    showing_display_detailed_view_ = false;
     if (features::IsQsRevampEnabled()) {
       quick_settings_view_->ResetDetailedView();
     } else {
@@ -646,13 +655,7 @@ void UnifiedSystemTrayController::LoadIsExpandedPref() {
 }
 
 void UnifiedSystemTrayController::InitFeaturePods() {
-  if (ash::features::IsQuickSettingsNetworkRevampEnabled()) {
-    AddFeaturePodItem(std::make_unique<NetworkFeaturePodController>(this));
-  } else {
-    AddFeaturePodItem(
-        std::make_unique<NetworkFeaturePodControllerLegacy>(this));
-  }
-
+  AddFeaturePodItem(std::make_unique<NetworkFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<BluetoothFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<AccessibilityFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<QuietModeFeaturePodController>(this));
@@ -722,6 +725,8 @@ void UnifiedSystemTrayController::InitFeatureTiles() {
               feature_pod_controllers_, tiles,
               cast_and_rotation_tiles_are_compact);
 
+  create_tile(std::make_unique<NearbyShareFeaturePodController>(this),
+              feature_pod_controllers_, tiles);
   create_tile(std::make_unique<AccessibilityFeaturePodController>(this),
               feature_pod_controllers_, tiles);
   create_tile(std::make_unique<PrivacyScreenFeaturePodController>(),
@@ -772,6 +777,7 @@ void UnifiedSystemTrayController::ShowDetailedView(
   }
 
   showing_audio_detailed_view_ = false;
+  showing_display_detailed_view_ = false;
   if (features::IsQsRevampEnabled()) {
     bubble_->UpdateBubbleHeight(/*is_showing_detiled_view=*/true);
     quick_settings_view_->SetDetailedView(controller->CreateView());
@@ -856,6 +862,9 @@ bool UnifiedSystemTrayController::IsExpanded() const {
 }
 
 void UnifiedSystemTrayController::UpdateBubble() {
+  if (!bubble_) {
+    return;
+  }
   bubble_->UpdateBubble();
 }
 

@@ -54,7 +54,6 @@
 <translation id="1874309113135274312">Бэта-версія Google Chrome (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome састарэў</translation>
 <translation id="1919130412786645364">Дазволіць уваход ва ўліковы запіс Chrome</translation>
-<translation id="1952239763774043237">Каб атрымліваць наступныя абнаўленні Google Chrome, вам патрэбная версія macOS 10.13 ці пазнейшая. На гэтым камп'ютары выкарыстоўваецца macOS 10.12.</translation>
 <translation id="1953553007165777902">Ідзе спампоўванне… Застаецца <ph name="MINUTE" /> хв</translation>
 <translation id="2018528049276128029">У кожным профілі захоўваюцца свае даныя Chrome, напрыклад закладкі, гісторыя, паролі і не толькі</translation>
 <translation id="2018879682492276940">Збой усталявання. Паўтарыце спробу.</translation>
@@ -187,6 +186,7 @@
 <translation id="4335235004908507846">Chrome дапамагае прадухіляць праблемы, звязаныя з уцечкай даных, выкарыстаннем няправільных пашырэнняў і г. д.</translation>
 <translation id="4343195214584226067">Пашырэнне <ph name="EXTENSION_NAME" /> дададзена ў Chrome</translation>
 <translation id="4384570495110188418">Chrome не можа праверыць вашы паролі, пакуль вы не ўвойдзеце ва ўліковы запіс</translation>
+<translation id="4393248995085527349">Каб атрымліваць наступныя абнаўленні Google Chrome, вам патрэбная версія macOS 10.15 ці пазнейшая. На гэтым камп'ютары выкарыстоўваецца macOS 10.13.</translation>
 <translation id="4427306783828095590">Функцыя палепшанай абароны яшчэ надзейней блакіруе фішынг і шкодныя праграмы</translation>
 <translation id="4450664632294415862">Chrome – Уваход у сетку – <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">У Google Chrome выконваецца іншая аперацыя. Паўтарыце спробу пазней.</translation>
@@ -216,7 +216,6 @@
 <translation id="4970880042055371251">Версія Chrome OS</translation>
 <translation id="4970947549776831107">Браўзер Chrome заблакіраваў гэты файл, бо гэты тып файлаў з'яўляецца небяспечным</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
-<translation id="5037581483200764584">Каб атрымліваць наступныя абнаўленні Google Chrome, вам патрэбная версія macOS 10.13 ці пазнейшая. На гэтым камп'ютары выкарыстоўваецца OS X 10.11.</translation>
 <translation id="5098668839038261629">Калі гэты параметр уключаны, будзе выконвацца таксама выхад з вашага ўліковага запісу ў Chrome</translation>
 <translation id="5132929315877954718">Адкрывайце для сябе выдатныя праграмы, гульні, пашырэнні і тэмы для Google Chrome.</translation>
 <translation id="5139423532931106058">Наладзьце свой профіль Chrome</translation>
@@ -258,6 +257,7 @@
 <translation id="5941711191222866238">Згарнуць</translation>
 <translation id="5941830788786076944">Зрабіць Google Chrome стандартным браўзерам</translation>
 <translation id="6003112304606738118">Ідзе спампоўванне… Застаецца <ph name="HOURS" /> гадз</translation>
+<translation id="6010556343189461180">Каб атрымліваць наступныя абнаўленні Google Chrome, вам патрэбная версія macOS 10.15 ці пазнейшая. На гэтым камп'ютары выкарыстоўваецца macOS 10.14.</translation>
 <translation id="6022388122721048220">{0,plural, =0{Браўзер Chrome будзе зараз закрыты.}=1{Браўзер Chrome будзе закрыты праз 1 секунду.}one{Браўзер Chrome будзе закрыты праз # секунду.}few{Браўзер Chrome будзе закрыты праз # секунды.}many{Браўзер Chrome будзе закрыты праз # секунд.}other{Браўзер Chrome будзе закрыты праз # секунды.}}</translation>
 <translation id="6040143037577758943">Закрыць</translation>
 <translation id="6070348360322141662">Для дадатковай бяспекі Google Chrome будзе шыфраваць вашы даныя</translation>
@@ -420,6 +420,7 @@
 <translation id="922152298093051471">Наладзіць Chrome</translation>
 <translation id="93760716455950538">Перазапуск Chrome OS Flex</translation>
 <translation id="940313311831216333">Каб мець доступ да даных браўзера Chrome на ўсіх вашых прыладах, увайдзіце ва ўліковы запіс, а затым уключыце сінхранізацыю.</translation>
+<translation id="943390475793766444">Chrome рэкамендуе праверыць гэты файл, бо ён можа быць небяспечным.</translation>
 <translation id="989369509083708165">Google Chrome – ваш стандартны браўзер.</translation>
 <translation id="989816563149873169">Пераключацца паміж профілямі Chrome можна, выкарыстоўваючы спалучэнне клавіш <ph name="SHORTCUT" /></translation>
 </translationbundle>

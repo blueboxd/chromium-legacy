@@ -158,6 +158,7 @@ include_rules = [
   "+components/grit",
   "+components/guest_view/browser",
   "+components/handoff",
+  "+components/headless",
   "+components/heap_profiling",
   "+components/heavy_ad_intervention",
   "+components/history/content/browser",
@@ -292,6 +293,7 @@ include_rules = [
   "+components/security_state/content",
   "+components/security_state/core",
   "+components/segmentation_platform/public",
+  "+components/segmentation_platform/embedder",
   "+components/send_tab_to_self",
   "+components/services/app_service/public",
   "+components/services/filesystem/public/mojom",
@@ -397,8 +399,7 @@ include_rules = [
   "+media/audio", # For media audio hang monitor.
   "+media/base",  # For media switches
   "+media/capabilities", # For InMemoryVideoDecodeStatsDB
-  "+media/cdm/cdm_paths.h",
-  "+media/cdm/win/media_foundation_cdm.h",
+  "+media/cdm",
   "+media/remoting/device_capability_checker.h",
   "+media/capture",
   "+media/midi",  # For midi switches

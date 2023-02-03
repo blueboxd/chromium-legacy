@@ -9,6 +9,7 @@
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 
+import {assertExhaustive} from '../assert_extras.js';
 import {routes} from '../os_route.js';
 import {Route} from '../router.js';
 
@@ -198,14 +199,7 @@ export function getDefaultValue<T extends keyof typeof OPTION_DEFAULT>(
   if (!loadTimeData.getBoolean('autocorrectEnableByDefault')) {
     return OPTION_DEFAULT[optionName];
   }
-  return optionName in overrides ?
-      // This assertion is unsafe, as TypeScript's optional property types
-      // include `undefined` in properties, as
-      // https://www.typescriptlang.org/tsconfig#exactOptionalPropertyTypes is
-      // not set in our tsconfig.
-      // TODO(b/265558129): Use `overrides[optionName] !== undefined` instead.
-      overrides[optionName]! :
-      OPTION_DEFAULT[optionName];
+  return overrides[optionName] ?? OPTION_DEFAULT[optionName];
 }
 
 /**
@@ -548,12 +542,11 @@ export function getOptionUiType(option: OptionType): UiType {
       return UiType.LINK;
     case OptionType.JAPANESE_CLEAR_PERSONALIZATION_DATA:
       return UiType.SUBMENU_BUTTON;
-    default:
-      // This assert is unsafe, as `option` could be
-      // `OptionType.PINYIN_FUZZY_CONFIG` here.
-      // TODO(b/265559342): Handle the aforementioned cases of `option`, and use
-      // use a compile-time exhaustive check here to avoid backsliding.
+    case OptionType.PINYIN_FUZZY_CONFIG:
+      // Not implemented.
       assertNotReached();
+    default:
+      assertExhaustive(option);
   }
 }
 
@@ -665,13 +658,13 @@ export function getOptionLabelName(option: OptionType): string {
       return 'inputMethodOptionsKoreanLayout';
     case OptionType.KOREAN_ENABLE_SYLLABLE_INPUT:
       return 'inputMethodOptionsKoreanSyllableInput';
-    default:
-      // This assertion is unsafe, as `option` could be
-      // `OptionType.ENABLE_COMPLETION` or `OptionType.PINYIN_FUZZY_CONFIG` here
-      // (assuming that `isOptionLabelTranslated(option)` is true).
-      // TODO(b/265559342): Handle the aforementioned cases of `option`, and use
-      // use a compile-time exhaustive check here to avoid backsliding.
+    case OptionType.ENABLE_COMPLETION:
+    case OptionType.PINYIN_FUZZY_CONFIG:
+      // Not implemented.
       assertNotReached();
+    default:
+      assert(isOptionLabelTranslated(option));
+      assertExhaustive(option);
   }
 }
 
@@ -727,10 +720,8 @@ export function getUntranslatedOptionLabelName(option: OptionType): string {
     case OptionType.PINYIN_Z_ZH:
       return 'z_zh';
     default:
-      // Safety: Assuming that `isOptionLabelTranslated(option)` is false,
-      // `option` cannot be anything here.
-      // TODO(b/265559342): Use a compile-time exhaustive check here.
-      assertNotReached();
+      assert(!isOptionLabelTranslated(option));
+      assertExhaustive(option);
   }
 }
 

@@ -23,10 +23,6 @@
 #include "ui/display/display_observer.h"
 #include "ui/display/tablet_state.h"
 
-namespace {
-class WebAppNonClientFrameViewAshTest;
-}
-
 class ProfileIndicatorIcon;
 class TabIconView;
 
@@ -58,9 +54,12 @@ class BrowserNonClientFrameViewChromeOS
   // BrowserNonClientFrameView:
   gfx::Rect GetBoundsForTabStripRegion(
       const gfx::Size& tabstrip_minimum_size) const override;
+  gfx::Rect GetBoundsForWebAppFrameToolbar(
+      const gfx::Size& toolbar_preferred_size) const override;
+  void LayoutWebAppWindowTitle(const gfx::Rect& available_space,
+                               views::Label& window_title_label) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
-  void UpdateFrameColor() override;
   void UpdateThrobber(bool running) override;
   bool CanUserExitFullscreen() const override;
   SkColor GetCaptionColor(BrowserFrameActiveState active_state) const override;
@@ -120,8 +119,7 @@ class BrowserNonClientFrameViewChromeOS
   void OnImmersiveRevealEnded() override;
   void OnImmersiveFullscreenExited() override;
 
-  chromeos::FrameCaptionButtonContainerView*
-  caption_button_container_for_testing() {
+  chromeos::FrameCaptionButtonContainerView* caption_button_container() {
     return caption_button_container_;
   }
 
@@ -132,59 +130,20 @@ class BrowserNonClientFrameViewChromeOS
   void AddedToWidget() override;
 
  private:
-  // TODO(pkasting): Test the public API or create a test helper class, don't
-  // add this many friends
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip,
-                           NonImmersiveFullscreen);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip,
-                           CaptionButtonsHiddenNonImmersiveFullscreen);
+  friend class BrowserNonClientFrameViewChromeOSTestApi;
   FRIEND_TEST_ALL_PREFIXES(ImmersiveModeBrowserViewTestNoWebUiTabStrip,
                            ImmersiveFullscreen);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewChromeOSTest,
-                           ToggleTabletModeRelayout);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip,
-                           AvatarDisplayOnTeleportedWindow);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewChromeOSTest,
-                           BrowserHeaderVisibilityInTabletModeTest);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewChromeOSTest,
-                           ImmersiveModeTopViewInset);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewChromeOSTest,
-                           ToggleTabletModeOnMinimizedWindow);
-  FRIEND_TEST_ALL_PREFIXES(WebAppNonClientFrameViewAshTest,
-                           ActiveStateOfButtonMatchesWidget);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewChromeOSTest,
-                           RestoreMinimizedBrowserUpdatesCaption);
-  FRIEND_TEST_ALL_PREFIXES(FloatBrowserNonClientFrameViewChromeOSTest,
-                           AppHeaderVisibilityInTabletModeTest);
-  FRIEND_TEST_ALL_PREFIXES(ImmersiveModeControllerChromeosWebAppBrowserTest,
-                           FrameLayoutToggleTabletMode);
-  FRIEND_TEST_ALL_PREFIXES(HomeLauncherBrowserNonClientFrameViewChromeOSTest,
-                           TabletModeBrowserCaptionButtonVisibility);
-  FRIEND_TEST_ALL_PREFIXES(
-      HomeLauncherBrowserNonClientFrameViewChromeOSTest,
-      CaptionButtonVisibilityForBrowserLaunchedInTabletMode);
-  FRIEND_TEST_ALL_PREFIXES(HomeLauncherBrowserNonClientFrameViewChromeOSTest,
-                           TabletModeAppCaptionButtonVisibility);
-  FRIEND_TEST_ALL_PREFIXES(NonHomeLauncherBrowserNonClientFrameViewChromeOSTest,
-                           HeaderHeightForSnappedBrowserInSplitView);
-  FRIEND_TEST_ALL_PREFIXES(TabSearchFrameCaptionButtonTest,
-                           TabSearchBubbleHostTest);
 
-  friend class WebAppNonClientFrameViewAshTest;
+  bool AppIsBorderlessPwa() const;
 
-  bool AppIsBorderlessPwa();
-
-  // Returns true if GetShowCaptionButtonsWhenNotInOverview() returns true
-  // and this browser window is not showing in overview or in fullscreen mode.
+  // Returns true if `GetShowCaptionButtonsWhenNotInOverview()` returns true
+  // and this browser window is not showing in overview.
   bool GetShowCaptionButtons() const;
 
-  // In tablet mode, to prevent accidental taps of the window controls, and to
-  // give more horizontal space for tabs and the new tab button (especially in
-  // split view), we hide the window controls even when this browser window is
-  // not showing in overview. We only do this when the Home Launcher feature is
-  // enabled, because it gives the user the ability to minimize all windows when
-  // pressing the Launcher button on the shelf. So, this function returns true
-  // if the Home Launcher feature is disabled or we are in clamshell mode.
+  // Returns whether we should show caption buttons. False for fullscreen,
+  // tablet mode and webUI tab strip in most cases. The exceptions are if this
+  // is a packaged app, as they have immersive mode enabled, and floated windows
+  // in tablet mode.
   bool GetShowCaptionButtonsWhenNotInOverview() const;
 
   // Distance between the edge of the NonClientFrameView and the web app frame

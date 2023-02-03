@@ -170,6 +170,7 @@ if (include_js_tests) {
         "chromeos/emoji_picker/emoji_picker_browsertest.js",
         "chromeos/gaia_action_buttons/gaia_action_buttons_browsertest.js",
         "chromeos/internet_detail_dialog_browsertest.js",
+        "chromeos/network_browsertest.js",
         "chromeos/set_time_dialog_browsertest.js",
         "chromeos/sys_internals/sys_internals_browsertest.js",
         "cr_components/chromeos/cr_components_chromeos_v3_browsertest.js",
@@ -406,8 +407,10 @@ ts_library("build_ts") {
     "mock_controller.ts",
     "mock_timer.ts",
     "mock_timer_test.ts",
+    "mocked_metrics_reporter.ts",
     "polymer_test_util.ts",
     "test_browser_proxy.ts",
+    "test_open_window_proxy.ts",
     "test_plural_string_proxy.ts",
     "test_store_ts.ts",
     "test_util.ts",
@@ -419,7 +422,10 @@ ts_library("build_ts") {
     in_files += [ "cr_focus_row_behavior_test.ts" ]
   }
 
-  deps = [ "//ui/webui/resources:library" ]
+  deps = [
+    "//ui/webui/resources/js:build_ts",
+    "//ui/webui/resources/js/metrics_reporter:build_ts",
+  ]
   extra_deps = [ ":generate_definitions" ]
   if (is_chromeos_ash) {
     extra_deps += [

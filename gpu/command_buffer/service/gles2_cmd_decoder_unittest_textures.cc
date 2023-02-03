@@ -7,7 +7,6 @@
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -3384,8 +3383,8 @@ TEST_P(GLES2DecoderManualInitTest, DrawWithGLImageExternal) {
                                           0, GL_RGBA, 1, 1, 1, 0, GL_RGBA,
                                           GL_UNSIGNED_BYTE, gfx::Rect(1, 1));
 #if !BUILDFLAG(IS_ANDROID)
-  group().texture_manager()->SetLevelImage(texture_ref, GL_TEXTURE_EXTERNAL_OES,
-                                           0, image.get(), Texture::BOUND);
+  group().texture_manager()->SetBoundLevelImage(
+      texture_ref, GL_TEXTURE_EXTERNAL_OES, 0, image.get());
 #endif
 
   DoBindTexture(GL_TEXTURE_EXTERNAL_OES, client_texture_id_, kServiceTextureId);
@@ -3397,8 +3396,6 @@ TEST_P(GLES2DecoderManualInitTest, DrawWithGLImageExternal) {
   SetupExpectationsForApplyingDefaultDirtyState();
   EXPECT_TRUE(group().texture_manager()->CanRender(texture_ref));
 
-  base::HistogramTester histogram_tester;
-
   InSequence s;
   EXPECT_CALL(*gl_, DrawElements(_, _, _, _)).Times(1);
   cmds::DrawElements cmd;
@@ -3408,11 +3405,6 @@ TEST_P(GLES2DecoderManualInitTest, DrawWithGLImageExternal) {
            kValidIndexRangeStart * 2);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-
-  // As the image was already bound, the decoder should have recorded that lazy
-  // binding was not necessary.
-  histogram_tester.ExpectUniqueSample(
-      "GPU.GLES2DecoderImplLazyBindingCheck.WasBindNecessary", false, 1);
 }
 
 TEST_P(GLES2DecoderManualInitTest, TexImage2DFloatOnGLES2) {

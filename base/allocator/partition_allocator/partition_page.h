@@ -21,7 +21,6 @@
 #include "base/allocator/partition_allocator/partition_alloc_base/thread_annotations.h"
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
-#include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/allocator/partition_allocator/partition_bucket.h"
@@ -32,9 +31,9 @@
 #include "base/allocator/partition_allocator/tagging.h"
 #include "build/build_config.h"
 
-#if BUILDFLAG(STARSCAN)
+#if BUILDFLAG(USE_STARSCAN)
 #include "base/allocator/partition_allocator/starscan/state_bitmap.h"
-#endif  // BUILDFLAG(STARSCAN)
+#endif
 
 #if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
 #include "base/allocator/partition_allocator/partition_ref_count.h"
@@ -90,10 +89,10 @@ PA_ALWAYS_INLINE uintptr_t SuperPagesEndFromExtent(
          (extent->number_of_consecutive_super_pages * kSuperPageSize);
 }
 
-#if BUILDFLAG(STARSCAN)
+#if BUILDFLAG(USE_STARSCAN)
 using AllocationStateMap =
     StateBitmap<kSuperPageSize, kSuperPageAlignment, kAlignment>;
-#endif  // BUILDFLAG(STARSCAN)
+#endif
 
 // Metadata of the slot span.
 //
@@ -138,7 +137,7 @@ struct SlotSpanMetadata {
   PartitionBucket<thread_safe>* const bucket = nullptr;
 
   // CHECK()ed in AllocNewSlotSpan().
-#if PA_CONFIG(HAS_64_BITS_POINTERS) && BUILDFLAG(IS_APPLE)
+#if BUILDFLAG(HAS_64_BIT_POINTERS) && BUILDFLAG(IS_APPLE)
   // System page size is not a constant on Apple OSes, but is either 4 or 16kiB
   // (1 << 12 or 1 << 14), as checked in PartitionRoot::Init(). And
   // PartitionPageSize() is 4 times the OS page size.
@@ -155,7 +154,7 @@ struct SlotSpanMetadata {
   // larger, so it doesn't have as many slots.
   static constexpr size_t kMaxSlotsPerSlotSpan =
       PartitionPageSize() / kSmallestBucket;
-#endif  // PA_CONFIG(HAS_64_BITS_POINTERS) && BUILDFLAG(IS_APPLE)
+#endif  // BUILDFLAG(HAS_64_BIT_POINTERS) && BUILDFLAG(IS_APPLE)
   // The maximum number of bits needed to cover all currently supported OSes.
   static constexpr size_t kMaxSlotsPerSlotSpanBits = 13;
   static_assert(kMaxSlotsPerSlotSpan < (1 << kMaxSlotsPerSlotSpanBits), "");
@@ -450,7 +449,7 @@ PartitionSuperPageToExtent(uintptr_t super_page) {
       PartitionSuperPageToMetadataArea<thread_safe>(super_page));
 }
 
-#if BUILDFLAG(STARSCAN)
+#if BUILDFLAG(USE_STARSCAN)
 
 // Size that should be reserved for state bitmap (if present) inside a super
 // page. Elements of a super page are partition-page-aligned, hence the returned
@@ -482,14 +481,15 @@ PA_ALWAYS_INLINE AllocationStateMap* SuperPageStateBitmap(
   return reinterpret_cast<AllocationStateMap*>(
       SuperPageStateBitmapAddr(super_page));
 }
-#else
+
+#else  // BUILDFLAG(USE_STARSCAN)
 
 PAGE_ALLOCATOR_CONSTANTS_DECLARE_CONSTEXPR PA_ALWAYS_INLINE size_t
 ReservedStateBitmapSize() {
   return 0ull;
 }
 
-#endif  // BUILDFLAG(STARSCAN)
+#endif  // BUILDFLAG(USE_STARSCAN)
 
 // Returns the address of the tag bitmap of the `super_page`. Caller must ensure
 // that bitmap exists.
@@ -916,7 +916,7 @@ PA_ALWAYS_INLINE void SlotSpanMetadata<thread_safe>::Reset() {
   next_slot_span = nullptr;
 }
 
-#if BUILDFLAG(STARSCAN)
+#if BUILDFLAG(USE_STARSCAN)
 // Returns the state bitmap from an address within a normal-bucket super page.
 // It's the caller's responsibility to ensure that the bitmap exists.
 PA_ALWAYS_INLINE AllocationStateMap* StateBitmapFromAddr(uintptr_t address) {
@@ -924,7 +924,7 @@ PA_ALWAYS_INLINE AllocationStateMap* StateBitmapFromAddr(uintptr_t address) {
   uintptr_t super_page = address & kSuperPageBaseMask;
   return SuperPageStateBitmap(super_page);
 }
-#endif  // BUILDFLAG(STARSCAN)
+#endif  // BUILDFLAG(USE_STARSCAN)
 
 // Iterates over all slot spans in a super-page. |Callback| must return true if
 // early return is needed.

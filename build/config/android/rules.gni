@@ -222,7 +222,9 @@ if (enable_java_templates) {
         if (!is_robolectric && use_hashed_jni_names) {
           args += [ "--use_proxy_hash" ]
         }
-        if (!is_robolectric && enable_jni_multiplexing) {
+
+        if (!is_robolectric && defined(invoker.enable_jni_multiplexing) &&
+            invoker.enable_jni_multiplexing) {
           args += [ "--enable_jni_multiplexing" ]
         }
         if (defined(invoker.namespace)) {
@@ -371,7 +373,7 @@ if (enable_java_templates && is_android) {
   #   targets: List of .build_config.json supported targets to provide java sources.
   #   manual_jni_registration: Manually do JNI registration - required for feature
   #     splits which provide their own native library. (optional)
-  #   sources_exclusions: List of .java files that should be skipped. (optional)
+  #   file_exclusions: List of .java files that should be skipped. (optional)
   #   namespace: Registration functions will be wrapped into this. (optional)
   #   require_native_mocks: Enforce that any native calls using
   #     org.chromium.base.annotations.NativeMethods must have a mock set
@@ -387,7 +389,7 @@ if (enable_java_templates && is_android) {
   #   generate_jni_registration("chrome_jni_registration") {
   #     targets = [ ":chrome_public_apk" ]
   #     manual_jni_registration = false
-  #     sources_exclusions = [
+  #     file_exclusions = [
   #       "//path/to/Exception.java",
   #     ]
   #   }
@@ -422,7 +424,7 @@ if (enable_java_templates && is_android) {
         } else {
           args += [
             # This is a list of .sources files.
-            "--sources-files=@FileArg($_rebased_build_config:deps_info:jni:all_source)",
+            "--sources-files=@FileArg($_rebased_build_config:deps_info:jni_all_source)",
           ]
         }
       }
@@ -432,34 +434,38 @@ if (enable_java_templates && is_android) {
         _include_testonly = defined(testonly) && testonly
       }
       if (_include_testonly) {
-        args += [ "--include_test_only" ]
+        args += [ "--include-test-only" ]
       }
 
       if (use_hashed_jni_names) {
-        args += [ "--use_proxy_hash" ]
+        args += [ "--use-proxy-hash" ]
       }
 
       if (defined(invoker.enable_native_mocks) && invoker.enable_native_mocks) {
-        args += [ "--enable_proxy_mocks" ]
+        args += [ "--enable-proxy-mocks" ]
 
         if (defined(invoker.require_native_mocks) &&
             invoker.require_native_mocks) {
-          args += [ "--require_mocks" ]
+          args += [ "--require-mocks" ]
         }
       }
 
       _manual_jni_registration = defined(invoker.manual_jni_registration) &&
                                  invoker.manual_jni_registration
+      _enable_jni_multiplexing = defined(invoker.enable_jni_multiplexing) &&
+                                 invoker.enable_jni_multiplexing
+      if (_manual_jni_registration) {
+        args += [ "--manual-jni-registration" ]
+      }
+      if (_enable_jni_multiplexing) {
+        args += [ "--enable-jni-multiplexing" ]
+      }
 
-      if (_manual_jni_registration || enable_jni_multiplexing) {
+      if ((!defined(invoker.prevent_header_output) ||
+           !invoker.prevent_header_output) &&
+          (_manual_jni_registration || _enable_jni_multiplexing)) {
         assert(current_toolchain == default_toolchain,
                "We do not need >1 toolchain copies of the same header.")
-        if (_manual_jni_registration) {
-          args += [ "--manual_jni_registration" ]
-        }
-        if (enable_jni_multiplexing) {
-          args += [ "--enable_jni_multiplexing" ]
-        }
 
         _subdir = rebase_path(target_gen_dir, root_gen_dir)
         _jni_header_output =
@@ -474,10 +480,10 @@ if (enable_java_templates && is_android) {
         public_configs = [ "//build/config/android:jni_include_dir" ]
       }
 
-      if (defined(invoker.sources_exclusions)) {
-        _rebase_sources_exclusions =
-            rebase_path(invoker.sources_exclusions, root_build_dir)
-        args += [ "--sources-exclusions=$_rebase_sources_exclusions" ]
+      if (defined(invoker.file_exclusions)) {
+        _rebase_file_exclusions =
+            rebase_path(invoker.file_exclusions, root_build_dir)
+        args += [ "--file-exclusions=$_rebase_file_exclusions" ]
       }
 
       if (defined(invoker.namespace)) {
@@ -1323,6 +1329,7 @@ if (enable_java_templates && is_android) {
       "input_jars_paths",
       "mergeable_android_manifests",
       "proguard_configs",
+      "requires_android",
     ]
     _invoker_deps = []
     if (defined(invoker.deps)) {
@@ -2099,14 +2106,8 @@ if (enable_java_templates && is_android) {
   # Supports all variables of java_library(), plus:
   #   deps: In addition to defining java deps, this can also include
   #     android_assets() and android_resources() targets.
-  #   alternative_android_sdk_ijar: if set, the given android_sdk_ijar file
-  #     replaces the default android_sdk_ijar.
-  #   alternative_android_sdk_ijar_dep: the target that generates
-  #      alternative_android_sdk_ijar, must be set if alternative_android_sdk_ijar
-  #      is used.
-  #   alternative_android_sdk_jar: actual jar corresponding to
-  #      alternative_android_sdk_ijar, must be set if alternative_android_sdk_ijar
-  #      is used.
+  #   alternative_android_sdk_dep: android_system_java_prebuilt target to use
+  #     in place of the default android.jar.
   #
   # Example
   #   android_library("foo_java") {
@@ -2141,7 +2142,7 @@ if (enable_java_templates && is_android) {
         "*/R\$*.class",
         "*/Manifest.class",
         "*/Manifest\$*.class",
-        "*/GEN_JNI.class",
+        "*/*GEN_JNI.class",
       ]
     }
   }
@@ -2154,14 +2155,6 @@ if (enable_java_templates && is_android) {
   # Supports all variables of java_library(), plus:
   #   deps: In addition to defining java deps, this can also include
   #     android_assets() and android_resources() targets.
-  #   alternative_android_sdk_ijar: if set, the given android_sdk_ijar file
-  #     replaces the default android_sdk_ijar.
-  #   alternative_android_sdk_ijar_dep: the target that generates
-  #      alternative_android_sdk_ijar, must be set if alternative_android_sdk_ijar
-  #      is used.
-  #   alternative_android_sdk_jar: actual jar corresponding to
-  #      alternative_android_sdk_ijar, must be set if alternative_android_sdk_ijar
-  #      is used.
   #
   # Example
   #   robolectric_library("foo_junit") {
@@ -2200,7 +2193,7 @@ if (enable_java_templates && is_android) {
         "*/R\$*.class",
         "*/Manifest.class",
         "*/Manifest\$*.class",
-        "*/GEN_JNI.class",
+        "*/*GEN_JNI.class",
       ]
 
       if (!defined(deps)) {
@@ -2389,9 +2382,7 @@ if (enable_java_templates && is_android) {
   #     generated is solely controlled by this flag. Otherwise, the default behavior
   #     is NativeLibraries.java will only be generated for the base module/apk when
   #     its `shared_libraries` is not empty.
-  #   manual_jni_registration: If true, causes the ${target_name}__final_jni target
-  #     to additionally output a header file for use with manual JNI registration.
-  #   jni_sources_exclusions: List of source path to exclude from the
+  #   jni_file_exclusions: List of source path to exclude from the
   #     final_jni step.
   #   aapt_locale_allowlist: If set, all locales not in this list will be
   #     stripped from resources.arsc.
@@ -2748,8 +2739,6 @@ if (enable_java_templates && is_android) {
                                "enforce_resource_overlays_in_tests",
                                "expected_android_manifest",
                                "expected_android_manifest_base",
-                               "extra_verification_manifest",
-                               "extra_verification_manifest_dep",
                                "manifest_package",
                                "max_sdk_version",
                                "no_xml_namespaces",
@@ -3028,8 +3017,8 @@ if (enable_java_templates && is_android) {
       generate_jni_registration("${_template_name}__final_jni") {
         forward_variables_from(invoker,
                                [
+                                 "enable_jni_multiplexing",
                                  "enable_native_mocks",
-                                 "manual_jni_registration",
                                  "require_native_mocks",
                                ])
         if (defined(invoker.bundle_target)) {
@@ -3037,9 +3026,10 @@ if (enable_java_templates && is_android) {
         } else {
           targets = [ ":$_template_name" ]
         }
-        if (defined(invoker.jni_sources_exclusions)) {
-          sources_exclusions = invoker.jni_sources_exclusions
+        if (defined(invoker.jni_file_exclusions)) {
+          file_exclusions = invoker.jni_file_exclusions
         }
+        prevent_header_output = true
       }
       _srcjar_deps += [ ":${_template_name}__final_jni" ]
     } else {
@@ -3068,6 +3058,7 @@ if (enable_java_templates && is_android) {
                                "jacoco_never_instrument",
                                "jar_excluded_patterns",
                                "javac_args",
+                               "mergeable_android_manifests",
                                "native_lib_placeholders",
                                "processor_args_javac",
                                "secondary_abi_loadable_modules",
@@ -3560,6 +3551,7 @@ if (enable_java_templates && is_android) {
                                "data_deps",
                                "deps",
                                "enable_lint",
+                               "enable_jni_multiplexing",
                                "enable_multidex",
                                "enable_native_mocks",
                                "enable_proguard_checks",
@@ -3575,7 +3567,7 @@ if (enable_java_templates && is_android) {
                                "input_jars_paths",
                                "jacoco_never_instrument",
                                "javac_args",
-                               "jni_sources_exclusions",
+                               "jni_file_exclusions",
                                "keystore_name",
                                "keystore_password",
                                "keystore_path",
@@ -3585,8 +3577,8 @@ if (enable_java_templates && is_android) {
                                "lint_suppressions_file",
                                "loadable_modules",
                                "manifest_package",
-                               "manual_jni_registration",
                                "max_sdk_version",
+                               "mergeable_android_manifests",
                                "product_config_java_packages",
                                "main_component_library",
                                "min_sdk_version",
@@ -3696,11 +3688,10 @@ if (enable_java_templates && is_android) {
                                "data",
                                "data_deps",
                                "deps",
+                               "enable_jni_multiplexing",
                                "enable_multidex",
                                "expected_android_manifest",
                                "expected_android_manifest_base",
-                               "extra_verification_manifest",
-                               "extra_verification_manifest_dep",
                                "generate_buildconfig_java",
                                "generate_final_jni",
                                "generate_native_libraries_java",
@@ -3710,14 +3701,14 @@ if (enable_java_templates && is_android) {
                                "jacoco_never_instrument",
                                "jar_excluded_patterns",
                                "javac_args",
-                               "jni_sources_exclusions",
+                               "jni_file_exclusions",
                                "loadable_modules",
                                "product_config_java_packages",
                                "main_component_library",
                                "manifest_package",
-                               "manual_jni_registration",
                                "max_sdk_version",
                                "min_sdk_version",
+                               "mergeable_android_manifests",
                                "module_name",
                                "native_lib_placeholders",
                                "no_xml_namespaces",
@@ -4629,6 +4620,7 @@ if (enable_java_templates && is_android) {
     # Create android_java_prebuilt target for classes.jar.
     if (_scanned_files.has_classes_jar) {
       _java_library_vars = [
+        "alternative_android_sdk_dep",
         "bytecode_rewriter_target",
         "enable_bytecode_checks",
         "jar_excluded_patterns",

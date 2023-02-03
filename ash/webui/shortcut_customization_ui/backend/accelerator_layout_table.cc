@@ -5,13 +5,12 @@
 #include "ash/webui/shortcut_customization_ui/backend/accelerator_layout_table.h"
 #include <string>
 
-#include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/accelerators_util.h"
 #include "ash/public/mojom/accelerator_info.mojom.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/check_op.h"
+#include "base/no_destructor.h"
 #include "base/notreached.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 
@@ -319,25 +318,21 @@ const NonConfigurableActionsMap& GetNonConfigurableActionsMap() {
                {ui::Accelerator(ui::VKEY_OEM_PLUS, ui::EF_CONTROL_DOWN)})},
           {NonConfigurableActions::kBrowserFocusToolbar,
            NonConfigurableAcceleratorDetails({ui::Accelerator(
-               ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)})},
+               ui::VKEY_T, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)})},
           {NonConfigurableActions::kBrowserFocusInactivePopupForAccessibility,
            NonConfigurableAcceleratorDetails({ui::Accelerator(
-               ui::VKEY_A, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)})},
-          {NonConfigurableActions::kBrowserBottomPage,
-           NonConfigurableAcceleratorDetails(
-               {ui::Accelerator(ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN)})},
-          {NonConfigurableActions::kBrowserTopPage,
-           NonConfigurableAcceleratorDetails(
-               {ui::Accelerator(ui::VKEY_LEFT, ui::EF_COMMAND_DOWN)})},
+               ui::VKEY_A, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN)})},
+          // TODO(jimmyxgong): Re-enable these shortcuts. These conflict with
+          // the 6-pack keys Home and End.
+          //   {NonConfigurableActions::kBrowserBottomPage,
+          //    NonConfigurableAcceleratorDetails(
+          //        {ui::Accelerator(ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN)})},
+          //   {NonConfigurableActions::kBrowserTopPage,
+          //    NonConfigurableAcceleratorDetails(
+          //        {ui::Accelerator(ui::VKEY_LEFT, ui::EF_COMMAND_DOWN)})},
           {NonConfigurableActions::kBrowserNextPane,
            NonConfigurableAcceleratorDetails({ui::Accelerator(
                ui::VKEY_PRIOR, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN)})},
-          {NonConfigurableActions::kBrowserPageDown,
-           NonConfigurableAcceleratorDetails(
-               {ui::Accelerator(ui::VKEY_DOWN, ui::EF_COMMAND_DOWN)})},
-          {NonConfigurableActions::kBrowserPageUp,
-           NonConfigurableAcceleratorDetails(
-               {ui::Accelerator(ui::VKEY_UP, ui::EF_COMMAND_DOWN)})},
           {NonConfigurableActions::kAmbientOpenRightClickMenu,
            NonConfigurableAcceleratorDetails({ui::Accelerator(
                ui::VKEY_VOLUME_UP, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN)})},

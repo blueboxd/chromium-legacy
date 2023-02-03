@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.feed.FeedFeatures;
 import org.chromium.chrome.browser.feed.FeedServiceBridge;
 import org.chromium.chrome.browser.feed.R;
+import org.chromium.chrome.browser.feed.SingleWebFeedEntryPoint;
 import org.chromium.chrome.browser.feed.StreamKind;
 import org.chromium.chrome.browser.feed.componentinterfaces.SurfaceCoordinator.StreamTabId;
 import org.chromium.chrome.browser.feed.v2.FeedUserActionType;
@@ -184,6 +185,8 @@ public class WebFeedMainMenuItem extends FrameLayout {
         mItemText.setText(mTitle);
         mItemTextClicked = false;
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CORMORANT)) {
+            mItemText.setContentDescription(
+                    mContext.getString(R.string.cormorant_creator_preview, mTitle));
             mItemText.setOnClickListener((view) -> {
                 mItemTextClicked = true;
                 launchCreatorActivity();
@@ -377,6 +380,8 @@ public class WebFeedMainMenuItem extends FrameLayout {
             intent.putExtra(CreatorIntentConstants.CREATOR_WEB_FEED_ID, mWebFeedId);
             intent.putExtra(CreatorIntentConstants.CREATOR_TITLE, mTitle);
             intent.putExtra(CreatorIntentConstants.CREATOR_URL, creatorUrl);
+            intent.putExtra(
+                    CreatorIntentConstants.CREATOR_ENTRY_POINT, SingleWebFeedEntryPoint.MENU);
             mContext.startActivity(intent);
         } catch (Exception e) {
             Log.d(TAG, "Failed to launch CreatorActivity " + e);

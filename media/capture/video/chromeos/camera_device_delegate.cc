@@ -756,6 +756,7 @@ void CameraDeviceDelegate::OnClosed(int32_t result) {
   if (request_manager_) {
     request_manager_->RemoveResultMetadataObserver(this);
   }
+  CameraHalDispatcherImpl::GetInstance()->RemoveCameraEffectObserver(this);
   ResetMojoInterface();
   device_context_ = nullptr;
   current_blob_resolution_.SetSize(0, 0);
@@ -825,6 +826,7 @@ void CameraDeviceDelegate::Initialize() {
       std::move(callback_ops),
       base::BindOnce(&CameraDeviceDelegate::OnInitialized, GetWeakPtr()));
   request_manager_->AddResultMetadataObserver(this);
+  CameraHalDispatcherImpl::GetInstance()->AddCameraEffectObserver(this);
 
   // For Intel IPU6 platform, set power mode to high quality for CCA and low
   // power mode for others.
@@ -973,6 +975,7 @@ void CameraDeviceDelegate::ConfigureStreams(
 
     int32_t max_yuv_width = 0, max_yuv_height = 0;
     bool is_recording_multi_stream =
+        camera_app_device &&
         camera_app_device->GetCaptureIntent() ==
             cros::mojom::CaptureIntent::VIDEO_RECORD &&
         camera_app_device->IsMultipleStreamsEnabled();
@@ -1513,6 +1516,26 @@ void CameraDeviceDelegate::OnResultMetadataAvailable(
   }
 }
 
+void CameraDeviceDelegate::OnCameraEffectChanged(
+    cros::mojom::CameraEffect changed_effect) {
+  if (!ipc_task_runner_->BelongsToCurrentThread()) {
+    ipc_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&CameraDeviceDelegate::OnCameraEffectChanged,
+                                  GetWeakPtr(), std::move(changed_effect)));
+    return;
+  }
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
+  switch (changed_effect) {
+    case cros::mojom::CameraEffect::kBackgroundBlur:
+      device_context_->OnCaptureConfigurationChanged();
+      break;
+    case cros::mojom::CameraEffect::kPortraitRelight:
+    case cros::mojom::CameraEffect::kBackgroundReplace:
+    case cros::mojom::CameraEffect::kNone:
+      return;
+  }
+}
+
 void CameraDeviceDelegate::DoGetPhotoState(
     VideoCaptureDevice::GetPhotoStateCallback callback) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
@@ -1768,7 +1791,7 @@ void CameraDeviceDelegate::DoGetPhotoState(
   // configuration setting if the feature flag is enabled.
   //
   // https://w3c.github.io/mediacapture-extensions/#exposing-mediastreamtrack-source-background-blur-support
-  if (ash::features::IsBackgroundBlurEnabled()) {
+  if (ash::features::IsVideoConferenceEnabled()) {
     callback = base::BindOnce(
         [](VideoCaptureDevice::GetPhotoStateCallback callback,
            media::mojom::PhotoStatePtr photo_state) {

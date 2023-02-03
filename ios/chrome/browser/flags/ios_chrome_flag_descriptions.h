@@ -41,14 +41,14 @@ extern const char kAutofillEnableNewCardUnmaskPromptViewName[];
 extern const char kAutofillEnableNewCardUnmaskPromptViewDescription[];
 
 // Title and description for the flag to control the new autofill suggestion
-// ranking formula.
-extern const char kAutofillEnableRankingFormulaName[];
-extern const char kAutofillEnableRankingFormulaDescription[];
-
-// Title and description for the flag to control the new autofill suggestion
 // ranking formula for address profiles.
 extern const char kAutofillEnableRankingFormulaAddressProfilesName[];
 extern const char kAutofillEnableRankingFormulaAddressProfilesDescription[];
+
+// Title and description for the flag to control the new autofill suggestion
+// ranking formula for credit cards.
+extern const char kAutofillEnableRankingFormulaCreditCardsName[];
+extern const char kAutofillEnableRankingFormulaCreditCardsDescription[];
 
 // Title and description for the flag that controls whether the remade Autofill
 // Downstream metrics are enabled.
@@ -142,12 +142,6 @@ extern const char kAppleCalendarExperienceKitDescription[];
 extern const char kEmailName[];
 extern const char kEmailDescription[];
 
-// Title and description for enable accessibility identifier to omnibox leading
-// image.
-extern const char kEnableAccessibilityIdentifierToOmniboxLeadingImageName[];
-extern const char
-    kEnableAccessibilityIdentifierToOmniboxLeadingImageDescription[];
-
 // Title and description for the flag to enable phone numbers detection and
 // processing.
 extern const char kPhoneNumberName[];
@@ -175,6 +169,11 @@ extern const char kLongPressSurroundingTextDescription[];
 // directions.
 extern const char kMapsExperienceKitName[];
 extern const char kMapsExperienceKitDescription[];
+
+// Title and description for the flag to enable the Close All Tabs confirmation
+// dialog.
+extern const char kCloseAllTabsConfirmationName[];
+extern const char kCloseAllTabsConfirmationDescription[];
 
 // Title and description for the flag that updates the Content Suggestions to a
 // new module design.
@@ -237,6 +236,14 @@ extern const char kEnableFeedBottomSignInPromoDescription[];
 extern const char kEnableFeedCardMenuSignInPromoName[];
 extern const char kEnableFeedCardMenuSignInPromoDescription[];
 
+// Title and description for the flag to enable the Feed image caching.
+extern const char kEnableFeedImageCachingName[];
+extern const char kEnableFeedImageCachingDescription[];
+
+// Title and description for the flag to enable Feed synthetic capabilities.
+extern const char kEnableFeedSyntheticCapabilitiesName[];
+extern const char kEnableFeedSyntheticCapabilitiesDescription[];
+
 // Title and description for the flag to enable DMToken deletion.
 extern const char kDmTokenDeletionName[];
 extern const char kDmTokenDeletionDescription[];
@@ -271,6 +278,11 @@ extern const char kEnableCBDSignOutDescription[];
 extern const char kEnableDiscoverFeedDiscoFeedEndpointName[];
 extern const char kEnableDiscoverFeedDiscoFeedEndpointDescription[];
 
+// Title and description for the flag to enable the hiding the Most Visited
+// Tiles and Shortcuts for new users.
+extern const char kHideMVTAndShortcutsForNewUsersName[];
+extern const char kHideMVTAndShortcutsForNewUsersDescription[];
+
 // Title and description for the flag to remove the Feed from the NTP.
 extern const char kEnableFeedAblationName[];
 extern const char kEnableFeedAblationDescription[];
@@ -278,10 +290,6 @@ extern const char kEnableFeedAblationDescription[];
 // Title and description for the flag to enable the Fullscreen API.
 extern const char kEnableFullscreenAPIName[];
 extern const char kEnableFullscreenAPIDescription[];
-
-// Title and description for the new bookmarks implementation.
-extern const char kEnableNewBookmarksImplementationName[];
-extern const char kEnableNewBookmarksImplementationDescription[];
 
 // Title and description for the flag to enable password grouping for the
 // Password Manager.
@@ -534,6 +542,10 @@ extern const char kOmniboxMultilineSearchSuggestDescription[];
 extern const char kOmniboxNewImplementationName[];
 extern const char kOmniboxNewImplementationDescription[];
 
+// Title and description for the flag to show most visited on SRP.
+extern const char kOmniboxMostVisitedTilesOnSrpName[];
+extern const char kOmniboxMostVisitedTilesOnSrpDescription[];
+
 // Title and description for the flag to enable Omnibox On Device Head
 // suggestions (incognito).
 extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoName[];
@@ -730,11 +742,6 @@ extern const char kToolbarContainerDescription[];
 extern const char kTrendingQueriesModuleName[];
 extern const char kTrendingQueriesModuleDescription[];
 
-// Title and description for the flag to enable removing any entry points to the
-// history UI from Incognito mode.
-extern const char kUpdateHistoryEntryPointsInIncognitoName[];
-extern const char kUpdateHistoryEntryPointsInIncognitoDescription[];
-
 // Title and description for the flag to enable using Lens to search for an
 // image from the long press context menu.
 extern const char kUseLensToSearchForImageName[];
@@ -755,6 +762,11 @@ extern const char kEnableLensInKeyboardDescription[];
 extern const char kEnableLensInNTPName[];
 extern const char kEnableLensInNTPDescription[];
 
+// Title and description for the flag to enable using alternate Lens context
+// menu string.
+extern const char kEnableLensContextMenuAltTextName[];
+extern const char kEnableLensContextMenuAltTextDescription[];
+
 // Title and description for the flag to enable using Lens to search using
 // copied images in the omnibox.
 extern const char kEnableLensInOmniboxCopiedImageName[];
@@ -763,6 +775,15 @@ extern const char kEnableLensInOmniboxCopiedImageDescription[];
 // Title and description for the flag to sort the tab by recency in the TabGrid.
 extern const char kTabGridRecencySortName[];
 extern const char kTabGridRecencySortDescription[];
+
+// Title and description for the flag that enable tab strip context menu.
+extern const char kTabStripContextMenuName[];
+extern const char kTabStripContextMenuDescription[];
+
+// Title and description for the flag to determine tab inactivity in the
+// TabGrid.
+extern const char kTabInactivityThresholdName[];
+extern const char kTabInactivityThresholdDescription[];
 
 // Title and description for the flag to enable using the
 // loadSimulatedRequest:responseHTMLString: API for displaying error pages in

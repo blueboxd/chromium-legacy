@@ -100,7 +100,7 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ChromeOS.Settings.Device.KeyboardFunctionKeys"
-    enum="BooleanToggled" expires_after="2023-05-14">
+    enum="BooleanToggled" expires_after="2023-07-30">
   <owner>jimmyxgong@chromium.org</owner>
   <owner>zentaro@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
@@ -130,6 +130,63 @@ incoming reviews. Googlers can read more about this at go/gwsq-gerrit.
     OS settings page. The value saved indicates the keyboard shortcuts that were
     previously shown in the banner before the user dismissed the banner.
   </summary>
+</histogram>
+
+<histogram name="ChromeOS.Settings.Keyboard.Modifiers.Hash" units="hash"
+    expires_after="2024-01-23">
+  <owner>dpad@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records the configured modifier remapping set for all modifiers as a hash.
+    See //ash/system/input_device_settings/keyboard_modifier_metrics_recorder.cc
+    for an explanation of the storage method and how to convert the hash to get
+    modifier data.
+  </summary>
+</histogram>
+
+<histogram
+    name="ChromeOS.Settings.Keyboard.Modifiers.{Modifier}RemappedTo.Changed"
+    enum="KeyboardModifierRemappingKeys" expires_after="2024-01-23">
+  <owner>dpad@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records the configured modifier remapping for the {Modifier} key when a user
+    changes the setting in the Settings SWA.
+  </summary>
+  <token key="Modifier">
+    <variant name="Alt"/>
+    <variant name="Assistant"/>
+    <variant name="Backspace"/>
+    <variant name="CapsLock"/>
+    <variant name="Control"/>
+    <variant name="Escape"/>
+    <variant name="ExternalCommand"/>
+    <variant name="ExternalMeta"/>
+    <variant name="Search"/>
+  </token>
+</histogram>
+
+<histogram
+    name="ChromeOS.Settings.Keyboard.Modifiers.{Modifier}RemappedTo.Started"
+    enum="KeyboardModifierRemappingKeys" expires_after="2024-01-23">
+  <owner>dpad@google.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <summary>
+    Records the configured modifier remapping for the {Modifier} key when a user
+    session is started. Only emitted once per user per session. Default values
+    are not recorded.
+  </summary>
+  <token key="Modifier">
+    <variant name="Alt"/>
+    <variant name="Assistant"/>
+    <variant name="Backspace"/>
+    <variant name="CapsLock"/>
+    <variant name="Control"/>
+    <variant name="Escape"/>
+    <variant name="ExternalCommand"/>
+    <variant name="ExternalMeta"/>
+    <variant name="Search"/>
+  </token>
 </histogram>
 
 <histogram name="ChromeOS.Settings.Languages.Interaction"

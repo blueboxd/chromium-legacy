@@ -340,6 +340,8 @@ component("skia") {
       "//third_party/skia/src/codec/SkIcoCodec.cpp",
       "//third_party/skia/src/codec/SkJpegCodec.cpp",
       "//third_party/skia/src/codec/SkJpegDecoderMgr.cpp",
+      "//third_party/skia/src/codec/SkJpegSegmentScan.cpp",
+      "//third_party/skia/src/codec/SkJpegSourceMgr.cpp",
       "//third_party/skia/src/codec/SkJpegUtility.cpp",
       "//third_party/skia/src/codec/SkParseEncodedOrigin.cpp",
       "//third_party/skia/src/codec/SkPngCodec.cpp",
@@ -350,10 +352,6 @@ component("skia") {
       "//third_party/skia/src/ports/SkImageGenerator_skia.cpp",
     ]
     deps += [ "//third_party/wuffs" ]
-  }
-
-  if (current_cpu == "arm") {
-    sources += [ "//third_party/skia/src/core/SkUtilsArm.cpp" ]
   }
 
   # Remove unused util sources.

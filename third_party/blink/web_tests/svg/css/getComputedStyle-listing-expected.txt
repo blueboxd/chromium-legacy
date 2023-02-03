@@ -351,6 +351,7 @@ toggle-root: none
 toggle-trigger: none
 toggle-visibility: normal
 top: auto
+top-layer: none
 touch-action: auto
 transform: none
 transform-origin: 0px 0px
@@ -367,6 +368,7 @@ vertical-align: baseline
 view-timeline-axis: block
 view-timeline-inset: 0px
 view-timeline-name: none
+view-transition-name: none
 visibility: visible
 white-space: normal
 widows: 2

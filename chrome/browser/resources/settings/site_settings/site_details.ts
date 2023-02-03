@@ -35,7 +35,7 @@ import {MetricsBrowserProxyImpl, PrivacyElementInteractions} from '../metrics_br
 import {routes} from '../route.js';
 import {Route, RouteObserverMixin, Router} from '../router.js';
 
-import {ContentSetting, ContentSettingsTypes} from './constants.js';
+import {ChooserType, ContentSetting, ContentSettingsTypes} from './constants.js';
 import {getTemplate} from './site_details.html.js';
 import {SiteDetailsPermissionElement} from './site_details_permission.js';
 import {SiteSettingsMixin} from './site_settings_mixin.js';
@@ -138,6 +138,11 @@ export class SiteDetailsElement extends SiteDetailsElementBase {
       contentSettingsTypesEnum_: {
         type: Object,
         value: ContentSettingsTypes,
+      },
+
+      chooserTypeEnum_: {
+        type: Object,
+        value: ChooserType,
       },
     };
   }
@@ -282,6 +287,15 @@ export class SiteDetailsElement extends SiteDetailsElementBase {
           assert(exceptionList.length > 0);
           this.pageTitle = exceptionList[0].isolatedWebAppName ??
               this.originRepresentation(exceptionList[0].displayName);
+
+          // If the origin is an extension origin, use the extension name if
+          // available.
+          if (exceptionList[0].extensionNameWithId !== undefined) {
+            const url = this.toUrl(exceptionList[0].origin);
+            if (url !== null && url.protocol === 'chrome-extension:') {
+              this.pageTitle = exceptionList[0].extensionNameWithId;
+            }
+          }
         });
   }
 

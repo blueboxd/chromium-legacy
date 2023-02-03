@@ -186,13 +186,14 @@ void PromosManagerImpl::DeregisterPromo(promos_manager::Promo promo) {
   single_display_pending_promos_.erase(promo);
 }
 
-void PromosManagerImpl::InitializePromoImpressionLimits(
-    base::small_map<std::map<promos_manager::Promo, NSArray<ImpressionLimit*>*>>
-        promo_impression_limits) {
-  promo_impression_limits_ = std::move(promo_impression_limits);
+void PromosManagerImpl::InitializePromoConfigs(PromoConfigsSet promo_configs) {
+  promo_configs_ = std::move(promo_configs);
 }
 
-// TODO: write unit test.
+// Determines which promo to display next.
+// Candidates are from active promos and the pending promos that can become
+// active at the time this function is called. Coordinate with other internal
+// functions to rank and validate the candidates.
 absl::optional<promos_manager::Promo> PromosManagerImpl::NextPromoForDisplay() {
   // Construct a map with the promo from (1) single-display and
   // (2) continuous-display promo campaigns. (3) single-display pending promos
@@ -315,12 +316,13 @@ void PromosManagerImpl::InitializePendingPromos() {
 
 NSArray<ImpressionLimit*>* PromosManagerImpl::PromoImpressionLimits(
     promos_manager::Promo promo) const {
-  auto it = promo_impression_limits_.find(promo);
+  auto it = promo_configs_.find(promo);
 
-  if (it == promo_impression_limits_.end())
+  if (it == promo_configs_.end()) {
     return @[];
+  }
 
-  return it->second;
+  return it->impression_limits;
 }
 
 NSArray<ImpressionLimit*>* PromosManagerImpl::GlobalImpressionLimits() const {

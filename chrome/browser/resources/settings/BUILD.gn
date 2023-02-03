@@ -206,6 +206,7 @@ build_webui("build") {
     "site_settings/category_setting_exceptions.ts",
     "site_settings/chooser_exception_list_entry.ts",
     "site_settings/chooser_exception_list.ts",
+    "site_settings/site_details_permission_device_entry.ts",
     "site_settings/edit_exception_dialog.ts",
     "site_settings/media_picker.ts",
     "site_settings/review_notification_permissions.ts",
@@ -306,7 +307,6 @@ build_webui("build") {
     "metrics_browser_proxy.ts",
     "on_startup_page/on_startup_browser_proxy.ts",
     "on_startup_page/startup_urls_page_browser_proxy.ts",
-    "open_window_proxy.ts",
     "page_visibility.ts",
     "people_page/sync_browser_proxy.ts",
     "people_page/profile_info_browser_proxy.ts",
@@ -413,11 +413,12 @@ build_webui("build") {
 
   ts_deps = [
     "//third_party/polymer/v3_0:library",
-    "//ui/webui/resources:library",
     "//ui/webui/resources/cr_components/help_bubble:build_ts",
     "//ui/webui/resources/cr_components/localized_link:build_ts",
     "//ui/webui/resources/cr_components/managed_dialog:build_ts",
     "//ui/webui/resources/cr_components/managed_footnote:build_ts",
+    "//ui/webui/resources/cr_elements:build_ts",
+    "//ui/webui/resources/js:build_ts",
   ]
 
   if (!is_chromeos_ash) {
@@ -450,14 +451,7 @@ build_webui("build") {
       "settings.js",
       "lazy_load.js",
     ]
-    optimize_webui_excludes = [
-      "chrome://resources/js/cr.js",
-      "chrome://resources/mojo/mojo/public/js/bindings.js",
-      "chrome://resources/mojo/skia/public/mojom/skcolor.mojom-webui.js",
-    ]
-    optimize_webui_resource_paths_rewrites = [
-      "settings.rollup.js|settings.js",
-      "lazy_load.rollup.js|lazy_load.js",
-    ]
+    optimize_webui_excludes =
+        [ "chrome://resources/mojo/skia/public/mojom/skcolor.mojom-webui.js" ]
   }
 }

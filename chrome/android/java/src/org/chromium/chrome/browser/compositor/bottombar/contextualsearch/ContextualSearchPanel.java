@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDe
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchUma;
 import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
 import org.chromium.chrome.browser.flags.ActivityType;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.scene_layer.SceneOverlayLayer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -666,15 +665,14 @@ public class ContextualSearchPanel extends OverlayPanel implements ContextualSea
      * @param cardTagEnum The {@link CardTag} that the server returned if there was a card,
      *        or {@code 0}.
      * @param relatedSearchesInBar Related Searches suggestions to be displayed in the Bar.
-     * @param showDefaultSearchInBar Whether the first query is the default query in the bar.
      */
     @VisibleForTesting
     @Override
     public void onSearchTermResolved(String searchTerm, String thumbnailUrl, String quickActionUri,
             int quickActionCategory, @CardTag int cardTagEnum,
-            @Nullable List<String> relatedSearchesInBar, boolean showDefaultSearchInBar) {
+            @Nullable List<String> relatedSearchesInBar) {
         onSearchTermResolved(searchTerm, null, thumbnailUrl, quickActionUri, quickActionCategory,
-                cardTagEnum, relatedSearchesInBar, showDefaultSearchInBar);
+                cardTagEnum, relatedSearchesInBar);
     }
 
     /**
@@ -687,21 +685,15 @@ public class ContextualSearchPanel extends OverlayPanel implements ContextualSea
      * @param cardTagEnum The {@link CardTag} that the server returned if there was a card,
      *        or {@code 0}.
      * @param relatedSearchesInBar Related Searches suggestions to be displayed in the Bar.
-     * @param showDefaultSearchInBar Whether the first query is the default query in the bar.
      */
     @Override
     public void onSearchTermResolved(String searchTerm, @Nullable String pronunciation,
             String thumbnailUrl, String quickActionUri, int quickActionCategory,
-            @CardTag int cardTagEnum, @Nullable List<String> relatedSearchesInBar,
-            boolean showDefaultSearchInBar) {
+            @CardTag int cardTagEnum, @Nullable List<String> relatedSearchesInBar) {
         boolean hadInBarSuggestions = getRelatedSearchesInBarControl().hasReleatedSearchesToShow();
-        getRelatedSearchesInBarControl().setRelatedSearchesSuggestions(
-                relatedSearchesInBar, showDefaultSearchInBar);
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.RELATED_SEARCHES_IN_BAR)) {
-            if (getRelatedSearchesInBarControl().hasReleatedSearchesToShow()
-                    != hadInBarSuggestions) {
-                getSearchBarControl().animateInBarRelatedSearches(!hadInBarSuggestions);
-            }
+        getRelatedSearchesInBarControl().setRelatedSearchesSuggestions(relatedSearchesInBar);
+        if (getRelatedSearchesInBarControl().hasReleatedSearchesToShow() != hadInBarSuggestions) {
+            getSearchBarControl().animateInBarRelatedSearches(!hadInBarSuggestions);
         }
 
         if (cardTagEnum == CardTag.CT_DEFINITION

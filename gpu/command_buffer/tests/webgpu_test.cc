@@ -54,6 +54,11 @@ bool WebGPUTest::WebGPUSupported() const {
     return false;
   }
 
+  // Nexus 5X does not support WebGPU
+  if (GPUTestBotConfig::CurrentConfigMatches("Android Qualcomm 0x4010800")) {
+    return false;
+  }
+
   return true;
 }
 
@@ -82,6 +87,14 @@ void WebGPUTest::TearDown() {
 }
 
 void WebGPUTest::Initialize(const Options& options) {
+  // Some tests that inherit from WebGPUTest call Initialize in SetUp, which
+  // won't be skipped even if the SKIP_TEST_IF in WebGPUTest::SetUp() is
+  // triggered. As a result, to avoid potential crashes, skip initializing if
+  // this device has been marked as not supporting WebGPU.
+  if (!WebGPUSupported()) {
+    return;
+  }
+
   gpu::GpuPreferences gpu_preferences;
   gpu_preferences.enable_webgpu = true;
   gpu_preferences.use_passthrough_cmd_decoder =

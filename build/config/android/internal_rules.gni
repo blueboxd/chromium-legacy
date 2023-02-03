@@ -21,7 +21,8 @@ assert(is_android)
 
 default_android_sdk_dep = "//third_party/android_sdk:android_sdk_java"
 _jacoco_dep = "//third_party/jacoco:jacocoagent_java"
-_jacoco_host_jar = "$root_build_dir/lib.java/third_party/jacoco/jacocoagent.jar"
+_jacoco_host_jar =
+    "$root_build_dir/lib.java/third_party/jacoco/jacocoagent_java.jar"
 _robolectric_libs_dir =
     rebase_path(
         get_label_info("//:foo($robolectric_toolchain)", "root_out_dir"),
@@ -1393,9 +1394,6 @@ if (enable_java_templates) {
         ]
         data += [ _jacoco_host_jar ]
       }
-      if (use_jacoco_coverage || !treat_warnings_as_errors) {
-        args += [ "--noverify" ]
-      }
       if (defined(invoker.tiered_stop_at_level_one) &&
           invoker.tiered_stop_at_level_one) {
         args += [ "--tiered-stop-at-level-one" ]
@@ -1408,6 +1406,12 @@ if (enable_java_templates) {
       }
       if (defined(invoker.wrapper_script_args)) {
         args += [ "--" ] + invoker.wrapper_script_args
+      }
+      if (defined(invoker.use_jdk_11) && invoker.use_jdk_11) {
+        args += [ "--use-jdk-11" ]
+        deps += [ "//third_party/jdk11:java_data" ]
+      } else {
+        deps += [ "//third_party/jdk:java_data" ]
       }
     }
   }
@@ -2395,16 +2399,6 @@ if (enable_java_templates) {
         if (fail_on_android_expectations) {
           args += [ "--fail-on-expectations" ]
         }
-        if (defined(invoker.extra_verification_manifest)) {
-          inputs += [ invoker.extra_verification_manifest ]
-          args += [
-            "--extra-verification-manifest",
-            rebase_path(invoker.extra_verification_manifest, root_build_dir),
-          ]
-          if (defined(invoker.extra_verification_manifest_dep)) {
-            deps += [ invoker.extra_verification_manifest_dep ]
-          }
-        }
       }
       _deps += [ ":$_expectations_target" ]
     }
@@ -2819,25 +2813,21 @@ if (enable_java_templates) {
   }
 
   # Compile Java source files into a .jar file, potentially using an
-  # annotation processor, and/or the errorprone compiler.
+  # annotation processor, and/or the errorprone compiler. Also includes Kotlin
+  # source files in the resulting info file.
   #
   # Note that the only way to specify custom annotation processors is
   # by using build_config to point to a file that corresponds to a java-related
   # target that includes javac:processor_classes entries (i.e. there is no
   # variable here that can be used for this purpose).
   #
-  # Note also the peculiar use of java_files / target_sources_file. The content
-  # of the java_files list and the .java files in target_sources_file file must
-  # match exactly (extra .kt files in target_sources_file will be ignored by
-  # compile_java.py). This rule uses java_files only to list the inputs to the
-  # action that calls compile_java.py, but will pass the list of all target
-  # source files with the '@${target_sources_file}" command-line syntax. Not a
-  # problem in practice since this is only called from java_library_impl() that
-  # sets up the variables properly.
+  # Note also the peculiar use of source_files / target_sources_file. The content
+  # of the source_files list and the source files in target_sources_file file must
+  # match exactly.
   #
   # Variables:
   #  main_target_name: Used when extracting srcjars for codesearch.
-  #  java_files: Optional list of Java source file paths.
+  #  source_files: Optional list of Java and Kotlin source file paths.
   #  srcjar_deps: Optional list of .srcjar dependencies (not file paths).
   #    The corresponding source files they contain will be compiled too.
   #  target_sources_file: Optional path to file containing list of source file
@@ -2929,8 +2919,8 @@ if (enable_java_templates) {
       if (!invoker.enable_errorprone && !invoker.use_turbine) {
         outputs += [ invoker.output_jar_path + ".info" ]
       }
-      inputs = invoker.java_files + _java_srcjars + [ _build_config ]
-      if (invoker.java_files != []) {
+      inputs = invoker.source_files + _java_srcjars + [ _build_config ]
+      if (invoker.source_files != []) {
         inputs += [ invoker.target_sources_file ]
       }
 
@@ -3057,7 +3047,7 @@ if (enable_java_templates) {
             [ "--additional-jar-file=" +
               rebase_path(file_tuple[0], root_build_dir) + ":" + file_tuple[1] ]
       }
-      if (invoker.java_files != []) {
+      if (invoker.source_files != []) {
         args +=
             [ "@" + rebase_path(invoker.target_sources_file, root_build_dir) ]
       }
@@ -3404,8 +3394,6 @@ if (enable_java_templates) {
     if (_is_prebuilt || _has_sources) {
       if (defined(invoker.output_name)) {
         _output_name = invoker.output_name
-      } else if (_is_prebuilt) {
-        _output_name = get_path_info(invoker.jar_path, "name")
       } else {
         _output_name = _main_target_name
       }
@@ -3727,6 +3715,10 @@ if (enable_java_templates) {
       }
 
       if (_kt_files != []) {
+        assert(
+            _kt_files == [ "android/java/src/org/chromium/chrome/browser/tabmodel/AsyncTabParamsManagerImpl.kt" ],
+            "Only a single Kotlin file is allowed for now. Feel free to " +
+                "remove this assert when experimenting locally.")
         _compile_kt_target_name = "${_main_target_name}__compile_kt"
         _kotlinc_jar_path = "$target_out_dir/$_output_name.kotlinc.jar"
         _kotlin_interface_jar_path =
@@ -3781,13 +3773,13 @@ if (enable_java_templates) {
             build_config = _build_config
 
             if (_enable_errorprone) {
-              java_files = _filtered_java_files
+              source_files = _filtered_java_files
             } else {
-              java_files = _java_files
+              source_files = _source_files
               srcjar_deps = _srcjar_deps
             }
 
-            if (java_files != []) {
+            if (source_files != []) {
               target_sources_file = _target_sources_file
             }
             chromium_code = _chromium_code
@@ -4059,10 +4051,7 @@ if (enable_java_templates) {
         if (defined(invoker.wrapper_script_name)) {
           script_name = invoker.wrapper_script_name
         }
-        deps = [
-          ":$_build_config_target_name",
-          "//third_party/jdk:java_data",
-        ]
+        deps = [ ":$_build_config_target_name" ]
         if (_is_robolectric) {
           # For robolectric tests, we also add the normal sdk jar to the
           # classpath since whenever we start using a new Android SDK,
@@ -4071,6 +4060,10 @@ if (enable_java_templates) {
           # new SDK classes, so providing our normal SDK will allow these
           # classes to resolve. For an example, see crbug.com/1350963.
           extra_classpath_jars = [ android_sdk_jar ]
+
+          # Mockito bug with JDK17 requires us to use JDK11 until we find a fix
+          # for crbug.com/1409661.
+          use_jdk_11 = true
         }
       }
     }

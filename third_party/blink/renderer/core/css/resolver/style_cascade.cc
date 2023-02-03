@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/css/resolver/cascade_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
-#include "third_party/blink/renderer/core/css/scoped_css_value.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -523,6 +522,17 @@ void StyleCascade::ApplyWideOverlapping(CascadeResolver& resolver) {
       maybe_skip(GetCSSPropertyWebkitTransformOriginZ(), *priority);
     }
   }
+
+  // vertical-align will become a shorthand in the future - in order to
+  // mitigate the forward compat risk, skip the baseline-source longhand.
+  const CSSProperty& vertical_align = GetCSSPropertyVerticalAlign();
+  if (!resolver.filter_.Rejects(vertical_align)) {
+    if (const CascadePriority* priority =
+            map_.Find(vertical_align.GetCSSPropertyName())) {
+      LookupAndApply(vertical_align, resolver);
+      maybe_skip(GetCSSPropertyBaselineSource(), *priority);
+    }
+  }
 }
 
 // Go through all properties that were found during the analyze phase
@@ -705,7 +715,7 @@ void StyleCascade::LookupAndApplyDeclaration(const CSSProperty& property,
     tree_scope = &GetDocument();
   }
   StyleBuilder::ApplyPhysicalProperty(property, state_,
-                                      ScopedCSSValue(*value, tree_scope));
+                                      value->EnsureScopedValue(tree_scope));
 }
 
 void StyleCascade::LookupAndApplyInterpolation(const CSSProperty& property,

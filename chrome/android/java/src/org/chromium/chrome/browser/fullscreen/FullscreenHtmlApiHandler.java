@@ -480,9 +480,11 @@ public class FullscreenHtmlApiHandler implements ActivityStateListener, WindowFo
                 exitFullscreen(
                         mWebContentsInFullscreen, mContentViewInFullscreen, mTabInFullscreen);
             } else {
-                assert mPendingFullscreenOptions
-                        != null : "No content previously set to fullscreen.";
-                mPendingFullscreenOptions.setCanceled();
+                if (mPendingFullscreenOptions != null) mPendingFullscreenOptions.setCanceled();
+                if (mAreControlsHidden.get()) {
+                    TabBrowserControlsConstraintsHelper.update(
+                            mTab, BrowserControlsState.SHOWN, true);
+                }
             }
             mWebContentsInFullscreen = null;
             mContentViewInFullscreen = null;
@@ -808,7 +810,8 @@ public class FullscreenHtmlApiHandler implements ActivityStateListener, WindowFo
         mToastFadeAnimation.cancel();
         mToastFadeAnimation.alpha(0)
                 .setDuration(TOAST_FADE_MS)
-                .withEndAction(this::hideImmediatelyNotificationToast);
+                .withEndAction(this::hideImmediatelyNotificationToast)
+                .start();
     }
 
     // ActivityStateListener
@@ -961,6 +964,10 @@ public class FullscreenHtmlApiHandler implements ActivityStateListener, WindowFo
 
     void setVersionCompatForTesting(DimensionCompat compat) {
         mDimensionCompat = compat;
+    }
+
+    FullscreenOptions getPendingFullscreenOptionsForTesting() {
+        return mPendingFullscreenOptions;
     }
 
     void triggerWindowLayoutChangeForTesting() {

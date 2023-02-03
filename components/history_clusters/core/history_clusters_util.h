@@ -14,6 +14,8 @@
 
 namespace history_clusters {
 
+enum class ClusteringRequestSource;
+
 // Computes a simplified GURL for deduping purposes only. The resulting GURL may
 // not be valid or navigable, and is only intended for History Cluster deduping.
 //
@@ -57,8 +59,10 @@ void CullNonProminentOrDuplicateClusters(
     std::vector<history::Cluster>& clusters,
     std::set<GURL>* seen_single_visit_cluster_urls);
 
-// Marks low scoring visits as hidden, and drops them if necessary.
-void HideAndCullLowScoringVisits(std::vector<history::Cluster>& clusters);
+// Removes low scoring visits and clusters with less than`min_visits` visits
+// remaining.
+void HideAndCullLowScoringVisits(std::vector<history::Cluster>& clusters,
+                                 size_t min_visits);
 
 // Coalesces the related searches off of individual visits and places them at
 // the cluster level with numerical limits defined by flags.
@@ -73,6 +77,13 @@ bool ShouldUseNavigationContextClustersFromPersistence();
 
 // Whether the transition is user-visible.
 bool IsTransitionUserVisible(int32_t transition);
+
+// Returns the histogram name slice for the clustering request source.
+std::string GetHistogramNameSliceForRequestSource(
+    ClusteringRequestSource source);
+
+// Returns whether `source` is a UI source.
+bool IsUIRequestSource(ClusteringRequestSource source);
 
 }  // namespace history_clusters
 

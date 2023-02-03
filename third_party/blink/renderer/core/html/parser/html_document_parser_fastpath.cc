@@ -135,8 +135,6 @@ uint32_t TagnameHash(const String& s) {
 // - Only a few named "&" character references are supported.
 // - No '\0'. The handling of '\0' varies depending upon where it is found
 //   and in general the correct handling complicates things.
-// - Fails if Document::IsDirAttributeDirty. This relies on
-//   BeginParsingChildren() and FinishParsingChildren() being called.
 // - Fails if an attribute name starts with 'on'. Such attributes are generally
 //   events that may be fired. Allowing this could be problematic if the fast
 //   path fails. For example, the 'onload' event of an <img> would be called
@@ -149,6 +147,9 @@ uint32_t TagnameHash(const String& s) {
 // - Fails if an <img> is encountered. Image elements request the image early
 //   on, resulting in network connections. Additionally, loading the image
 //   may consume preloaded resources.
+// - Fails if Document::IsDirAttributeDirty() is true and CSSPseudoDirEnabled is
+//   enabled. This is necessary as state needed to support css-pseudo dir is set
+//   in HTMLElement::BeginParsingChildren(), which this does not call.
 template <class Char>
 class HTMLFastPathParser {
   STACK_ALLOCATED();
@@ -477,14 +478,41 @@ class HTMLFastPathParser {
     }
   }
 
+  struct ScanTextResult {
+    // HTML strings of the form '\n<space>*' are widespread on the web. Caching
+    // them saves us allocations, which improves the runtime.
+    String TryCanonicalizeString() const {
+      DCHECK(!text.empty());
+      if (is_newline_then_whitespace_string &&
+          text.size() < WTF::NewlineThenWhitespaceStringsTable::kTableSize) {
+#if DCHECK_IS_ON()
+        DCHECK(WTF::NewlineThenWhitespaceStringsTable::IsNewlineThenWhitespaces(
+            String(text.data(), static_cast<unsigned>(text.size()))));
+#endif  // DCHECK_IS_ON()
+        return WTF::NewlineThenWhitespaceStringsTable::GetStringForLength(
+            text.size());
+      }
+      return String(text.data(), static_cast<unsigned>(text.size()));
+    }
+
+    Span text;
+    USpan escaped_text;
+    bool is_newline_then_whitespace_string = false;
+  };
+
   // We first try to scan text as an unmodified subsequence of the input.
   // However, if there are escape sequences, we have to copy the text to a
   // separate buffer and we might go outside of `Char` range if we are in an
   // `LChar` parser. Therefore, this function returns either a `Span` or a
   // `USpan`. Callers distinguish the two cases by checking if the `Span` is
   // empty, as only one of them can be non-empty.
-  std::pair<Span, USpan> ScanText() {
+  ScanTextResult ScanText() {
     const Char* start = pos_;
+    bool is_newline_then_whitespace_string = false;
+    if (pos_ != end_ && *pos_ == '\n') {
+      is_newline_then_whitespace_string = true;
+      ++pos_;
+    }
     while (pos_ != end_ && *pos_ != '<') {
       // '&' indicates escape sequences, '\r' might require
       // https://infra.spec.whatwg.org/#normalize-newlines
@@ -493,11 +521,16 @@ class HTMLFastPathParser {
         return {Span{}, ScanEscapedText()};
       } else if (UNLIKELY(*pos_ == '\0')) {
         return Fail(HtmlFastPathResult::kFailedContainsNull,
-                    std::pair{Span{}, USpan{}});
+                    ScanTextResult{Span{}, USpan{}});
+      }
+      if (*pos_ != ' ') {
+        is_newline_then_whitespace_string = false;
       }
       ++pos_;
     }
-    return {{start, static_cast<size_t>(pos_ - start)}, USpan{}};
+    return {{start, static_cast<size_t>(pos_ - start)},
+            USpan{},
+            is_newline_then_whitespace_string};
   }
 
   // Slow-path of `ScanText()`, which supports escape sequences by copying to a
@@ -795,25 +828,26 @@ class HTMLFastPathParser {
   template <class ParentTag>
   void ParseChildren(ContainerNode* parent) {
     while (true) {
-      std::pair<Span, USpan> text = ScanText();
+      ScanTextResult scanned_text = ScanText();
       if (failed_) {
         return;
       }
-      DCHECK(text.first.empty() || text.second.empty());
-      if (!text.first.empty()) {
-        if (text.first.size() >= Text::kDefaultLengthLimit) {
+      DCHECK(scanned_text.text.empty() || scanned_text.escaped_text.empty());
+      if (!scanned_text.text.empty()) {
+        const auto text = scanned_text.text;
+        if (text.size() >= Text::kDefaultLengthLimit) {
+          return Fail(HtmlFastPathResult::kFailedBigText);
+        }
+        parent->ParserAppendChild(
+            Text::Create(document_, scanned_text.TryCanonicalizeString()));
+      } else if (!scanned_text.escaped_text.empty()) {
+        if (scanned_text.escaped_text.size() >= Text::kDefaultLengthLimit) {
           return Fail(HtmlFastPathResult::kFailedBigText);
         }
         parent->ParserAppendChild(Text::Create(
-            document_, String(text.first.data(),
-                              static_cast<unsigned>(text.first.size()))));
-      } else if (!text.second.empty()) {
-        if (text.second.size() >= Text::kDefaultLengthLimit) {
-          return Fail(HtmlFastPathResult::kFailedBigText);
-        }
-        parent->ParserAppendChild(Text::Create(
-            document_, String(text.second.data(),
-                              static_cast<unsigned>(text.second.size()))));
+            document_,
+            String(scanned_text.escaped_text.data(),
+                   static_cast<unsigned>(scanned_text.escaped_text.size()))));
       }
       if (pos_ == end_) {
         return;
@@ -1076,13 +1110,234 @@ bool CanUseFastPath(Document& document,
     return false;
   }
 
-  // State used for this is updated in BeginParsingChildren() and
-  // FinishParsingChildren(), which this does not call.
-  if (document.IsDirAttributeDirty()) {
-    LogFastPathResult(HtmlFastPathResult::kFailedDirAttributeDirty);
+  if (document.IsDirAttributeDirty() &&
+      RuntimeEnabledFeatures::CSSPseudoDirEnabled()) {
+    LogFastPathResult(
+        HtmlFastPathResult::kFailedCssPseudoDirEnabledAndDirAttributeDirty);
     return false;
   }
   return true;
+}
+
+// A hand picked enumeration of the most frequently used tags on web pages with
+// some amount of grouping. Ranking comes from
+// (https://discuss.httparchive.org/t/use-of-html-elements/1438).
+enum class UnsupportedTagType : uint32_t {
+  // The tag is supported.
+  kSupported = 0,
+  kImg = 1 << 0,
+  kAside = 1 << 1,
+  kU = 1 << 2,
+  kHr = 1 << 3,
+  // This is h1-h6.
+  kH = 1 << 4,
+  kEm = 1 << 5,
+  // The tag is not html.
+  kNotHtml = 1 << 6,
+  // The tag is a known html tag, but not one covered by this enum.
+  kOtherHtml = 1 << 7,
+  kForm = 1 << 8,
+  // This includes header, footer, and section.
+  kArticleLike = 1 << 9,
+  kNav = 1 << 10,
+  kIFrame = 1 << 11,
+  // This includes tr, td, tbody, th.
+  kTableLike = 1 << 12,
+  // This includes dl, dt, dd.
+  kDescriptionList = 1 << 13,
+  kIns = 1 << 14,
+  kBlockquote = 1 << 15,
+  kCenter = 1 << 16,
+  kSmall = 1 << 17,
+  kFont = 1 << 18,
+  kFieldset = 1 << 19,
+  kTextarea = 1 << 20,
+  kTime = 1 << 21,
+  kFigure = 1 << 22,
+  kMaxValue = kFigure,
+};
+
+constexpr uint32_t kAllUnsupportedTags =
+    (static_cast<uint32_t>(UnsupportedTagType::kMaxValue) << 1) - 1;
+// If UnsupportedTagType is > 24, then need to add a fourth chunk to the
+// overall histogram.
+static_assert(kAllUnsupportedTags < (1 << 24));
+
+#define CHECK_TAG_TYPE(t)                       \
+  if (node.HasTagName(html_names::k##t##Tag)) { \
+    return UnsupportedTagType::k##t;            \
+  }
+
+#define NODE_HAS_TAG_NAME(t) node.HasTagName(html_names::k##t##Tag) ||
+
+// Returns the UnsupportedTagType for node. Returns 0 if `node` is one of the
+// supported tags.
+UnsupportedTagType UnsupportedTagTypeValueForNode(const Node& node) {
+  // "false" is needed as NODE_HAS_TAG_NAME has a trailing '||'. Without it,
+  // would get compile errors.
+  const bool hack_for_macro_to_work_in_conditional = false;
+  if (SUPPORTED_TAGS(NODE_HAS_TAG_NAME) hack_for_macro_to_work_in_conditional) {
+    // Known tag.
+    return UnsupportedTagType::kSupported;
+  }
+  if (node.HasTagName(html_names::kH1Tag) ||
+      node.HasTagName(html_names::kH2Tag) ||
+      node.HasTagName(html_names::kH3Tag) ||
+      node.HasTagName(html_names::kH4Tag) ||
+      node.HasTagName(html_names::kH5Tag) ||
+      node.HasTagName(html_names::kH6Tag)) {
+    return UnsupportedTagType::kH;
+  }
+  if (node.HasTagName(html_names::kArticleTag) ||
+      node.HasTagName(html_names::kHeaderTag) ||
+      node.HasTagName(html_names::kFooterTag) ||
+      node.HasTagName(html_names::kSectionTag)) {
+    return UnsupportedTagType::kArticleLike;
+  }
+  if (node.HasTagName(html_names::kTableTag) ||
+      node.HasTagName(html_names::kTrTag) ||
+      node.HasTagName(html_names::kTdTag) ||
+      node.HasTagName(html_names::kTbodyTag) ||
+      node.HasTagName(html_names::kThTag)) {
+    return UnsupportedTagType::kTableLike;
+  }
+  if (node.HasTagName(html_names::kDlTag) ||
+      node.HasTagName(html_names::kDtTag) ||
+      node.HasTagName(html_names::kDdTag)) {
+    return UnsupportedTagType::kDescriptionList;
+  }
+  CHECK_TAG_TYPE(Aside)
+  CHECK_TAG_TYPE(U)
+  CHECK_TAG_TYPE(Hr)
+  CHECK_TAG_TYPE(Em)
+  CHECK_TAG_TYPE(Form)
+  CHECK_TAG_TYPE(Nav)
+  CHECK_TAG_TYPE(IFrame)
+  CHECK_TAG_TYPE(Ins)
+  CHECK_TAG_TYPE(Blockquote)
+  CHECK_TAG_TYPE(Center)
+  CHECK_TAG_TYPE(Small)
+  CHECK_TAG_TYPE(Font)
+  CHECK_TAG_TYPE(Fieldset)
+  CHECK_TAG_TYPE(Textarea)
+  CHECK_TAG_TYPE(Time)
+  CHECK_TAG_TYPE(Figure)
+  if (node.IsHTMLElement() && To<Element>(node).TagQName().IsDefinedName()) {
+    return UnsupportedTagType::kOtherHtml;
+  }
+  return UnsupportedTagType::kNotHtml;
+}
+
+// Histogram names used when logging unsupported tag type.
+const char* kUnsupportedTagTypeCompositeName =
+    "Blink.HTMLFastPathParser.UnsupportedTag.CompositeMask";
+const char* kUnsupportedTagTypeMaskNames[] = {
+    "Blink.HTMLFastPathParser.UnsupportedTag.Mask0",
+    "Blink.HTMLFastPathParser.UnsupportedTag.Mask1",
+    "Blink.HTMLFastPathParser.UnsupportedTag.Mask2",
+};
+
+// Histogram names used when logging unsupported context tag type.
+const char* kUnsupportedContextTagTypeCompositeName =
+    "Blink.HTMLFastPathParser.UnsupportedContextTag.CompositeMask";
+const char* kUnsupportedContextTagTypeMaskNames[] = {
+    "Blink.HTMLFastPathParser.UnsupportedContextTag.Mask0",
+    "Blink.HTMLFastPathParser.UnsupportedContextTag.Mask1",
+    "Blink.HTMLFastPathParser.UnsupportedContextTag.Mask2",
+};
+
+// Logs histograms for either an unsupported tag or unsupported context tag.
+// `type_mask` is a bitmask of the unsupported tags that were encountered. As
+// the uma frontend doesn't handle large bitmasks well, there are 4 separate
+// histograms logged:
+// . histogram for bits 1-8, 9-16, 17-24. The names used for these histograms
+//   is specified in `mask_histogram_names`.
+// . A histogram identifying which bit ranges of `type_mask` have at least one
+//   bit set. More specifically:
+//   . bit 1 set if `type_mask` has at least one bit set in bits 1-8.
+//   . bit 2 set if `type_mask` has at least one bit set in bits 9-16.
+//   . bit 3 set if `type_mask` has at least one bit set in bits 17-24.
+void LogFastPathUnsupportedTagTypeDetails(uint32_t type_mask,
+                                          const char* composite_histogram_name,
+                                          const char* mask_histogram_names[]) {
+  // This should only be called once an unsupported tag is encountered.
+  DCHECK_NE(static_cast<uint32_t>(0), type_mask);
+  uint32_t chunk_mask = 0;
+  if ((type_mask & 0xFF) != 0) {
+    chunk_mask |= 1;
+    base::UmaHistogramExactLinear(mask_histogram_names[0], type_mask & 0xFF,
+                                  256);
+  }
+  if (((type_mask >> 8) & 0xFF) != 0) {
+    chunk_mask |= 2;
+    base::UmaHistogramExactLinear(mask_histogram_names[1],
+                                  (type_mask >> 8) & 0xFF, 256);
+  }
+  if (((type_mask >> 16) & 0xFF) != 0) {
+    chunk_mask |= 4;
+    base::UmaHistogramExactLinear(mask_histogram_names[2],
+                                  (type_mask >> 16) & 0xFF, 256);
+  }
+  base::UmaHistogramExactLinear(composite_histogram_name, chunk_mask, 8);
+}
+
+template <class Char>
+bool TryParsingHTMLFragmentImpl(const base::span<const Char>& source,
+                                Document& document,
+                                DocumentFragment& fragment,
+                                Element& context_element,
+                                bool* failed_because_unsupported_tag) {
+  base::ElapsedTimer parse_timer;
+  bool success;
+  int number_of_bytes_parsed;
+  HTMLFastPathParser<Char> parser{source, document, fragment};
+  success = parser.Run(context_element);
+  // The direction attribute may change as a result of parsing. Check again.
+  if (document.IsDirAttributeDirty() &&
+      RuntimeEnabledFeatures::CSSPseudoDirEnabled()) {
+    LogFastPathResult(
+        HtmlFastPathResult::kFailedCssPseudoDirEnabledAndDirAttributeDirty);
+    success = false;
+  } else {
+    LogFastPathResult(parser.parse_result());
+  }
+  number_of_bytes_parsed = parser.NumberOfBytesParsed();
+  // The time needed to parse is typically < 1ms (even at the 99%).
+  if (base::TimeTicks::IsHighResolution()) {
+    if (success) {
+      base::UmaHistogramCustomMicrosecondsTimes(
+          "Blink.HTMLFastPathParser.SuccessfulParseTime2",
+          parse_timer.Elapsed(), base::Microseconds(1), base::Milliseconds(10),
+          100);
+    } else {
+      base::UmaHistogramCustomMicrosecondsTimes(
+          "Blink.HTMLFastPathParser.AbortedParseTime2", parse_timer.Elapsed(),
+          base::Microseconds(1), base::Milliseconds(10), 100);
+    }
+  }
+  if (failed_because_unsupported_tag) {
+    *failed_because_unsupported_tag =
+        parser.parse_result() == HtmlFastPathResult::kFailedUnsupportedTag;
+  }
+  if (parser.parse_result() ==
+      HtmlFastPathResult::kFailedUnsupportedContextTag) {
+    const UnsupportedTagType context_tag_type =
+        UnsupportedTagTypeValueForNode(context_element);
+    // If the context element isn't a valid container but is supported
+    // UnsupportedTagTypeValueForNode() will return kSupported. For now this is
+    // really only <br>. I suspect this is extremely rare, so don't log for now.
+    if (context_tag_type != UnsupportedTagType::kSupported) {
+      LogFastPathUnsupportedTagTypeDetails(
+          static_cast<uint32_t>(context_tag_type),
+          kUnsupportedContextTagTypeCompositeName,
+          kUnsupportedContextTagTypeMaskNames);
+    }
+  }
+  base::UmaHistogramCounts10M(
+      success ? "Blink.HTMLFastPathParser.SuccessfulParseSize"
+              : "Blink.HTMLFastPathParser.AbortedParseSize",
+      number_of_bytes_parsed);
+  return success;
 }
 
 }  // namespace
@@ -1092,37 +1347,34 @@ bool TryParsingHTMLFragment(const String& source,
                             DocumentFragment& fragment,
                             Element& context_element,
                             ParserContentPolicy policy,
-                            bool include_shadow_roots) {
+                            bool include_shadow_roots,
+                            bool* failed_because_unsupported_tag) {
   if (!CanUseFastPath(document, context_element, policy,
                       include_shadow_roots)) {
     return false;
   }
-  base::ElapsedTimer parse_timer;
-  bool success;
-  int number_of_bytes_parsed;
-  if (source.Is8Bit()) {
-    HTMLFastPathParser<LChar> parser{source.Span8(), document, fragment};
-    success = parser.Run(context_element);
-    number_of_bytes_parsed = parser.NumberOfBytesParsed();
-    LogFastPathResult(parser.parse_result());
-  } else {
-    HTMLFastPathParser<UChar> parser{source.Span16(), document, fragment};
-    success = parser.Run(context_element);
-    number_of_bytes_parsed = parser.NumberOfBytesParsed();
-    LogFastPathResult(parser.parse_result());
+  return source.Is8Bit() ? TryParsingHTMLFragmentImpl<LChar>(
+                               source.Span8(), document, fragment,
+                               context_element, failed_because_unsupported_tag)
+                         : TryParsingHTMLFragmentImpl<UChar>(
+                               source.Span16(), document, fragment,
+                               context_element, failed_because_unsupported_tag);
+}
+
+void LogTagsForUnsupportedTagTypeFailure(DocumentFragment& fragment) {
+  uint32_t type_mask = 0u;
+  Node* node = NodeTraversal::Next(fragment);
+  while (node && type_mask != kAllUnsupportedTags) {
+    type_mask |= static_cast<uint32_t>(UnsupportedTagTypeValueForNode(*node));
+    node = NodeTraversal::Next(*node);
   }
-  if (success) {
-    base::UmaHistogramTimes("Blink.HTMLFastPathParser.SuccessfulParseTime",
-                            parse_timer.Elapsed());
-  } else {
-    base::UmaHistogramTimes("Blink.HTMLFastPathParser.AbortedParseTime",
-                            parse_timer.Elapsed());
+  // The mask may still be 0 in some cases, such as empty text, or tags that
+  // don't create nodes (frameset).
+  if (type_mask != 0) {
+    LogFastPathUnsupportedTagTypeDetails(type_mask,
+                                         kUnsupportedTagTypeCompositeName,
+                                         kUnsupportedTagTypeMaskNames);
   }
-  base::UmaHistogramCounts10M(
-      success ? "Blink.HTMLFastPathParser.SuccessfulParseSize"
-              : "Blink.HTMLFastPathParser.AbortedParseSize",
-      number_of_bytes_parsed);
-  return success;
 }
 
 #undef SUPPORTED_TAGS

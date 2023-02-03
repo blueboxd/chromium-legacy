@@ -727,14 +727,6 @@ std::vector<std::string> GetRequiredStringList(const base::Value* dict,
 
 void SetString(const char* key,
                const absl::optional<std::string>& property,
-               base::Value* dict) {
-  if (!property)
-    return;
-  dict->SetStringKey(key, *property);
-}
-
-void SetString(const char* key,
-               const absl::optional<std::string>& property,
                base::Value::Dict* dict) {
   if (!property)
     return;
@@ -751,17 +743,6 @@ void SetStringIfNotEmpty(const char* key,
 
 void SetStringList(const char* key,
                    const absl::optional<std::vector<std::string>>& property,
-                   base::Value* dict) {
-  if (!property)
-    return;
-  base::Value list(base::Value::Type::LIST);
-  for (const std::string& s : *property)
-    list.Append(base::Value(s));
-  dict->SetKey(key, std::move(list));
-}
-
-void SetStringList(const char* key,
-                   const absl::optional<std::vector<std::string>>& property,
                    base::Value::Dict* dict) {
   if (!property)
     return;
@@ -774,8 +755,8 @@ void SetStringList(const char* key,
 void SetSubjectAltNameMatch(
     const char* key,
     const std::vector<mojom::SubjectAltNamePtr>* property,
-    base::Value* dict) {
-  base::Value subject_alt_name_list(base::Value::Type::LIST);
+    base::Value::Dict* dict) {
+  base::Value::List subject_alt_name_list;
   for (const auto& ptr : *property) {
     std::string type;
     switch (ptr->type) {
@@ -789,13 +770,12 @@ void SetSubjectAltNameMatch(
         type = ::onc::eap_subject_alternative_name_match::kURI;
         break;
     }
-    base::Value entry(base::Value::Type::DICTIONARY);
-    entry.SetStringKey(::onc::eap_subject_alternative_name_match::kType, type);
-    entry.SetStringKey(::onc::eap_subject_alternative_name_match::kValue,
-                       ptr->value);
+    base::Value::Dict entry;
+    entry.Set(::onc::eap_subject_alternative_name_match::kType, type);
+    entry.Set(::onc::eap_subject_alternative_name_match::kValue, ptr->value);
     subject_alt_name_list.Append(std::move(entry));
   }
-  dict->SetKey(key, std::move(subject_alt_name_list));
+  dict->Set(key, std::move(subject_alt_name_list));
 }
 
 // GetManagedDictionary() returns a ManagedDictionary representing the active
@@ -2025,7 +2005,7 @@ bool NetworkTypeCanBeDisabled(mojom::NetworkType type) {
 }
 
 base::Value GetEAPProperties(const mojom::EAPConfigProperties& eap) {
-  base::Value eap_dict(base::Value::Type::DICTIONARY);
+  base::Value::Dict eap_dict;
 
   SetString(::onc::eap::kAnonymousIdentity, eap.anonymous_identity, &eap_dict);
   SetString(::onc::client_cert::kClientCertPKCS11Id, eap.client_cert_pkcs11_id,
@@ -2038,14 +2018,14 @@ base::Value GetEAPProperties(const mojom::EAPConfigProperties& eap) {
   SetString(::onc::eap::kInner, eap.inner, &eap_dict);
   SetString(::onc::eap::kOuter, eap.outer, &eap_dict);
   SetString(::onc::eap::kPassword, eap.password, &eap_dict);
-  eap_dict.SetBoolKey(::onc::eap::kSaveCredentials, eap.save_credentials);
+  eap_dict.Set(::onc::eap::kSaveCredentials, eap.save_credentials);
   SetStringList(::onc::eap::kServerCAPEMs, eap.server_ca_pems, &eap_dict);
   SetSubjectAltNameMatch(::onc::eap::kSubjectAlternativeNameMatch,
                          &eap.subject_alt_name_match, &eap_dict);
   SetString(::onc::eap::kSubjectMatch, eap.subject_match, &eap_dict);
-  eap_dict.SetBoolKey(::onc::eap::kUseSystemCAs, eap.use_system_cas);
+  eap_dict.Set(::onc::eap::kUseSystemCAs, eap.use_system_cas);
 
-  return eap_dict;
+  return base::Value(std::move(eap_dict));
 }
 
 base::Value::Dict MojoApnToOnc(const mojom::ApnProperties& apn_props) {
@@ -3542,14 +3522,16 @@ void CrosNetworkConfig::CreateCustomApn(const std::string& network_guid,
     return;
   }
 
-  network_metadata_store->SetCustomApnList(network_guid, new_apns.Clone());
-
   SetPropertiesInternal(
       network_guid, *network, UserApnListToOnc(network_guid, &new_apns),
       base::BindOnce(
-          [](const std::string& guid, mojom::ApnPropertiesPtr apn, bool success,
+          [](const std::string& guid, base::Value::List new_apns,
+             mojom::ApnPropertiesPtr apn, bool success,
              const std::string& message) {
-            if (!success) {
+            if (success) {
+              NetworkHandler::Get()->network_metadata_store()->SetCustomApnList(
+                  guid, std::move(new_apns));
+            } else {
               NET_LOG(ERROR)
                   << "CreateCustomApn: Failed to update the user APN "
                      "list in Shill for network: "
@@ -3558,7 +3540,7 @@ void CrosNetworkConfig::CreateCustomApn(const std::string& network_guid,
             CellularNetworkMetricsLogger::LogCreateCustomApnResult(
                 success, std::move(apn));
           },
-          network_guid, std::move(apn)));
+          network_guid, new_apns.Clone(), std::move(apn)));
 }
 
 void CrosNetworkConfig::RemoveCustomApn(const std::string& network_guid,
@@ -3622,13 +3604,16 @@ void CrosNetworkConfig::RemoveCustomApn(const std::string& network_guid,
     return;
   }
 
-  network_metadata_store->SetCustomApnList(network_guid, new_apns.Clone());
   SetPropertiesInternal(
       network_guid, *network, UserApnListToOnc(network_guid, &new_apns),
       base::BindOnce(
-          [](const std::string& guid, std::vector<mojom::ApnType> apn_types,
-             bool success, const std::string& message) {
-            if (!success) {
+          [](const std::string& guid, base::Value::List new_apns,
+             std::vector<mojom::ApnType> apn_types, bool success,
+             const std::string& message) {
+            if (success) {
+              NetworkHandler::Get()->network_metadata_store()->SetCustomApnList(
+                  guid, std::move(new_apns));
+            } else {
               NET_LOG(ERROR)
                   << "RemoveCustomApn: Failed to update the user APN "
                      "list in Shill for network: "
@@ -3637,7 +3622,7 @@ void CrosNetworkConfig::RemoveCustomApn(const std::string& network_guid,
             CellularNetworkMetricsLogger::LogRemoveCustomApnResult(
                 success, std::move(apn_types));
           },
-          network_guid, std::move(removed_apn_apn_types)));
+          network_guid, new_apns.Clone(), std::move(removed_apn_apn_types)));
 }
 
 void CrosNetworkConfig::ModifyCustomApn(const std::string& network_guid,
@@ -3726,16 +3711,18 @@ void CrosNetworkConfig::ModifyCustomApn(const std::string& network_guid,
 
   NET_LOG(USER) << "ModifyCustomApn: Setting user APNs for: " << network_guid
                 << ": " << new_custom_apns.size();
-  network_metadata_store->SetCustomApnList(network_guid,
-                                           new_custom_apns.Clone());
   SetPropertiesInternal(
       network_guid, *network, UserApnListToOnc(network_guid, &new_custom_apns),
       base::BindOnce(
-          [](const std::string& guid, std::vector<mojom::ApnType> old_apn_types,
+          [](const std::string& guid, base::Value::List new_apns,
+             std::vector<mojom::ApnType> old_apn_types,
              const mojom::ApnState apn_state,
              const mojom::ApnState old_apn_state, bool success,
              const std::string& message) {
-            if (!success) {
+            if (success) {
+              NetworkHandler::Get()->network_metadata_store()->SetCustomApnList(
+                  guid, std::move(new_apns));
+            } else {
               NET_LOG(ERROR)
                   << "ModifyCustomApn: Failed to update the user APN "
                      "list in Shill for network: "
@@ -3746,7 +3733,8 @@ void CrosNetworkConfig::ModifyCustomApn(const std::string& network_guid,
             CellularNetworkMetricsLogger::LogModifyCustomApnResult(
                 success, old_apn_types, apn_state, old_apn_state);
           },
-          network_guid, std::move(modified_apn_old_apn_types), apn->state,
+          network_guid, new_custom_apns.Clone(),
+          std::move(modified_apn_old_apn_types), apn->state,
           modified_apn_old_apn_state));
 }
 

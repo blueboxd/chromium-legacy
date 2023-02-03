@@ -60,8 +60,6 @@ namespace {
 // child process client id.
 constexpr uint32_t kBrowserClientId = 0u;
 
-static const char* kBrowser = "Browser";
-
 scoped_refptr<viz::ContextProviderCommandBuffer> CreateContextProvider(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -426,13 +424,35 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
 #if BUILDFLAG(IS_WIN)
   root_params->set_present_duration_allowed =
       features::ShouldUseSetPresentDuration();
-#endif  // BUILDFLAG(IS_WIN)
 
-  // Connects the viz process end of CompositorFrameSink message pipes. The
-  // browser compositor may request a new CompositorFrameSink on context loss,
-  // which will destroy the existing CompositorFrameSink.
+  const bool using_direct_composition = GpuDataManagerImpl::GetInstance()
+                                            ->GetGPUInfo()
+                                            .overlay_info.direct_composition;
+  // The wait_on_destruction flag governs whether InvalidateFrameSinkId calls
+  // DestroyCompositorFrameSink synchronously, thus ensuring that the surface
+  // that draws to the HWND gets destroyed before the HWND, itself, gets
+  // destroyed.
+
+  // Skipping DestroyCompositorFrameSink is safe when we're using direct
+  // composition mode. In DComp mode, we create a child popup HWND (to which we
+  // attach a visual tree) and ask the browser process to parent it to its HWND
+  // via AddChildWindowToBrowser. Thus, it is safe to delete the parent window.
+
+  // In non-DComp hardware modes, failure to call DestroyCompositorFrameSink
+  // leads to a race condition where the HWND can be deleted out from under the
+  // GPU process. API calls with the HWND will fail and lead to the GPU process
+  // falling back to software mode.
+
+  // CreateRootCompositorFrameSink connects the viz process end of
+  // CompositorFrameSink message pipes. The browser compositor may request a new
+  // CompositorFrameSink on context loss, which will destroy the existing
+  // CompositorFrameSink.
+  GetHostFrameSinkManager()->CreateRootCompositorFrameSink(
+      std::move(root_params), !using_direct_composition);
+#else
   GetHostFrameSinkManager()->CreateRootCompositorFrameSink(
       std::move(root_params));
+#endif  // BUILDFLAG(IS_WIN)
 
   // Create LayerTreeFrameSink with the browser end of CompositorFrameSink.
   cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
@@ -441,7 +461,6 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
       compositor->context_factory()->GetGpuMemoryBufferManager();
   params.pipes.compositor_frame_sink_associated_remote = std::move(sink_remote);
   params.pipes.client_receiver = std::move(client_receiver);
-  params.client_name = kBrowser;
   auto frame_sink =
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
           std::move(context_provider),
@@ -457,10 +476,8 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
   // Windows using the ANGLE D3D backend for compositing needs to disable swap
   // on resize to avoid D3D scaling the framebuffer texture. This isn't a
   // problem with software compositing or ANGLE D3D with direct composition.
-  bool using_angle_d3d_compositing =
-      gpu_compositing && !GpuDataManagerImpl::GetInstance()
-                              ->GetGPUInfo()
-                              .overlay_info.direct_composition;
+  const bool using_angle_d3d_compositing =
+      gpu_compositing && !using_direct_composition;
   compositor->SetShouldDisableSwapUntilResize(using_angle_d3d_compositing);
 #endif
 }
@@ -527,10 +544,12 @@ VizProcessTransportFactory::TryCreateContextsForGpuCompositing(
 
   if (!main_context_provider_) {
     constexpr bool kCompositorContextSupportsLocking = false;
+    // TODO(crbug.com/895874): Switch from GLES2Implementation to
+    // RasterImplementation after removing last ContextGL() usage from browser
+    // main thread.
     constexpr bool kCompositorContextSupportsGLES2 = true;
     constexpr bool kCompositorContextSupportsRaster = true;
-    // GrContext is needed for HUD layer.
-    constexpr bool kCompositorContextSupportsGrContext = true;
+    constexpr bool kCompositorContextSupportsGrContext = false;
     constexpr bool kCompositorContextSupportsOOPR = false;
 
     main_context_provider_ = CreateContextProvider(

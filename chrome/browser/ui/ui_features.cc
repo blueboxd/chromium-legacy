@@ -56,8 +56,8 @@ BASE_FEATURE(kAccessCodeCastUI,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
-// Enables displaying the submenu to open a link with a different profile
-// even if there is no other profile opened in a separate window
+// Enables displaying the submenu to open a link with a different profile if
+// there is at least one other active profile.
 BASE_FEATURE(kDisplayOpenLinkAsProfile,
              "DisplayOpenLinkAsProfile",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -100,13 +100,6 @@ BASE_FEATURE(kSideSearchFeedback,
 BASE_FEATURE(kSearchWebInSidePanel,
              "SearchWebInSidePanel",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Whether to clobber all side search side panels in the current browser window
-// or only the side search in the current tab before read later or lens side
-// panel is open.
-BASE_FEATURE(kClobberAllSideSearchSidePanels,
-             "ClobberAllSideSearchSidePanels",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature that controls whether or not feature engagement configurations can be
 // used to control automatic triggering for side search.

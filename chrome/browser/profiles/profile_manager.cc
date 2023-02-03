@@ -85,6 +85,7 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync/base/stop_source.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -110,13 +111,13 @@
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "components/supervised_user/core/common/supervised_user_constants.h"
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/accessibility/live_caption_controller_factory.h"
+#include "chrome/browser/accessibility/live_caption/live_caption_controller_factory.h"
 #include "chrome/browser/lifetime/application_lifetime_desktop.h"
 #include "chrome/browser/profiles/nuke_profile_directory_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -130,6 +131,8 @@
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/session/arc_management_transition.h"
 #include "ash/constants/ash_switches.h"
+#include "base/debug/dump_without_crashing.h"
+#include "base/system/sys_info.h"
 #include "chrome/browser/ash/account_manager/account_manager_policy_controller_factory.h"
 #include "chrome/browser/ash/account_manager/child_account_type_changed_user_data.h"
 #include "chrome/browser/ash/arc/policy/arc_policy_util.h"
@@ -568,6 +571,18 @@ Profile* ProfileManager::GetPrimaryUserProfile() {
                   "It probably means that something is wrong with a calling "
                   "code. Please report in http://crbug.com/361528 if you see "
                   "this message.";
+
+    // Taking metrics to make sure this code path is not used in production.
+    // TODO(crbug.com/1325210): Remove the following code, once we made sure
+    // they are not used in the production.
+    if (base::SysInfo::IsRunningOnChromeOS()) {
+      base::UmaHistogramBoolean(
+          "Ash.BrowserContext.UnexpectedGetPrimaryUserProfile", true);
+      // Also taking the stack trace, so we can identify who's the caller on
+      // unexpected cases.
+      base::debug::DumpWithoutCrashing();
+    }
+
     Profile* profile = ProfileManager::GetActiveUserProfile();
     if (profile && manager->IsLoggedInAsGuest())
       profile = profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
@@ -1356,12 +1371,6 @@ void ProfileManager::DoFinalInit(ProfileInfo* profile_info,
 
   for (auto& observer : observers_)
     observer.OnProfileAdded(profile);
-
-  // At this point, the user policy service and the child account service
-  // had enough time to initialize and should have updated the user signout
-  // flag attached to the profile.
-  signin_util::UserSignoutSetting::GetForProfile(profile)
-      ->InitializeUserSignoutSettingIfNeeded();
 
   if (PrimaryAccountPolicyManager* primary_account_policy_manager =
           PrimaryAccountPolicyManagerFactory::GetForProfile(profile)) {

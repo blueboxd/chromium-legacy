@@ -4,6 +4,8 @@
 
 package org.chromium.weblayer_private;
 
+import static org.chromium.cc.mojom.RootScrollOffsetUpdateFrequency.ALL_UPDATES;
+
 import android.Manifest.permission;
 import android.app.Activity;
 import android.content.pm.PackageManager;
@@ -48,7 +50,6 @@ import org.chromium.components.webapps.AddToHomescreenCoordinator;
 import org.chromium.components.webapps.AppBannerManager;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
-import org.chromium.content_public.browser.GestureStateListenerWithScroll;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.SelectionClient;
@@ -140,7 +141,15 @@ public final class TabImpl extends ITab.Stub {
     private Set<FaviconCallbackProxy> mFaviconCallbackProxies = new HashSet<>();
 
     // Only non-null if scroll offsets have been requested.
-    private @Nullable GestureStateListenerWithScroll mGestureStateListenerWithScroll;
+    private @Nullable GestureStateListener mGestureStateListener;
+
+    private HeaderVerificationStatus mHeaderVerification;
+
+    enum HeaderVerificationStatus {
+        PENDING,
+        NOT_VALIDATED,
+        VALIDATED,
+    }
 
     private static class InternalAccessDelegateImpl
             implements ViewEventSink.InternalAccessDelegate {
@@ -203,6 +212,22 @@ public final class TabImpl extends ITab.Stub {
         }
     }
 
+    class NativeStringCallback implements Callback<String> {
+        private IStringCallback mCallback;
+
+        NativeStringCallback(IStringCallback callback) {
+            mCallback = callback;
+        }
+
+        @Override
+        public void onResult(String result) {
+            try {
+                mCallback.onResult(result);
+            } catch (RemoteException e) {
+            }
+        }
+    }
+
     public static TabImpl fromWebContents(WebContents webContents) {
         if (webContents == null || webContents.isDestroyed()) return null;
         return TabImplJni.get().fromWebContents(webContents);
@@ -259,6 +284,8 @@ public final class TabImpl extends ITab.Stub {
         };
         mWebContents.addObserver(mWebContentsObserver);
 
+        mHeaderVerification = HeaderVerificationStatus.PENDING;
+
         mMediaStreamManager = new MediaStreamManager(this);
 
         mInterceptNavigationDelegateClient = new InterceptNavigationDelegateClientImpl(this);
@@ -284,7 +311,7 @@ public final class TabImpl extends ITab.Stub {
                             throw new APICallException(e);
                         }
                     }
-                });
+                }, ALL_UPDATES);
     }
 
     private void doInitAfterSettingContainerView() {
@@ -309,6 +336,10 @@ public final class TabImpl extends ITab.Stub {
 
     public ITabClient getClient() {
         return mClient;
+    }
+
+    public void setHeaderVerification(HeaderVerificationStatus headerVerification) {
+        mHeaderVerification = headerVerification;
     }
 
     /**
@@ -606,8 +637,8 @@ public final class TabImpl extends ITab.Stub {
     public void setScrollOffsetsEnabled(boolean enabled) {
         StrictModeWorkaround.apply();
         if (enabled) {
-            if (mGestureStateListenerWithScroll == null) {
-                mGestureStateListenerWithScroll = new GestureStateListenerWithScroll() {
+            if (mGestureStateListener == null) {
+                mGestureStateListener = new GestureStateListener() {
                     @Override
                     public void onScrollOffsetOrExtentChanged(
                             int scrollOffsetY, int scrollExtentY) {
@@ -619,12 +650,12 @@ public final class TabImpl extends ITab.Stub {
                     }
                 };
                 GestureListenerManager.fromWebContents(mWebContents)
-                        .addListener(mGestureStateListenerWithScroll);
+                        .addListener(mGestureStateListener, ALL_UPDATES);
             }
-        } else if (mGestureStateListenerWithScroll != null) {
+        } else if (mGestureStateListener != null) {
             GestureListenerManager.fromWebContents(mWebContents)
-                    .removeListener(mGestureStateListenerWithScroll);
-            mGestureStateListenerWithScroll = null;
+                    .removeListener(mGestureStateListener);
+            mGestureStateListener = null;
         }
     }
 
@@ -713,6 +744,11 @@ public final class TabImpl extends ITab.Stub {
     @Override
     public void executeScript(String script, boolean useSeparateIsolate, IStringCallback callback) {
         StrictModeWorkaround.apply();
+        if (mHeaderVerification == HeaderVerificationStatus.VALIDATED) {
+            TabImplJni.get().executeScript(
+                    mNativeTab, script, useSeparateIsolate, new NativeStringCallback(callback));
+            return;
+        }
 
         WebLayerOriginVerificationScheduler originVerifier =
                 WebLayerOriginVerificationScheduler.getInstance();
@@ -730,17 +766,8 @@ public final class TabImpl extends ITab.Stub {
                 } catch (RemoteException e) {
                 }
             }
-
-            Callback<String> nativeCallback = new Callback<String>() {
-                @Override
-                public void onResult(String result) {
-                    try {
-                        callback.onResult(result);
-                    } catch (RemoteException e) {
-                    }
-                }
-            };
-            TabImplJni.get().executeScript(mNativeTab, script, useSeparateIsolate, nativeCallback);
+            TabImplJni.get().executeScript(
+                    mNativeTab, script, useSeparateIsolate, new NativeStringCallback(callback));
         });
     }
 

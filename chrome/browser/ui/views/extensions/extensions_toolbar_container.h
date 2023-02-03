@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_icon_container_view.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/views/widget/widget_observer.h"
 
 class Browser;
@@ -119,6 +120,8 @@ class ExtensionsToolbarContainer
   GetExtensionWithOpenContextMenuForTesting() {
     return extension_with_open_context_menu_id_;
   }
+
+  int GetNumberOfActionsForTesting() { return actions_.size(); }
 
   // Updates the flex layout rules for the extension toolbar container to have
   // views::MinimumFlexSizeRule::kPreferred when WindowControlsOverlay (WCO) is
@@ -236,7 +239,7 @@ class ExtensionsToolbarContainer
   // Utility function for going from width to icon counts.
   size_t WidthToIconCount(int x_offset);
 
-  gfx::ImageSkia GetExtensionIcon(ToolbarActionView* extension_view);
+  ui::ImageModel GetExtensionIcon(ToolbarActionView* extension_view);
 
   // Sets a pinned extension button's image to be shown/hidden.
   void SetExtensionIconVisibility(ToolbarActionsModel::ActionId id,

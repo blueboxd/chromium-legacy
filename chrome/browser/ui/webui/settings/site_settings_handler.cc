@@ -127,6 +127,14 @@ constexpr char kZoom[] = "zoom";
 // only has placeholder, then create an ETLD+1 origin.
 constexpr char kPlaceholder[] = "placeholder";
 
+// Content types for chooser data.
+constexpr ContentSettingsType kChooserDataContentSettingsTypes[] = {
+    ContentSettingsType::BLUETOOTH_CHOOSER_DATA,
+    ContentSettingsType::HID_CHOOSER_DATA,
+    ContentSettingsType::SERIAL_CHOOSER_DATA,
+    ContentSettingsType::USB_CHOOSER_DATA,
+};
+
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class AllSitesAction2 {
@@ -560,14 +568,20 @@ void ConvertSiteGroupMapToList(
     base::Value::Dict site_group;
     site_group.Set(kEffectiveTopLevelDomainPlus1Name, entry.first);
 
-    // Isolated Web Apps do not support sub domains, so the origins set always
-    // contains only 1 entry.
+    // Isolated Web Apps or extension do not support sub domains, so the origins
+    // set always contains only 1 entry.
+    const GURL primary_origin_url(entry.second.begin()->first);
     absl::optional<std::string> isolated_web_app_name =
-        site_settings::GetIsolatedWebAppName(profile,
-                                             GURL(entry.second.begin()->first));
+        site_settings::GetIsolatedWebAppName(profile, primary_origin_url);
     if (isolated_web_app_name.has_value()) {
       site_group.Set(site_settings::kIsolatedWebAppName,
                      isolated_web_app_name.value());
+    }
+
+    absl::optional<std::string> extension_name =
+        site_settings::GetExtensionDisplayName(profile, primary_origin_url);
+    if (extension_name.has_value() && !extension_name.value().empty()) {
+      site_group.Set(site_settings::kExtensionName, extension_name.value());
     }
 
     bool has_installed_pwa = false;
@@ -803,12 +817,6 @@ void SiteSettingsHandler::RegisterMessages() {
       "getNumCookiesString",
       base::BindRepeating(&SiteSettingsHandler::HandleGetNumCookiesString,
                           base::Unretained(this)));
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  web_ui()->RegisterMessageCallback(
-      "getExtensionName",
-      base::BindRepeating(&SiteSettingsHandler::HandleGetExtensionName,
-                          base::Unretained(this)));
-#endif
 }
 
 void SiteSettingsHandler::OnJavascriptAllowed() {
@@ -1177,6 +1185,32 @@ void SiteSettingsHandler::HandleGetAllSites(const base::Value::List& args) {
     }
   }
 
+  // Get device chooser permission exceptions.
+  for (auto content_type : kChooserDataContentSettingsTypes) {
+    base::StringPiece group_name =
+        site_settings::ContentSettingsTypeToGroupName(content_type);
+    DCHECK(!group_name.empty());
+    const site_settings::ChooserTypeNameEntry* chooser_type =
+        site_settings::ChooserTypeFromGroupName(group_name);
+    DCHECK(chooser_type);
+    base::Value::List exceptions =
+        site_settings::GetChooserExceptionListFromProfile(profile_,
+                                                          *chooser_type);
+    for (const base::Value& exception : exceptions) {
+      const base::Value::List* sites =
+          exception.GetDict().FindList(site_settings::kSites);
+      DCHECK(sites);
+      for (const base::Value& site : *sites) {
+        const std::string* origin =
+            site.GetDict().FindString(site_settings::kOrigin);
+        DCHECK(origin);
+        GURL url = GURL(*origin);
+        CreateOrAppendSiteGroupEntry(&all_sites_map_, url);
+        origin_permission_set_.insert(url.spec());
+      }
+    }
+  }
+
   // Recreate the cookies tree model to refresh the usage information.
   // This happens in the background and will call TreeModelEndBatch() when
   // finished. At that point we send usage data to the page.
@@ -1417,13 +1451,10 @@ void SiteSettingsHandler::HandleGetOriginPermissions(
         site_settings::ContentSettingsTypeFromGroupName(type);
     HostContentSettingsMap* map =
         HostContentSettingsMapFactory::GetForProfile(profile_);
-    const auto* extension_registry =
-        extensions::ExtensionRegistry::Get(profile_);
 
     std::string source_string, display_name;
     ContentSetting content_setting = site_settings::GetContentSettingForOrigin(
-        profile_, map, origin_url, content_type, &source_string,
-        extension_registry, &display_name);
+        profile_, map, origin_url, content_type, &source_string, &display_name);
     std::string content_setting_string =
         content_settings::ContentSettingToString(content_setting);
 
@@ -1437,6 +1468,15 @@ void SiteSettingsHandler::HandleGetOriginPermissions(
     if (isolated_web_app_name.has_value()) {
       raw_site_exception.Set(site_settings::kIsolatedWebAppName,
                              isolated_web_app_name.value());
+    }
+    absl::optional<std::string> extension_name =
+        site_settings::GetExtensionDisplayName(profile_, origin_url);
+    if (extension_name.has_value()) {
+      raw_site_exception.Set(site_settings::kExtensionNameWithId,
+                             l10n_util::GetStringFUTF8(
+                                 IDS_SETTINGS_EXTENSION_DISPLAY_NAME,
+                                 base::UTF8ToUTF16(extension_name.value()),
+                                 base::UTF8ToUTF16(origin_url.host_piece())));
     }
     raw_site_exception.Set(site_settings::kDisplayName, display_name);
     raw_site_exception.Set(site_settings::kSetting, content_setting_string);
@@ -1487,16 +1527,46 @@ void SiteSettingsHandler::HandleSetOriginPermissions(
   if (!origin.is_valid())
     return;
 
+  ContentSetting setting;
+  CHECK(content_settings::ContentSettingFromString(value, &setting));
   std::vector<ContentSettingsType> types;
   if (type_string) {
     types.push_back(
         site_settings::ContentSettingsTypeFromGroupName(*type_string));
   } else {
+    // Clear device chooser data permission exceptions.
+    if (setting == CONTENT_SETTING_DEFAULT) {
+      for (auto content_type : kChooserDataContentSettingsTypes) {
+        base::StringPiece group_name =
+            site_settings::ContentSettingsTypeToGroupName(content_type);
+        DCHECK(!group_name.empty());
+        const site_settings::ChooserTypeNameEntry* chooser_type =
+            site_settings::ChooserTypeFromGroupName(group_name);
+        DCHECK(chooser_type);
+
+        // The BluetoothChooserContext is only available when the
+        // WebBluetoothNewPermissionsBackend flag is enabled.
+        // TODO(crbug.com/589228): Remove the nullptr check when it is enabled
+        // by default.
+        permissions::ObjectPermissionContextBase* chooser_context =
+            chooser_type->get_context(profile_);
+        if (!chooser_context) {
+          continue;
+        }
+
+        auto objects = chooser_context->GetAllGrantedObjects();
+        for (const auto& object : objects) {
+          if (origin == object->origin) {
+            chooser_context->RevokeObjectPermission(url::Origin::Create(origin),
+                                                    object->value);
+          }
+        }
+      }
+    }
+
     types = site_settings::GetVisiblePermissionCategories();
   }
 
-  ContentSetting setting;
-  CHECK(content_settings::ContentSettingFromString(value, &setting));
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
   for (ContentSettingsType content_type : types) {
@@ -2222,27 +2292,6 @@ void SiteSettingsHandler::HandleGetNumCookiesString(
 
   ResolveJavascriptCallback(base::Value(callback_id), base::Value(string));
 }
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-void SiteSettingsHandler::HandleGetExtensionName(
-    const base::Value::List& args) {
-  CHECK_EQ(2U, args.size());
-  std::string callback_id;
-  callback_id = args[0].GetString();
-  std::string extension_id = args[1].GetString();
-
-  AllowJavascript();
-  const auto* extension_registry = extensions::ExtensionRegistry::Get(profile_);
-  const extensions::Extension* extension = extension_registry->GetExtensionById(
-      extension_id, extensions::ExtensionRegistry::EVERYTHING);
-  if (extension) {
-    ResolveJavascriptCallback(base::Value(callback_id),
-                              base::Value(extension->name()));
-  } else {
-    ResolveJavascriptCallback(base::Value(callback_id), base::Value(""));
-  }
-}
-#endif
 
 void SiteSettingsHandler::RemoveNonTreeModelData(
     const std::vector<url::Origin>& origins) {

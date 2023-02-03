@@ -289,7 +289,7 @@ fyi_reclient_staging_builder(
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
-            apply_configs = ["chromeos", "reclient_staging"],
+            apply_configs = ["chromeos", "reclient_staging", "checkout_lacros_sdk"],
         ),
         chromium_config = builder_config.chromium_config(
             config = "chromium",
@@ -299,6 +299,7 @@ fyi_reclient_staging_builder(
             target_bits = 64,
             target_platform = builder_config.target_platform.CHROMEOS,
             cros_boards_with_qemu_images = "amd64-generic-vm",
+            target_cros_boards = ["amd64-generic"],
         ),
     ),
     os = os.LINUX_DEFAULT,
@@ -310,7 +311,7 @@ fyi_reclient_test_builder(
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",
-            apply_configs = ["chromeos", "reclient_test"],
+            apply_configs = ["chromeos", "reclient_test", "checkout_lacros_sdk"],
         ),
         chromium_config = builder_config.chromium_config(
             config = "chromium",
@@ -320,6 +321,7 @@ fyi_reclient_test_builder(
             target_bits = 64,
             target_platform = builder_config.target_platform.CHROMEOS,
             cros_boards_with_qemu_images = "amd64-generic-vm",
+            target_cros_boards = ["amd64-generic"],
         ),
     ),
     os = os.LINUX_DEFAULT,
@@ -520,4 +522,53 @@ ci.builder(
     reclient_cache_silo = "Comparison Linux remote links - cache siloed",
     reclient_instance = reclient.instance.TEST_TRUSTED,
     reclient_jobs = reclient.jobs.DEFAULT,
+)
+
+# The following 2 builders use the untrusted RBE instance because each instance has its own
+# rewrapper configs and the trusted instance uses native windows rewrapper configs but the
+# untrusted instance uses cross compile windows rewrapper configs.
+# TODO(b/260228493) Remove once CI backend is switched
+ci.builder(
+    name = "Windows Cross deterministic",
+    description_html = "verify artifacts. should be removed after the migration. b/260228493",
+    executable = "recipe:swarming/deterministic_build",
+    console_view_entry = consoles.console_view_entry(
+        category = "win",
+        short_name = "detcross",
+    ),
+    builderless = True,
+    execution_timeout = 12 * time.hour,
+    service_account = "chromium-cq-staging-builder@chops-service-accounts.iam.gserviceaccount.com",
+    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+)
+
+# TODO(b/260228493) Remove once CI backend is switched
+ci.builder(
+    name = "Win x64 Cross Builder (reclient compare)",
+    description_html = "verify artifacts. should be removed after the migration. b/260228493",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = ["use_clang_coverage", "reclient_test"],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+    ),
+    builderless = True,
+    execution_timeout = 12 * time.hour,
+    cores = 32,
+    os = os.WINDOWS_DEFAULT,
+    console_view_entry = consoles.console_view_entry(
+        category = "win",
+        short_name = "compcross",
+    ),
+    reclient_ensure_verified = True,
+    reclient_jobs = None,
+    reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
+    reclient_rewrapper_env = {"RBE_compare": "true"},
+    service_account = "chromium-cq-staging-builder@chops-service-accounts.iam.gserviceaccount.com",
 )

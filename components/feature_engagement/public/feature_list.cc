@@ -68,6 +68,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHNewTabPageHomeButtonFeature,
     &kIPHPageInfoFeature,
     &kIPHPageInfoStoreInfoFeature,
+    &kIPHPageZoomFeature,
     &kIPHPreviewsOmniboxUIFeature,
     &kIPHPriceDropNTPFeature,
     &kIPHPwaInstallAvailableFeature,
@@ -79,6 +80,8 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHRequestDesktopSiteAppMenuFeature,
     &kIPHRequestDesktopSiteDefaultOnFeature,
     &kIPHRequestDesktopSiteOptInFeature,
+    &kIPHRequestDesktopSiteExceptionsGenericFeature,
+    &kIPHRequestDesktopSiteExceptionsSpecificFeature,
     &kIPHShoppingListMenuItemFeature,
     &kIPHShoppingListSaveFlowFeature,
     &kIPHTabGroupsQuicklyComparePagesFeature,
@@ -122,6 +125,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHiOSDefaultBrowserBadgeEligibilityFeature,
     &kIPHiOSDefaultBrowserOverflowMenuBadgeFeature,
     &kIPHiOSDefaultBrowserSettingsBadgeFeature,
+    &kIPHiOSAppStorePromoFeature,
 #endif  // BUILDFLAG(IS_IOS)
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)

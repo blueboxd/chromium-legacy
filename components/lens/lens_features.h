@@ -35,6 +35,10 @@ BASE_DECLARE_FEATURE(kEnableLatencyLogging);
 COMPONENT_EXPORT(LENS_FEATURES)
 BASE_DECLARE_FEATURE(kEnableRegionSearchKeyboardShortcut);
 
+// Enables context menu option for translating image feature.
+COMPONENT_EXPORT(LENS_FEATURES)
+BASE_DECLARE_FEATURE(kEnableImageTranslate);
+
 // Enables the image search side panel experience for third party default search
 // engines
 COMPONENT_EXPORT(LENS_FEATURES)
@@ -48,17 +52,9 @@ BASE_DECLARE_FEATURE(kLensRegionSearchStaticPage);
 COMPONENT_EXPORT(LENS_FEATURES)
 BASE_DECLARE_FEATURE(kLensImageFormatOptimizations);
 
-// Enables UKM logging for the Lens Region Search feature.
+// Enables the context menu in the Lens side panel.
 COMPONENT_EXPORT(LENS_FEATURES)
-extern const base::FeatureParam<bool> kEnableUKMLoggingForRegionSearch;
-
-// Enables UKM logging for the LensStandalone feature.
-COMPONENT_EXPORT(LENS_FEATURES)
-extern const base::FeatureParam<bool> kEnableUKMLoggingForImageSearch;
-
-// Enables the side panel for Lens features on Chrome where supported.
-COMPONENT_EXPORT(LENS_FEATURES)
-extern const base::FeatureParam<bool> kEnableSidePanelForLens;
+BASE_DECLARE_FEATURE(EnableContextMenuInLensSidePanel);
 
 // The base URL for Lens.
 COMPONENT_EXPORT(LENS_FEATURES)
@@ -105,14 +101,6 @@ extern bool GetEnableLatencyLogging();
 COMPONENT_EXPORT(LENS_FEATURES)
 extern bool GetEnableImageSearchUnifiedSidePanelFor3PDse();
 
-// Returns whether to enable UKM logging for Lens Region Search feature.
-COMPONENT_EXPORT(LENS_FEATURES)
-extern bool GetEnableUKMLoggingForRegionSearch();
-
-// Returns whether to enable UKM logging for LensStandalone feature.
-COMPONENT_EXPORT(LENS_FEATURES)
-extern bool GetEnableUKMLoggingForImageSearch();
-
 // Returns the max pixel width/height for the image to be sent to Lens via
 // region search. The images are sent at 1x as PNGs.
 COMPONENT_EXPORT(LENS_FEATURES)
@@ -137,6 +125,7 @@ extern bool GetEnableLensHtmlRedirectFix();
 // Returns whether Lens fullscreen search is enabled.
 COMPONENT_EXPORT(LENS_FEATURES)
 extern bool IsLensFullscreenSearchEnabled();
+
 // Returns whether the Lens side panel is enabled for image search.
 COMPONENT_EXPORT(LENS_FEATURES)
 extern bool IsLensSidePanelEnabled();
@@ -178,6 +167,10 @@ extern bool IsJpegForRegionSearchEnabled();
 // Get the encoding quality for region search queries.
 COMPONENT_EXPORT(LENS_FEATURES)
 extern int GetRegionSearchEncodingQuality();
+
+// Returns whether to enable the context menu in the Lens side panel.
+COMPONENT_EXPORT(LENS_FEATURES)
+extern bool GetEnableContextMenuInLensSidePanel();
 }  // namespace features
 }  // namespace lens
 

@@ -11,6 +11,7 @@ import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.PackageUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -40,8 +41,8 @@ public class AppBannerManager {
         }
     }
 
-    public static final InstallStringPair PWA_PAIR = new InstallStringPair(
-            R.string.menu_add_to_homescreen_install, R.string.app_banner_install);
+    public static final InstallStringPair PWA_PAIR =
+            new InstallStringPair(R.string.menu_install_webapp, R.string.app_banner_install);
     public static final InstallStringPair NON_PWA_PAIR =
             new InstallStringPair(R.string.menu_add_to_homescreen, R.string.add);
 
@@ -119,6 +120,11 @@ public class AppBannerManager {
                 Math.round(context.getResources().getDisplayMetrics().density * iconSizeInDp);
         sAppDetailsDelegate.getAppDetailsAsynchronously(
                 createAppDetailsObserver(), url, packageName, referrer, iconSizeInPx);
+    }
+
+    @CalledByNative
+    private static boolean isRelatedNonWebAppInstalled(String packageName) {
+        return PackageUtils.isPackageInstalled(packageName);
     }
 
     private AppDetailsDelegate.Observer createAppDetailsObserver() {

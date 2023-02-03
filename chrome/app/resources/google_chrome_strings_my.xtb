@@ -55,7 +55,6 @@
 <translation id="1874309113135274312">Google Chrome စမ်းသပ် (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome မှာ ဟောင်းသွားပြီ</translation>
 <translation id="1919130412786645364">Chrome သို့ လက်မှတ်ထိုးဝင်ခွင့် ပေးပါ</translation>
-<translation id="1952239763774043237">နောက်ပိုင်းထွက်မည့် Google Chrome အပ်ဒိတ်များ ရယူရန် macOS 10.13 နှင့်အထက် လိုအပ်ပါမည်။ ဤကွန်ပျူတာက macOS 10.12 အသုံးပြုနေသည်။</translation>
 <translation id="1953553007165777902">ဒေါင်းလုဒ်လုပ်နေသည်… <ph name="MINUTE" /> မိနစ် ကျန်သည်</translation>
 <translation id="2018528049276128029">ပရိုဖိုင်တစ်ခုစီတွင် လိပ်စာများ၊ မှတ်တမ်း၊ စကားဝှက်များ စသည်တို့ကဲ့သို့ ၎င်း၏သီးခြား Chrome အချက်အလက်များ ပါဝင်သည်</translation>
 <translation id="2018879682492276940">ထည့်သွင်းမှု မအောင်မြင်ပါ။ ထပ်စမ်းကြည့်ပါ။</translation>
@@ -188,6 +187,7 @@
 <translation id="4335235004908507846">ဒေတာပေါက်ကြားမှု၊ ဘေးကင်းမှုမရှိသော နောက်ဆက်တွဲနှင့် အခြားအန္တရာယ်များမှ သင့်ကိုလုံခြုံအောင် Chrome က ကူညီပေးနိုင်သည်</translation>
 <translation id="4343195214584226067"><ph name="EXTENSION_NAME" /> ကို Chrome သို့ပေါင်းထည့်ပြီးပါပြီ</translation>
 <translation id="4384570495110188418">လက်မှတ်ထိုးဝင်မထားသဖြင့် Chrome က သင့်စကားဝှက်များကို စစ်ဆေး၍မရပါ</translation>
+<translation id="4393248995085527349">နောက်ပိုင်းထွက်မည့် Google Chrome အပ်ဒိတ်များ ရယူရန် macOS 10.15 နှင့်အထက် လိုအပ်ပါမည်။ ဤကွန်ပျူတာက macOS 10.13 အသုံးပြုနေသည်။</translation>
 <translation id="4427306783828095590">အဆင့်မြှင့်တင်ထားသော ကာကွယ်မှုက ဖြားယောင်းမှုနှင့် မဲလ်ဝဲများကို ပိုမိုပိတ်ဆို့ပေးသည်</translation>
 <translation id="4450664632294415862">Chrome - ကွန်ရက် လက်မှတ်ထိုးဝင်ခြင်း - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Google Chrome ရှိ အခြားလုပ်ဆောင်ချက်မှာ မပြီးပြတ်သေးပါ။ ခဏကြာမှ ထပ်လုပ်ကြည့်ပါ။</translation>
@@ -217,7 +217,6 @@
 <translation id="4970880042055371251">ChromeOS ဗားရှင်း</translation>
 <translation id="4970947549776831107">ဤဖိုင်အမျိုးအစားသည် အန္တရာယ်များသဖြင့် Chrome က ပိတ်ထားသည်</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
-<translation id="5037581483200764584">နောက်ပိုင်းထွက်မည့် Google Chrome အပ်ဒိတ်များ ရယူရန် macOS 10.13 နှင့်အထက် လိုအပ်ပါမည်။ ဤကွန်ပျူတာက OS X 10.11 အသုံးပြုနေသည်။</translation>
 <translation id="5098668839038261629">ဖွင့်ထားပါက Chrome မှလည်း သင်ထွက်သွားပါမည်</translation>
 <translation id="5132929315877954718">Google Chrome အတွက် ဧရာမ အက်ပ်များ၊ ဂိမ်းများ၊ တိုးချဲ့မှုများ နှင့် အပြင်အဆင်များကို ရှာကြည့်ပါ</translation>
 <translation id="5139423532931106058">သင့် Chrome ပရိုဖိုင်ကို စိတ်ကြိုက်လုပ်ရန်</translation>
@@ -259,6 +258,7 @@ Google Chrome သည် သင်၏ ဆက်တင်များကို ပ
 <translation id="5941711191222866238">အနည်းဆုံး လုပ်ရန်</translation>
 <translation id="5941830788786076944">Google Chrome ကို ပုံသေ ဘရောင်ဇာ ပြုလုပ်ပါ။</translation>
 <translation id="6003112304606738118">ဒေါင်းလုဒ်လုပ်နေသည်… <ph name="HOURS" /> နာရီ ကျန်သည်</translation>
+<translation id="6010556343189461180">နောက်ပိုင်းထွက်မည့် Google Chrome အပ်ဒိတ်များ ရယူရန် macOS 10.15 နှင့်အထက် လိုအပ်ပါမည်။ ဤကွန်ပျူတာက macOS 10.14 အသုံးပြုနေသည်။</translation>
 <translation id="6022388122721048220">{0,plural, =0{Chrome ကို ယခုပိတ်ပါမည်။}=1{Chrome ကို ၁ စက္ကန့်အကြာတွင် ပိတ်ပါမည်။}other{Chrome ကို # စက္ကန့်အကြာတွင် ပိတ်ပါမည်။}}</translation>
 <translation id="6040143037577758943">ပိတ်ရန်</translation>
 <translation id="6070348360322141662">လုံခြုံရေး ပိုမိုတင်းကြပ်စေရန်အတွက် Google Chrome သည် သင်၏ ဒေတာများကို အသွင်ဝှက်ထားပါမည်</translation>
@@ -421,6 +421,7 @@ Google Chrome သည် သင်၏ ဆက်တင်များကို ပ
 <translation id="922152298093051471">Chrome ကို စိတ်ကြိုက်ပြင်ရန်</translation>
 <translation id="93760716455950538">ChromeOS Flex ကို ပြန်စပါ</translation>
 <translation id="940313311831216333">သင့်စက်အားလုံးတွင် သင်၏ Chrome နှင့်သက်ဆိုင်သည့်အရာများကို သုံးရန် လက်မှတ်ထိုးဝင်ပြီး စင့်ခ်လုပ်ခြင်းကို ဖွင့်ပါ။</translation>
+<translation id="943390475793766444">ဤဖိုင်သည် အန္တရာယ်ရှိနိုင်သဖြင့် စကင်ဖတ်ရန် Chrome က အကြံပြုသည်။</translation>
 <translation id="989369509083708165">Google Chrome သည် သင်၏ မူရင်းဘရောင်ဇာဖြစ်သည်</translation>
 <translation id="989816563149873169"><ph name="SHORTCUT" /> သည် Chrome ပရိုဖိုင်များအကြား ပြောင်းပေးနိုင်သည်</translation>
 </translationbundle>

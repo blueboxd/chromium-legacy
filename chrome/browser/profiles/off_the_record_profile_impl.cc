@@ -55,6 +55,8 @@
 #include "chrome/browser/ui/zoom/chrome_zoom_level_otr_delegate.h"
 #include "chrome/browser/webid/federated_identity_api_permission_context.h"
 #include "chrome/browser/webid/federated_identity_api_permission_context_factory.h"
+#include "chrome/browser/webid/federated_identity_auto_signin_permission_context.h"
+#include "chrome/browser/webid/federated_identity_auto_signin_permission_context_factory.h"
 #include "chrome/browser/webid/federated_identity_permission_context.h"
 #include "chrome/browser/webid/federated_identity_permission_context_factory.h"
 #include "chrome/common/buildflags.h"
@@ -72,6 +74,7 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/zoom/zoom_event_manager.h"
@@ -703,6 +706,12 @@ OffTheRecordProfileImpl::GetFederatedIdentityPermissionContext() {
 content::FederatedIdentityApiPermissionContextDelegate*
 OffTheRecordProfileImpl::GetFederatedIdentityApiPermissionContext() {
   return FederatedIdentityApiPermissionContextFactory::GetForProfile(this);
+}
+
+content::FederatedIdentityAutoSigninPermissionContextDelegate*
+OffTheRecordProfileImpl::GetFederatedIdentityAutoSigninPermissionContext() {
+  return FederatedIdentityAutoSigninPermissionContextFactory::GetForProfile(
+      this);
 }
 
 content::KAnonymityServiceDelegate*

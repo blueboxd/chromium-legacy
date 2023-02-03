@@ -29,9 +29,9 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.MutableFlagWithSafeDefault;
-import org.chromium.chrome.browser.flags.PostNativeFlag;
 import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
 import org.chromium.chrome.browser.omnibox.R;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteControllerProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -144,8 +144,6 @@ public class VoiceRecognitionHandler {
     private static final MutableFlagWithSafeDefault sAssistantIntentTranslateInfoFlag =
             new MutableFlagWithSafeDefault(
                     ChromeFeatureList.ASSISTANT_INTENT_TRANSLATE_INFO, false);
-    private static final PostNativeFlag sCacheVoiceSearchEnabledFlag =
-            new PostNativeFlag(ChromeFeatureList.IS_VOICE_SEARCH_ENABLED_CACHE);
 
     private static Boolean sIsRecognitionIntentPresentForTesting;
     private final Delegate mDelegate;
@@ -538,7 +536,9 @@ public class VoiceRecognitionHandler {
 
             AutocompleteMatch match = null;
             if (mProfileSupplier.hasValue()) {
-                match = AutocompleteCoordinator.classify(mProfileSupplier.get(), topResultQuery);
+                match = AutocompleteControllerProvider.from(mDelegate.getWindowAndroid())
+                                .get(mProfileSupplier.get())
+                                .classify(topResultQuery, false);
             }
 
             String url;
@@ -606,7 +606,9 @@ public class VoiceRecognitionHandler {
 
             AutocompleteMatch match = null;
             if (mProfileSupplier.hasValue()) {
-                match = AutocompleteCoordinator.classify(mProfileSupplier.get(), culledString);
+                match = AutocompleteControllerProvider.from(mDelegate.getWindowAndroid())
+                                .get(mProfileSupplier.get())
+                                .classify(culledString, false);
             }
 
             String urlOrSearchQuery;
@@ -904,10 +906,6 @@ public class VoiceRecognitionHandler {
         if (windowAndroid.getActivity().get() == null) return false;
         if (!VoiceRecognitionUtil.isVoiceSearchPermittedByPolicy(false)) return false;
 
-        if (!sCacheVoiceSearchEnabledFlag.isEnabled()) {
-            return VoiceRecognitionUtil.isVoiceSearchEnabled(windowAndroid);
-        }
-
         if (mIsVoiceSearchEnabledCached == null) {
             mIsVoiceSearchEnabledCached = VoiceRecognitionUtil.isVoiceSearchEnabled(windowAndroid);
 
@@ -1136,11 +1134,6 @@ public class VoiceRecognitionHandler {
     /*package*/ static void setIsRecognitionIntentPresentForTesting(
             Boolean isRecognitionIntentPresent) {
         sIsRecognitionIntentPresentForTesting = isRecognitionIntentPresent;
-    }
-
-    @VisibleForTesting
-    protected void setIsVoiceSearchEnabledCacheForTesting(Boolean value) {
-        mIsVoiceSearchEnabledCached = value;
     }
 
     /** Sets the start time for testing. */

@@ -1105,7 +1105,7 @@ export class FileManager extends EventTarget {
     this.recentEntry_ = new FakeEntryImpl(
         str('RECENT_ROOT_LABEL'), VolumeManagerCommon.RootType.RECENT,
         this.getSourceRestriction_(),
-        chrome.fileManagerPrivate.RecentFileType.ALL);
+        chrome.fileManagerPrivate.FileCategory.ALL);
 
     assert(this.launchParams_);
     this.selectionHandler_ = new FileSelectionHandler(
@@ -1273,8 +1273,7 @@ export class FileManager extends EventTarget {
     if (util.isGuestOsEnabled()) {
       this.guestOsController_ = new GuestOsController(
           this.directoryModel_, assert(this.directoryTree),
-          this.volumeManager_.isDisabled(
-              VolumeManagerCommon.VolumeType.GUEST_OS));
+          this.volumeManager_);
       await this.guestOsController_.refresh();
     }
   }

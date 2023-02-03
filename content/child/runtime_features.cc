@@ -26,6 +26,7 @@
 #include "device/base/features.h"
 #include "device/fido/features.h"
 #include "device/gamepad/public/cpp/gamepad_features.h"
+#include "device/vr/buildflags/buildflags.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_switches.h"
 #include "media/base/media_switches.h"
@@ -45,6 +46,10 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/build_info.h"
+#endif
+
+#if BUILDFLAG(ENABLE_VR)
+#include "device/vr/public/cpp/features.h"
 #endif
 
 using blink::WebRuntimeFeatures;
@@ -284,11 +289,13 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      features::kWebOTPAssertionFeaturePolicy, kSetOnlyIfOverridden},
     {wf::EnableWebUSB, features::kWebUsb},
     {wf::EnableWebXR, features::kWebXr},
+#if BUILDFLAG(ENABLE_VR)
     {wf::EnableWebXRFrontFacing, device::features::kWebXrIncubations},
     {wf::EnableWebXRHandInput, device::features::kWebXrHandInput},
     {wf::EnableWebXRImageTracking, device::features::kWebXrIncubations},
     {wf::EnableWebXRLayers, device::features::kWebXrLayers},
     {wf::EnableWebXRPlaneDetection, device::features::kWebXrIncubations},
+#endif
     {wf::EnableRemoveMobileViewportDoubleTap,
      features::kRemoveMobileViewportDoubleTap},
     {wf::EnableGetDisplayMediaSet, features::kGetDisplayMediaSet},
@@ -322,7 +329,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"OriginIsolationHeader", features::kOriginIsolationHeader},
           {"PartitionedCookies", net::features::kPartitionedCookies},
           {"ReduceAcceptLanguage", network::features::kReduceAcceptLanguage},
-          {"StorageAccessAPI", net::features::kStorageAccessAPI},
           {"TopicsAPI", features::kPrivacySandboxAdsAPIsOverride,
            kSetOnlyIfOverridden},
           {"TopicsXHR", features::kPrivacySandboxAdsAPIsOverride,
@@ -380,8 +386,6 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
        switches::kEnableNetworkInformationDownlinkMax, true},
       {wrf::EnableNotifications, switches::kDisableNotifications, false},
       {wrf::EnablePreciseMemoryInfo, switches::kEnablePreciseMemoryInfo, true},
-      {wrf::EnablePrefixedStorageInfo,
-       blink::switches::kPrefixedStorageInfoEnabled, true},
       // Chrome's Push Messaging implementation relies on Web Notifications.
       {wrf::EnablePushMessaging, switches::kDisableNotifications, false},
       {wrf::EnableScriptedSpeechRecognition, switches::kDisableSpeechAPI,
@@ -425,9 +429,12 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
     }
   }
 
-  // Enable or disable EventPath if Enterprise Policy passes
-  // --event-path-policy=0 or =1 on the command line. This overrides any
-  // existing setting via base::Feature.
+  // Set the state of EventPath, which can be controlled by various sources in
+  // decreasing order of precedence:
+  // 1. Enterprise policy, if set
+  // 2. base::Feature overrides via field trial or enable/disable feature flags
+  // 3. --event-path-enabled-by-default flag, if set
+  // 4. The default value, which is disabled
   if (command_line.HasSwitch(blink::switches::kEventPathPolicy)) {
     const std::string value =
         command_line.GetSwitchValueASCII(blink::switches::kEventPathPolicy);
@@ -437,6 +444,13 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
     if (value == blink::switches::kEventPathPolicy_ForceDisable) {
       WebRuntimeFeatures::EnableEventPath(false);
     }
+  } else if (base::FeatureList::GetStateIfOverridden(
+                 blink::features::kEventPath)
+                 .has_value()) {
+    // Do nothing here; it will be handled in the standard way.
+  } else if (command_line.HasSwitch(
+                 blink::switches::kEventPathEnabledByDefault)) {
+    WebRuntimeFeatures::EnableEventPath(true);
   }
 
   // Enable or disable OffsetParentNewSpecBehavior for Enterprise Policy. This
@@ -617,20 +631,6 @@ void ResolveInvalidConfigurations() {
         << switches::kEnableFeatures << "="
         << blink::features::kBrowsingTopicsXHR.name << " in addition.";
     WebRuntimeFeatures::EnableTopicsXHR(false);
-  }
-
-  // Storage Access API ForSite cannot be enabled unless the larger Storage
-  // Access API is also enabled.
-  if (base::FeatureList::IsEnabled(
-          blink::features::kStorageAccessAPIForOriginExtension) &&
-      !base::FeatureList::IsEnabled(net::features::kStorageAccessAPI)) {
-    LOG_IF(WARNING,
-           WebRuntimeFeatures::IsStorageAccessAPIForOriginExtensionEnabled())
-        << "requestStorageAccessForOrigin cannot be enabled in this "
-           "configuration. Use --"
-        << switches::kEnableFeatures << "="
-        << net::features::kStorageAccessAPI.name << " in addition.";
-    WebRuntimeFeatures::EnableStorageAccessAPIForOriginExtension(false);
   }
 }
 

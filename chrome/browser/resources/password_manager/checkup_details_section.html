@@ -43,6 +43,15 @@
   #insecureCredentials {
     margin-top: 24px;
   }
+
+  .reuse-title {
+    margin-inline-start: 20px;
+    margin-top: 24px;
+  }
+
+  iron-icon.policy-disabled {
+    margin-inline-start: var(--cr-controlled-by-spacing);
+  }
 </style>
 <div id="header">
   <cr-icon-button class="icon-arrow-back" id="backButton"
@@ -59,11 +68,13 @@
     </div>
   </template>
 </div>
-<template is="dom-if" if="[[!isReusedSection(insecurityType_)]]">
+<template is="dom-if" if="[[!isReusedType(insecurityType_)]]">
   <template id="insecureCredentials" is="dom-repeat"
       items="[[shownInsecureCredentials_]]" initial-count="50">
     <checkup-list-item item="[[item]]" first="[[!index]]"
-        show-details="[[isCompromisedSection(insecurityType_)]]">
+        show-details="[[isCompromisedType(insecurityType_)]]"
+        on-more-actions-click="onMoreActionsClick_"
+        group="[[getCurrentGroup_(item.id, groups_)]]">
     </checkup-list-item>
   </template>
   <template is="dom-if" if="[[mutedCompromisedCredentials_.length]]">
@@ -76,10 +87,51 @@
         opened="[[mutedLeakedCredentialsExpanded_]]">
       <template is="dom-repeat" items="[[mutedCompromisedCredentials_]]">
         <checkup-list-item item="[[item]]" first="[[!index]]"
-            show-details="[[isCompromisedSection(insecurityType_)]]">
+            show-details="[[isCompromisedType(insecurityType_)]]"
+            on-more-actions-click="onMoreActionsClick_"
+            group="[[getCurrentGroup_(item.id, groups_)]]">
         </checkup-list-item>
       </template>
     </iron-collapse>
   </template>
 </template>
-<!-- TODO(crbug.com/1401001): Display reused credentials -->
+<template is="dom-if" if="[[isReusedType(insecurityType_)]]" restamp>
+  <template id="reusedCredentials" is="dom-repeat"
+      items="[[credentialsWithReusedPassword_]]" initial-count="50">
+    <div class="cr-secondary-text label reuse-title">
+      [[item.title]]
+    </div>
+    <template is="dom-repeat" items="[[item.credentials]]">
+      <checkup-list-item item="[[item]]" first="[[!index]]"
+          on-more-actions-click="onMoreActionsClick_"
+          group="[[getCurrentGroup_(item.id, groups_)]]">
+      </checkup-list-item>
+    </template>
+  </template>
+</template>
+<cr-action-menu id="moreActionsMenu" role-description="$i18n{menu}"
+    accessibility-label="$i18n{moreActions}">
+  <button id="menuShowPassword" class="dropdown-item"
+      on-click="onMenuShowPasswordClick_">
+    [[getShowHideTitle_(activeListItem_)]]
+  </button>
+  <button id="menuEditPassword" class="dropdown-item"
+      on-click="onEditPasswordClick_">
+    $i18n{editPassword}
+  </button>
+  <button id="menuRemovePassword" class="dropdown-item"
+      on-click="onMenuRemovePasswordClick_">
+    $i18n{deletePassword}
+  </button>
+  <template is="dom-if" if="[[isCompromisedType(insecurityType_)]]">
+    <button id="menuMuteUnmuteButton" class="dropdown-item"
+        on-click="onMenuMuteUnmuteClick_"
+        disabled="[[isMutingDisabledByPrefs_(pref)]]">
+      [[getMuteUnmuteLabel_(activeListItem_)]]
+      <template is="dom-if" if="[[isMutingDisabledByPrefs_(pref)]]" restamp>
+        <iron-icon icon="cr20:domain" class="policy-disabled">
+        </iron-icon>
+      </template>
+    </button>
+  </template>
+</cr-action-menu>

@@ -58,18 +58,22 @@ template("chrome_repack_percent") {
     }
 
     if (toolkit_views) {
-      sources += [ "$root_gen_dir/ui/views/resources/views_resources_${percent}_percent.pak" ]
-      deps += [ "//ui/views/resources" ]
+      sources += [
+        "$root_gen_dir/chrome/app_icon_resources_${percent}_percent.pak",
+        "$root_gen_dir/ui/views/resources/views_resources_${percent}_percent.pak",
+      ]
+      deps += [
+        "//chrome/browser/resources:app_icon_resources",
+        "//ui/views/resources",
+      ]
     }
     if (is_chromeos_ash) {
       sources += [
         "$root_gen_dir/ash/login/resources/login_resources_${percent}_percent.pak",
-        "$root_gen_dir/chrome/app_icon_resources_${percent}_percent.pak",
         "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_${percent}_percent.pak",
       ]
       deps += [
         "//ash/login/resources",
-        "//chrome/browser/resources/chromeos:app_icon_resources",
         "//ui/chromeos/resources",
       ]
     }
@@ -174,9 +178,11 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chrome/side_panel_history_clusters_resources.pak",
         "$root_gen_dir/chrome/side_panel_read_anything_resources.pak",
         "$root_gen_dir/chrome/side_panel_reading_list_resources.pak",
+        "$root_gen_dir/chrome/side_panel_search_companion_resources.pak",
         "$root_gen_dir/chrome/side_panel_shared_resources.pak",
         "$root_gen_dir/chrome/side_panel_user_notes_resources.pak",
         "$root_gen_dir/chrome/signin_resources.pak",
+        "$root_gen_dir/chrome/suggest_internals_resources.pak",
         "$root_gen_dir/chrome/support_tool_resources.pak",
         "$root_gen_dir/chrome/tab_search_resources.pak",
         "$root_gen_dir/chrome/web_app_internals_resources.pak",
@@ -215,9 +221,11 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources/side_panel/history_clusters:resources",
         "//chrome/browser/resources/side_panel/read_anything:resources",
         "//chrome/browser/resources/side_panel/reading_list:resources",
+        "//chrome/browser/resources/side_panel/search_companion:resources",
         "//chrome/browser/resources/side_panel/shared:resources",
         "//chrome/browser/resources/side_panel/user_notes:resources",
         "//chrome/browser/resources/signin:resources",
+        "//chrome/browser/resources/suggest_internals:resources",
         "//chrome/browser/resources/support_tool:resources",
         "//chrome/browser/resources/tab_search:resources",
         "//chrome/browser/resources/web_app_internals:resources",

@@ -1797,6 +1797,10 @@ bool WebMediaPlayerImpl::IsSecurityOriginCryptographic() const {
       .SchemeIsCryptographic();
 }
 
+void WebMediaPlayerImpl::UpdateLoadedUrl(const GURL& url) {
+  loaded_url_ = url;
+}
+
 bool WebMediaPlayerImpl::RestartForHls() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
@@ -3427,6 +3431,12 @@ absl::optional<viz::SurfaceId> WebMediaPlayerImpl::GetSurfaceId() {
 }
 
 void WebMediaPlayerImpl::RequestVideoFrameCallback() {
+  // If the first frame hasn't been received, kick off a request to generate one
+  // since we may not always do so for hidden preload=metadata playbacks.
+  if (!has_first_frame_) {
+    OnBecameVisible();
+  }
+
   compositor_->SetOnFramePresentedCallback(
       media::BindToCurrentLoop(base::BindOnce(
           &WebMediaPlayerImpl::OnNewFramePresentedCallback, weak_this_)));

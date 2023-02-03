@@ -43,10 +43,9 @@ VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kUsePlatformDelegatedInk);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kUseSurfaceLayerForVideoDefault);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebViewNewInvalidateHeuristic);
 #endif
-VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kSurfaceSyncThrottling);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kDynamicSchedulerForDraw);
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kDynamicSchedulerForClients);
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
 VIZ_COMMON_EXPORT BASE_DECLARE_FEATURE(kMacCAOverlayQuad);
 VIZ_COMMON_EXPORT extern const base::FeatureParam<int> kMacCAOverlayQuadMaxNum;
 #endif
@@ -82,7 +81,6 @@ VIZ_COMMON_EXPORT bool IsDynamicColorGamutEnabled();
 #endif
 VIZ_COMMON_EXPORT bool IsOverlayPrioritizationEnabled();
 VIZ_COMMON_EXPORT bool IsDelegatedCompositingEnabled();
-VIZ_COMMON_EXPORT bool IsSyncWindowDestructionEnabled();
 VIZ_COMMON_EXPORT bool IsUsingVizFrameSubmissionForWebView();
 VIZ_COMMON_EXPORT bool IsUsingPreferredIntervalForVideo();
 VIZ_COMMON_EXPORT bool ShouldUseRealBuffersForPageFlipTest();
@@ -97,7 +95,6 @@ VIZ_COMMON_EXPORT bool UseSurfaceLayerForVideo();
 #if BUILDFLAG(IS_ANDROID)
 VIZ_COMMON_EXPORT bool UseRealVideoColorSpaceForDisplay();
 #endif
-VIZ_COMMON_EXPORT bool IsSurfaceSyncThrottling();
 VIZ_COMMON_EXPORT absl::optional<double> IsDynamicSchedulerEnabledForDraw();
 VIZ_COMMON_EXPORT absl::optional<double> IsDynamicSchedulerEnabledForClients();
 VIZ_COMMON_EXPORT int MaxOverlaysConsidered();

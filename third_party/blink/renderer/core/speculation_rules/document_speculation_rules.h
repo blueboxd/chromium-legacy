@@ -55,6 +55,10 @@ class CORE_EXPORT DocumentSpeculationRules
   void RelAttributeChanged(HTMLAnchorElement* link);
   void DocumentReferrerPolicyChanged();
   void DocumentBaseURLChanged();
+  void LinkMatchedSelectorsUpdated(HTMLAnchorElement* link);
+  void DocumentStyleUpdated();
+
+  const HeapVector<Member<StyleRule>>& selectors() { return selectors_; }
 
   void Trace(Visitor*) const override;
 
@@ -85,6 +89,26 @@ class CORE_EXPORT DocumentSpeculationRules
   void InvalidateLink(HTMLAnchorElement* link);
   void InvalidateAllLinks();
 
+  // Populates |selectors_| and notifies the StyleEngine.
+  void UpdateSelectors();
+
+  // Tracks the state of a pending update of speculation candidates
+  // (UpdateSpeculationCandidates); and whether it requires style to be clean.
+  enum class PendingUpdateState {
+    // There is no update queued (either as a microtask or after the next style
+    // update).
+    kNoUpdatePending,
+    // There is a microtask queued to perform an update. A style update will
+    // not run UpdateSpeculationCandidates in this state.
+    kUpdatePending,
+    // An update will be performed after the next style update. We should
+    // never reach this state unless there are 'selector_matches' predicates
+    // present. There will be no microtask queued to perform an update in this
+    // state.
+    kUpdateWithCleanStylePending
+  };
+  void SetPendingUpdateState(PendingUpdateState state);
+
   HeapVector<Member<SpeculationRuleSet>> rule_sets_;
   HeapMojoRemote<mojom::blink::SpeculationHost> host_;
   HeapHashSet<Member<SpeculationRuleLoader>> speculation_rule_loaders_;
@@ -104,9 +128,14 @@ class CORE_EXPORT DocumentSpeculationRules
   HeapHashSet<Member<HTMLAnchorElement>> unmatched_links_;
   HeapHashSet<Member<HTMLAnchorElement>> pending_links_;
 
-  bool has_pending_update_ = false;
+  // Collects every CSS selector from every CSS selector document rule predicate
+  // in this document's speculation rules.
+  HeapVector<Member<StyleRule>> selectors_;
+
   bool initialized_ = false;
   bool sent_is_part_of_no_vary_search_trial_ = false;
+  PendingUpdateState pending_update_state_ =
+      PendingUpdateState::kNoUpdatePending;
 };
 
 }  // namespace blink

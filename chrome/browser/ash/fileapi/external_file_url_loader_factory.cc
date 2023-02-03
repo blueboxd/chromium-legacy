@@ -14,7 +14,6 @@
 #include "chrome/browser/ash/fileapi/external_file_url_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_host.h"
@@ -368,7 +367,7 @@ void ExternalFileURLLoaderFactory::CreateLoaderAndStart(
           render_process_host_id_, request.url)) {
     DVLOG(1) << "Denied unauthorized request for "
              << request.url.possibly_invalid_spec();
-    mojo::ReportBadMessage("Unauthorized externalfile request");
+    ReportBadMessage("Unauthorized externalfile request");
     return;
   }
   content::GetIOThreadTaskRunner({})->PostTask(

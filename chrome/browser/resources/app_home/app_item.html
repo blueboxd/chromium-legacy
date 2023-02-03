@@ -3,35 +3,104 @@
    spec is finalized.*/
 
 :host {
+  align-items: center;
+  cursor: pointer;
   display: block;
-  margin: 20px;
+  height: 120px;
+  margin: auto;
   text-align: center;
-  width: 100px;
+  width: 96px;
 }
 
 .icon-container {
-  border-radius: 50px;
-  box-shadow: 0 0 10px rgba(100,100,100);
-  height: 100px;
+  height: 64px;
   margin-inline-end: auto;
   margin-inline-start: auto;
-  width: 100px;
+  margin-top: 14px;
+  width: 64px;
 }
 
 .text-container {
-  font-size: 16px;
-  margin-top: 20px;
+  font-size: 13px;
+  height: 20px;
+  margin-top: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .icon-image {
-  height: 64px;
-  margin-top: 18px;
-  width: 64px;
+  height: 100%;
+  width: 100%;
+}
+
+.dropdown-item-label {
+  flex: 1;
+  padding-inline-end: 30px;
+}
+
+hr {
+  border-top: var(--cr-separator-line);
+  height: 0;
+}
+
+cr-checkbox::part(label-container) {
+  clip: rect(0,0,0,0);
+  display: block;
+  position: fixed;
 }
 
 </style>
 
 <div class="icon-container">
-  <img src="[[appInfo.iconUrl.url]]" class="icon-image" alt="App's icon"></img>
+  <img src="[[getIconUrl_(appInfo)]]" class="icon-image" alt="App's icon"></img>
 </div>
 <div class="text-container">[[appInfo.name]]</div>
+
+<cr-action-menu id="menu" on-mousedown="onMenuMousedown_">
+  <div id="open-in-window" tabindex="0" class="dropdown-item"
+      on-click="onOpenInWindowItemClick_"
+      hidden="[[!isLocallyInstalled_(appInfo)]]">
+    <div class="dropdown-item-label">
+      $i18n{appWindowOpenLabel}
+    </div>
+    <cr-checkbox checked="{{appInfo.openInWindow}}"
+      on-click="onOpenInWindowItemClick_">
+      $i18n{appWindowOpenCheckboxLabel}
+    </cr-checkbox>
+  </div>
+  <div id="launch-on-startup" tabindex="0" class="dropdown-item"
+      on-click="onLaunchOnStartupItemClick_"
+      hidden="[[isLaunchOnStartupHidden_(appInfo)]]">
+    <div class="dropdown-item-label">
+      $i18n{appLaunchAtStartupLabel}
+    </div>
+    <cr-checkbox
+      checked="[[isLaunchOnStartUp_(appInfo)]]"
+      disabled=
+      "[[isLaunchOnStartupDisabled_(appInfo)]]"
+      on-click="onLaunchOnStartupItemClick_">
+      $i18n{appLaunchAtStartupCheckboxLabel}
+    </cr-checkbox>
+  </div>
+  <button id="create-shortcut" class="dropdown-item"
+      on-click="onCreateShortcutItemClick_"
+      hidden="[[!isLocallyInstalled_(appInfo)]]">
+    $i18n{createShortcutForAppLabel}
+  </button>
+  <button id="install-locally" class="dropdown-item"
+    on-click="onInstallLocallyItemClick_"
+    hidden="[[isLocallyInstalled_(appInfo)]]">
+  $i18n{installLocallyLabel}
+</button>
+  <hr>
+  <button id="uninstall" class="dropdown-item"
+      on-click="onUninstallItemClick_">
+    $i18n{uninstallAppLabel}
+  </button>
+  <button id="app-settings" class="dropdown-item"
+      on-click="onAppSettingsItemClick_"
+      hidden="[[!isLocallyInstalled_(appInfo)]]">
+    $i18n{appSettingsLabel}
+  </button>
+</cr-action-menu>

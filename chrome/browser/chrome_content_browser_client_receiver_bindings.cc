@@ -23,6 +23,7 @@
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/signin/google_accounts_private_api_host.h"
+#include "chrome/browser/sync/sync_encryption_keys_tab_helper.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_features.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
@@ -36,6 +37,7 @@
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -100,7 +102,6 @@
 
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/badging/badge_manager.h"
-#include "chrome/browser/sync/sync_encryption_keys_tab_helper.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #endif
 
@@ -514,7 +515,6 @@ void ChromeContentBrowserClient::
           },
           &render_frame_host));
 #endif  // BUILDFLAG(ENABLE_PLUGINS) || BUILDFLAG(IS_ANDROID)
-#if !BUILDFLAG(IS_ANDROID)
   associated_registry.AddInterface<chrome::mojom::SyncEncryptionKeysExtension>(
       base::BindRepeating(
           [](content::RenderFrameHost* render_frame_host,
@@ -524,7 +524,6 @@ void ChromeContentBrowserClient::
                 std::move(receiver), render_frame_host);
           },
           &render_frame_host));
-#endif  // !BUILDFLAG(IS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebAuthFlowInBrowserTab)) {
     associated_registry.AddInterface<
         chrome::mojom::GoogleAccountsPrivateApiExtension>(base::BindRepeating(

@@ -16,6 +16,7 @@
 #include "content/browser/interest_group/auction_process_manager.h"
 #include "content/browser/interest_group/subresource_url_builder.h"
 #include "content/common/content_export.h"
+#include "content/services/auction_worklet/public/mojom/auction_shared_storage_host.mojom-forward.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "content/services/auction_worklet/public/mojom/seller_worklet.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -32,6 +33,7 @@ class NetworkAnonymizationKey;
 
 namespace content {
 
+class AuctionSharedStorageHost;
 class RenderFrameHostImpl;
 class SiteInstance;
 class SubresourceUrlAuthorizations;
@@ -120,6 +122,16 @@ class CONTENT_EXPORT AuctionWorkletManager {
     WorkletHandle& operator=(const WorkletHandle&) = delete;
     ~WorkletHandle() override;
 
+    // Authorizes subresource bundle subresource URLs that the worklet may
+    // request as long as this WorkletHandle instance is live (refcounting
+    // allows multiple WorkletHandle instances to authorize the same URLs).
+    //
+    // This must be called manually before the worklet is asked to do anything
+    // involving fetching those subresources, but after the worklet is
+    // available. Calls after the first one will be ignored.
+    void AuthorizeSubresourceUrls(
+        const SubresourceUrlBuilder& subresource_url_builder);
+
     // Retrieves the corresponding Worklet Mojo interface for the requested
     // worklet. Only the method corresponding to the worklet type `this` was
     // created with my be invoked. Once the worklet is created, will never
@@ -144,25 +156,15 @@ class CONTENT_EXPORT AuctionWorkletManager {
     friend class WorkletOwner;
 
     // These are only created by AuctionWorkletManager.
-    explicit WorkletHandle(
-        scoped_refptr<WorkletOwner> worklet_owner,
-        base::OnceClosure worklet_available_callback,
-        FatalErrorCallback fatal_error_callback,
-        const SubresourceUrlBuilder& subresource_url_builder);
+    explicit WorkletHandle(scoped_refptr<WorkletOwner> worklet_owner,
+                           base::OnceClosure worklet_available_callback,
+                           FatalErrorCallback fatal_error_callback);
 
     // Both these methods are invoked by WorkletOwner, and call the
     // corresponding callback.
     void OnWorkletAvailable();
     void OnFatalError(FatalErrorType type,
                       const std::vector<std::string>& errors);
-
-    // Authorizes subresource bundle subresource URLs that the worklet may
-    // request as long as this WorkletHandle instance is live (refcounting
-    // allows multiple WorkletHandle instances to authorize the same URLs).
-    //
-    // Called by OnWorkletAvailable(); requires that the WorkletOwner internal
-    // proxy instance has been created.
-    void AuthorizeSubresourceUrls();
 
     // Returns true if `worklet_owner_` has created a worklet yet.
     bool worklet_created() const;
@@ -174,9 +176,7 @@ class CONTENT_EXPORT AuctionWorkletManager {
 
     FatalErrorCallback fatal_error_callback_;
 
-    // Never null, owned by InterestGroupAuction / InterestGroupAuctionReporter.
-    const raw_ptr<const SubresourceUrlBuilder, DanglingUntriaged>
-        subresource_url_builder_;
+    bool authorized_subresources_ = false;
   };
 
   // `delegate` and `auction_process_manager` must outlive the created
@@ -211,7 +211,6 @@ class CONTENT_EXPORT AuctionWorkletManager {
       const GURL& bidding_logic_url,
       const absl::optional<GURL>& wasm_url,
       const absl::optional<GURL>& trusted_bidding_signals_url,
-      const SubresourceUrlBuilder& subresource_url_builder,
       absl::optional<uint16_t> experiment_group_id,
       base::OnceClosure worklet_available_callback,
       FatalErrorCallback fatal_error_callback,
@@ -219,7 +218,6 @@ class CONTENT_EXPORT AuctionWorkletManager {
   [[nodiscard]] bool RequestSellerWorklet(
       const GURL& decision_logic_url,
       const absl::optional<GURL>& trusted_scoring_signals_url,
-      const SubresourceUrlBuilder& subresource_url_builder,
       absl::optional<uint16_t> experiment_group_id,
       base::OnceClosure worklet_available_callback,
       FatalErrorCallback fatal_error_callback,
@@ -250,12 +248,15 @@ class CONTENT_EXPORT AuctionWorkletManager {
 
   bool RequestWorkletInternal(
       WorkletInfo worklet_info,
-      const SubresourceUrlBuilder& subresource_url_builder,
       base::OnceClosure worklet_available_callback,
       FatalErrorCallback fatal_error_callback,
       std::unique_ptr<WorkletHandle>& out_worklet_handle);
 
   void OnWorkletNoLongerUsable(WorkletOwner* worklet);
+
+  mojo::PendingRemote<auction_worklet::mojom::AuctionSharedStorageHost>
+  MaybeBindAuctionSharedStorageHost(RenderFrameHostImpl* auction_runner_rfh,
+                                    const url::Origin& worklet_origin);
 
   // Accessors used by inner classes. Not strictly needed, but makes it clear
   // which fields they can access.
@@ -270,6 +271,8 @@ class CONTENT_EXPORT AuctionWorkletManager {
   const url::Origin top_window_origin_;
   const url::Origin frame_origin_;
   raw_ptr<Delegate> const delegate_;
+
+  std::unique_ptr<AuctionSharedStorageHost> auction_shared_storage_host_;
 
   std::map<WorkletInfo, WorkletOwner*> worklets_;
 };

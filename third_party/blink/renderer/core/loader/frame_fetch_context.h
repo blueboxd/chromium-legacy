@@ -101,7 +101,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext,
                       WebScopedVirtualTimePauser&,
                       ResourceType) override;
 
-  void AddResourceTiming(const ResourceTimingInfo&) override;
+  void AddResourceTiming(mojom::blink::ResourceTimingInfoPtr,
+                         const AtomicString& initiator_type) override;
   bool AllowImage(bool images_enabled, const KURL&) const override;
 
   void PopulateResourceRequest(ResourceType,
@@ -140,7 +141,10 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext,
 
   void UpdateSubresourceLoadMetrics(
       uint32_t number_of_subresources_loaded,
-      uint32_t number_of_subresource_loads_handled_by_service_worker) override;
+      uint32_t number_of_subresource_loads_handled_by_service_worker,
+      bool pervasive_payload_requested,
+      int64_t pervasive_bytes_fetched,
+      int64_t total_bytes_fetched) override;
 
  private:
   friend class FrameFetchContextTest;

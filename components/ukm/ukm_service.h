@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <memory>
 
+#include "base/callback_list.h"
 #include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
@@ -16,6 +17,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/metrics/delegating_provider.h"
+#include "components/metrics/metrics_logs_event_manager.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_rotation_scheduler.h"
 #include "components/metrics/ukm_demographic_metrics_provider.h"
@@ -92,7 +94,7 @@ class UkmService : public UkmRecorderImpl {
 #endif
 
   // Records all collected data into logs, and writes to disk.
-  void Flush();
+  void Flush(metrics::MetricsLogsEventManager::CreateReason reason);
 
   // Deletes all unsent local data (Sources, Events, aggregate info for
   // collected event metrics, etc.).
@@ -110,6 +112,9 @@ class UkmService : public UkmRecorderImpl {
   // Resets the client prefs (client_id/session_id). |reason| should be passed
   // to provide the reason of the reset - this is only used for UMA logging.
   void ResetClientState(ResetReason reason);
+
+  // Called if this install is detected as cloned.
+  void OnClonedInstallDetected();
 
   // Registers the specified |provider| to provide additional metrics into the
   // UKM log. Should be called during MetricsService initialization only.
@@ -166,7 +171,7 @@ class UkmService : public UkmRecorderImpl {
 
   // Constructs a new Report from available data and stores it in
   // unsent_log_store_.
-  void BuildAndStoreLog();
+  void BuildAndStoreLog(metrics::MetricsLogsEventManager::CreateReason reason);
 
   // Starts an upload of the next log from unsent_log_store_.
   void StartScheduledUpload();
@@ -222,6 +227,10 @@ class UkmService : public UkmRecorderImpl {
 
   // A callback invoked when initialization of the service is complete.
   base::OnceClosure initialization_complete_callback_;
+
+  // Subscription for a callback that runs if this install is detected as
+  // cloned.
+  base::CallbackListSubscription cloned_install_subscription_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

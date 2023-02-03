@@ -39,6 +39,7 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
@@ -609,6 +610,8 @@ void AutofillAgent::ClearPreviewedForm() {
 
   // |password_generation_agent_| can be null in android_webview & weblayer.
   if (password_generation_agent_ &&
+      base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordGenerationPreviewOnHover) &&
       password_generation_agent_->DidClearGenerationSuggestion(element_)) {
     return;
   }
@@ -839,38 +842,6 @@ void AutofillAgent::SetSecureContextRequired(bool required) {
 
 void AutofillAgent::SetFocusRequiresScroll(bool require) {
   focus_requires_scroll_ = require;
-}
-
-void AutofillAgent::GetElementFormAndFieldDataForDevToolsNodeId(
-    const int backend_node_id,
-    GetElementFormAndFieldDataForDevToolsNodeIdCallback callback) {
-  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
-  if (!frame)
-    return;
-
-  blink::WebElement target_element =
-      frame->GetDocument().GetElementByDevToolsNodeId(backend_node_id);
-
-  FormData form;
-  FormFieldData field;
-
-  if (target_element.IsNull() || !target_element.IsFormControlElement()) {
-    return std::move(callback).Run(form, field);
-  }
-
-  blink::WebFormControlElement target_form_control_element =
-      target_element.To<blink::WebFormControlElement>();
-  bool success = FindFormAndFieldForFormControlElement(
-      target_form_control_element, field_data_manager_.get(), &form, &field);
-  if (success) {
-    // Remember this element so as to autofill the form without focusing the
-    // field for Autofill Assistant.
-    element_ = target_form_control_element;
-  }
-  // Do not expect failure.
-  DCHECK(success);
-
-  return std::move(callback).Run(form, field);
 }
 
 void AutofillAgent::EnableHeavyFormDataScraping() {

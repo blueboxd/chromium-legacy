@@ -92,10 +92,6 @@ const int kMaxNumberOfBuffers = media::kVideoCaptureDefaultMaxBufferPoolSize;
 #if BUILDFLAG(ENABLE_SCREEN_CAPTURE)
 
 #if BUILDFLAG(IS_MAC)
-BASE_FEATURE(kDesktopCaptureMacV2,
-             "DesktopCaptureMacV2",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kScreenCaptureKitMac,
              "ScreenCaptureKitMac",
              base::FEATURE_DISABLED_BY_DEFAULT);

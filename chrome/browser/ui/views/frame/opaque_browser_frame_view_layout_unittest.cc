@@ -75,6 +75,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   bool IsMinimized() const override { return false; }
   bool IsFullscreen() const override { return false; }
   bool IsTabStripVisible() const override { return window_title_.empty(); }
+  bool GetBorderlessModeEnabled() const override { return false; }
   int GetTabStripHeight() const override {
     return IsTabStripVisible() ? GetLayoutConstant(TAB_HEIGHT) : 0;
   }
@@ -95,6 +96,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   ui::WindowTiledEdges GetTiledEdges() const override { return {}; }
 #endif
+  int WebAppButtonHeight() const override { return 0; }
 
  private:
   std::u16string window_title_;

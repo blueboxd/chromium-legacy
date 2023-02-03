@@ -14,11 +14,11 @@ import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 import '../../css/common.css.js';
 import '../../css/cros_button_style.css.js';
 
-import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import {IronA11yKeysElement} from 'chrome://resources/polymer/v3_0/iron-a11y-keys/iron-a11y-keys.js';
 import {IronSelectorElement} from 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 
+import {isPersonalizationJellyEnabled} from '../load_time_booleans.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 import {isSelectionEvent} from '../utils.js';
 
@@ -54,9 +54,11 @@ export class PersonalizationThemeElement extends WithPersonalizationStore {
         type: Boolean,
         value: null,
       },
-      isJellyEnabled_: {
+      isPersonalizationJellyEnabled_: {
         type: Boolean,
-        value: loadTimeData.getBoolean('isJellyEnabled'),
+        value() {
+          return isPersonalizationJellyEnabled();
+        },
       },
 
       /** The button currently highlighted by keyboard navigation. */

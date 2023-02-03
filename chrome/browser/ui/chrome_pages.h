@@ -99,6 +99,7 @@ enum FeedbackSource {
   kFeedbackSourceSettingsPerformancePage,
   kFeedbackSourceQuickOffice,
   kFeedbackSourceOsSettingsSearch,
+  kFeedbackSourceAutofillContextMenu,
 
   // Must be last.
   kFeedbackSourceCount,
@@ -208,6 +209,8 @@ void ShowScanningApp(Profile* profile);
 void ShowDiagnosticsApp(Profile* profile);
 
 void ShowFirmwareUpdatesApp(Profile* profile);
+
+void ShowShortcutCustomizationApp(Profile* profile);
 #endif
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)

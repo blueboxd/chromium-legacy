@@ -121,8 +121,9 @@ crbug.com/1058744 [ no-passthrough ] WebglExtension_OES_draw_buffers_indexed [ S
 [ android qualcomm ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
 [ android qualcomm ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
 
-# Extension only available via passthrough decoder.
+# Extensions only available via passthrough decoder.
 crbug.com/1194209 [ mac no-passthrough ] WebglExtension_WEBGL_webcodecs_video_frame [ Skip ]
+crbug.com/1410603 [ no-passthrough ] WebglExtension_WEBGL_clip_cull_distance [ Skip ]
 
 # Extension only available through passthrough decoder?
 crbug.com/849576 [ no-passthrough ] WebglExtension_KHR_parallel_shader_compile [ Skip ]
@@ -268,9 +269,6 @@ crbug.com/1378372 [ win10 angle-d3d11 passthrough ] conformance/glsl/misc/shader
 
 ## Win / Intel ##
 
-# Random deqp/functional/gles3 flakes on this hardware configuration;
-# possibly real bugs in tests/browser exposed by slower CPUs.
-crbug.com/1376608 [ win intel ] deqp/functional/gles3/* [ RetryOnFailure ]
 
 ## Win / NVIDIA ##
 
@@ -290,6 +288,7 @@ crbug.com/483282 [ angle-d3d11 win amd ] conformance2/rendering/blitframebuffer-
 crbug.com/1152597 [ win amd-0x7340 angle-d3d11 ] conformance/renderbuffers/framebuffer-state-restoration.html [ Failure ]
 crbug.com/1152599 [ win amd-0x7340 angle-d3d11 ] conformance/rendering/polygon-offset.html [ Failure ]
 crbug.com/1152602 [ win amd-0x7340 angle-d3d11 ] conformance/canvas/drawingbuffer-static-canvas-test.html [ RetryOnFailure ]
+crbug.com/1409858 [ win amd-0x7340 angle-d3d11 ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]
 crbug.com/1152603 [ win amd-0x7340 angle-d3d11 ] conformance2/renderbuffers/multisampled-depth-renderbuffer-initialization.html [ Failure ]
 crbug.com/1152606 [ win amd-0x7340 angle-d3d11 ] deqp/functional/gles3/fboinvalidate/* [ Failure ]
 crbug.com/1152606 [ win amd-0x7340 angle-d3d11 ] deqp/functional/gles3/fbomultisample.2_samples.html [ Failure ]
@@ -565,6 +564,7 @@ crbug.com/1081978 [ linux intel angle-opengl passthrough ] conformance2/textures
 
 crbug.com/angleproject/5783 [ linux nvidia angle-opengl passthrough ] conformance2/textures/misc/immutable-tex-render-feedback.html [ Failure ]
 crbug.com/1115314 [ linux nvidia-0x2184 angle-opengl passthrough ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
+crbug.com/1411726 [ linux nvidia-0x2184 angle-opengl passthrough ] conformance2/textures/image_bitmap_from_video/tex-2d-rg16f-rg-float.html [ RetryOnFailure ]
 
 ## Linux AMD RX 5500 XT ##
 
@@ -608,10 +608,12 @@ crbug.com/1143323 [ android android-pixel-2 passthrough ] conformance/rendering/
 crbug.com/1276186 [ android android-pixel-2 ] conformance2/glsl3/array-equality.html [ Failure ]
 crbug.com/angleproject/7421 [ android android-pixel-2 angle-disabled no-passthrough ] conformance2/renderbuffers/invalidate-framebuffer.html [ Failure ]
 
+crbug.com/1403824 [ android android-pixel-2 no-passthrough ] deqp/functional/gles3/vertexarrays/multiple_attributes.stride.html [ RetryOnFailure ]
+
 ## Pixel 4 ##
 
 # Failing test when experiment DrDc is enabled via fieldtrial_testing_config.json.
-crbug.com/1289303 [ android-pixel-4 android-r ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
+crbug.com/1289303 [ android-pixel-4 android-r angle-disabled no-passthrough ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
 
 crbug.com/1175232 [ android android-pixel-4 angle-opengles passthrough ] conformance2/reading/read-pixels-from-fbo-test.html [ Failure ]
 crbug.com/1239079 [ android-pixel-4 android-r no-passthrough ] conformance2/transform_feedback/too-small-buffers.html [ Failure ]
@@ -631,7 +633,7 @@ crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] deqp/fu
 crbug.com/1382796 [ android android-pixel-4 ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
 crbug.com/1382796 [ android android-pixel-4 ] conformance/textures/video/* [ RetryOnFailure ]
 crbug.com/1382796 [ android android-pixel-4 ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
-crbug.com/1382796 [ android android-pixel-4 ] conformance2/textures/video/* [ RetryOnFailure ]
+crbug.com/1382796 [ android android-pixel-4 angle-opengles passthrough ] conformance2/textures/video/* [ RetryOnFailure ]
 # finder:group-end
 
 #####################
@@ -680,8 +682,7 @@ crbug.com/1241183 [ chromeos chromeos-board-amd64-generic passthrough ] conforma
 crbug.com/1399117 [ chromeos chromeos-board-amd64-generic passthrough ] WebglExtension_WEBGL_provoking_vertex [ Skip ]
 crbug.com/1401968 [ chromeos chromeos-board-amd64-generic passthrough ] conformance2/textures/video/tex-3d-rgb16f-rgb-half_float.html [ RetryOnFailure ]
 crbug.com/1401968 [ chromeos chromeos-board-amd64-generic passthrough ] conformance2/textures/video/tex-3d-rg32f-rg-float.html [ RetryOnFailure ]
-crbug.com/1406875 [ chromeos chromeos-board-amd64-generic passthrough ] deqp/functional/gles3/shaderoperator/unary_operator_01.html [ Failure ]
-crbug.com/1406875 [ chromeos chromeos-board-amd64-generic passthrough ] deqp/functional/gles3/shaderoperator/unary_operator_02.html [ Failure ]
+
 
 # Must investigate ChromeOS failures with passthrough command decoder.
 crbug.com/angleproject/5038 [ chromeos passthrough ] conformance/extensions/ext-color-buffer-half-float.html [ Failure ]

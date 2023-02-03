@@ -60,15 +60,18 @@ class CORE_EXPORT CSSValueList : public CSSValue {
 
   wtf_size_t length() const { return values_.size(); }
   const CSSValue& Item(wtf_size_t index) const { return *values_[index]; }
+  const CSSValue& First() const { return *values_.front(); }
   const CSSValue& Last() const { return *values_.back(); }
 
-  void Append(const CSSValue& value) { values_.push_back(value); }
+  void Append(const CSSValue& value);
   bool RemoveAll(const CSSValue&);
   bool HasValue(const CSSValue&) const;
   CSSValueList* Copy() const;
 
   String CustomCSSText() const;
   bool Equals(const CSSValueList&) const;
+
+  const CSSValueList& PopulateWithTreeScope(const TreeScope*) const;
 
   bool HasFailedOrCanceledSubresources() const;
 

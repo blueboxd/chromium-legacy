@@ -113,6 +113,7 @@
 #include "third_party/blink/renderer/core/paint/timing/image_element_timing.h"
 #include "third_party/blink/renderer/core/paint/timing/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/scroll/scroll_into_view_util.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/content_data.h"
 #include "third_party/blink/renderer/core/style/cursor_data.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
@@ -2569,41 +2570,12 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
 
       if (style_->HasPseudoElementStyle(pseudo) ||
           style->HasPseudoElementStyle(pseudo)) {
-        const ComputedStyle* pseudo_old_style = nullptr;
-        const ComputedStyle* pseudo_new_style = nullptr;
-
-        // TODO(rego): Refactor this code so we can call something like
-        // HighlightData()->PseudoStyle(pseudo) and avoid the switch (we could
-        // also avoid the switch in
-        // HighlightPaintingUtils::HighlightPseudoStyle().
-        switch (pseudo) {
-          case kPseudoIdTargetText:
-            pseudo_old_style = style_->HighlightData()
-                                   ? style_->HighlightData()->TargetText()
+        const ComputedStyle* pseudo_old_style =
+            style_->HighlightData() ? style_->HighlightData()->Style(pseudo)
+                                    : nullptr;
+        const ComputedStyle* pseudo_new_style =
+            style->HighlightData() ? style->HighlightData()->Style(pseudo)
                                    : nullptr;
-            pseudo_new_style = style->HighlightData()
-                                   ? style->HighlightData()->TargetText()
-                                   : nullptr;
-            break;
-          case kPseudoIdSpellingError:
-            pseudo_old_style = style_->HighlightData()
-                                   ? style_->HighlightData()->SpellingError()
-                                   : nullptr;
-            pseudo_new_style = style->HighlightData()
-                                   ? style->HighlightData()->SpellingError()
-                                   : nullptr;
-            break;
-          case kPseudoIdGrammarError:
-            pseudo_old_style = style_->HighlightData()
-                                   ? style_->HighlightData()->GrammarError()
-                                   : nullptr;
-            pseudo_new_style = style->HighlightData()
-                                   ? style->HighlightData()->GrammarError()
-                                   : nullptr;
-            break;
-          default:
-            NOTREACHED();
-        }
 
         if (pseudo_old_style && pseudo_new_style) {
           diff.Merge(pseudo_old_style->VisualInvalidationDiff(
@@ -2614,16 +2586,19 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
       }
     };
 
-    if (RuntimeEnabledFeatures::HighlightInheritanceEnabled()) {
-      // TODO(rego): We don't do anything regarding ::selection, as ::selection
-      // uses its own mechanism for this (see
-      // LayoutObject::InvalidateSelectedChildrenOnStyleChange()). Maybe in the
-      // future we could detect changes here for ::selection too.
+    // See HighlightRegistry for ::highlight() paint invalidation.
+    // TODO(rego): We don't do anything regarding ::selection, as ::selection
+    // uses its own mechanism for this (see
+    // LayoutObject::InvalidateSelectedChildrenOnStyleChange()). Maybe in the
+    // future we could detect changes here for ::selection too.
+    if (UsesHighlightPseudoInheritance(kPseudoIdTargetText)) {
       HighlightPseudoUpdateDiff(kPseudoIdTargetText);
-      if (RuntimeEnabledFeatures::CSSSpellingGrammarErrorsEnabled()) {
-        HighlightPseudoUpdateDiff(kPseudoIdSpellingError);
-        HighlightPseudoUpdateDiff(kPseudoIdGrammarError);
-      }
+    }
+    if (UsesHighlightPseudoInheritance(kPseudoIdSpellingError)) {
+      HighlightPseudoUpdateDiff(kPseudoIdSpellingError);
+    }
+    if (UsesHighlightPseudoInheritance(kPseudoIdGrammarError)) {
+      HighlightPseudoUpdateDiff(kPseudoIdGrammarError);
     }
   }
 
@@ -4289,20 +4264,31 @@ bool LayoutObject::WillRenderImage() {
   NOT_DESTROYED();
   // Without visibility we won't render (and therefore don't care about
   // animation).
-  if (StyleRef().Visibility() != EVisibility::kVisible)
+  if (StyleRef().Visibility() != EVisibility::kVisible) {
     return false;
-
+  }
   // We will not render a new image when ExecutionContext is paused
-  if (GetDocument().GetExecutionContext()->IsContextPaused())
+  if (GetDocument().GetExecutionContext()->IsContextPaused()) {
     return false;
-
+  }
   // Suspend animations when the page is not visible.
-  if (GetDocument().hidden())
+  if (GetDocument().hidden()) {
     return false;
-
+  }
   // If we're not in a window (i.e., we're dormant from being in a background
   // tab) then we don't want to render either.
-  return GetDocument().View()->IsVisible();
+  if (!GetDocument().View()->IsVisible()) {
+    return false;
+  }
+  // If paint invalidation of this object is delayed, animations can be
+  // suspended. When the object is painted the next time, the animations will
+  // be started again.
+  if (ShouldDelayFullPaintInvalidation() &&
+      base::FeatureList::IsEnabled(
+          features::kThrottleOffscreenAnimatingSvgImages)) {
+    return false;
+  }
+  return true;
 }
 
 bool LayoutObject::GetImageAnimationPolicy(

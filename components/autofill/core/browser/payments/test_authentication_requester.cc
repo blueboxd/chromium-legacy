@@ -20,8 +20,8 @@ TestAuthenticationRequester::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void TestAuthenticationRequester::OnCVCAuthenticationComplete(
-    const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response) {
+void TestAuthenticationRequester::OnCvcAuthenticationComplete(
+    const CreditCardCvcAuthenticator::CvcAuthenticationResponse& response) {
   did_succeed_ = response.did_succeed;
   if (*did_succeed_) {
     DCHECK(response.card);
@@ -42,7 +42,7 @@ bool TestAuthenticationRequester::UserOptedInToFidoFromSettingsPageOnMobile()
 
 #if !BUILDFLAG(IS_IOS)
 void TestAuthenticationRequester::OnFIDOAuthenticationComplete(
-    const CreditCardFIDOAuthenticator::FidoAuthenticationResponse& response) {
+    const CreditCardFidoAuthenticator::FidoAuthenticationResponse& response) {
   did_succeed_ = response.did_succeed;
   if (*did_succeed_) {
     DCHECK(response.card);

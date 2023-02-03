@@ -20,7 +20,6 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -101,7 +100,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
                     },
                     null, false, gridCardOnClickListenerProvider,
                     mMediator.getTabGridDialogHandler(), TabProperties.UiType.CLOSABLE, null, null,
-                    containerView, false, mComponentName, rootView, null);
+                    containerView, false, mComponentName, rootView, null, mMediator);
             TabListRecyclerView recyclerView = mTabListCoordinator.getContainerView();
 
             TabGroupUiToolbarView toolbarView =
@@ -209,11 +208,9 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
     @Override
     public void postHiding() {
         mTabListCoordinator.postHiding();
-        if (ChromeFeatureList.sDiscardOccludedBitmaps.isEnabled()) {
-            // TODO(crbug/1366128): This shouldn't be required if resetWithListOfTabs(null) is
-            // called. Find out why this helps and fix upstream if possible.
-            mTabListCoordinator.softCleanup();
-        }
+        // TODO(crbug/1366128): This shouldn't be required if resetWithListOfTabs(null) is called.
+        // Find out why this helps and fix upstream if possible.
+        mTabListCoordinator.softCleanup();
     }
 
     @Override

@@ -115,7 +115,7 @@ class GLOzoneEGLGbm : public GLOzoneEGL {
   GLOzoneEGLGbm(const GLOzoneEGLGbm&) = delete;
   GLOzoneEGLGbm& operator=(const GLOzoneEGLGbm&) = delete;
 
-  ~GLOzoneEGLGbm() override {}
+  ~GLOzoneEGLGbm() override = default;
 
   bool CanImportNativePixmap() override {
     return gl::GLSurfaceEGL::GetGLDisplayEGL()
@@ -311,7 +311,7 @@ GbmSurfaceFactory::CreateVulkanImplementation(bool use_swiftshader,
                                               bool allow_protected_memory) {
   DCHECK(!use_swiftshader)
       << "Vulkan Swiftshader is not supported on this platform.";
-  return std::make_unique<ui::VulkanImplementationGbm>();
+  return std::make_unique<VulkanImplementationGbm>();
 }
 
 scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmapForVulkan(

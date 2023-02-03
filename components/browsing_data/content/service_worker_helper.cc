@@ -25,7 +25,7 @@ using content::StorageUsageInfo;
 namespace browsing_data {
 namespace {
 
-void GetAllOriginsInfoForServiceWorkerCallback(
+void OnGotAllStorageKeysInfoForServiceWorker(
     ServiceWorkerHelper::FetchCallback callback,
     const std::vector<StorageUsageInfo>& infos) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -54,8 +54,8 @@ ServiceWorkerHelper::~ServiceWorkerHelper() {}
 void ServiceWorkerHelper::StartFetching(FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
-  service_worker_context_->GetAllOriginsInfo(base::BindOnce(
-      &GetAllOriginsInfoForServiceWorkerCallback, std::move(callback)));
+  service_worker_context_->GetAllStorageKeysInfo(base::BindOnce(
+      &OnGotAllStorageKeysInfoForServiceWorker, std::move(callback)));
 }
 
 void ServiceWorkerHelper::DeleteServiceWorkers(const url::Origin& origin) {

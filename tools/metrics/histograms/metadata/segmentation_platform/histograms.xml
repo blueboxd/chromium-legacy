@@ -49,6 +49,7 @@ chromium-metrics-reviews@google.com.
   <variant name="ChromeStartAndroidV2"/>
   <variant name="ContextualPageActions"/>
   <variant name="CrossDeviceUser"/>
+  <variant name="DeviceSwitcher"/>
   <variant name="DummyFeature"/>
   <variant name="FeedUserSegment"/>
   <variant name="FrequentFeatureUser"/>
@@ -122,7 +123,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SegmentationPlatform.AdaptiveToolbar.SegmentSelection.Computed"
-    enum="AdaptiveToolbarButtonVariant" expires_after="2023-07-23">
+    enum="AdaptiveToolbarButtonVariant" expires_after="2023-07-30">
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -166,6 +167,30 @@ chromium-metrics-reviews@google.com.
     <variant name="Unknown"/>
     <variant name="Windows"/>
   </token>
+</histogram>
+
+<histogram name="SegmentationPlatform.DeviceSwicther.TimeFromConsentToResult"
+    units="ms" expires_after="2023-07-23">
+  <owner>ssid@chromium.org</owner>
+  <owner>chrome-segmentation-platform@google.com</owner>
+  <summary>
+    The time taken from the time user enabled sync consent to the time result is
+    available for device switcher user segment. This includes the network delay
+    for downloading the device info data. The metric is recorded once for each
+    user at the time when the user enables sync on the device.
+  </summary>
+</histogram>
+
+<histogram name="SegmentationPlatform.DeviceSwicther.TimeFromStartupToResult"
+    units="ms" expires_after="2023-07-23">
+  <owner>ssid@chromium.org</owner>
+  <owner>chrome-segmentation-platform@google.com</owner>
+  <summary>
+    The time taken from the startup to the time result is available for the
+    device switcher user segment. The metric is recorded once for each user the
+    first time the device switcher segmentation is enabled, only if the user
+    already had sync enabled.
+  </summary>
 </histogram>
 
 <histogram
@@ -542,7 +567,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SegmentationPlatform.SelectionFailedReason"
-    enum="SegmentationSelectionFailureReason" expires_after="2023-07-23">
+    enum="SegmentationSelectionFailureReason" expires_after="2023-07-30">
   <owner>ssid@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>

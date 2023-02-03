@@ -12,6 +12,7 @@ import socket
 import stat
 import subprocess
 import threading
+import time
 
 from google.protobuf import text_format  # pylint: disable=import-error
 
@@ -41,6 +42,8 @@ _PACKAGES_ALL = object()
 # These files are used as backing files for corresponding qcow2 images.
 _BACKING_FILES = ('system.img', 'vendor.img')
 
+_DEFAULT_JAVA_HOME = os.path.join(constants.DIR_SOURCE_ROOT, 'third_party',
+                                  'jdk', 'current')
 _DEFAULT_AVDMANAGER_PATH = os.path.join(constants.ANDROID_SDK_ROOT,
                                         'cmdline-tools', 'latest', 'bin',
                                         'avdmanager')
@@ -168,6 +171,8 @@ class _AvdManagerAgent:
         self._avd_home,
         'AVDMANAGER_OPTS':
         '-Dcom.android.sdkmanager.toolsdir=%s' % fake_tools_dir,
+        'JAVA_HOME':
+        _DEFAULT_JAVA_HOME,
     })
 
   def Create(self, avd_name, system_image, force=False):
@@ -880,14 +885,14 @@ class AvdConfig:
       # Emulator start-up requires a valid sdk root.
       assert self.emulator_sdk_root
 
-  def CreateInstance(self):
+  def CreateInstance(self, output_manager=None):
     """Creates an AVD instance without starting it.
 
     Returns:
       An _AvdInstance.
     """
     self._Initialize()
-    return _AvdInstance(self)
+    return _AvdInstance(self, output_manager=output_manager)
 
   def StartInstance(self):
     """Starts an AVD instance.
@@ -907,11 +912,12 @@ class _AvdInstance:
   but its other methods can be freely called.
   """
 
-  def __init__(self, avd_config):
+  def __init__(self, avd_config, output_manager=None):
     """Create an _AvdInstance object.
 
     Args:
       avd_config: an AvdConfig instance.
+      output_manager: a pylib.base.output_manager.OutputManager instance.
     """
     self._avd_config = avd_config
     self._avd_name = avd_config.avd_name
@@ -920,9 +926,12 @@ class _AvdInstance:
     self._emulator_proc = None
     self._emulator_serial = None
     self._emulator_device = None
-    self._sink = None
+
+    self._output_manager = output_manager
+    self._output_file = None
 
     self._writable_system = False
+    self._debug_tags = None
 
   def __str__(self):
     return '%s|%s' % (self._avd_name, (self._emulator_serial or id(self)))
@@ -991,7 +1000,14 @@ class _AvdInstance:
       if gpu_mode:
         emulator_cmd.extend(['-gpu', gpu_mode])
       if debug_tags:
-        emulator_cmd.extend(['-debug', debug_tags])
+        self._debug_tags = set(debug_tags.split(','))
+        # Always print timestamp when debug tags are set.
+        self._debug_tags.add('time')
+        emulator_cmd.extend(['-debug', ','.join(self._debug_tags)])
+        if 'kernel' in self._debug_tags:
+          # TODO(crbug.com/1404176): newer API levels need "-virtio-console"
+          # as well to print kernel log.
+          emulator_cmd.append('-show-kernel')
 
       emulator_env = {
           # kill immediately when emulator hang.
@@ -1021,14 +1037,18 @@ class _AvdInstance:
           ' '.join(['%s=%s' % (k, v) for k, v in emulator_env.items()]))
       logging.info('  With commands: %s', ' '.join(emulator_cmd))
 
-      # TODO(jbudorick): Add support for logging emulator stdout & stderr at
-      # higher logging levels.
       # Enable the emulator log when debug_tags is set.
-      if not debug_tags:
-        self._sink = open('/dev/null', 'w')
+      if self._debug_tags:
+        # Write to an ArchivedFile if output manager is set, otherwise stdout.
+        if self._output_manager:
+          self._output_file = self._output_manager.CreateArchivedFile(
+              'emulator_%s' % time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()),
+              'emulator')
+      else:
+        self._output_file = open('/dev/null', 'w')
       self._emulator_proc = cmd_helper.Popen(emulator_cmd,
-                                             stdout=self._sink,
-                                             stderr=self._sink,
+                                             stdout=self._output_file,
+                                             stderr=self._output_file,
                                              env=emulator_env)
 
       # Waits for the emulator to report its serial as requested via
@@ -1067,6 +1087,17 @@ class _AvdInstance:
     When "force" is True, we will call "terminate" on the emulator process,
     which is recommended when emulator is not responding to adb commands.
     """
+    # Close output file first in case emulator process killing goes wrong.
+    if self._debug_tags:
+      if self._output_manager:
+        self._output_manager.ArchiveArchivedFile(self._output_file, delete=True)
+        link = self._output_file.Link()
+        if link:
+          logging.critical('Emulator logs saved to %s', link)
+    else:
+      self._output_file.close()
+    self._output_file = None
+
     if self._emulator_proc:
       if self._emulator_proc.poll() is None:
         if force or not self.device:
@@ -1077,10 +1108,6 @@ class _AvdInstance:
       self._emulator_proc = None
       self._emulator_serial = None
       self._emulator_device = None
-
-    if self._sink:
-      self._sink.close()
-      self._sink = None
 
   def GetSnapshotName(self):
     """Return the snapshot name to load/save.

@@ -35,6 +35,7 @@ import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabStateAttributes;
@@ -164,10 +165,10 @@ public class CriticalPersistedTabDataTest {
         };
         final Semaphore saveSemaphore = new Semaphore(0);
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            CriticalPersistedTabData criticalPersistedTabData =
-                    new CriticalPersistedTabData(mockTab(TAB_ID, isEncrypted), "", "", PARENT_ID,
-                            ROOT_ID, TIMESTAMP, WEB_CONTENTS_STATE, CONTENT_STATE_VERSION,
-                            OPENER_APP_ID, THEME_COLOR, LAUNCH_TYPE_AT_CREATION, USER_AGENT_A);
+            CriticalPersistedTabData criticalPersistedTabData = new CriticalPersistedTabData(
+                    new MockTab(TAB_ID, isEncrypted), "", "", PARENT_ID, ROOT_ID, TIMESTAMP,
+                    WEB_CONTENTS_STATE, CONTENT_STATE_VERSION, OPENER_APP_ID, THEME_COLOR,
+                    LAUNCH_TYPE_AT_CREATION, USER_AGENT_A);
             criticalPersistedTabData.setShouldSaveForTesting(true);
             mStorage.setSemaphore(saveSemaphore);
             ObservableSupplierImpl<Boolean> supplier = new ObservableSupplierImpl<>();
@@ -175,7 +176,7 @@ public class CriticalPersistedTabDataTest {
             criticalPersistedTabData.registerIsTabSaveEnabledSupplier(supplier);
             criticalPersistedTabData.save();
             acquireSemaphore(saveSemaphore);
-            CriticalPersistedTabData.from(mockTab(TAB_ID, isEncrypted), callback);
+            CriticalPersistedTabData.from(new MockTab(TAB_ID, isEncrypted), callback);
         });
         semaphore.acquire();
         Assert.assertNotNull(mCriticalPersistedTabData);
@@ -197,7 +198,7 @@ public class CriticalPersistedTabDataTest {
             mStorage.setSemaphore(deleteSemaphore);
             mCriticalPersistedTabData.delete();
             acquireSemaphore(deleteSemaphore);
-            CriticalPersistedTabData.from(mockTab(TAB_ID, isEncrypted), callback);
+            CriticalPersistedTabData.from(new MockTab(TAB_ID, isEncrypted), callback);
         });
         semaphore.acquire();
         Assert.assertNull(mCriticalPersistedTabData);
@@ -686,10 +687,11 @@ public class CriticalPersistedTabDataTest {
         Assert.assertEquals(16, LaunchTypeAtCreation.FROM_LONGPRESS_INCOGNITO);
         Assert.assertEquals(17, LaunchTypeAtCreation.FROM_RECENT_TABS);
         Assert.assertEquals(18, LaunchTypeAtCreation.FROM_READING_LIST);
+        Assert.assertEquals(19, LaunchTypeAtCreation.FROM_TAB_SWITCHER_UI);
         Assert.assertEquals(
                 "Need to increment 1 to expected value each time a LaunchTypeAtCreation "
                         + "is added. Also need to add any new LaunchTypeAtCreation to this test.",
-                21, LaunchTypeAtCreation.names.length);
+                22, LaunchTypeAtCreation.names.length);
     }
 
     @SmallTest
@@ -760,10 +762,15 @@ public class CriticalPersistedTabDataTest {
         Assert.assertFalse(uninitializedTab.isInitialized());
         CriticalPersistedTabData criticalPersistedTabData =
                 new CriticalPersistedTabData(uninitializedTab);
+        uninitializedTab.getUserDataHost().setUserData(
+                CriticalPersistedTabData.class, criticalPersistedTabData);
+        TabStateAttributes.createForTab(uninitializedTab, TabCreationState.FROZEN_ON_RESTORE);
         TabStateAttributes.from(uninitializedTab).clearTabStateDirtiness();
-        Assert.assertFalse(TabStateAttributes.from(uninitializedTab).isTabStateDirty());
+        Assert.assertEquals(TabStateAttributes.DirtinessState.CLEAN,
+                TabStateAttributes.from(uninitializedTab).getDirtinessState());
         criticalPersistedTabData.setRootId(ROOT_ID_A);
-        Assert.assertFalse(TabStateAttributes.from(uninitializedTab).isTabStateDirty());
+        Assert.assertEquals(TabStateAttributes.DirtinessState.CLEAN,
+                TabStateAttributes.from(uninitializedTab).getDirtinessState());
     }
 
     @SmallTest
@@ -775,10 +782,15 @@ public class CriticalPersistedTabDataTest {
         Assert.assertTrue(initializedTab.isInitialized());
         CriticalPersistedTabData criticalPersistedTabData =
                 new CriticalPersistedTabData(initializedTab);
+        initializedTab.getUserDataHost().setUserData(
+                CriticalPersistedTabData.class, criticalPersistedTabData);
+        TabStateAttributes.createForTab(initializedTab, TabCreationState.FROZEN_ON_RESTORE);
         TabStateAttributes.from(initializedTab).clearTabStateDirtiness();
-        Assert.assertFalse(TabStateAttributes.from(initializedTab).isTabStateDirty());
+        Assert.assertEquals(TabStateAttributes.DirtinessState.CLEAN,
+                TabStateAttributes.from(initializedTab).getDirtinessState());
         criticalPersistedTabData.setRootId(ROOT_ID_A);
-        Assert.assertTrue(TabStateAttributes.from(initializedTab).isTabStateDirty());
+        Assert.assertNotEquals(TabStateAttributes.DirtinessState.CLEAN,
+                TabStateAttributes.from(initializedTab).getDirtinessState());
     }
 
     private static final ByteBuffer getFlatBufferWithNoWebContentsState() {

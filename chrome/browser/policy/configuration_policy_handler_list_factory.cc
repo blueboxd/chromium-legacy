@@ -134,6 +134,7 @@
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
 #include "chrome/browser/policy/local_sync_policy_handler.h"
 #include "chrome/browser/policy/managed_account_policy_handler.h"
+#include "components/headless/policy/headless_mode_policy_handler.h"
 #include "components/media_router/common/pref_names.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -425,9 +426,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDefaultWebHidGuardSetting,
     prefs::kManagedDefaultWebHidGuardSetting,
     base::Value::Type::INTEGER },
-  { key::kDefaultWindowPlacementSetting,
-    prefs::kManagedDefaultWindowPlacementSetting,
-    base::Value::Type::INTEGER },
   { key::kDisable3DAPIs,
     prefs::kDisable3DAPIs,
     base::Value::Type::BOOLEAN },
@@ -691,12 +689,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::LIST },
   { key::kWindowCaptureAllowedByOrigins,
     prefs::kWindowCaptureAllowedByOrigins,
-    base::Value::Type::LIST },
-  { key::kWindowPlacementAllowedForUrls,
-    prefs::kManagedWindowPlacementAllowedForUrls,
-    base::Value::Type::LIST },
-  { key::kWindowPlacementBlockedForUrls,
-    prefs::kManagedWindowPlacementBlockedForUrls,
     base::Value::Type::LIST },
 #endif // BUILDFLAG(IS_ANDROID)
   { key::kAlternateErrorPagesEnabled,
@@ -970,7 +962,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kVirtualKeyboardFeatures,
     ash::prefs::kAccessibilityVirtualKeyboardFeatures,
-    base::Value::Type::DICTIONARY },
+    base::Value::Type::DICT },
   { key::kStickyKeysEnabled,
     ash::prefs::kAccessibilityStickyKeysEnabled,
     base::Value::Type::BOOLEAN },
@@ -1163,7 +1155,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kPluginVmImage,
     plugin_vm::prefs::kPluginVmImage,
-    base::Value::Type::DICTIONARY },
+    base::Value::Type::DICT },
   { key::kPluginVmUserId,
     plugin_vm::prefs::kPluginVmUserId,
     base::Value::Type::STRING },
@@ -1193,7 +1185,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::INTEGER },
   { key::kDevicePowerPeakShiftDayConfig,
     ash::prefs::kPowerPeakShiftDayConfig,
-    base::Value::Type::DICTIONARY },
+    base::Value::Type::DICT },
   { key::kDeviceBootOnAcEnabled,
     ash::prefs::kBootOnAcEnabled,
     base::Value::Type::BOOLEAN },
@@ -1211,7 +1203,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kDeviceAdvancedBatteryChargeModeDayConfig,
     ash::prefs::kAdvancedBatteryChargeModeDayConfig,
-    base::Value::Type::DICTIONARY },
+    base::Value::Type::DICT },
   { key::kDeviceBatteryChargeMode,
     ash::prefs::kBatteryChargeMode,
     base::Value::Type::INTEGER },
@@ -1259,7 +1251,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kNetworkThrottlingEnabled,
     prefs::kNetworkThrottlingEnabled,
-    base::Value::Type::DICTIONARY },
+    base::Value::Type::DICT },
   { key::kAllowScreenLock,
     ash::prefs::kAllowScreenLock,
     base::Value::Type::BOOLEAN },
@@ -1316,7 +1308,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::INTEGER },
   { key::kDeviceArcDataSnapshotHours,
     arc::prefs::kArcSnapshotHours,
-    base::Value::Type::DICTIONARY },
+    base::Value::Type::DICT },
   { key::kDeviceAllowMGSToStoreDisplayProperties,
     ash::prefs::kAllowMGSToStoreDisplayProperties,
     base::Value::Type::BOOLEAN },
@@ -1738,6 +1730,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
 #endif
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  { key::kChromeAppsWebViewPermissiveBehaviorAllowed,
+    extensions::pref_names::kChromeAppsWebViewPermissiveBehaviorAllowed,
+    base::Value::Type::BOOLEAN },
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
   { key::kCORSNonWildcardRequestHeadersSupport,
     prefs::kCorsNonWildcardRequestHeadersSupport,
     base::Value::Type::BOOLEAN },
@@ -1760,9 +1758,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::INTEGER},
   { key::kWebSQLAccess,
     storage::kWebSQLAccess,
-    base::Value::Type::BOOLEAN },
-  { key::kWebSQLNonSecureContextEnabled,
-    storage::kWebSQLNonSecureContextEnabled,
     base::Value::Type::BOOLEAN },
 #if BUILDFLAG(IS_MAC)
   { key::kWarnBeforeQuittingEnabled,
@@ -1789,9 +1784,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     ash::prefs::kUrlParameterToAutofillSAMLUsername,
     base::Value::Type::STRING },
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-  { key::kPrefixedStorageInfoEnabled,
-    storage::kPrefixedStorageInfoEnabled,
-    base::Value::Type::BOOLEAN },
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
   { key::kHighEfficiencyModeEnabled,
     performance_manager::user_tuning::prefs::kHighEfficiencyModeEnabled,
@@ -1802,7 +1794,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kTabDiscardingExceptions,
     performance_manager::user_tuning::prefs::kManagedTabDiscardingExceptions,
     base::Value::Type::LIST },
-#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
   { key::kStrictMimetypeCheckForWorkerScriptsEnabled,
     prefs::kStrictMimetypeCheckForWorkerScriptsEnabled,
     base::Value::Type::BOOLEAN},
@@ -1837,6 +1829,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     policy::policy_prefs::kForceEnablePepperVideoDecoderDevAPI,
     base::Value::Type::BOOLEAN },
 #endif // BUILDFLAG(ENABLE_PPAPI)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
+  { key::kOutOfProcessSystemDnsResolutionEnabled,
+    prefs::kOutOfProcessSystemDnsResolutionEnabled,
+    base::Value::Type::BOOLEAN },
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
 };
 // clang-format on
 
@@ -1918,7 +1915,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
 #if BUILDFLAG(IS_ANDROID)
   handlers->AddHandler(
       std::make_unique<ContextualSearchPolicyHandlerAndroid>());
-#else
+#else  // !BUILDFLAG(IS_ANDROID)
   handlers->AddHandler(std::make_unique<BrowsingHistoryPolicyHandler>());
   handlers->AddHandler(std::make_unique<BrowsingDataLifetimePolicyHandler>(
       key::kClearBrowsingDataOnExitList,
@@ -1938,6 +1935,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           chrome_schema));
 
   handlers->AddHandler(std::make_unique<GuestModePolicyHandler>());
+  handlers->AddHandler(std::make_unique<headless::HeadlessModePolicyHandler>());
   handlers->AddHandler(std::make_unique<DeveloperToolsPolicyHandler>());
   handlers->AddHandler(
       std::make_unique<DownloadAutoOpenPolicyHandler>(chrome_schema));
@@ -2010,14 +2008,14 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           enterprise_connectors::EnterpriseConnectorsPolicyHandler>(
           key::kOnPrintEnterpriseConnector, enterprise_connectors::kOnPrintPref,
           enterprise_connectors::kOnPrintScopePref, chrome_schema));
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
   handlers->AddHandler(
       std::make_unique<
           enterprise_connectors::EnterpriseConnectorsPolicyHandler>(
           key::kOnFileTransferEnterpriseConnector,
           enterprise_connectors::kOnFileTransferPref,
           enterprise_connectors::kOnFileTransferScopePref, chrome_schema));
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
   handlers->AddHandler(
       std::make_unique<
           enterprise_connectors::EnterpriseConnectorsPolicyHandler>(
@@ -2063,7 +2061,37 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<WebHidDevicePolicyHandler>(
       key::kWebHidAllowDevicesWithHidUsagesForUrls,
       prefs::kManagedWebHidAllowDevicesWithHidUsagesForUrls, chrome_schema));
-#endif
+
+  // WindowPlacement policies to be deprecated and replaced by WindowManagement.
+  // crbug.com/1328581
+  handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
+      std::make_unique<SimplePolicyHandler>(
+          key::kDefaultWindowPlacementSetting,
+          prefs::kManagedDefaultWindowManagementSetting,
+          base::Value::Type::INTEGER),
+      std::make_unique<SimplePolicyHandler>(
+          key::kDefaultWindowManagementSetting,
+          prefs::kManagedDefaultWindowManagementSetting,
+          base::Value::Type::INTEGER)));
+  handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
+      std::make_unique<SimplePolicyHandler>(
+          key::kWindowPlacementAllowedForUrls,
+          prefs::kManagedWindowManagementAllowedForUrls,
+          base::Value::Type::LIST),
+      std::make_unique<SimplePolicyHandler>(
+          key::kWindowManagementAllowedForUrls,
+          prefs::kManagedWindowManagementAllowedForUrls,
+          base::Value::Type::LIST)));
+  handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
+      std::make_unique<SimplePolicyHandler>(
+          key::kWindowPlacementBlockedForUrls,
+          prefs::kManagedWindowManagementBlockedForUrls,
+          base::Value::Type::LIST),
+      std::make_unique<SimplePolicyHandler>(
+          key::kWindowManagementBlockedForUrls,
+          prefs::kManagedWindowManagementBlockedForUrls,
+          base::Value::Type::LIST)));
+#endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_ANDROID)
@@ -2495,6 +2523,12 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       std::make_unique<extensions::ExtensionSettingsPolicyHandler>(
           chrome_schema));
+#if !BUILDFLAG(IS_FUCHSIA)
+  handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
+      key::kExtensionUnpublishedAvailability,
+      extensions::pref_names::kExtensionUnpublishedAvailability,
+      /*min=*/0, /*max=*/2, /*clamp=*/false));
+#endif  // !BUILDFLAG(IS_FUCHSIA)
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
       key::kExtensionManifestV2Availability,
       extensions::pref_names::kManifestV2Availability, /*min=*/0, /*max=*/3,

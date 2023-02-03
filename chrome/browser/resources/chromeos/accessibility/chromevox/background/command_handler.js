@@ -27,6 +27,7 @@ import {LogType} from '../common/log_types.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
 import {PermissionChecker} from '../common/permission_checker.js';
+import {SettingsManager} from '../common/settings_manager.js';
 import {TreeDumper} from '../common/tree_dumper.js';
 import {Personality, QueueMode, TtsSettings, TtsSpeechProperties} from '../common/tts_types.js';
 
@@ -170,7 +171,7 @@ export class CommandHandler extends CommandHandlerInterface {
         return false;
       case Command.CYCLE_PUNCTUATION_ECHO:
         ChromeVox.tts.speak(
-            Msgs.getMsg(TtsBackground.base.cyclePunctuationEcho()),
+            Msgs.getMsg(TtsBackground.primary.cyclePunctuationEcho()),
             QueueMode.FLUSH);
         return false;
       case Command.REPORT_ISSUE:
@@ -1687,7 +1688,7 @@ export class CommandHandler extends CommandHandlerInterface {
 
   /** @private */
   toggleBrailleTable_() {
-    let brailleTableType = LocalStorage.get('brailleTableType');
+    let brailleTableType = SettingsManager.getString('brailleTableType');
     let output = '';
     if (brailleTableType === 'brailleTable6') {
       brailleTableType = 'brailleTable8';
@@ -1701,10 +1702,10 @@ export class CommandHandler extends CommandHandlerInterface {
       output = '@OPTIONS_BRAILLE_TABLE_TYPE_8';
     }
 
-    LocalStorage.set('brailleTable', LocalStorage.get(brailleTableType));
-    LocalStorage.set('brailleTableType', brailleTableType);
+    SettingsManager.set('brailleTable', SettingsManager.get(brailleTableType));
+    SettingsManager.set('brailleTableType', brailleTableType);
     BrailleBackground.instance.getTranslatorManager().refresh(
-        LocalStorage.getString(brailleTableType));
+        SettingsManager.getString(brailleTableType));
     new Output().format(output).go();
   }
 

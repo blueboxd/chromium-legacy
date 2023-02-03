@@ -18,7 +18,7 @@ import {QueueMode, TtsSpeechProperties} from './tts_types.js';
 
 export const BackgroundBridge = {};
 
-BackgroundBridge.BrailleBackground = {
+BackgroundBridge.Braille = {
   /**
    * Translate braille cells into text.
    * @param {!ArrayBuffer} cells Cells to be translated.
@@ -26,10 +26,12 @@ BackgroundBridge.BrailleBackground = {
    */
   async backTranslate(cells) {
     return BridgeHelper.sendMessage(
-        BridgeConstants.BrailleBackground.TARGET,
-        BridgeConstants.BrailleBackground.Action.BACK_TRANSLATE, cells);
+        BridgeConstants.Braille.TARGET,
+        BridgeConstants.Braille.Action.BACK_TRANSLATE, cells);
   },
+};
 
+BackgroundBridge.BrailleBackground = {
   /**
    * @param {string} brailleTable The table for this translator to use.
    * @return {!Promise<boolean>}
@@ -39,6 +41,16 @@ BackgroundBridge.BrailleBackground = {
         BridgeConstants.BrailleBackground.TARGET,
         BridgeConstants.BrailleBackground.Action.REFRESH_BRAILLE_TABLE,
         brailleTable);
+  },
+
+  /**
+   * @param {!string} text The text to write in Braille.
+   * @returns {!Promise<boolean>}
+   */
+  async write(text) {
+    return BridgeHelper.sendMessage(
+        BridgeConstants.BrailleBackground.TARGET,
+        BridgeConstants.BrailleBackground.Action.WRITE, text);
   },
 };
 
@@ -348,8 +360,7 @@ BackgroundBridge.TtsBackground = {
   },
 
   /**
-   * Method that updates the punctuation echo level, and also persists setting
-   * to local storage.
+   * Method that updates the punctuation echo level, and also persists setting.
    * @param {number} punctuationEcho The index of the desired punctuation echo
    *     level in PunctuationEchoes.
    * @return {!Promise}

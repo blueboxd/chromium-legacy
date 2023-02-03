@@ -161,8 +161,9 @@ DIPSService::DIPSService(content::BrowserContext* context)
   }
   storage_ = base::SequenceBound<DIPSStorage>(CreateTaskRunner(), path);
 
-  // TODO: Prevent use of the DB until prepopulation starts.
-  InitializeStorageWithEngagedSites();
+  storage_.AsyncCall(&DIPSStorage::IsPrepopulated)
+      .Then(base::BindOnce(&DIPSService::InitializeStorageWithEngagedSites,
+                           weak_factory_.GetWeakPtr()));
   if (repeating_timer_) {
     repeating_timer_->Start();
   }
@@ -197,11 +198,36 @@ scoped_refptr<base::SequencedTaskRunner> DIPSService::CreateTaskRunner() {
 }
 
 bool DIPSService::ShouldBlockThirdPartyCookies() const {
-  if (!cookie_settings_) {
+  if (IsShuttingDown()) {
     return cached_should_block_3pcs_.value();
   }
 
   return cookie_settings_->ShouldBlockThirdPartyCookies();
+}
+
+bool DIPSService::HasCookieException(const std::string& site) const {
+  DCHECK(!IsShuttingDown());
+  GURL url("https://" + site);
+
+  // Checks whether there is an exception allowing all third-parties embedded
+  // under |site| to use cookies.
+  if (cookie_settings_->IsFullCookieAccessAllowed(
+          GURL(), net::SiteForCookies::FromUrl(url), url::Origin::Create(url),
+          net::CookieSettingOverrides(),
+          content_settings::CookieSettingsBase::QueryReason::kCookies)) {
+    return true;
+  }
+
+  // Checks whether there is an exception allowing |site| to use cookies when
+  // embedded by any other site.
+  if (cookie_settings_->IsFullCookieAccessAllowed(
+          url, net::SiteForCookies(), absl::nullopt,
+          net::CookieSettingOverrides(),
+          content_settings::CookieSettingsBase::QueryReason::kCookies)) {
+    return true;
+  }
+
+  return false;
 }
 
 DIPSCookieMode DIPSService::GetCookieMode() const {
@@ -213,11 +239,16 @@ void DIPSService::RemoveEvents(const base::Time& delete_begin,
                                const base::Time& delete_end,
                                network::mojom::ClearDataFilterPtr filter,
                                DIPSEventRemovalType type) {
+  // Storage init should be finished by now, so no need to delay until then.
   storage_.AsyncCall(&DIPSStorage::RemoveEvents)
       .WithArgs(delete_begin, delete_end, std::move(filter), type);
 }
 
-void DIPSService::InitializeStorageWithEngagedSites() {
+void DIPSService::InitializeStorageWithEngagedSites(bool prepopulated) {
+  if (prepopulated) {
+    wait_for_prepopulating_.Quit();
+    return;
+  }
   base::Time now = base::Time::Now();
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
@@ -233,12 +264,20 @@ void DIPSService::InitializeStorageWithEngagedSites() {
 
 void DIPSService::InitializeStorage(base::Time time,
                                     std::vector<std::string> sites) {
-  storage_.AsyncCall(&DIPSStorage::Prepopulate).WithArgs(time, sites);
+  storage_.AsyncCall(&DIPSStorage::Prepopulate)
+      .WithArgs(time, sites, wait_for_prepopulating_.QuitClosure());
 }
 
 void DIPSService::HandleRedirectChain(
     std::vector<DIPSRedirectInfoPtr> redirects,
     DIPSRedirectChainInfoPtr chain) {
+  if (redirects.empty()) {
+    for (auto& observer : observers_) {
+      observer.OnChainHandled(chain);
+    }
+    return;
+  }
+
   chain->cookie_mode = GetCookieMode();
   // Copy the URL out before |redirects| is moved, to avoid use-after-move.
   GURL url = redirects[0]->url;
@@ -263,6 +302,9 @@ void DIPSService::GotState(std::vector<DIPSRedirectInfoPtr> redirects,
 
   if (index + 1 >= redirects.size()) {
     // All redirects handled.
+    for (auto& observer : observers_) {
+      observer.OnChainHandled(chain);
+    }
     return;
   }
 
@@ -326,6 +368,7 @@ void DIPSService::HandleRedirect(const DIPSRedirectInfo& redirect,
 
 void DIPSService::OnTimerFired() {
   base::Time start = base::Time::Now();
+  // Storage init should be finished by now, so no need to delay until then.
   storage_.AsyncCall(&DIPSStorage::GetSitesToClear)
       .Then(base::BindOnce(&DIPSService::DeleteDIPSEligibleState,
                            weak_factory_.GetWeakPtr(), start));
@@ -344,27 +387,41 @@ void DIPSService::DeleteDIPSEligibleState(
   }
 
   if (ShouldBlockThirdPartyCookies() && dips::kDeletionEnabled.Get()) {
-    // TODO: Check for site-specific third-party cookie exceptions here and
-    // exclude sites with them from 'sites_to_clear' then call
-    // 'DIPSStorage::RemoveRows' to remove the DIPS entries for the excluded
-    // sites.
-    content::GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &DIPSService::RunDeletionTaskOnUIThread, weak_factory_.GetWeakPtr(),
-            std::move(sites_to_clear),
-            base::BindOnce(&UmaHistogramDeletionLatency, deletion_start)));
+    if (IsShuttingDown()) {
+      return;
+    }
+
+    std::vector<std::string> excepted_sites;
+    std::vector<std::string> non_excepted_sites;
+
+    for (const auto& site : sites_to_clear) {
+      if (HasCookieException(site)) {
+        excepted_sites.push_back(site);
+      } else {
+        non_excepted_sites.push_back(site);
+      }
+    }
+
+    if (excepted_sites.empty()) {
+      PostDeletionTaskToUIThread(deletion_start, std::move(non_excepted_sites));
+    } else {
+      // Storage init should be finished by now, so no need to delay until then.
+      storage_.AsyncCall(&DIPSStorage::RemoveRows)
+          .WithArgs(std::move(excepted_sites))
+          .Then(base::BindOnce(&DIPSService::PostDeletionTaskToUIThread,
+                               weak_factory_.GetWeakPtr(), deletion_start,
+                               std::move(non_excepted_sites)));
+    }
   } else {
+    // Storage init should be finished by now, so no need to delay until then.
     storage_.AsyncCall(&DIPSStorage::RemoveRows)
         .WithArgs(std::move(sites_to_clear))
         .Then(base::BindOnce(&UmaHistogramDeletionLatency, deletion_start));
   }
 }
 
-void DIPSService::RunDeletionTaskOnUIThread(std::vector<std::string> sites,
-                                            base::OnceClosure callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
+void DIPSService::PostDeletionTaskToUIThread(base::Time deletion_start,
+                                             std::vector<std::string> sites) {
   std::unique_ptr<content::BrowsingDataFilterBuilder> filter =
       content::BrowsingDataFilterBuilder::Create(
           content::BrowsingDataFilterBuilder::Mode::kDelete);
@@ -372,6 +429,26 @@ void DIPSService::RunDeletionTaskOnUIThread(std::vector<std::string> sites,
     filter->AddRegisterableDomain(site);
   }
 
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&DIPSService::RunDeletionTaskOnUIThread,
+                                weak_factory_.GetWeakPtr(), std::move(filter),
+                                base::BindOnce(&UmaHistogramDeletionLatency,
+                                               deletion_start)));
+}
+
+void DIPSService::RunDeletionTaskOnUIThread(
+    std::unique_ptr<content::BrowsingDataFilterBuilder> filter,
+    base::OnceClosure callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   StateClearer::DeleteState(browser_context_->GetBrowsingDataRemover(),
                             std::move(filter), std::move(callback));
+}
+
+void DIPSService::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void DIPSService::RemoveObserver(const Observer* observer) {
+  observers_.RemoveObserver(observer);
 }

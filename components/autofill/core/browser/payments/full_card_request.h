@@ -22,7 +22,7 @@ namespace autofill {
 class BrowserAutofillManagerTest;
 class AutofillMetricsTest;
 class CreditCardAccessManagerTest;
-class CreditCardCVCAuthenticatorTest;
+class CreditCardCvcAuthenticatorTest;
 class CreditCard;
 class PersonalDataManager;
 
@@ -167,7 +167,7 @@ class FullCardRequest final : public CardUnmaskDelegate {
       payments::PaymentsClient::UnmaskResponseDetails& response_details);
 
   // Called when verification is cancelled. This is used only by
-  // CreditCardFIDOAuthenticator to cancel the flow for opted-in users.
+  // CreditCardFidoAuthenticator to cancel the flow for opted-in users.
   void OnFIDOVerificationCancelled();
 
   payments::PaymentsClient::UnmaskResponseDetails unmask_response_details()
@@ -187,7 +187,7 @@ class FullCardRequest final : public CardUnmaskDelegate {
   friend class autofill::AutofillMetricsTest;
   friend class autofill::metrics::AutofillMetricsBaseTest;
   friend class autofill::CreditCardAccessManagerTest;
-  friend class autofill::CreditCardCVCAuthenticatorTest;
+  friend class autofill::CreditCardCvcAuthenticatorTest;
 
   // Retrieves the pan for `card` and invokes
   // `Delegate::OnFullCardRequestSucceeded()` or

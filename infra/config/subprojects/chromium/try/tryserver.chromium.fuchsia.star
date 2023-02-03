@@ -22,9 +22,6 @@ try_.defaults.set(
     compilator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
-
-    # TODO(crbug.com/1362440): remove this.
-    omit_python2 = False,
     orchestrator_cores = 2,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
@@ -185,11 +182,6 @@ try_.builder(
         "weetbix.retry_weak_exonerations": 100,
         "weetbix.enable_weetbix_exonerations": 100,
     },
-)
-
-try_.builder(
-    name = "fuchsia-x64-workstation",
-    mirrors = ["ci/fuchsia-x64-workstation"],
 )
 
 try_.builder(

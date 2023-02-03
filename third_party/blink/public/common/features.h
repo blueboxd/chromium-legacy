@@ -41,8 +41,8 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kBackForwardCacheDedicatedWorker);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kBackForwardCacheNotReachedOnJavaScriptExecution);
-
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kBackForwardCacheWithKeepaliveRequest);
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kBackgroundResourceFetch);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kBlockingDownloadsInAdFrameWithoutUserActivation);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kConversionMeasurement);
@@ -154,7 +154,9 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 // Enables the multiple prerendering in a sequential way:
 // https://crbug.com/1355151
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrerender2SequentialPrerendering);
-
+// Enables the same-origin main frame navigation in a prerendered page.
+// See https://crbug.com/1239281.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrerender2MainFrameNavigation);
 // The number of prerenderings that can run concurrently. This only applies for
 // prerenderings triggered by speculation rules.
 BLINK_COMMON_EXPORT extern const char
@@ -174,24 +176,13 @@ BLINK_COMMON_EXPORT extern const char kPrerender2MemoryThresholdParamName[];
 // pages will not be prerendered even when kPrerender2 is enabled.
 BLINK_COMMON_EXPORT extern const char
     kPrerender2MemoryAcceptablePercentOfSystemMemoryParamName[];
-// Enables same-site cross origin Prerender2 triggered by speculation rules.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
-    kSameSiteCrossOriginForSpeculationRulesPrerender);
-// Allows same-site redirection for embedder-triggered prerendering. This
-// feature will be enabled by default and working as a switch for emergency
-// pause.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
-    kSameSiteRedirectionForEmbedderTriggeredPrerender);
 // Enables to keep prerenderings alive in the background when their visibility
 // state changes to HIDDEN.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrerender2InBackground);
 // Enables to run prerendering for new tabs (e.g., target="_blank").
 // See https://crbug.com/1350676.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrerender2InNewTab);
-// Returns true when the same-site cross origin Prerender2 feature is
-// enabled.
-BLINK_COMMON_EXPORT bool
-IsSameSiteCrossOriginForSpeculationRulesPrerender2Enabled();
+
 // Returns true if the Android On-Screen-Keyboard is in "resize visual
 // viewport" mode.
 BLINK_COMMON_EXPORT bool OSKResizesVisualViewportByDefault();
@@ -280,11 +271,15 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebviewAccelerateSmallCanvases);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCanvasFreeMemoryWhenHidden);
 
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCreateImageBitmapOrientationNone);
+
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDiscardCodeCacheAfterFirstUse);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCacheCodeOnIdle);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kCacheCodeOnIdleDelayParam;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kCacheCodeOnIdleDelayServiceWorkerOnlyParam;
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kAlignFontDisplayAutoTimeoutWithLCPGoal);
@@ -374,6 +369,8 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kLogUnexpectedIPCPostedToBackForwardCachedDocuments);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebAppEnableUrlHandlers);
+
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebAppEnableScopeExtensions);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebAppManifestLockScreen);
 
@@ -526,6 +523,7 @@ BLINK_COMMON_EXPORT bool IsMaxUnthrottledTimeoutNestingLevelEnabled();
 BLINK_COMMON_EXPORT int GetMaxUnthrottledTimeoutNestingLevel();
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLCPAnimatedImagesReporting);
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLCPVideoFirstFrame);
 
 // If enabled, an absent Origin-Agent-Cluster: header is interpreted as
 // requesting an origin agent cluster, but in the same process.
@@ -563,10 +561,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kReportFCPOnlyOnSuccessfulCommit);
 // If enabled, the `CropTarget.fromElement()` method will allow for the use
 // of additional element tag tyeps, instead of just <div> and <iframe>.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kRegionCaptureExperimentalSubtypes);
-
-// Experiment for measuring how often an overridden User-Agent string is made by
-// appending or prepending to the original User-Agent string.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kUserAgentOverrideExperiment);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebSQLAccess);
 
@@ -784,6 +778,9 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kThreadedHtmlTokenizer);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kThreadedHtmlTokenizerTokenMaxCount;
 
+// Make RTCVideoEncoder::Encode() asynchronous.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kWebRtcEncoderAsyncEncode);
+
 // If enabled, the WebRTC_* threads in peerconnection module will use
 // kResourceEfficient thread type.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
@@ -826,16 +823,12 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
 // applied directly instead of using the property tree builder.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFastPathPaintPropertyUpdates);
 
+// If enabled, SVG images will suspend animations when all instances of the
+// image are outside of the viewport.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kThrottleOffscreenAnimatingSvgImages);
+
 // If enabled, reads and decodes navigation body data off the main thread.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kThreadedBodyLoader);
-
-// If enabled, will cache for each node's EventPath::NodePath in document.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDocumentEventNodePathCaching);
-
-// Parameter for tuning max entries allowed in EventNodePathCache, which will be
-// used to do LRU eviction in document.
-BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
-    kDocumentMaxEventNodePathCachedEntries;
 
 // Whether first-party to third-party different-bucket same-origin post messages
 // are blocked.

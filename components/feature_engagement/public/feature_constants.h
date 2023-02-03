@@ -116,6 +116,7 @@ BASE_DECLARE_FEATURE(kIPHMicToolbarFeature);
 BASE_DECLARE_FEATURE(kIPHNewTabPageHomeButtonFeature);
 BASE_DECLARE_FEATURE(kIPHPageInfoFeature);
 BASE_DECLARE_FEATURE(kIPHPageInfoStoreInfoFeature);
+BASE_DECLARE_FEATURE(kIPHPageZoomFeature);
 BASE_DECLARE_FEATURE(kIPHPreviewsOmniboxUIFeature);
 BASE_DECLARE_FEATURE(kIPHPriceDropNTPFeature);
 BASE_DECLARE_FEATURE(kIPHQuietNotificationPromptsFeature);
@@ -126,6 +127,8 @@ BASE_DECLARE_FEATURE(kIPHReadLaterBottomSheetFeature);
 BASE_DECLARE_FEATURE(kIPHRequestDesktopSiteAppMenuFeature);
 BASE_DECLARE_FEATURE(kIPHRequestDesktopSiteDefaultOnFeature);
 BASE_DECLARE_FEATURE(kIPHRequestDesktopSiteOptInFeature);
+BASE_DECLARE_FEATURE(kIPHRequestDesktopSiteExceptionsGenericFeature);
+BASE_DECLARE_FEATURE(kIPHRequestDesktopSiteExceptionsSpecificFeature);
 BASE_DECLARE_FEATURE(kIPHShoppingListMenuItemFeature);
 BASE_DECLARE_FEATURE(kIPHShoppingListSaveFlowFeature);
 BASE_DECLARE_FEATURE(kIPHTabGroupsQuicklyComparePagesFeature);
@@ -174,6 +177,7 @@ BASE_DECLARE_FEATURE(kIPHPriceNotificationsWhileBrowsingFeature);
 BASE_DECLARE_FEATURE(kIPHiOSDefaultBrowserBadgeEligibilityFeature);
 BASE_DECLARE_FEATURE(kIPHiOSDefaultBrowserOverflowMenuBadgeFeature);
 BASE_DECLARE_FEATURE(kIPHiOSDefaultBrowserSettingsBadgeFeature);
+BASE_DECLARE_FEATURE(kIPHiOSAppStorePromoFeature);
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \

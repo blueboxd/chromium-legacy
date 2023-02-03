@@ -9,8 +9,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/debug/alias.h"
 #include "cc/paint/paint_op.h"
 #include "cc/paint/paint_op_buffer.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace cc {
 
@@ -46,8 +48,8 @@ class CC_PAINT_EXPORT PaintOpBuffer::Iterator
   Iterator& operator++() {
     DCHECK(*this);
     const PaintOp& op = **this;
-    ptr_ += op.skip;
-    op_offset_ += op.skip;
+    ptr_ += op.aligned_size;
+    op_offset_ += op.aligned_size;
 
     CHECK_LE(op_offset_, buffer_->used_);
     return *this;

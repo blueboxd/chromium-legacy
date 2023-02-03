@@ -20,7 +20,6 @@ export interface SettingsSectionElement {
   $: {
     autosigninToggle: PrefToggleButtonElement,
     blockedSitesList: HTMLElement,
-    exportPasswordsButton: HTMLElement,
     passwordToggle: PrefToggleButtonElement,
   };
 }
@@ -50,13 +49,19 @@ export class SettingsSectionElement extends I18nMixin
         },
       },
 
-      /** Whether password export dialog is shown. */
-      showPasswordsExportDialog_: Boolean,
+      // <if expr="is_win or is_macosx">
+      isBiometricAuthenticationForFillingToggleVisible_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean(
+              'biometricAuthenticationForFillingToggleVisible');
+        },
+      },
+      // </if>
     };
   }
 
   private blockedSites_: BlockedSite[];
-  private showPasswordsExportDialog_: boolean;
 
   private setBlockedSitesListListener_: BlockedSitesListChangedListener|null =
       null;
@@ -95,26 +100,21 @@ export class SettingsSectionElement extends I18nMixin
   }
 
   /**
-   * Opens the export passwords dialog.
-   */
-  private onExportClick_() {
-    this.showPasswordsExportDialog_ = true;
-  }
-
-  /**
-   * Closes the export passwords dialog.
-   */
-  private onPasswordsExportDialogClosed_() {
-    this.showPasswordsExportDialog_ = false;
-  }
-
-  /**
    * Fires an event that should delete the blocked password entry.
    */
   private onRemoveBlockedSiteClick_(
       event: DomRepeatEvent<chrome.passwordsPrivate.ExceptionEntry>) {
     PasswordManagerImpl.getInstance().removeBlockedSite(event.model.item.id);
   }
+
+  // <if expr="is_win or is_macosx">
+  private switchBiometricAuthBeforeFillingState_(e: Event) {
+    const biometricAuthenticationForFillingToggle =
+        e!.target as PrefToggleButtonElement;
+    assert(biometricAuthenticationForFillingToggle);
+    PasswordManagerImpl.getInstance().switchBiometricAuthBeforeFillingState();
+  }
+  // </if>
 }
 
 declare global {

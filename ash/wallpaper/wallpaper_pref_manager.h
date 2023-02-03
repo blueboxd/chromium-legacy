@@ -12,6 +12,7 @@
 #include "ash/public/cpp/style/color_mode_observer.h"
 #include "ash/public/cpp/wallpaper/wallpaper_controller.h"
 #include "ash/public/cpp/wallpaper/wallpaper_info.h"
+#include "ash/wallpaper/wallpaper_utils/wallpaper_calculated_colors.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
@@ -21,6 +22,7 @@
 #include "base/time/time.h"
 #include "base/timer/wall_clock_timer.h"
 #include "components/account_id/account_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefService;
 class PrefRegistrySimple;
@@ -119,7 +121,13 @@ class ASH_EXPORT WallpaperPrefManager
   // Remove the wallpaper entry for |account_id|.
   virtual void RemoveUserWallpaperInfo(const AccountId& account_id) = 0;
 
-  virtual void CacheProminentColors(const AccountId& account_id,
+  // Returns a WallpaperCalculatedColors for a wallpaper with the corresponding
+  // `location`, if one can be found. The result is synthesized from Prominent
+  // and KMean colors.
+  virtual absl::optional<WallpaperCalculatedColors> GetCachedWallpaperColors(
+      base::StringPiece location) const = 0;
+
+  virtual void CacheProminentColors(base::StringPiece location,
                                     const std::vector<SkColor>& colors) = 0;
 
   virtual void RemoveProminentColors(const AccountId& account_id) = 0;
@@ -129,7 +137,7 @@ class ASH_EXPORT WallpaperPrefManager
   virtual absl::optional<std::vector<SkColor>> GetCachedProminentColors(
       const base::StringPiece location) const = 0;
 
-  virtual void CacheKMeanColor(const AccountId& account_id,
+  virtual void CacheKMeanColor(base::StringPiece location,
                                SkColor k_mean_color) = 0;
 
   // Returns the cached KMeans color value for the wallpaper at `location`.
@@ -139,7 +147,7 @@ class ASH_EXPORT WallpaperPrefManager
   virtual void RemoveKMeanColor(const AccountId& account_id) = 0;
 
   // Cache the prominent color sampled with the 'Celebi' algorithm.
-  virtual void CacheCelebiColor(const AccountId& account_id,
+  virtual void CacheCelebiColor(base::StringPiece location,
                                 SkColor celebi_color) = 0;
   // Returns the cached celebi color for the wallpaper at `location`.
   virtual absl::optional<SkColor> GetCelebiColor(

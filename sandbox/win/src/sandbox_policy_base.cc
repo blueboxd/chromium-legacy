@@ -8,9 +8,12 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/functional/callback.h"
 #include "base/logging.h"
+#include "base/win/access_control_list.h"
+#include "base/win/access_token.h"
 #include "base/win/sid.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
@@ -30,10 +33,10 @@
 #include "sandbox/win/src/restricted_token_utils.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sandbox_policy_diagnostic.h"
-#include "sandbox/win/src/sandbox_utils.h"
 #include "sandbox/win/src/signed_policy.h"
 #include "sandbox/win/src/target_process.h"
 #include "sandbox/win/src/top_level_dispatcher.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace sandbox {
 namespace {
@@ -65,6 +68,28 @@ bool IsInheritableHandle(HANDLE handle) {
   // inheritable via PROC_THREAD_ATTRIBUTE_HANDLE_LIST.
   DWORD handle_type = GetFileType(handle);
   return handle_type == FILE_TYPE_DISK || handle_type == FILE_TYPE_PIPE;
+}
+
+bool ReplacePackageSidInDacl(HANDLE token,
+                             const base::win::Sid& package_sid,
+                             ACCESS_MASK access) {
+  absl::optional<base::win::SecurityDescriptor> sd =
+      base::win::SecurityDescriptor::FromHandle(
+          token, base::win::SecurityObjectType::kKernel,
+          DACL_SECURITY_INFORMATION);
+  if (!sd) {
+    return false;
+  }
+
+  if (!sd->SetDaclEntry(package_sid, base::win::SecurityAccessMode::kRevoke, 0,
+                        0) ||
+      !sd->SetDaclEntry(base::win::WellKnownSid::kAllApplicationPackages,
+                        base::win::SecurityAccessMode::kGrant, access, 0)) {
+    return false;
+  }
+
+  return sd->WriteToHandle(token, base::win::SecurityObjectType::kKernel,
+                           DACL_SECURITY_INFORMATION);
 }
 
 }  // namespace
@@ -419,7 +444,6 @@ PolicyBase::PolicyBase(base::StringPiece tag)
       config_ptr_(nullptr),
       stdout_handle_(INVALID_HANDLE_VALUE),
       stderr_handle_(INVALID_HANDLE_VALUE),
-      effective_token_(nullptr),
       job_() {
   dispatcher_ = std::make_unique<TopLevelDispatcher>(this);
 }
@@ -524,43 +548,60 @@ ResultCode PolicyBase::DropActiveProcessLimit() {
   return SBOX_ALL_OK;
 }
 
-ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
-                                  base::win::ScopedHandle* lockdown) {
+ResultCode PolicyBase::MakeTokens(
+    absl::optional<base::win::AccessToken>& initial,
+    absl::optional<base::win::AccessToken>& lockdown) {
   absl::optional<base::win::Sid> random_sid;
   if (config()->add_restricting_random_sid()) {
     random_sid = base::win::Sid::GenerateRandomSid();
-    if (!random_sid)
-      return SBOX_ERROR_CANNOT_CREATE_RESTRICTED_TOKEN;
   }
 
   IntegrityLevel integrity_level = config()->integrity_level();
   bool lockdown_default_dacl = config()->lockdown_default_dacl();
   // Create the 'naked' token. This will be the permanent token associated
   // with the process and therefore with any thread that is not impersonating.
-  DWORD result = CreateRestrictedToken(
-      effective_token_, config()->GetLockdownTokenLevel(), integrity_level,
-      PRIMARY, lockdown_default_dacl, random_sid, lockdown);
-  if (ERROR_SUCCESS != result)
+  absl::optional<base::win::AccessToken> primary = CreateRestrictedToken(
+      config()->GetLockdownTokenLevel(), integrity_level, TokenType::kPrimary,
+      lockdown_default_dacl, random_sid);
+  if (!primary) {
     return SBOX_ERROR_CANNOT_CREATE_RESTRICTED_TOKEN;
+  }
 
   AppContainerBase* app_container = config()->app_container();
   if (app_container &&
       app_container->GetAppContainerType() == AppContainerType::kLowbox) {
-    // Build the lowbox lockdown (primary) token. The initial token will be
-    // put in the same lowbox later by GetAppContainerImpersonationToken.
-    ResultCode result_code = app_container->BuildLowBoxToken(lockdown);
-    if (result_code != SBOX_ALL_OK)
-      return result_code;
+    // Build the lowbox lockdown (primary) token.
+    primary = app_container->BuildPrimaryToken(*primary);
+    if (!primary) {
+      return SBOX_ERROR_CANNOT_CREATE_LOWBOX_TOKEN;
+    }
+
+    if (!ReplacePackageSidInDacl(primary->get(), app_container->GetPackageSid(),
+                                 TOKEN_ALL_ACCESS)) {
+      return SBOX_ERROR_CANNOT_MODIFY_LOWBOX_TOKEN_DACL;
+    }
   }
+
+  lockdown = std::move(*primary);
 
   // Create the 'better' token. We use this token as the one that the main
   // thread uses when booting up the process. It should contain most of
   // what we need (before reaching main( ))
-  result = CreateRestrictedToken(
-      effective_token_, config()->GetInitialTokenLevel(), integrity_level,
-      IMPERSONATION, lockdown_default_dacl, random_sid, initial);
-  if (ERROR_SUCCESS != result)
+  absl::optional<base::win::AccessToken> impersonation = CreateRestrictedToken(
+      config()->GetInitialTokenLevel(), integrity_level,
+      TokenType::kImpersonation, lockdown_default_dacl, random_sid);
+  if (!impersonation) {
     return SBOX_ERROR_CANNOT_CREATE_RESTRICTED_IMP_TOKEN;
+  }
+
+  if (app_container) {
+    impersonation = app_container->BuildImpersonationToken(*impersonation);
+    if (!impersonation) {
+      return SBOX_ERROR_CANNOT_CREATE_LOWBOX_IMPERSONATION_TOKEN;
+    }
+  }
+
+  initial = std::move(*impersonation);
 
   return SBOX_ALL_OK;
 }
@@ -672,11 +713,6 @@ HANDLE PolicyBase::GetStdoutHandle() {
 
 HANDLE PolicyBase::GetStderrHandle() {
   return stderr_handle_;
-}
-
-void PolicyBase::SetEffectiveToken(HANDLE token) {
-  CHECK(token);
-  effective_token_ = token;
 }
 
 ResultCode PolicyBase::SetupAllInterceptions(TargetProcess& target) {

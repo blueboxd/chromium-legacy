@@ -9,34 +9,29 @@
 
 #include "media/capture/mojom/image_capture.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
-#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_capabilities.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_constraints.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_settings.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_photo_settings.h"
-#include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
-#include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
-#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
 namespace blink {
 
 class ExceptionState;
 class ImageCaptureFrameGrabber;
 class MediaStreamTrack;
+class MediaTrackCapabilities;
+class MediaTrackConstraints;
+class MediaTrackConstraintSet;
+class MediaTrackSettings;
 class PhotoCapabilities;
+class PhotoSettings;
+class ScriptPromise;
 class ScriptPromiseResolver;
 
-// TODO(mcasas): Consider adding a web test checking that this class is not
-// garbage collected while it has event listeners.
 class MODULES_EXPORT ImageCapture final
-    : public EventTargetWithInlineData,
-      public ActiveScriptWrappable<ImageCapture>,
+    : public ScriptWrappable,
       public ExecutionContextLifecycleObserver,
       public mojom::blink::PermissionObserver {
   DEFINE_WRAPPERTYPEINFO();
@@ -54,13 +49,6 @@ class MODULES_EXPORT ImageCapture final
                base::OnceClosure initialized_callback);
   ~ImageCapture() override;
 
-  // EventTarget implementation.
-  const AtomicString& InterfaceName() const override;
-  ExecutionContext* GetExecutionContext() const override;
-
-  // ScriptWrappable implementation.
-  bool HasPendingActivity() const final;
-
   // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
@@ -68,13 +56,7 @@ class MODULES_EXPORT ImageCapture final
 
   ScriptPromise getPhotoCapabilities(ScriptState*);
   ScriptPromise getPhotoSettings(ScriptState*);
-
-  ScriptPromise setOptions(ScriptState*,
-                           const PhotoSettings*,
-                           bool trigger_take_photo = false);
-
   ScriptPromise takePhoto(ScriptState*, const PhotoSettings*);
-
   ScriptPromise grabFrame(ScriptState*);
 
   void GetMediaTrackCapabilities(MediaTrackCapabilities*) const;
@@ -85,6 +67,11 @@ class MODULES_EXPORT ImageCapture final
   void GetMediaTrackSettings(MediaTrackSettings*) const;
 
   bool HasPanTiltZoomPermissionGranted() const;
+
+  // Update the current settings and capabilities and check whether local
+  // changes to background blur settings and capabilities were detected.
+  void UpdateAndCheckMediaTrackSettingsAndCapabilities(
+      base::OnceCallback<void(bool)>);
 
   // Called by MediaStreamTrack::clone() to get a clone with same capabilities,
   // settings, and constraints.
@@ -105,9 +92,9 @@ class MODULES_EXPORT ImageCapture final
                            PromiseResolverFunction,
                            bool trigger_take_photo,
                            media::mojom::blink::PhotoStatePtr);
-  void OnMojoSetOptions(ScriptPromiseResolver*,
-                        bool trigger_take_photo,
-                        bool result);
+  void OnMojoSetPhotoOptions(ScriptPromiseResolver*,
+                             bool trigger_take_photo,
+                             bool result);
   void OnMojoTakePhoto(ScriptPromiseResolver*, media::mojom::blink::BlobPtr);
 
   // If getUserMedia contains either pan, tilt, or zoom constraints, the
@@ -123,7 +110,7 @@ class MODULES_EXPORT ImageCapture final
   // Update local track settings and capabilities and call
   // |initialized_callback| to indicate settings and capabilities have been
   // retrieved.
-  void UpdateMediaTrackCapabilities(
+  void UpdateMediaTrackSettingsAndCapabilities(
       base::OnceClosure initialized_callback,
       media::mojom::blink::PhotoStatePtr photo_state);
 
@@ -136,7 +123,16 @@ class MODULES_EXPORT ImageCapture final
   // Returns true if page is visible. Otherwise returns false.
   bool IsPageVisible();
 
+  // Call UpdateMediaTrackSettingsAndCapabilities with |photo_state| and call
+  // |callback| with whether local changes to background blur settings and
+  // capabilities were detected.
+  void GotPhotoState(base::OnceCallback<void(bool)> callback,
+                     media::mojom::blink::PhotoStatePtr photo_state);
+
   const String& SourceId() const;
+
+  const absl::optional<String> GetUnsupportedContraint(
+      const MediaTrackConstraintSet* constraints);
 
   Member<MediaStreamTrack> stream_track_;
   std::unique_ptr<ImageCaptureFrameGrabber> frame_grabber_;

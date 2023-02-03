@@ -58,19 +58,21 @@ TEST(StorageKeyMojomTraitsTest, SerializeAndDeserialize) {
             url::Origin::Create(GURL("http://sub2.example.com")),
             net::SchemefulSite(
                 url::Origin::Create(GURL("https://example.com"))),
-            nullptr, blink::mojom::AncestorChainBit::kCrossSite)};
+            nullptr, blink::mojom::AncestorChainBit::kCrossSite),
+        StorageKey::CreateWithOptionalNonce(
+            url::Origin(), net::SchemefulSite(), nullptr,
+            blink::mojom::AncestorChainBit::kSameSite),
+        StorageKey::CreateWithOptionalNonce(
+            url::Origin::Create(GURL("http://example.com")),
+            net::SchemefulSite(), nullptr,
+            blink::mojom::AncestorChainBit::kSameSite),
+    };
 
     for (auto& original : test_keys) {
       StorageKey copied;
       EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::StorageKey>(
           original, copied));
-      EXPECT_EQ(original, copied);
-
-      // Ensure the comparison works if `kThirdPartyStoragePartitioning` is
-      // force enabled. This verifies `top_level_site_` and
-      // `ancestor_chain_bit_`.
-      EXPECT_EQ(original.CopyWithForceEnabledThirdPartyStoragePartitioning(),
-                copied.CopyWithForceEnabledThirdPartyStoragePartitioning());
+      EXPECT_TRUE(original.ExactMatchForTesting(copied));
     }
   }
 }

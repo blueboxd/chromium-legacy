@@ -50,30 +50,9 @@ bool IsPolicyGrantedObject(const base::Value& object) {
          object.FindStringKey(kHidDeviceNameKey);
 }
 
-base::Value DeviceInfoToValue(const device::mojom::HidDeviceInfo& device) {
-  base::Value value(base::Value::Type::DICTIONARY);
-  value.SetStringKey(
-      kHidDeviceNameKey,
-      base::UTF16ToUTF8(HidChooserContext::DisplayNameFromDeviceInfo(device)));
-  value.SetIntKey(kHidVendorIdKey, device.vendor_id);
-  value.SetIntKey(kHidProductIdKey, device.product_id);
-  if (HidChooserContext::CanStorePersistentEntry(device)) {
-    // Use the USB serial number as a persistent identifier. If it is
-    // unavailable, only ephemeral permissions may be granted.
-    value.SetStringKey(kHidSerialNumberKey, device.serial_number);
-  } else {
-    // The GUID is a temporary ID created on connection that remains valid until
-    // the device is disconnected. Ephemeral permissions are keyed by this ID
-    // and must be granted again each time the device is connected.
-    value.SetStringKey(kHidGuidKey, device.guid);
-  }
-  DCHECK(!IsPolicyGrantedObject(value));
-  return value;
-}
-
 base::Value VendorAndProductIdsToValue(uint16_t vendor_id,
                                        uint16_t product_id) {
-  base::Value object(base::Value::Type::DICTIONARY);
+  base::Value object(base::Value::Type::DICT);
   object.SetStringKey(
       kHidDeviceNameKey,
       l10n_util::GetStringFUTF16(
@@ -85,7 +64,7 @@ base::Value VendorAndProductIdsToValue(uint16_t vendor_id,
 }
 
 base::Value VendorIdToValue(uint16_t vendor_id) {
-  base::Value object(base::Value::Type::DICTIONARY);
+  base::Value object(base::Value::Type::DICT);
   object.SetStringKey(
       kHidDeviceNameKey,
       l10n_util::GetStringFUTF16(
@@ -96,7 +75,7 @@ base::Value VendorIdToValue(uint16_t vendor_id) {
 }
 
 base::Value UsagePageAndUsageToValue(uint16_t usage_page, uint16_t usage) {
-  base::Value object(base::Value::Type::DICTIONARY);
+  base::Value object(base::Value::Type::DICT);
   object.SetStringKey(
       kHidDeviceNameKey,
       l10n_util::GetStringFUTF16(
@@ -108,7 +87,7 @@ base::Value UsagePageAndUsageToValue(uint16_t usage_page, uint16_t usage) {
 }
 
 base::Value UsagePageToValue(uint16_t usage_page) {
-  base::Value object(base::Value::Type::DICTIONARY);
+  base::Value object(base::Value::Type::DICT);
   object.SetStringKey(
       kHidDeviceNameKey,
       l10n_util::GetStringFUTF16(
@@ -151,6 +130,29 @@ HidChooserContext::~HidChooserContext() {
 }
 
 // static
+base::Value HidChooserContext::DeviceInfoToValue(
+    const device::mojom::HidDeviceInfo& device) {
+  base::Value value(base::Value::Type::DICT);
+  value.SetStringKey(
+      kHidDeviceNameKey,
+      base::UTF16ToUTF8(HidChooserContext::DisplayNameFromDeviceInfo(device)));
+  value.SetIntKey(kHidVendorIdKey, device.vendor_id);
+  value.SetIntKey(kHidProductIdKey, device.product_id);
+  if (HidChooserContext::CanStorePersistentEntry(device)) {
+    // Use the USB serial number as a persistent identifier. If it is
+    // unavailable, only ephemeral permissions may be granted.
+    value.SetStringKey(kHidSerialNumberKey, device.serial_number);
+  } else {
+    // The GUID is a temporary ID created on connection that remains valid until
+    // the device is disconnected. Ephemeral permissions are keyed by this ID
+    // and must be granted again each time the device is connected.
+    value.SetStringKey(kHidGuidKey, device.guid);
+  }
+  DCHECK(!IsPolicyGrantedObject(value));
+  return value;
+}
+
+// static
 std::u16string HidChooserContext::DisplayNameFromDeviceInfo(
     const device::mojom::HidDeviceInfo& device) {
   if (device.product_name.empty()) {
@@ -178,6 +180,11 @@ std::u16string HidChooserContext::GetObjectDisplayName(
 std::string HidChooserContext::GetKeyForObject(const base::Value& object) {
   if (!IsValidObject(object))
     return std::string();
+
+  if (IsPolicyGrantedObject(object)) {
+    return *object.FindStringKey(kHidDeviceNameKey);
+  }
+
   return base::JoinString(
       {base::NumberToString(*(object.FindIntKey(kHidVendorIdKey))),
        base::NumberToString(*(object.FindIntKey(kHidProductIdKey))),
@@ -275,7 +282,7 @@ HidChooserContext::GetGrantedObjects(const url::Origin& origin) {
     }
 
     if (base::Contains(policy->all_devices_policy(), origin)) {
-      base::Value object(base::Value::Type::DICTIONARY);
+      base::Value object(base::Value::Type::DICT);
       object.SetStringKey(
           kHidDeviceNameKey,
           l10n_util::GetStringUTF16(IDS_HID_POLICY_DESCRIPTION_FOR_ANY_DEVICE));
@@ -348,7 +355,7 @@ HidChooserContext::GetAllGrantedObjects() {
       }
     }
 
-    base::Value object(base::Value::Type::DICTIONARY);
+    base::Value object(base::Value::Type::DICT);
     object.SetStringKey(
         kHidDeviceNameKey,
         l10n_util::GetStringUTF16(IDS_HID_POLICY_DESCRIPTION_FOR_ANY_DEVICE));

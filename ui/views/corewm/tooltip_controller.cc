@@ -51,10 +51,20 @@ bool IsValidTarget(aura::Window* event_target, aura::Window* target) {
 
   void* event_target_grouping_id = event_target->GetNativeWindowProperty(
       TooltipManager::kGroupingPropertyKey);
-  void* target_grouping_id =
-      target->GetNativeWindowProperty(TooltipManager::kGroupingPropertyKey);
+
+  auto* toplevel_of_target = target->GetToplevelWindow();
+
+  // Return true if grouping id is same for `target` and `event_target`.
+  // Also, check grouping id of target's toplevel window to allow the child
+  // window under `target`, because the menu window may have a child window.
   return event_target_grouping_id &&
-         event_target_grouping_id == target_grouping_id;
+         (event_target_grouping_id ==
+              target->GetNativeWindowProperty(
+                  TooltipManager::kGroupingPropertyKey) ||
+          (toplevel_of_target &&
+           event_target_grouping_id ==
+               toplevel_of_target->GetNativeWindowProperty(
+                   TooltipManager::kGroupingPropertyKey)));
 }
 
 // Returns the target (the Window tooltip text comes from) based on the event.
@@ -175,7 +185,13 @@ void TooltipController::UpdateTooltip(aura::Window* target) {
 
 void TooltipController::UpdateTooltipFromKeyboard(const gfx::Rect& bounds,
                                                   aura::Window* target) {
-  anchor_point_ = bounds.bottom_center();
+  UpdateTooltipFromKeyboardWithAnchorPoint(bounds.bottom_center(), target);
+}
+
+void TooltipController::UpdateTooltipFromKeyboardWithAnchorPoint(
+    const gfx::Point& anchor_point,
+    aura::Window* target) {
+  anchor_point_ = anchor_point;
   SetObservedWindow(target);
 
   // Update the position of the active but not yet visible keyboard triggered

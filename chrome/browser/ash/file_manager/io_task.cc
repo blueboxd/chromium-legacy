@@ -14,6 +14,8 @@
 
 namespace file_manager::io_task {
 
+void IOTask::Resume(ResumeParams) {}
+
 EntryStatus::EntryStatus(storage::FileSystemURL file_url,
                          absl::optional<base::File::Error> file_error)
     : url(file_url), error(file_error) {}
@@ -27,6 +29,10 @@ ProgressStatus::~ProgressStatus() = default;
 
 ProgressStatus::ProgressStatus(ProgressStatus&& other) = default;
 ProgressStatus& ProgressStatus::operator=(ProgressStatus&& other) = default;
+
+bool ProgressStatus::IsPaused() const {
+  return state == State::kPaused;
+}
 
 bool ProgressStatus::IsCompleted() const {
   return state == State::kSuccess || state == State::kError ||

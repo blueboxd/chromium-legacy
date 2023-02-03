@@ -141,6 +141,7 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/security_interstitials/content/insecure_form_blocking_page.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
+#include "components/segmentation_platform/embedder/default_model/device_switcher_result_dispatcher.h"
 #include "components/segmentation_platform/public/segmentation_platform_service.h"
 #include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/services/storage/public/cpp/storage_prefs.h"
@@ -150,6 +151,7 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/glue/sync_transport_data_prefs.h"
 #include "components/sync_device_info/device_info_prefs.h"
@@ -281,6 +283,7 @@
 #include "chrome/browser/ui/webui/tab_search/tab_search_prefs.h"
 #include "chrome/browser/ui/webui/whats_new/whats_new_ui.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
+#include "components/headless/policy/headless_mode_prefs.h"
 #include "components/live_caption/live_caption_controller.h"
 #include "components/live_caption/live_translate_controller.h"
 #include "components/ntp_tiles/custom_links_manager_impl.h"
@@ -403,7 +406,6 @@
 #include "chrome/browser/metrics/structured/chrome_structured_metrics_recorder.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/webui/ash/login/enable_debugging_screen_handler.h"
-#include "chrome/browser/ui/webui/ash/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_ui.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector_chromeos.h"
 #include "chromeos/ash/components/audio/audio_devices_pref_handler_impl.h"
@@ -833,6 +835,25 @@ const char kMediaRouterTabMirroringSources[] =
     "media_router.tab_mirroring_sources";
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+// Deprecated 01/2023.
+const char kAutofillCreditCardSigninPromoImpressionCount[] =
+    "autofill.credit_card_signin_promo_impression_count";
+
+// Deprecated 01/2023
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const char kEventSequenceLastSystemUptime[] =
+    "metrics.event_sequence.last_system_uptime";
+
+// Keeps track of the device reset counter.
+const char kEventSequenceResetCounter[] =
+    "metrics.event_sequence.reset_counter";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// Deprecated 02/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const char kArcTermsShownInOobe[] = "arc.terms.shown_in_oobe";
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -908,6 +929,12 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
 #if BUILDFLAG(IS_MAC)
   registry->RegisterBooleanPref(kDeviceTrustDisableKeyCreationPref, false);
 #endif  // BUILDFLAG(IS_MAC)
+
+  // Deprecated 01/2023
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterIntegerPref(kEventSequenceResetCounter, 0);
+  registry->RegisterInt64Pref(kEventSequenceLastSystemUptime, 0);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 // Register prefs used only for migration (clearing or moving to a new key).
@@ -1119,8 +1146,19 @@ void RegisterProfilePrefsForMigration(
 #if !BUILDFLAG(IS_ANDROID)
   registry->RegisterListPref(kMediaRouterTabMirroringSources);
 #endif  // !BUILDFLAG(IS_ANDROID)
-}
 
+  // Deprecated 01/2023.
+  registry->RegisterIntegerPref(kAutofillCreditCardSigninPromoImpressionCount,
+                                0);
+
+  // Deprecated 01/2023.
+  registry->RegisterListPref(kSendDownloadToCloudPref);
+
+// Deprecated 02/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterBooleanPref(kArcTermsShownInOobe, false);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+}
 }  // namespace
 
 void RegisterLocalState(PrefRegistrySimple* registry) {
@@ -1208,6 +1246,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(lens::kLensCameraAssistedSearchEnabled, true);
 #else   // BUILDFLAG(IS_ANDROID)
   gcm::RegisterPrefs(registry);
+  headless::RegisterPrefs(registry);
   IntranetRedirectDetector::RegisterPrefs(registry);
   media_router::RegisterLocalStatePrefs(registry);
   metrics::TabStatsTracker::RegisterPrefs(registry);
@@ -1440,6 +1479,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
       registry);
   segmentation_platform::SegmentationPlatformService::RegisterProfilePrefs(
       registry);
+  segmentation_platform::DeviceSwitcherResultDispatcher::RegisterProfilePrefs(
+      registry);
   SessionStartupPref::RegisterProfilePrefs(registry);
   SharingSyncPreference::RegisterProfilePrefs(registry);
   site_engagement::SiteEngagementService::RegisterProfilePrefs(registry);
@@ -1530,7 +1571,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 #else  // BUILDFLAG(IS_ANDROID)
   browser_sync::ForeignSessionHandler::RegisterProfilePrefs(registry);
   BrowserFeaturePromoSnoozeService::RegisterProfilePrefs(registry);
-  captions::LiveCaptionController::RegisterProfilePrefs(registry);
   captions::LiveTranslateController::RegisterProfilePrefs(registry);
   ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(registry);
   DeviceServiceImpl::RegisterProfilePrefs(registry);
@@ -1564,6 +1604,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   UnifiedAutoplayConfig::RegisterProfilePrefs(registry);
   CartService::RegisterProfilePrefs(registry);
   commerce::ShoppingListUiTabHelper::RegisterProfilePrefs(registry);
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+  captions::LiveCaptionController::RegisterProfilePrefs(registry);
+#endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -1871,9 +1914,16 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
 
   // Added 01/2023
   local_state->ClearPref(kSendDownloadToCloudPref);
+
 #if BUILDFLAG(IS_MAC)
   local_state->ClearPref(kDeviceTrustDisableKeyCreationPref);
 #endif  // BUILDFLAG(IS_MAC)
+
+  // Added 01/2023
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  local_state->ClearPref(kEventSequenceLastSystemUptime);
+  local_state->ClearPref(kEventSequenceResetCounter);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS
@@ -1990,12 +2040,6 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kPhoneHubCameraRollPendingStatePrefName);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Added 02/2022.
-  // TODO(crbug.com/1298250): Remove after M107.
-  guest_os::RemoveDuplicateContainerEntries(profile_prefs);
-#endif
-
   // Added 03/2022
   profile_prefs->ClearPref(kShowReadingListInBookmarkBar);
 
@@ -2016,12 +2060,6 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 05/2022
   profile_prefs->ClearPref(kAccessCodeCastDiscoveredNetworks);
 #endif  // !BUILDFLAG(IS_ANDROID)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Added 05/2022.
-  // TODO(crbug.com/1028898): Remove after M110.
-  guest_os::RemoveTerminalFromRegistry(profile_prefs);
-#endif
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   // Added 05/2022
@@ -2144,8 +2182,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
         profile_prefs->GetString(prefs::kGoogleServicesLastAccountIdDeprecated);
     profile_prefs->ClearPref(prefs::kGoogleServicesLastAccountIdDeprecated);
     bool is_email = account_id.find('@') != std::string::npos;
-    if (!is_email && !account_id.empty())
+    if (!is_email && !account_id.empty()) {
       profile_prefs->SetString(prefs::kGoogleServicesLastGaiaId, account_id);
+    }
   }
 
   // Added 10/2022.
@@ -2179,6 +2218,17 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #if !BUILDFLAG(IS_ANDROID)
   profile_prefs->ClearPref(kMediaRouterTabMirroringSources);
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+  // Added 01/2023
+  profile_prefs->ClearPref(kAutofillCreditCardSigninPromoImpressionCount);
+
+  // Added 01/2023
+  profile_prefs->ClearPref(kSendDownloadToCloudPref);
+
+  // Added 02/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  profile_prefs->ClearPref(kArcTermsShownInOobe);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

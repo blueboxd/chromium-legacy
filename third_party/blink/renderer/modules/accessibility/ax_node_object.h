@@ -144,6 +144,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   AccessibilityOrientation Orientation() const override;
 
   AXObject* GetChildFigcaption() const override;
+  bool IsDescendantOfLandmarkDisallowedElement() const override;
 
   // Used to compute kRadioGroupIds, which is only used on Mac.
   // TODO(accessibility) Consider computing on browser side and removing here.
@@ -306,7 +307,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
                                AXRelatedObjectVector*,
                                NameSources*,
                                bool* found_text_alternative) const;
-  bool IsDescendantOfElementType(HashSet<QualifiedName>& tag_names) const;
+  String MaybeAppendFileDescriptionToName(const String& name) const;
   String PlaceholderFromNativeAttribute() const;
   String GetValueContributionToName(AXObjectSet& visited) const;
   bool UseNameFromSelectedOption() const;

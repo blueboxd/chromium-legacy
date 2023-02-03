@@ -51,25 +51,16 @@ FedCmAccountSelectionView::~FedCmAccountSelectionView() {
 
 void FedCmAccountSelectionView::Show(
     const std::string& rp_etld_plus_one,
-    const std::vector<content::IdentityProviderData>& identity_provider_data,
-    Account::SignInMode sign_in_mode) {
-  // Either Show or ShowFailureDialog has already been called for other IDPs
-  // from the same token request. This could happen when accounts fetch fails
-  // for some IDPs. We have yet to support the multi IDP case where not all IDPs
-  // are successful. The early return causes follow up Show calls to be ignored.
-  if (bubble_widget_)
-    return;
-
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(delegate_->GetWebContents());
-  // `browser` is null in unit tests.
-  if (browser)
-    browser->tab_strip_model()->AddObserver(this);
+    const std::vector<content::IdentityProviderData>&
+        identity_provider_data_list,
+    Account::SignInMode sign_in_mode,
+    bool show_auto_signin_checkbox) {
+  idp_display_data_list_.clear();
 
   size_t accounts_size = 0u;
   blink::mojom::RpContext rp_context = blink::mojom::RpContext::kSignIn;
-  for (const auto& identity_provider : identity_provider_data) {
-    idp_data_list_.emplace_back(
+  for (const auto& identity_provider : identity_provider_data_list) {
+    idp_display_data_list_.emplace_back(
         base::UTF8ToUTF16(identity_provider.idp_for_display),
         identity_provider.idp_metadata, identity_provider.client_metadata,
         identity_provider.accounts);
@@ -78,68 +69,93 @@ void FedCmAccountSelectionView::Show(
     rp_context = identity_provider.rp_context;
     accounts_size += identity_provider.accounts.size();
   }
-  state_ = accounts_size == 1u ? State::PERMISSION : State::ACCOUNT_PICKER;
 
   absl::optional<std::u16string> idp_title =
-      identity_provider_data.size() == 1u
+      idp_display_data_list_.size() == 1u
           ? absl::make_optional<std::u16string>(
-                base::UTF8ToUTF16(identity_provider_data[0].idp_for_display))
+                idp_display_data_list_[0].idp_etld_plus_one)
           : absl::nullopt;
   rp_for_display_ = base::UTF8ToUTF16(rp_etld_plus_one);
-  bubble_widget_ = CreateBubble(browser, rp_for_display_, idp_title, rp_context)
-                       ->GetWeakPtr();
-  if (sign_in_mode == Account::SignInMode::kExplicit) {
-    GetBubbleView()->ShowAccountPicker(idp_data_list_,
-                                       /*show_back_button=*/false);
-  } else {
-    DCHECK_EQ(sign_in_mode, Account::SignInMode::kAuto);
 
-    for (const auto& idp_data : idp_data_list_) {
-      for (const auto& account : idp_data.accounts_) {
-        if (account.login_state != Account::LoginState::kSignIn) {
-          continue;
-        }
-        // When auto sign-in UX flow is triggered, there will be one and only
-        // only account that's returning with LoginStatus::kSignIn.
-        OnAccountSelected(account, idp_data, /*auto_signin=*/true);
-        bubble_widget_->Show();
-        bubble_widget_->AddObserver(this);
-        return;
-      }
+  bool create_bubble = !bubble_widget_;
+  if (create_bubble) {
+    bubble_widget_ =
+        CreateBubbleWithAccessibleTitle(rp_for_display_, idp_title, rp_context,
+                                        show_auto_signin_checkbox)
+            ->GetWeakPtr();
+
+    // Initialize InputEventActivationProtector to handle potentially unintended
+    // input events. Do not override `input_protector_` set by
+    // SetInputEventActivationProtectorForTesting().
+    if (!input_protector_) {
+      input_protector_ =
+          std::make_unique<views::InputEventActivationProtector>();
     }
   }
-  bubble_widget_->Show();
-  bubble_widget_->AddObserver(this);
+
+  if (sign_in_mode == Account::SignInMode::kAuto) {
+    state_ = State::VERIFYING;
+
+    // When auto sign-in flow is triggered, the parameter
+    // |identity_provider_data_list| would only include the single returning
+    // account and its IDP.
+    DCHECK_EQ(idp_display_data_list_.size(), 1u);
+    DCHECK_EQ(idp_display_data_list_[0].accounts.size(), 1u);
+    ShowVerifyingSheet(idp_display_data_list_[0].accounts[0],
+                       idp_display_data_list_[0],
+                       /*auto_signin=*/true);
+  } else if (accounts_size == 1u) {
+    state_ = State::PERMISSION;
+    GetBubbleView()->ShowSingleAccountConfirmDialog(
+        rp_for_display_, idp_display_data_list_[0].accounts[0],
+        idp_display_data_list_[0], /*show_back_button=*/false);
+  } else {
+    state_ = State::ACCOUNT_PICKER;
+    GetBubbleView()->ShowMultiAccountPicker(idp_display_data_list_);
+  }
+
+  if (create_bubble) {
+    input_protector_->VisibilityChanged(true);
+    bubble_widget_->Show();
+  }
+  // Else:
+  // Do not force show the bubble. The bubble may be purposefully hidden if the
+  // WebContents are hidden.
 }
 
 void FedCmAccountSelectionView::ShowFailureDialog(
     const std::string& rp_etld_plus_one,
     const std::string& idp_etld_plus_one) {
-  // Either Show or ShowFailureDialog has already been called for other IDPs
-  // from the same token request. This could happen when accounts fetch fails
-  // for some IDPs. We have yet to support the multi IDP case where not all IDPs
-  // are successful. The early return causes follow up ShowFailureDialog calls
-  // to be ignored.
-  if (bubble_widget_)
-    return;
+  state_ = State::IDP_SIGNIN_STATUS_MISMATCH;
 
-  Browser* browser =
-      chrome::FindBrowserWithWebContents(delegate_->GetWebContents());
-  // `browser` is null in unit tests.
-  if (browser)
-    browser->tab_strip_model()->AddObserver(this);
+  bool create_bubble = !bubble_widget_;
+  if (create_bubble) {
+    bubble_widget_ =
+        CreateBubbleWithAccessibleTitle(base::UTF8ToUTF16(rp_etld_plus_one),
+                                        base::UTF8ToUTF16(idp_etld_plus_one),
+                                        blink::mojom::RpContext::kSignIn,
+                                        /*show_auto_signin_checkbox=*/false)
+            ->GetWeakPtr();
 
-  // TODO(crbug.com/1406016): Refactor ShowFailureDialog to avoid calling
-  // CreateBubble with parameters we don't care about (e.g. the relying party
-  // context).
-  bubble_widget_ = CreateBubble(browser, base::UTF8ToUTF16(rp_etld_plus_one),
-                                base::UTF8ToUTF16(idp_etld_plus_one),
-                                blink::mojom::RpContext::kSignIn)
-                       ->GetWeakPtr();
+    // Initialize InputEventActivationProtector to handle potentially unintended
+    // input events. Do not override `input_protector_` set by
+    // SetInputEventActivationProtectorForTesting().
+    if (!input_protector_) {
+      input_protector_ =
+          std::make_unique<views::InputEventActivationProtector>();
+    }
+  }
+
   GetBubbleView()->ShowFailureDialog(base::UTF8ToUTF16(rp_etld_plus_one),
                                      base::UTF8ToUTF16(idp_etld_plus_one));
-  bubble_widget_->Show();
-  bubble_widget_->AddObserver(this);
+
+  if (create_bubble) {
+    bubble_widget_->Show();
+    input_protector_->VisibilityChanged(true);
+  }
+  // Else:
+  // The bubble is not guaranteed to be shown. The bubble will be hidden if the
+  // associated web contents are hidden.
 }
 
 void FedCmAccountSelectionView::OnVisibilityChanged(
@@ -150,6 +166,9 @@ void FedCmAccountSelectionView::OnVisibilityChanged(
   if (visibility == content::Visibility::VISIBLE) {
     bubble_widget_->widget_delegate()->SetCanActivate(true);
     bubble_widget_->Show();
+    // This will protect against potentially unintentional inputs that happen
+    // right after the dialog becomes visible again.
+    input_protector_->VisibilityChanged(true);
   } else {
     // On Mac, NativeWidgetMac::Activate() ignores the views::Widget visibility.
     // Make the views::Widget non-activatable while it is hidden to prevent the
@@ -157,6 +176,7 @@ void FedCmAccountSelectionView::OnVisibilityChanged(
     // TODO(crbug.com/1367309): fix the issue on Mac.
     bubble_widget_->widget_delegate()->SetCanActivate(false);
     bubble_widget_->Hide();
+    input_protector_->VisibilityChanged(false);
   }
 }
 
@@ -181,20 +201,32 @@ void FedCmAccountSelectionView::OnTabStripModelChanged(
   }
 }
 
-views::Widget* FedCmAccountSelectionView::CreateBubble(
-    Browser* browser,
+void FedCmAccountSelectionView::SetInputEventActivationProtectorForTesting(
+    std::unique_ptr<views::InputEventActivationProtector> input_protector) {
+  input_protector_ = std::move(input_protector);
+}
+
+views::Widget* FedCmAccountSelectionView::CreateBubbleWithAccessibleTitle(
     const std::u16string& rp_etld_plus_one,
     const absl::optional<std::u16string>& idp_title,
-    blink::mojom::RpContext rp_context) {
+    blink::mojom::RpContext rp_context,
+    bool show_auto_signin_checkbox) {
+  Browser* browser =
+      chrome::FindBrowserWithWebContents(delegate_->GetWebContents());
+  browser->tab_strip_model()->AddObserver(this);
+
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   views::View* anchor_view = browser_view->contents_web_view();
 
-  return views::BubbleDialogDelegateView::CreateBubble(
+  views::Widget* bubble_widget = views::BubbleDialogDelegateView::CreateBubble(
       new AccountSelectionBubbleView(rp_etld_plus_one, idp_title, rp_context,
-                                     anchor_view,
+                                     show_auto_signin_checkbox, anchor_view,
                                      SystemNetworkContextManager::GetInstance()
                                          ->GetSharedURLLoaderFactory(),
                                      this));
+  bubble_widget->AddObserver(this);
+
+  return bubble_widget;
 }
 
 AccountSelectionBubbleViewInterface*
@@ -214,37 +246,31 @@ void FedCmAccountSelectionView::OnWidgetDestroying(views::Widget* widget) {
 
 void FedCmAccountSelectionView::OnAccountSelected(
     const Account& account,
-    const IdentityProviderDisplayData& idp_data,
-    bool auto_signin) {
+    const IdentityProviderDisplayData& idp_display_data,
+    const ui::Event& event) {
+  DCHECK(state_ != State::IDP_SIGNIN_STATUS_MISMATCH);
+
+  if (input_protector_->IsPossiblyUnintendedInteraction(event)) {
+    return;
+  }
   state_ = (state_ == State::ACCOUNT_PICKER &&
             account.login_state == Account::LoginState::kSignUp)
                ? State::PERMISSION
                : State::VERIFYING;
   if (state_ == State::VERIFYING) {
-    notify_delegate_of_dismiss_ = false;
-
-    base::WeakPtr<FedCmAccountSelectionView> weak_ptr(
-        weak_ptr_factory_.GetWeakPtr());
-    delegate_->OnAccountSelected(idp_data.idp_metadata_.config_url, account);
-    // AccountSelectionView::Delegate::OnAccountSelected() might delete this.
-    // See https://crbug.com/1393650 for details.
-    if (!weak_ptr)
-      return;
-
-    const std::u16string title =
-        auto_signin ? l10n_util::GetStringFUTF16(
-                          IDS_VERIFY_SHEET_TITLE_AUTO_SIGNIN, rp_for_display_,
-                          idp_data.idp_etld_plus_one_)
-                    : l10n_util::GetStringUTF16(IDS_VERIFY_SHEET_TITLE);
-    GetBubbleView()->ShowVerifyingSheet(account, idp_data, title);
+    ShowVerifyingSheet(account, idp_display_data, /*auto_signin=*/false);
     return;
   }
-  GetBubbleView()->ShowSingleAccountConfirmDialog(rp_for_display_, account,
-                                                  idp_data);
+  GetBubbleView()->ShowSingleAccountConfirmDialog(
+      rp_for_display_, account, idp_display_data, /*show_back_button=*/true);
 }
 
 void FedCmAccountSelectionView::OnLinkClicked(LinkType link_type,
-                                              const GURL& url) {
+                                              const GURL& url,
+                                              const ui::Event& event) {
+  if (input_protector_->IsPossiblyUnintendedInteraction(event)) {
+    return;
+  }
   Browser* browser =
       chrome::FindBrowserWithWebContents(delegate_->GetWebContents());
   TabStripModel* tab_strip_model = browser->tab_strip_model();
@@ -265,16 +291,45 @@ void FedCmAccountSelectionView::OnLinkClicked(LinkType link_type,
 }
 
 void FedCmAccountSelectionView::OnBackButtonClicked() {
+  // No need to protect input here since back cannot be the first event.
   state_ = State::ACCOUNT_PICKER;
-  GetBubbleView()->ShowAccountPicker(idp_data_list_,
-                                     /*show_back_button=*/false);
+  GetBubbleView()->ShowMultiAccountPicker(idp_display_data_list_);
 }
 
-void FedCmAccountSelectionView::OnCloseButtonClicked() {
+void FedCmAccountSelectionView::OnCloseButtonClicked(const ui::Event& event) {
+  if (input_protector_->IsPossiblyUnintendedInteraction(event)) {
+    return;
+  }
+
   UMA_HISTOGRAM_BOOLEAN("Blink.FedCm.CloseVerifySheet.Desktop",
                         state_ == State::VERIFYING);
   bubble_widget_->CloseWithReason(
       views::Widget::ClosedReason::kCloseButtonClicked);
+}
+
+void FedCmAccountSelectionView::ShowVerifyingSheet(
+    const Account& account,
+    const IdentityProviderDisplayData& idp_display_data,
+    bool auto_signin) {
+  DCHECK_EQ(state_, State::VERIFYING);
+  notify_delegate_of_dismiss_ = false;
+
+  base::WeakPtr<FedCmAccountSelectionView> weak_ptr(
+      weak_ptr_factory_.GetWeakPtr());
+  delegate_->OnAccountSelected(idp_display_data.idp_metadata.config_url,
+                               account);
+  // AccountSelectionView::Delegate::OnAccountSelected() might delete this.
+  // See https://crbug.com/1393650 for details.
+  if (!weak_ptr) {
+    return;
+  }
+
+  const std::u16string title =
+      auto_signin ? l10n_util::GetStringFUTF16(
+                        IDS_VERIFY_SHEET_TITLE_AUTO_SIGNIN, rp_for_display_,
+                        idp_display_data.idp_etld_plus_one)
+                  : l10n_util::GetStringUTF16(IDS_VERIFY_SHEET_TITLE);
+  GetBubbleView()->ShowVerifyingSheet(account, idp_display_data, title);
 }
 
 void FedCmAccountSelectionView::Close() {
@@ -291,6 +346,7 @@ void FedCmAccountSelectionView::OnDismiss(DismissReason dismiss_reason) {
 
   bubble_widget_->RemoveObserver(this);
   bubble_widget_.reset();
+  input_protector_.reset();
 
   if (notify_delegate_of_dismiss_)
     delegate_->OnDismiss(dismiss_reason);

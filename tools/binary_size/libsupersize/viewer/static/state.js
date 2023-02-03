@@ -39,7 +39,7 @@ const dom = {
   replace(parent, newChild) {
     while (parent.firstChild)
       parent.removeChild(parent.firstChild);
-    if (newChild != null)
+    if (newChild)
       parent.appendChild(newChild);
   },
   /**
@@ -74,6 +74,9 @@ function _initState() {
     _filterParams.append(_TYPE_STATE_KEY, type);
   }
 
+  /** @type {boolean} */
+  let _diffMode = false;
+
   const state = Object.freeze({
     /**
      * Returns a string from the current query string state.
@@ -99,7 +102,8 @@ function _initState() {
     toString() {
       const copy = new URLSearchParams(_filterParams);
       const types = [...new Set(copy.getAll(_TYPE_STATE_KEY))];
-      if (types.length > 0) copy.set(_TYPE_STATE_KEY, types.join(''));
+      if (types.length > 0)
+        copy.set(_TYPE_STATE_KEY, types.join(''));
 
       const queryString = copy.toString();
       return queryString.length > 0 ? `?${queryString}` : '';
@@ -111,7 +115,7 @@ function _initState() {
      * @param {string | null} value
      */
     set(key, value) {
-      if (value == null) {
+      if (value === null) {
         _filterParams.delete(key);
       } else {
         _filterParams.set(key, value);
@@ -119,7 +123,25 @@ function _initState() {
       // Passing empty `state` leads to no change, so use `location.pathname`.
       history.replaceState(null, null, state.toString() || location.pathname);
     },
+
+    /** @return {boolean} */
+    getDiffMode() {
+      return _diffMode;
+    },
+
+    /** @param {boolean} diffMode */
+    setDiffMode(diffMode) {
+      _diffMode = diffMode;
+    }
   });
+
+  // Deduce diff mode from initial params.
+  {
+    const loadUrl = _filterParams.get('load_url');
+    const beforeUrl = _filterParams.get('before_url');
+    state.setDiffMode(
+        Boolean(loadUrl && (loadUrl.endsWith('.sizediff') || beforeUrl)));
+  }
 
   // Update form inputs to reflect the state from URL.
   for (const element of
@@ -303,7 +325,7 @@ function _makeIconTemplateGetter() {
   };
 
 
-  /** @type {Map<string, {color:string,description:string}>} */
+  /** @type {Map<string, {color:string, description:string}>} */
   const iconInfoCache = new Map();
 
   /**
@@ -326,7 +348,7 @@ function _makeIconTemplateGetter() {
    */
   function getIconStyle(type) {
     let info = iconInfoCache.get(type);
-    if (info == null) {
+    if (!info) {
       const icon = getIconTemplate(type, true);
       info = {
         color: icon.getAttribute('fill'),
@@ -348,7 +370,7 @@ function _makeIconTemplateGetter() {
     const isLeaf = node.children && node.children.length === 0;
     const entries = Object.entries(node.childStats);
     let key = 'unchanged';
-    if (isLeaf && entries.length != 0) {
+    if (isLeaf && entries.length !== 0) {
       const statsEntry = entries[0][1];
       if (statsEntry.added) {
         key = 'added';
@@ -357,9 +379,9 @@ function _makeIconTemplateGetter() {
       } else if (statsEntry.changed) {
         key = 'changed';
       }
-    } else if (node.diffStatus == _DIFF_STATUSES.ADDED) {
+    } else if (node.diffStatus === _DIFF_STATUSES.ADDED) {
       key = 'added';
-    } else if (node.diffStatus == _DIFF_STATUSES.REMOVED) {
+    } else if (node.diffStatus === _DIFF_STATUSES.REMOVED) {
       key = 'removed';
     }
     return statusIcons[key].cloneNode(true);
@@ -393,9 +415,12 @@ function _makeSizeTextGetter() {
       };
 
     } else {
+      const isLeaf = node.children && node.children.length === 0;
       const bytes = node.size;
       const descriptionToks = [];
-      if ('beforeSize' in node) {
+      // Show "before → after" only for leaf nodes, since group nodes'
+      // |beforeSize| would miss contributions from unchanged symbols.
+      if (isLeaf && ('beforeSize' in node)) {
         const before = formatNumber(node.beforeSize);
         const after = formatNumber(node.beforeSize + bytes);
         descriptionToks.push(`(${before} → ${after})`);  // '→' is '\u2192'.
@@ -428,8 +453,7 @@ function _makeSizeTextGetter() {
    */
   function setSizeClasses(sizeElement, value) {
     const cutOff = methodCountInput.checked ? 10 : 50000;
-    const shouldHaveStyle =
-      state.has('diff_mode') && Math.abs(value) > cutOff;
+    const shouldHaveStyle = state.getDiffMode() && Math.abs(value) > cutOff;
 
     if (shouldHaveStyle) {
       if (value < 0) {

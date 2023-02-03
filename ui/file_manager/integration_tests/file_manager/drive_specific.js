@@ -339,11 +339,11 @@ testcase.drivePinMultiple = async () => {
   await remoteCall.waitForElement(appId, '#file-context-menu[hidden]');
 
   // Wait for the pinned action to finish, it's flagged in the file list by
-  // removing CSS class "dim-offline" and displaying the offline icon.
+  // removing CSS class "dim-offline" and adding class "pinned".
   await remoteCall.waitForElementLost(
       appId, '#file-list .dim-offline[file-name="world.ogv"]');
   await remoteCall.waitForElement(
-      appId, '#file-list [file-name="world.ogv"] xf-icon[type=offline]');
+      appId, '#file-list .pinned[file-name="world.ogv"] .inline-status');
 
   // Select world.ogv by itself.
   await remoteCall.waitAndClickElement(
@@ -407,16 +407,15 @@ testcase.drivePinHosted = async () => {
   await remoteCall.waitForElement(appId, '#file-context-menu[hidden]');
 
   // Wait for the pinned action to finish, it's flagged in the file list by
-  // removing CSS class "dim-offline" and displaying the offline icon.
+  // removing CSS class "dim-offline" and adding class "pinned".
   await remoteCall.waitForElementLost(
       appId, '#file-list .dim-offline[file-name="hello.txt"]');
   await remoteCall.waitForElement(
-      appId, '#file-list [file-name="hello.txt"] xf-icon[type=offline]');
+      appId, '#file-list .pinned[file-name="hello.txt"] .inline-status');
 
   // Test Document.gdoc should not be pinned however.
   await remoteCall.waitForElement(
-      appId,
-      '#file-list [file-name="Test Document.gdoc"] xf-icon:not([type=offline])');
+      appId, '#file-list [file-name="Test Document.gdoc"]:not(.pinned)');
 
 
   // Open the context menu with both files selected.
@@ -469,7 +468,7 @@ testcase.drivePinFileMobileNetwork = async () => {
   // Check: File is pinned.
   await remoteCall.waitForElement(appId, '[command="#toggle-pinned"][checked]');
   await remoteCall.waitForElement(
-      appId, '#file-list [file-name="hello.txt"] xf-icon[type=offline]');
+      appId, '#file-list .pinned[file-name="hello.txt"] .inline-status');
   await waitForNotification('disabled-mobile-sync');
   await sendTestMessage({
     name: 'clickNotificationButton',
@@ -681,7 +680,7 @@ testcase.driveAvailableOfflineActionBar = async () => {
 
   // Wait for the file to be pinned.
   await remoteCall.waitForElement(
-      appId, '#file-list [file-name="hello.txt"] xf-icon[type=offline]');
+      appId, '#file-list .pinned[file-name="hello.txt"]');
 
   // Check the "Available Offline" toggle is enabled and checked.
   await remoteCall.waitForElement(
@@ -901,16 +900,13 @@ testcase.driveInlineSyncStatusSingleFile = async () => {
     syncStatus: 'in_progress',
   });
 
-  const syncInProgressQuery = '[data-sync-status=in_progress]';
-
-  // Verify the "sync in progress" icon is displayed.
-  await remoteCall.waitForElement(appId, syncInProgressQuery);
-
   // On `DriveFsTestVolume::SetFileSyncStatus`, the fake event setting the
   // path's status hardcodes the progress as 50 bytes / 100 bytes transferred.
   // Verify this data reaches the UI as a progress value of 50%.
-  await remoteCall.waitForElement(
-      appId, '[data-sync-status=in_progress] .progress[progress="0.50"]');
+  const inlineStatus = await remoteCall.waitForElement(
+      appId, '[data-sync-status=in_progress] .progress');
+
+  chrome.test.assertEq(Number(inlineStatus.attributes['progress']), 0.5);
 
   // Fake the file finishing syncing.
   await sendTestMessage({
@@ -920,7 +916,7 @@ testcase.driveInlineSyncStatusSingleFile = async () => {
   });
 
   // Verify the "sync in progress" icon is no longer displayed.
-  await remoteCall.waitForElementLost(appId, syncInProgressQuery);
+  await remoteCall.waitForElementLost(appId, '[data-sync-status=in_progress]');
 };
 
 /**
@@ -1265,4 +1261,61 @@ testcase.driveGoogleOneOfferBannerDismiss = async () => {
       ['google-one-offer-banner', 'educational-banner', '#dismiss-button']);
   chrome.test.assertEq(1, await getUserActionCount(userActionDismiss));
   await remoteCall.waitForElement(appId, 'google-one-offer-banner[hidden]');
+};
+
+/**
+ * Test that when files get deleted locally, they get unpinned prior to being
+ * deleted.
+ */
+testcase.driveLocalDeleteUnpinsItem = async () => {
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
+
+  // Select test.txt which is already pinned.
+  await remoteCall.waitAndClickElement(
+      appId, '#file-list [file-name="test.txt"]');
+  await remoteCall.waitForElement(
+      appId, '[file-name="test.txt"][selected] xf-icon[type=offline]');
+
+  // Ensure the metadata for the file is set to pinned.
+  await remoteCall.expectDriveItemPinnedStatus(appId, '/root/test.txt', true);
+
+  // Delete the file and ensure it disappears from the file list.
+  await remoteCall.waitAndClickElement(
+      appId, '#delete-button:not([hidden]):not([disabled])');
+  // Check: the delete confirm dialog should appear.
+  await remoteCall.waitForElement(appId, '.cr-dialog-container.shown');
+
+  // Click the delete confirm dialog 'Delete' button.
+  const dialogDeleteButton =
+      await remoteCall.waitAndClickElement(appId, '.cr-dialog-ok');
+
+  await remoteCall.waitForElementLost(
+      appId, '#file-list [file-name="test.txt"]');
+
+  // Ensure the file was unpinned prior to deleting.
+  await remoteCall.expectDriveItemPinnedStatus(appId, '/root/test.txt', false);
+};
+
+/**
+ * Test that when files get deleted in the cloud, they get unpinned after being
+ * deleted.
+ */
+testcase.driveCloudDeleteUnpinsItem = async () => {
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
+
+  // Select test.txt which is already pinned.
+  await remoteCall.waitAndClickElement(
+      appId, '#file-list [file-name="test.txt"]');
+  await remoteCall.waitForElement(
+      appId, '[file-name="test.txt"][selected] xf-icon[type=offline]');
+
+  // Ensure the metadata for the file is set to pinned.
+  await remoteCall.expectDriveItemPinnedStatus(appId, '/root/test.txt', true);
+
+  await remoteCall.sendDriveCloudDeleteEvent(appId, '/root/test.txt');
+  await remoteCall.waitForElementLost(
+      appId, '#file-list [file-name="test.txt"]');
+
+  // Ensure the file was unpinned prior to deleting.
+  await remoteCall.expectDriveItemPinnedStatus(appId, '/root/test.txt', false);
 };

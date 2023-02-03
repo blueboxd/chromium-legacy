@@ -11,6 +11,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -88,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(NetworkFieldTrialBrowserTest, FieldTrialRegistered) {
   // inform the browser process about it.
   TestFieldTrialListObserver observer;
   mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
-  GetNetworkService()->BindTestInterface(
+  GetNetworkService()->BindTestInterfaceForTesting(
       network_service_test.BindNewPipeAndPassReceiver());
   network_service_test->ActivateFieldTrial(kFieldTrialName);
   observer.WaitForTrialGroupToBeFinalized();

@@ -35,6 +35,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_observer.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
+#import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/tabs_search/tabs_search_service.h"
 #import "ios/chrome/browser/tabs_search/tabs_search_service_factory.h"
@@ -47,7 +48,7 @@
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/menu/action_factory.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_consumer.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/features.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_metrics.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
@@ -897,18 +898,30 @@ void RecordTabGridCloseTabsCount(int count) {
     if (!fromSameCollection) {
       // Try to unpin the tab. If the returned index is invalid that means the
       // tab lives in another Browser.
-      int tabIndex = SetWebStatePinnedState(self.webStateList, tabInfo.tabID,
-                                            /*pin_state=*/NO);
+      int tabIndex = WebStateList::kInvalidIndex;
+      if (IsPinnedTabsEnabled()) {
+        tabIndex = SetWebStatePinnedState(self.webStateList, tabInfo.tabID,
+                                          /*pin_state=*/NO);
+      }
       if (tabIndex == WebStateList::kInvalidIndex) {
         // Move tab across Browsers.
+        base::UmaHistogramEnumeration(kUmaGridViewDragOrigin,
+                                      DragItemOrigin::kOtherBrwoser);
         MoveTabToBrowser(tabInfo.tabID, self.browser, destinationIndex);
         return;
       }
+      base::UmaHistogramEnumeration(kUmaGridViewDragOrigin,
+                                    DragItemOrigin::kSameBrowser);
+    } else {
+      base::UmaHistogramEnumeration(kUmaGridViewDragOrigin,
+                                    DragItemOrigin::kSameCollection);
     }
+
     // Reorder tab within same grid.
     [self moveItemWithID:tabInfo.tabID toIndex:destinationIndex];
     return;
   }
+  base::UmaHistogramEnumeration(kUmaGridViewDragOrigin, DragItemOrigin::kOther);
 
   // Handle URLs from within Chrome synchronously using a local object.
   if ([dragItem.localObject isKindOfClass:[URLInfo class]]) {

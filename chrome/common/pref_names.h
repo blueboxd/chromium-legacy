@@ -15,6 +15,7 @@
 #include "chrome/common/buildflags.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -55,21 +56,7 @@ extern const char kSupervisedUserApprovedExtensions[];
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 extern const char kSupervisedUserMetricsDayId[];
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
-extern const char kSupervisedUserCustodianEmail[];
-extern const char kSupervisedUserCustodianName[];
-extern const char kSupervisedUserCustodianObfuscatedGaiaId[];
-extern const char kSupervisedUserCustodianProfileImageURL[];
-extern const char kSupervisedUserCustodianProfileURL[];
-extern const char kSupervisedUserExtensionsMayRequestPermissions[];
-extern const char kSupervisedUserManualHosts[];
-extern const char kSupervisedUserManualURLs[];
-extern const char kSupervisedUserSafeSites[];
-extern const char kSupervisedUserSecondCustodianEmail[];
-extern const char kSupervisedUserSecondCustodianName[];
-extern const char kSupervisedUserSecondCustodianObfuscatedGaiaId[];
-extern const char kSupervisedUserSecondCustodianProfileImageURL[];
-extern const char kSupervisedUserSecondCustodianProfileURL[];
-extern const char kSupervisedUserSharedSettings[];
+
 extern const char kURLsToRestoreOnStartup[];
 extern const char kUserFeedbackAllowed[];
 
@@ -684,6 +671,7 @@ extern const char kNtpCollapsedSyncPromo[];
 #else
 extern const char kNtpCustomBackgroundDict[];
 extern const char kNtpCustomBackgroundLocalToDevice[];
+extern const char kNtpCustomizeChromeButtonOpenCount[];
 extern const char kNtpDisabledModules[];
 extern const char kNtpModulesOrder[];
 extern const char kNtpModulesVisible[];
@@ -1315,6 +1303,10 @@ extern const char kDIPSTimerLastUpdate[];
 
 extern const char kThrottleNonVisibleCrossOriginIframesAllowed[];
 extern const char kNewBaseUrlInheritanceBehaviorAllowed[];
+
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
+extern const char kOutOfProcessSystemDnsResolutionEnabled[];
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
 
 }  // namespace prefs
 

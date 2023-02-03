@@ -94,6 +94,10 @@ BASE_FEATURE(kSyncTrustedVaultUseMD5HashedFile,
              "SyncTrustedVaultUseMD5HashedFile",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kSyncTrustedVaultBypassThrottlingForNetworkErrors,
+             "SyncTrustedVaultBypassThrottlingForNetworkErrors",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kUseSyncInvalidations,
              "UseSyncInvalidations",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -118,6 +122,14 @@ BASE_FEATURE(kSyncEnableContactInfoDataType,
              "SyncEnableContactInfoDataType",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kSyncEnableContactInfoDataTypeInTransportMode,
+             "kSyncEnableContactInfoDataTypeInTransportMode",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSyncEnableContactInfoDataTypeForCustomPassphraseUsers,
+             "kSyncEnableContactInfoDataTypeForCustomPassphraseUsers",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kSyncEnforceBookmarksCountLimit,
              "SyncEnforceBookmarksCountLimit",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -133,5 +145,9 @@ BASE_FEATURE(kSyncDoNotPropagateBrowserShutdownToDataTypes,
 BASE_FEATURE(kSyncAllowClearingMetadataWhenDataTypeIsStopped,
              "SyncAllowClearingMetadataWhenDataTypeIsStopped",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSyncEnableLoadModelsTimeout,
+             "SyncEnableLoadModelsTimeout",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace syncer

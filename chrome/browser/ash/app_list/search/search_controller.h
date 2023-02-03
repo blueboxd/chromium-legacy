@@ -31,6 +31,11 @@ class Profile;
 
 namespace ash {
 class AppListNotifier;
+
+namespace federated {
+class FederatedServiceController;
+}  // namespace federated
+
 }  // namespace ash
 
 namespace app_list {
@@ -39,6 +44,9 @@ class AppSearchDataSource;
 class SearchMetricsManager;
 class SearchSessionMetricsManager;
 class SearchProvider;
+
+// Long queries will be truncated down to this length.
+constexpr int kMaxAllowedQueryLength = 500;
 
 // A controller that collects queries from the AppListClient, dispatches them to
 // search providers, then ranks and publishes the results to the AppListModel.
@@ -50,7 +58,9 @@ class SearchController {
   SearchController(AppListModelUpdater* model_updater,
                    AppListControllerDelegate* list_controller,
                    ash::AppListNotifier* notifier,
-                   Profile* profile);
+                   Profile* profile,
+                   ash::federated::FederatedServiceController*
+                       federated_service_controller_);
   virtual ~SearchController();
 
   SearchController(const SearchController&) = delete;
@@ -206,6 +216,8 @@ class SearchController {
   const raw_ptr<AppListModelUpdater> model_updater_;
   const raw_ptr<AppListControllerDelegate> list_controller_;
   const raw_ptr<ash::AppListNotifier> notifier_;
+  const raw_ptr<ash::federated::FederatedServiceController>
+      federated_service_controller_;
 
   base::ObserverList<Observer> observer_list_;
 };

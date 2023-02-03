@@ -6,9 +6,9 @@
 
 #include <vector>
 
-#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/accessibility/magnifier/magnifier_utils.h"
 #include "ash/accessibility/scoped_a11y_override_window_setter.h"
+#include "ash/capture_mode/capture_button_view.h"
 #include "ash/capture_mode/capture_label_view.h"
 #include "ash/capture_mode/capture_mode_bar_view.h"
 #include "ash/capture_mode/capture_mode_camera_preview_view.h"
@@ -18,6 +18,7 @@
 #include "ash/capture_mode/capture_mode_source_view.h"
 #include "ash/capture_mode/capture_mode_type_view.h"
 #include "ash/capture_mode/capture_mode_util.h"
+#include "ash/capture_mode/recording_type_menu_view.h"
 #include "ash/shell.h"
 #include "ash/style/icon_button.h"
 #include "ash/style/style_util.h"
@@ -27,10 +28,8 @@
 #include "base/containers/flat_set.h"
 #include "base/ranges/algorithm.h"
 #include "chromeos/ui/base/chromeos_ui_constants.h"
-#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/class_property.h"
 #include "ui/views/accessibility/view_accessibility.h"
-#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/view.h"
@@ -259,6 +258,11 @@ CaptureModeSessionFocusCycler::HighlightableView::CreatePathGenerator() {
   return nullptr;
 }
 
+void CaptureModeSessionFocusCycler::HighlightableView::
+    InvalidateFocusRingPath() {
+  needs_highlight_path_ = true;
+}
+
 void CaptureModeSessionFocusCycler::HighlightableView::PseudoFocus() {
   has_focus_ = true;
 
@@ -278,10 +282,13 @@ void CaptureModeSessionFocusCycler::HighlightableView::PseudoFocus() {
     // has focus which won't be happening since our widgets are not activatable.
     focus_ring_->SetHasFocusPredicate(
         [&](views::View* view) { return view->GetVisible() && has_focus_; });
+  }
 
-    auto path_generator = CreatePathGenerator();
-    if (path_generator)
+  if (needs_highlight_path_) {
+    if (auto path_generator = CreatePathGenerator()) {
       focus_ring_->SetPathGenerator(std::move(path_generator));
+    }
+    needs_highlight_path_ = false;
   }
 
   focus_ring_->Layout();
@@ -308,10 +315,26 @@ void CaptureModeSessionFocusCycler::HighlightableView::ClickView() {
   DCHECK(view);
 
   views::Button* button = views::Button::AsButton(view);
-  if (!button)
+  if (!button) {
     return;
-  button->AcceleratorPressed(ui::Accelerator(ui::VKEY_SPACE, /*modifiers=*/0));
+  }
+
+  // `button` such as the close button or the capture button may be destroyed
+  // after `AcceleratorPressed`, which will cause UAF. Use a `WeakPtr` to detect
+  // this and skip `NotifyAccessibilityEvent` in this case.
+  auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
+
+  if (button->AcceleratorPressed(
+          ui::Accelerator(ui::VKEY_SPACE, /*modifiers=*/0)) &&
+      weak_ptr) {
+    button->NotifyAccessibilityEvent(ax::mojom::Event::kStateChanged, true);
+  }
 }
+
+CaptureModeSessionFocusCycler::HighlightableView::HighlightableView() = default;
+
+CaptureModeSessionFocusCycler::HighlightableView::~HighlightableView() =
+    default;
 
 // -----------------------------------------------------------------------------
 // CaptureModeSessionFocusCycler::HighlightableWindow:
@@ -365,6 +388,11 @@ CaptureModeSessionFocusCycler::HighlightHelper::HighlightHelper(
     views::View* view)
     : view_(view) {}
 
+CaptureModeSessionFocusCycler::HighlightHelper::HighlightHelper(
+    views::View* view,
+    HighlightPathGeneratorFactory callback)
+    : view_(view), highlight_path_generator_factory_(std::move(callback)) {}
+
 CaptureModeSessionFocusCycler::HighlightHelper::~HighlightHelper() = default;
 
 // static
@@ -372,6 +400,15 @@ void CaptureModeSessionFocusCycler::HighlightHelper::Install(
     views::View* view) {
   DCHECK(view);
   view->SetProperty(kCaptureModeHighlightHelper, new HighlightHelper(view));
+}
+
+// static
+void CaptureModeSessionFocusCycler::HighlightHelper::Install(
+    views::View* view,
+    HighlightPathGeneratorFactory callback) {
+  DCHECK(view);
+  view->SetProperty(kCaptureModeHighlightHelper,
+                    new HighlightHelper(view, std::move(callback)));
 }
 
 // static
@@ -385,6 +422,13 @@ views::View* CaptureModeSessionFocusCycler::HighlightHelper::GetView() {
   return view_;
 }
 
+std::unique_ptr<views::HighlightPathGenerator>
+CaptureModeSessionFocusCycler::HighlightHelper::CreatePathGenerator() {
+  return highlight_path_generator_factory_
+             ? highlight_path_generator_factory_.Run()
+             : nullptr;
+}
+
 // -----------------------------------------------------------------------------
 // CaptureModeSessionFocusCycler:
 
@@ -394,10 +438,11 @@ CaptureModeSessionFocusCycler::CaptureModeSessionFocusCycler(
                              FocusGroup::kCameraPreview,
                              FocusGroup::kSettingsMenu,
                              FocusGroup::kSettingsClose},
-      groups_for_region_{FocusGroup::kNone,          FocusGroup::kTypeSource,
-                         FocusGroup::kSelection,     FocusGroup::kCameraPreview,
-                         FocusGroup::kCaptureButton, FocusGroup::kSettingsMenu,
-                         FocusGroup::kSettingsClose},
+      groups_for_region_{
+          FocusGroup::kNone,          FocusGroup::kTypeSource,
+          FocusGroup::kSelection,     FocusGroup::kCameraPreview,
+          FocusGroup::kCaptureButton, FocusGroup::kRecordingTypeMenu,
+          FocusGroup::kSettingsMenu,  FocusGroup::kSettingsClose},
       groups_for_window_{FocusGroup::kNone, FocusGroup::kTypeSource,
                          FocusGroup::kCaptureWindow, FocusGroup::kSettingsMenu,
                          FocusGroup::kSettingsClose},
@@ -415,12 +460,18 @@ CaptureModeSessionFocusCycler::CaptureModeSessionFocusCycler(
 CaptureModeSessionFocusCycler::~CaptureModeSessionFocusCycler() = default;
 
 void CaptureModeSessionFocusCycler::AdvanceFocus(bool reverse) {
-  // Advancing focus while the settings menu is open will close the menu and
-  // clear focus, unless the settings menu was opened using keyboard navigation.
-  if (!settings_menu_opened_with_keyboard_nav_) {
-    views::Widget* settings_widget = GetSettingsMenuWidget();
-    if (settings_widget && settings_widget->IsVisible()) {
+  // Advancing focus while either the settings or the recording type menus are
+  // open will close the menu and clear focus, unless these menus were opened
+  // using keyboard navigation.
+  if (!menu_opened_with_keyboard_nav_) {
+    if (auto* widget = GetSettingsMenuWidget(); widget && widget->IsVisible()) {
       session_->SetSettingsMenuShown(false);
+      return;
+    }
+
+    if (auto* widget = GetRecordingTypeMenuWidget();
+        widget && widget->IsVisible()) {
+      session_->SetRecordingTypeMenuShown(false);
       return;
     }
   }
@@ -509,7 +560,8 @@ bool CaptureModeSessionFocusCycler::HasFocus() const {
 bool CaptureModeSessionFocusCycler::OnSpacePressed() {
   if (current_focus_group_ == FocusGroup::kNone ||
       current_focus_group_ == FocusGroup::kSelection ||
-      current_focus_group_ == FocusGroup::kPendingSettings) {
+      current_focus_group_ == FocusGroup::kPendingSettings ||
+      current_focus_group_ == FocusGroup::kPendingRecordingType) {
     return false;
   }
 
@@ -533,16 +585,6 @@ bool CaptureModeSessionFocusCycler::OnSpacePressed() {
           bar_view->capture_source_view()->region_toggle_button() &&
       CaptureModeController::Get()->source() == CaptureModeSource::kRegion) {
     return false;
-  }
-
-  // Clicking on the settings button first clears current focus and moves us to
-  // a temporary state. The next focus signal will navigate through the settings
-  // items.
-  if (view->GetView() == session_->capture_mode_bar_view_->settings_button()) {
-    settings_menu_opened_with_keyboard_nav_ = true;
-    ClearCurrentVisibleFocus();
-    current_focus_group_ = FocusGroup::kPendingSettings;
-    focus_index_ = 0u;
   }
 
   // ClickView comes last as it will destroy |this| if |view| is the close
@@ -577,11 +619,16 @@ void CaptureModeSessionFocusCycler::OnCaptureLabelWidgetUpdated() {
   UpdateA11yAnnotation();
 }
 
-void CaptureModeSessionFocusCycler::OnSettingsMenuWidgetCreated() {
-  views::Widget* settings_menu_widget =
-      session_->capture_mode_settings_widget_.get();
-  DCHECK(settings_menu_widget);
-  settings_menu_widget_observeration_.Observe(settings_menu_widget);
+void CaptureModeSessionFocusCycler::OnMenuOpened(views::Widget* widget,
+                                                 FocusGroup focus_group,
+                                                 bool by_key_event) {
+  DCHECK(!menu_widget_observeration_.IsObserving());
+
+  menu_widget_observeration_.Observe(widget);
+  ClearCurrentVisibleFocus();
+  current_focus_group_ = focus_group;
+  menu_opened_with_keyboard_nav_ = by_key_event;
+  focus_index_ = 0u;
   UpdateA11yAnnotation();
 }
 
@@ -601,23 +648,41 @@ void CaptureModeSessionFocusCycler::OnWidgetDestroying(views::Widget* widget) {
   //   `CloseNow()`. See https://crbug.com/1350743.
   // Implementing both let's us handle the closing synchronously via
   // `OnWidgetClosing()`, and avoid any crashes or UAFs if it was never called.
-  if (!settings_menu_widget_observeration_.IsObserving())
+  if (!menu_widget_observeration_.IsObserving()) {
     return;
+  }
 
-  settings_menu_opened_with_keyboard_nav_ = false;
-  settings_menu_widget_observeration_.Reset();
+  menu_opened_with_keyboard_nav_ = false;
+  menu_widget_observeration_.Reset();
 
   // Return immediately if the widget is closing by the closing of `session_`.
   if (session_->is_shutting_down())
     return;
-  // Remove focus if one of the settings related groups is currently
-  // focused.
+
+  // Remove focus if one of the menu-related groups is currently focused.
+  bool should_update_focus = false;
   if (current_focus_group_ == FocusGroup::kPendingSettings ||
       current_focus_group_ == FocusGroup::kSettingsMenu) {
-    // When the settings menu is closed while focus is in or about to be in it,
+    // If the settings menu is closed while focus is in or about to be in it,
     // we manually put the focus back on the settings button.
     current_focus_group_ = FocusGroup::kSettingsClose;
     focus_index_ = 0u;
+    should_update_focus = true;
+  } else if (current_focus_group_ == FocusGroup::kPendingRecordingType ||
+             current_focus_group_ == FocusGroup::kRecordingTypeMenu) {
+    // Similarly, if the recording type menu is closed while focus is in or
+    // about to be in it, we manually focus the drop down button as long as it
+    // still exists.
+    auto* capture_label_view = session_->capture_label_view_;
+    if (capture_label_view && capture_label_view->GetWidget()->IsVisible() &&
+        capture_label_view->IsRecordingTypeDropDownButtonVisible()) {
+      current_focus_group_ = FocusGroup::kCaptureButton;
+      focus_index_ = 1u;
+      should_update_focus = true;
+    }
+  }
+
+  if (should_update_focus) {
     const auto highlightable_views = GetGroupItems(current_focus_group_);
     DCHECK_EQ(highlightable_views.size(), 2u);
     scoped_a11y_overrider_->MaybeUpdateA11yOverrideWindow(
@@ -628,10 +693,10 @@ void CaptureModeSessionFocusCycler::OnWidgetDestroying(views::Widget* widget) {
 }
 
 void CaptureModeSessionFocusCycler::ClearCurrentVisibleFocus() {
-  // The settings menu widget may be destroyed while it has focus. No need to
-  // clear focus in this case.
-  if (current_focus_group_ == FocusGroup::kSettingsMenu &&
-      !GetSettingsMenuWidget()) {
+  // If the current focused group becomes unavailable for some reason (e.g. the
+  // settings or the recording type menu gets closed), there's nothing to clear
+  // the focus from.
+  if (!IsGroupAvailable(current_focus_group_)) {
     return;
   }
 
@@ -652,6 +717,11 @@ CaptureModeSessionFocusCycler::GetNextGroup(bool reverse) const {
   if (current_focus_group_ == FocusGroup::kPendingSettings) {
     DCHECK(GetSettingsMenuWidget());
     return FocusGroup::kSettingsMenu;
+  }
+
+  if (current_focus_group_ == FocusGroup::kPendingRecordingType) {
+    DCHECK(GetRecordingTypeMenuWidget());
+    return FocusGroup::kRecordingTypeMenu;
   }
 
   const std::vector<FocusGroup>& groups_list = GetCurrentGroupList();
@@ -685,17 +755,18 @@ bool CaptureModeSessionFocusCycler::IsGroupAvailable(FocusGroup group) const {
     case FocusGroup::kTypeSource:
     case FocusGroup::kSettingsClose:
     case FocusGroup::kPendingSettings:
+    case FocusGroup::kPendingRecordingType:
       return true;
     case FocusGroup::kSelection:
     case FocusGroup::kCaptureButton: {
-      // The selection UI and capture button are focusable only when the label
-      // button of CaptureLabelView is visible.
-      auto* widget = session_->capture_label_widget_.get();
-      if (!widget)
-        return false;
-      auto* capture_label_view =
-          static_cast<CaptureLabelView*>(widget->GetContentsView());
-      return capture_label_view->IsViewInteractable();
+      // The selection UI and capture button are focusable only when it is
+      // interactable, meaning it has buttons that can be pressed. The capture
+      // label widget can be hidden when it intersects with other capture UIs.
+      // In that case, we shouldn't navigate to it via the keyboard.
+      auto* capture_label_view = session_->capture_label_view_;
+      return capture_label_view &&
+             capture_label_view->GetWidget()->IsVisible() &&
+             capture_label_view->IsViewInteractable();
     }
     case FocusGroup::kCaptureWindow:
       return session_->controller_->source() == CaptureModeSource::kWindow &&
@@ -706,6 +777,8 @@ bool CaptureModeSessionFocusCycler::IsGroupAvailable(FocusGroup group) const {
       auto* camera_preview_widget = GetCameraPreviewWidget();
       return camera_preview_widget && camera_preview_widget->IsVisible();
     }
+    case FocusGroup::kRecordingTypeMenu:
+      return !!GetRecordingTypeMenuWidget();
   }
 }
 
@@ -722,6 +795,7 @@ CaptureModeSessionFocusCycler::GetGroupItems(FocusGroup group) const {
     case FocusGroup::kNone:
     case FocusGroup::kSelection:
     case FocusGroup::kPendingSettings:
+    case FocusGroup::kPendingRecordingType:
       break;
     case FocusGroup::kTypeSource: {
       CaptureModeBarView* bar_view = session_->capture_mode_bar_view_;
@@ -741,9 +815,10 @@ CaptureModeSessionFocusCycler::GetGroupItems(FocusGroup group) const {
       break;
     }
     case FocusGroup::kCaptureButton: {
-      views::Widget* widget = session_->capture_label_widget_.get();
-      DCHECK(widget);
-      items = {static_cast<CaptureLabelView*>(widget->GetContentsView())};
+      auto* capture_label_view = session_->capture_label_view_;
+      DCHECK(capture_label_view);
+      items = capture_label_view->capture_button_container()
+                  ->GetHighlightableItems();
       break;
     }
     case FocusGroup::kCaptureWindow: {
@@ -790,6 +865,11 @@ CaptureModeSessionFocusCycler::GetGroupItems(FocusGroup group) const {
       }
       break;
     }
+    case FocusGroup::kRecordingTypeMenu: {
+      DCHECK(session_->recording_type_menu_view_);
+      session_->recording_type_menu_view_->AppendHighlightableItems(items);
+      break;
+    }
   }
   return items;
 }
@@ -798,9 +878,15 @@ views::Widget* CaptureModeSessionFocusCycler::GetSettingsMenuWidget() const {
   return session_->capture_mode_settings_widget_.get();
 }
 
+views::Widget* CaptureModeSessionFocusCycler::GetRecordingTypeMenuWidget()
+    const {
+  return session_->recording_type_menu_widget_.get();
+}
+
 aura::Window* CaptureModeSessionFocusCycler::GetA11yOverrideWindow() const {
   switch (current_focus_group_) {
     case FocusGroup::kCaptureButton:
+    case FocusGroup::kPendingRecordingType:
       return session_->capture_label_widget()->GetNativeWindow();
     case FocusGroup::kSettingsMenu:
       return session_->capture_mode_settings_widget()->GetNativeWindow();
@@ -813,6 +899,8 @@ aura::Window* CaptureModeSessionFocusCycler::GetA11yOverrideWindow() const {
       return session_->capture_mode_bar_widget()->GetNativeWindow();
     case FocusGroup::kCameraPreview:
       return GetCameraPreviewWidget()->GetNativeWindow();
+    case FocusGroup::kRecordingTypeMenu:
+      return GetRecordingTypeMenuWidget()->GetNativeWindow();
   }
 }
 
@@ -855,18 +943,23 @@ void CaptureModeSessionFocusCycler::UpdateA11yAnnotation() {
     a11y_widgets.push_back(bar_widget);
 
   // Add the label widget only if the button is visible.
-  views::Widget* label_widget = session_->capture_label_widget_.get();
-  if (label_widget &&
-      static_cast<CaptureLabelView*>(label_widget->GetContentsView())
-          ->IsViewInteractable()) {
-    a11y_widgets.push_back(label_widget);
+  if (auto* capture_label_view = session_->capture_label_view_;
+      capture_label_view && capture_label_view->IsViewInteractable() &&
+      capture_label_view->GetWidget()->IsVisible()) {
+    a11y_widgets.push_back(capture_label_view->GetWidget());
+  }
+
+  // Add the recording type widget if it exists.
+  if (auto* recording_type_menu_widget =
+          session_->recording_type_menu_widget_.get()) {
+    a11y_widgets.push_back(recording_type_menu_widget);
   }
 
   // Add the settings widget if it exists.
-  views::Widget* settings_menu_widget =
-      session_->capture_mode_settings_widget_.get();
-  if (settings_menu_widget)
+  if (auto* settings_menu_widget =
+          session_->capture_mode_settings_widget_.get()) {
     a11y_widgets.push_back(settings_menu_widget);
+  }
 
   // Helper to update |target|'s a11y focus with |previous| and |next|, which
   // can be null.

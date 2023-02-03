@@ -11,6 +11,8 @@
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "ash/shell.h"
+#include "ash/system/federated/federated_service_controller_impl.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
@@ -47,14 +49,17 @@ void ClearNonZeroStateResults(ResultsMap& results) {
 
 }  // namespace
 
-SearchController::SearchController(AppListModelUpdater* model_updater,
-                                   AppListControllerDelegate* list_controller,
-                                   ash::AppListNotifier* notifier,
-                                   Profile* profile)
+SearchController::SearchController(
+    AppListModelUpdater* model_updater,
+    AppListControllerDelegate* list_controller,
+    ash::AppListNotifier* notifier,
+    Profile* profile,
+    ash::federated::FederatedServiceController* federated_service_controller)
     : profile_(profile),
       model_updater_(model_updater),
       list_controller_(list_controller),
-      notifier_(notifier) {}
+      notifier_(notifier),
+      federated_service_controller_(federated_service_controller) {}
 
 SearchController::~SearchController() = default;
 
@@ -66,8 +71,8 @@ void SearchController::Initialize() {
       std::make_unique<SearchMetricsManager>(profile_, notifier_);
   session_metrics_manager_ =
       std::make_unique<SearchSessionMetricsManager>(profile_, notifier_);
-  federated_metrics_manager_ =
-      std::make_unique<FederatedMetricsManager>(notifier_);
+  federated_metrics_manager_ = std::make_unique<FederatedMetricsManager>(
+      notifier_, federated_service_controller_);
   app_search_data_source_ = std::make_unique<AppSearchDataSource>(
       profile_, list_controller_, base::DefaultClock::GetInstance());
 }
@@ -90,7 +95,15 @@ void SearchController::StartSearch(const std::u16string& query) {
 
   burn_in_controller_->Start();
 
+  // TODO(b/266468933): This logging is limited to a short maximum query
+  // length. Add another metric which measures the bucket count of query length,
+  // with no maximum.
   ash::RecordLauncherIssuedSearchQueryLength(query.length());
+  // Limit query length, for efficiency reasons in matching query to texts.
+  const std::u16string truncated_query =
+      query.length() > kMaxAllowedQueryLength
+          ? query.substr(0, kMaxAllowedQueryLength)
+          : query;
 
   // Clear all search results but preserve zero-state results.
   ClearNonZeroStateResults(results_);
@@ -102,14 +115,14 @@ void SearchController::StartSearch(const std::u16string& query) {
   }
 
   categories_ = CreateAllCategories();
-  ranker_manager_->Start(query, results_, categories_);
+  ranker_manager_->Start(truncated_query, results_, categories_);
 
   session_start_ = base::Time::Now();
-  last_query_ = query;
+  last_query_ = truncated_query;
 
   // Search all providers.
   for (const auto& provider : providers_) {
-    provider->Start(query);
+    provider->Start(truncated_query);
   }
 }
 
@@ -237,6 +250,11 @@ void SearchController::SetResults(const SearchProvider* provider,
 
 void SearchController::SetSearchResults(const SearchProvider* provider) {
   Rank(provider->ResultType());
+
+  for (auto& result : provider->results()) {
+    metrics_manager_->OnSearchResultsUpdated(result->scoring());
+  }
+
   burn_in_controller_->UpdateResults(results_, categories_,
                                      provider->ResultType());
   // If the burn-in period has not yet elapsed, don't call Publish here (this

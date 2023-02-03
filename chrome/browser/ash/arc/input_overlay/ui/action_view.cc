@@ -68,7 +68,18 @@ void ActionView::SetDisplayMode(DisplayMode mode, ActionLabel* editing_label) {
 
   if (!editable_ && mode == DisplayMode::kEdit)
     return;
+
+  // Set display mode for ActionLabel first and then other components update the
+  // layout according to ActionLabel.
+  if (!editing_label) {
+    for (auto* label : labels_)
+      label->SetDisplayMode(mode);
+  } else {
+    editing_label->SetDisplayMode(mode);
+  }
+
   if (mode == DisplayMode::kView) {
+    display_mode_ = DisplayMode::kView;
     RemoveEditButton();
     RemoveTrashButton();
     if (!IsInputBound(action_->GetCurrentDisplayedInput()))
@@ -77,6 +88,7 @@ void ActionView::SetDisplayMode(DisplayMode mode, ActionLabel* editing_label) {
       RemoveTouchPoint();
   }
   if (mode == DisplayMode::kEdit) {
+    display_mode_ = DisplayMode::kEdit;
     AddEditButton();
     AddTrashButton();
     if (!IsInputBound(*action_->current_input()))
@@ -84,19 +96,12 @@ void ActionView::SetDisplayMode(DisplayMode mode, ActionLabel* editing_label) {
     if (allow_reposition_)
       AddTouchPoint();
   }
-
-  if (!editing_label) {
-    for (auto* label : labels_)
-      label->SetDisplayMode(mode);
-  } else {
-    editing_label->SetDisplayMode(mode);
-  }
 }
 
 void ActionView::SetPositionFromCenterPosition(
     const gfx::PointF& center_position) {
-  int left = std::max(0, (int)(center_position.x() - center_.x()));
-  int top = std::max(0, (int)(center_position.y() - center_.y()));
+  int left = std::max(0, (int)(center_position.x() - touch_point_center_.x()));
+  int top = std::max(0, (int)(center_position.y() - touch_point_center_.y()));
   // SetPosition function needs the top-left position.
   SetPosition(gfx::Point(left, top));
 }
@@ -240,27 +245,17 @@ bool ActionView::ApplyKeyReleased(const ui::KeyEvent& event) {
   if (!allow_reposition_ || !ash::IsArrowKeyEvent(event))
     return View::OnKeyReleased(event);
 
-  ChangePositionBinding(
-      gfx::Point(origin().x() + center_.x(), origin().y() + center_.y()));
+  ChangePositionBinding(gfx::Point(origin().x() + touch_point_center_.x(),
+                                   origin().y() + touch_point_center_.y()));
   RecordInputOverlayActionReposition(
       RepositionType::kKeyboardArrowKeyReposition);
   return true;
 }
 
-void ActionView::OnFocus() {
-  if (!IsFocusable()) {
-    auto* focus_manager = GetFocusManager();
-    if (focus_manager)
-      focus_manager->ClearFocus();
-    return;
-  }
-
-  // TODO(b/260868602): Update the color according to the design spec.
-  SetBackground(views::CreateSolidBackground(gfx::kGoogleBlue300));
-}
-
-void ActionView::OnBlur() {
-  SetBackground(nullptr);
+void ActionView::SetTouchPointCenter(const gfx::Point& touch_point_center) {
+  touch_point_center_ = touch_point_center;
+  if (touch_point_)
+    touch_point_->OnCenterPositionChanged(touch_point_center_);
 }
 
 void ActionView::AddEditButton() {
@@ -322,7 +317,8 @@ void ActionView::AddTouchPoint(ActionType action_type) {
   if (touch_point_)
     return;
 
-  touch_point_ = TouchPoint::Show(this, action_type, center_);
+  touch_point_ = TouchPoint::Show(this, action_type, touch_point_center_);
+  ChildPreferredSizeChanged(touch_point_);
 }
 
 void ActionView::RemoveTouchPoint() {
@@ -331,6 +327,7 @@ void ActionView::RemoveTouchPoint() {
 
   RemoveChildViewT(touch_point_);
   touch_point_ = nullptr;
+  ChildPreferredSizeChanged(nullptr);
 }
 
 void ActionView::UpdateTrashButtonPosition() {
@@ -338,8 +335,8 @@ void ActionView::UpdateTrashButtonPosition() {
     return;
 
   trash_button_->SetPosition(
-      gfx::Point(std::max(0, center_.x() - kTrashButtonSize / 2),
-                 std::max(0, center_.y() - kTrashButtonSize / 2)));
+      gfx::Point(std::max(0, touch_point_center_.x() - kTrashButtonSize / 2),
+                 std::max(0, touch_point_center_.y() - kTrashButtonSize / 2)));
 }
 
 void ActionView::OnDragStart(const ui::LocatedEvent& event) {
@@ -358,8 +355,8 @@ bool ActionView::OnDragUpdate(const ui::LocatedEvent& event) {
 }
 
 void ActionView::OnDragEnd() {
-  auto new_touch_center =
-      gfx::Point(origin().x() + center_.x(), origin().y() + center_.y());
+  auto new_touch_center = gfx::Point(origin().x() + touch_point_center_.x(),
+                                     origin().y() + touch_point_center_.y());
   ChangePositionBinding(new_touch_center);
 }
 

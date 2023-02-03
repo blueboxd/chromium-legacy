@@ -18,7 +18,7 @@
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/views/animation/ink_drop_host_view.h"
+#include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/animation/ink_drop_observer.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
@@ -173,6 +173,9 @@ class IconLabelBubbleView : public views::InkDropObserver,
 
   const gfx::FontList& font_list() const { return label()->font_list(); }
 
+  // To avoid clang warning about SetImageModel being overridden, tell compiler
+  // to accept both SetImageModel functions.
+  using LabelButton::SetImageModel;
   void SetImageModel(const ui::ImageModel& image);
 
   gfx::Size GetSizeForLabelWidth(int label_width) const;

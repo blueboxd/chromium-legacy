@@ -343,6 +343,25 @@ bool PrerenderHost::StartPrerendering() {
   return true;
 }
 
+void PrerenderHost::DidStartNavigation(NavigationHandle* navigation_handle) {
+  DCHECK(base::FeatureList::IsEnabled(
+      blink::features::kPrerender2MainFrameNavigation));
+
+  auto* navigation_request = NavigationRequest::From(navigation_handle);
+  DCHECK(navigation_request->IsInPrerenderedMainFrame());
+
+  // Do nothing for the initial navigation.
+  if (GetInitialNavigationId() == navigation_request->GetNavigationId()) {
+    return;
+  }
+
+  // Reset `is_ready_for_activation_` since it can be set to true more than once
+  // and DCHECK will fail when the main frame navigation happens in a
+  // prerendered page and PrerenderHost::DidFinishNavigation is called multiple
+  // times.
+  is_ready_for_activation_ = false;
+}
+
 void PrerenderHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   auto* navigation_request = NavigationRequest::From(navigation_handle);
 
@@ -718,7 +737,12 @@ PrerenderHost::AreCommonNavigationParamsCompatibleWithNavigation(
     return ActivationNavigationParamsMatch::kInitiatorOrigin;
   }
 
-  if (potential_activation.transition != common_params_->transition) {
+  // The transition must match with the exception of the client redirect flag.
+  // The renderer may add the client redirect flag when it has enough
+  // information to be certain that this navigation would replace the current
+  // history entry (e.g., a renderer-initiated navigation to the current URL).
+  if ((potential_activation.transition &
+       ~ui::PAGE_TRANSITION_CLIENT_REDIRECT) != common_params_->transition) {
     return ActivationNavigationParamsMatch::kTransition;
   }
 
@@ -970,6 +994,9 @@ void PrerenderHost::SetFailureReason(PrerenderFinalStatus status) {
     case PrerenderFinalStatus::kPrimaryMainFrameRendererProcessCrashed:
     case PrerenderFinalStatus::kPrimaryMainFrameRendererProcessKilled:
     case PrerenderFinalStatus::kActivationFramePolicyNotCompatible:
+    case PrerenderFinalStatus::kPreloadingDisabled:
+    case PrerenderFinalStatus::kBatterySaverEnabled:
+    case PrerenderFinalStatus::kActivatedDuringMainFrameNavigation:
       attempt_->SetFailureReason(ToPreloadingFailureReason(status));
       // We reset the attempt to ensure we don't update once we have reported it
       // as failure or accidentally use it for any other prerender attempts as

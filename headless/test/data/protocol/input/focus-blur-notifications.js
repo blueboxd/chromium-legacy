@@ -11,12 +11,12 @@
   dp.Runtime.onConsoleAPICalled(data => {
     const text = data.params.args[0].value;
     testRunner.log(text);
+    if (text === 'quit') {
+      testRunner.completeTest();
+    }
   });
 
   await dp.Page.enable();
   dp.Page.navigate(
       {url: testRunner.url('/resources/focus-blur-notifications.html')});
-  await dp.Page.onceLoadEventFired();
-
-  testRunner.completeTest();
 })

@@ -512,6 +512,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest,
   RunTypedTest<kMacMethods>("accessibility-column-header-ui-elements.html");
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest,
+                       AccessibilityCustomContent) {
+  RunTypedTest<kMacMethods>("accessibility-custom-content.html");
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest, AccessibilityIsIgnored) {
   RunTypedTest<kMacMethods>("accessibility-is-ignored.html");
 }
@@ -615,6 +620,12 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest,
                        IAccessibleTextSelectionContainerSelections) {
   RunTypedTest<kIAccessibleTextSelectionContainer>(
       L"iaccessibletextselectioncontainer-selections.html");
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityScriptTest,
+                       IAccessibleTextSelectionContainerSetSelections) {
+  RunTypedTest<kIAccessibleTextSelectionContainer>(
+      L"iaccessibletextselectioncontainer-set-selections.html");
 }
 
 #endif

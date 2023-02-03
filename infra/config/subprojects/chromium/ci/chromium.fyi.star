@@ -1828,36 +1828,6 @@ ci.builder(
     reclient_rewrapper_env = {"RBE_compare": "true"},
 )
 
-ci.builder(
-    name = "Win x64 Builder (reclient)(cross)",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = [
-                "use_clang_coverage",
-                "reclient_test",
-            ],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = ["mb"],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-        ),
-        build_gs_bucket = "chromium-fyi-archive",
-    ),
-    builderless = True,
-    cores = 32,
-    os = os.WINDOWS_DEFAULT,
-    console_view_entry = consoles.console_view_entry(
-        category = "win",
-        short_name = "re x",
-    ),
-    reclient_jobs = None,
-    reclient_profiler_service = "reclient-win",
-    reclient_publish_trace = True,
-)
-
 fyi_mac_builder(
     name = "Mac Builder (reclient)",
     description_html = "experiment reclient on mac. should be removed after the migration. crbug.com/1244441",
@@ -1918,35 +1888,6 @@ fyi_mac_builder(
 )
 
 fyi_mac_builder(
-    name = "mac-arm64-on-arm64-rel-reclient",
-    description_html = "experiment reclient on mac-arm. should be removed after the migration. crbug.com/1252626",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-            apply_configs = ["reclient_test"],
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = ["mb"],
-            build_config = builder_config.build_config.RELEASE,
-            target_arch = builder_config.target_arch.ARM,
-            target_bits = 64,
-        ),
-        build_gs_bucket = "chromium-fyi-archive",
-    ),
-
-    # same with mac-arm64-on-arm64-rel
-    cores = None,  # crbug.com/1245114
-    os = os.MAC_12,
-    cpu = cpu.ARM64,
-    console_view_entry = consoles.console_view_entry(
-        category = "mac",
-        short_name = "re",
-    ),
-    reclient_jobs = None,
-)
-
-fyi_mac_builder(
     name = "mac10.15-wpt-content-shell-fyi-rel",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
@@ -1995,6 +1936,31 @@ fyi_mac_builder(
 )
 
 fyi_mac_builder(
+    name = "mac12-arm64-wpt-content-shell-fyi-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.MAC,
+            target_arch = builder_config.target_arch.ARM,
+        ),
+    ),
+    triggered_by = [],
+    builderless = False,
+    os = os.MAC_ANY,
+    cores = None,
+    console_view_entry = consoles.console_view_entry(
+        category = "mac",
+    ),
+    schedule = "with 5h interval",
+)
+
+fyi_mac_builder(
     name = "mac12-wpt-content-shell-fyi-rel",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
@@ -2015,7 +1981,6 @@ fyi_mac_builder(
     console_view_entry = consoles.console_view_entry(
         category = "mac",
     ),
-    # TODO(crbug.com/1385202): Enable scheduler when machine has been allocated.
     schedule = "with 5h interval",
 )
 

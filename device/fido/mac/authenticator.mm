@@ -27,9 +27,7 @@
 #include "device/fido/public_key_credential_user_entity.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace device {
-namespace fido {
-namespace mac {
+namespace device::fido::mac {
 
 // static
 void TouchIdAuthenticator::IsAvailable(
@@ -59,6 +57,7 @@ void TouchIdAuthenticator::InitializeAuthenticator(base::OnceClosure callback) {
 
 void TouchIdAuthenticator::GetCredentialInformationForRequest(
     const CtapGetAssertionRequest& request,
+    const CtapGetAssertionOptions& options,
     GetCredentialInformationForRequestCallback callback) {
   if (__builtin_available(macOS 10.12.2, *)) {
     if (!request.allow_list.empty()) {
@@ -120,16 +119,6 @@ void TouchIdAuthenticator::GetAssertion(CtapGetAssertionRequest request,
   NOTREACHED();
 }
 
-void TouchIdAuthenticator::GetNextAssertion(GetAssertionCallback callback) {
-  if (__builtin_available(macOS 10.12.2, *)) {
-    DCHECK(operation_);
-    reinterpret_cast<GetAssertionOperation*>(operation_.get())
-        ->GetNextAssertion(std::move(callback));
-    return;
-  }
-  NOTREACHED();
-}
-
 void TouchIdAuthenticator::Cancel() {
   // If there is an operation pending, delete it, which will clean up any
   // pending callbacks, e.g. if the operation is waiting for a response from
@@ -155,7 +144,8 @@ namespace {
 
 AuthenticatorSupportedOptions TouchIdAuthenticatorOptions() {
   AuthenticatorSupportedOptions options;
-  options.is_platform_device = true;
+  options.is_platform_device =
+      AuthenticatorSupportedOptions::PlatformDevice::kYes;
   options.supports_resident_key = true;
   options.user_verification_availability = AuthenticatorSupportedOptions::
       UserVerificationAvailability::kSupportedAndConfigured;
@@ -187,6 +177,4 @@ TouchIdAuthenticator::TouchIdAuthenticator(std::string keychain_access_group,
           {std::move(keychain_access_group), std::move(metadata_secret)}),
       weak_factory_(this) {}
 
-}  // namespace mac
-}  // namespace fido
-}  // namespace device
+}  // namespace device::fido::mac

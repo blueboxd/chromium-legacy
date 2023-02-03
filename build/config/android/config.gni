@@ -113,6 +113,13 @@ if (is_android || is_chromeos) {
     public_android_sdk = true
   }
 
+  if (android_sdk_release == "tprivacysandbox") {
+    default_android_sdk_root = public_android_sdk_root
+    default_android_sdk_version = "TiramisuPrivacySandbox"
+    default_android_sdk_build_tools_version = "33.0.0"
+    public_android_sdk = true
+  }
+
   # For use downstream when we are building with preview Android SDK
   if (!defined(final_android_sdk)) {
     final_android_sdk = public_android_sdk
@@ -284,17 +291,13 @@ if (is_android || is_chromeos) {
     use_hashed_jni_names = !is_java_debug
 
     # Enables JNI multiplexing to reduce JNI native methods overhead.
-    enable_jni_multiplexing = false
+    allow_jni_multiplexing = false
 
     # Enables trace event injection on Android views with bytecode rewriting.
     # This adds an additional step on android_app_bundle_module targets that
     # adds trace events to some methods in android.view.View subclasses.
     enable_trace_event_bytecode_rewriting =
         !is_java_debug && android_channel != "stable"
-  }
-
-  if (enable_jni_multiplexing) {
-    use_hashed_jni_names = false
   }
 
   # Host stuff -----------------------------------------------------------------

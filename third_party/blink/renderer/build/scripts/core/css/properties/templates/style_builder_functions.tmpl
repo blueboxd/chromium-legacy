@@ -27,11 +27,6 @@ void {{class_name}}::ApplyInherit(StyleResolverState& state) const {
   {% if property.style_builder_declare %}
     {% if property.style_builder_generate_value %}
 void {{class_name}}::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
-      {% if property.tree_scoped_value %}
-  NOTREACHED();
-}
-void {{class_name}}::ApplyValue(StyleResolverState& state, const ScopedCSSValue& value) const {
-      {% endif %}
 {{(caller(property) ~ '}')}}
     {% endif %}
   {% endif %}
@@ -56,22 +51,6 @@ state.GetFontBuilder().{{property.setter}}
 {{set_value(property)}}(To<CSSIdentifierValue>(value).ConvertTo<blink::{{property.type_name}}>());
   {%- elif property.converter %}
 {{set_value(property)}}(StyleBuilderConverter::{{property.converter}}(state, value));
-  {%- endif %}
-{% endmacro %}
-
-{% macro add_tree_scope(property, value, tree_scope) %}
-  {%- if property.tree_scoped_value %}
-ScopedCSSValue({{value}}, {{tree_scope}})
-  {%- else %}
-{{value}}
-  {%- endif %}
-{% endmacro %}
-
-{% macro remove_tree_scope(property, value) %}
-  {%- if property.tree_scoped_value %}
-{{value}}.GetCSSValue()
-  {%- else %}
-{{value}}
   {%- endif %}
 {% endmacro %}
 
@@ -237,8 +216,8 @@ ScopedCSSValue({{value}}, {{tree_scope}})
     {% call(property) apply_value(property) %}
   CSS{{animation}}Data& data = state.StyleBuilder().Access{{animation}}s();
   data.{{vector}}.clear();
-  for (const CSSValue* list_value : To<CSSValueList>({{remove_tree_scope(property, 'value')}})) {
-    const auto& item = {{add_tree_scope(property, '*list_value', 'value.GetTreeScope()')}};
+  for (const CSSValue* list_value : To<CSSValueList>(value)) {
+    const auto& item = *list_value;
     data.{{vector}}.push_back(CSSToStyleMap::MapAnimation{{attribute}}(state, item));
   }
     {% endcall %}

@@ -15,7 +15,7 @@
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/strike_database.h"
+#include "components/autofill/core/browser/strike_databases/strike_database.h"
 #include "components/autofill/core/browser/ui/payments/card_expiration_date_fix_flow_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/card_name_fix_flow_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller_impl.h"
@@ -59,7 +59,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   PersonalDataManager* GetPersonalDataManager() override;
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
-  CreditCardCVCAuthenticator* GetCVCAuthenticator() override;
+  CreditCardCvcAuthenticator* GetCvcAuthenticator() override;
   CreditCardOtpAuthenticator* GetOtpAuthenticator() override;
   PrefService* GetPrefs() override;
   const PrefService* GetPrefs() const override;
@@ -108,9 +108,10 @@ class ChromeAutofillClientIOS : public AutofillClient {
       AddressProfileSavePromptCallback callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
-  bool TryToShowFastCheckout(const FormData& form,
-                             const FormFieldData& field,
-                             AutofillDriver* driver) override;
+  bool TryToShowFastCheckout(
+      const FormData& form,
+      const FormFieldData& field,
+      base::WeakPtr<AutofillManager> autofill_manager) override;
   void HideFastCheckout(bool allow_further_runs) override;
   bool IsFastCheckoutSupported() override;
   bool IsShowingFastCheckoutUI() override;
@@ -139,7 +140,6 @@ class ChromeAutofillClientIOS : public AutofillClient {
   void DidFillOrPreviewField(const std::u16string& autofilled_value,
                              const std::u16string& profile_full_name) override;
   bool IsContextSecure() const override;
-  bool ShouldShowSigninPromo() override;
   void ExecuteCommand(int id) override;
   void OpenPromoCodeOfferDetailsURL(const GURL& url) override;
   FormInteractionsFlowId GetCurrentFormInteractionsFlowId() override;
@@ -160,7 +160,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   __weak id<AutofillClientIOSBridge> bridge_;
   signin::IdentityManager* identity_manager_;
   std::unique_ptr<payments::PaymentsClient> payments_client_;
-  std::unique_ptr<CreditCardCVCAuthenticator> cvc_authenticator_;
+  std::unique_ptr<CreditCardCvcAuthenticator> cvc_authenticator_;
   std::unique_ptr<CreditCardOtpAuthenticator> otp_authenticator_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
   scoped_refptr<AutofillWebDataService> autofill_web_data_service_;

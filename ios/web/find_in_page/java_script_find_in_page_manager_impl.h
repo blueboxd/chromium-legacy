@@ -8,19 +8,13 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#import "base/values.h"
 #import "ios/web/find_in_page/java_script_find_in_page_request.h"
 #import "ios/web/public/find_in_page/java_script_find_in_page_manager.h"
 #include "ios/web/public/web_state_observer.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 @class NSString;
-
-namespace {
-// Find in Page UserAction keys.
-const char kFindActionName[] = "Find";
-const char kFindNextActionName[] = "FindNext";
-const char kFindPreviousActionName[] = "FindPrevious";
-}  // namespace
 
 namespace web {
 

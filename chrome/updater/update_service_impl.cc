@@ -122,6 +122,54 @@ UpdateService::ErrorCategory ToErrorCategory(
   }
 }
 
+// TODO(crbug.com/1396103): remove this `#if` once mojo interface changes are
+// done in separate CL.
+#if BUILDFLAG(IS_WIN)
+update_client::UpdateClient::CrxStateChangeCallback
+MakeUpdateClientCrxStateChangeCallbackForUpdateCheck(
+    scoped_refptr<update_client::Configurator> config,
+    UpdateService::StateChangeCallback callback) {
+  struct RefCountedState : public base::RefCountedThreadSafe<RefCountedState> {
+   public:
+    RefCountedState() : value(UpdateService::UpdateState::State::kUnknown) {}
+
+    RefCountedState(const RefCountedState&) = delete;
+    RefCountedState& operator=(const RefCountedState&) = delete;
+
+    UpdateService::UpdateState::State value;
+
+   protected:
+    friend class base::RefCountedThreadSafe<RefCountedState>;
+    virtual ~RefCountedState() {}
+  };
+
+  scoped_refptr<RefCountedState> previous_state =
+      base::MakeRefCounted<RefCountedState>();
+
+  return base::BindRepeating(
+      [](scoped_refptr<update_client::Configurator> config,
+         UpdateService::StateChangeCallback callback,
+         scoped_refptr<RefCountedState> previous_state,
+         update_client::CrxUpdateItem crx_update_item) {
+        // Ignore any state after `kUpdateAvailable`.
+        if (previous_state->value ==
+            UpdateService::UpdateState::State::kUpdateAvailable) {
+          return;
+        }
+
+        UpdateService::UpdateState update_state;
+        update_state.app_id = crx_update_item.id;
+        update_state.state = ToUpdateState(crx_update_item.state);
+        update_state.next_version = crx_update_item.next_version;
+
+        previous_state->value = update_state.state;
+
+        callback.Run(update_state);
+      },
+      config, callback, previous_state);
+}
+#endif  // BUILDFLAG(IS_WIN)
+
 update_client::UpdateClient::CrxStateChangeCallback
 MakeUpdateClientCrxStateChangeCallback(
     scoped_refptr<update_client::Configurator> config,
@@ -432,6 +480,10 @@ void UpdateServiceImpl::UpdateAll(StateChangeCallback state_update,
 void UpdateServiceImpl::Update(
     const std::string& app_id,
     const std::string& install_data_index,
+// TODO(crbug.com/1396103): mojo interface changes will be done in separate CL.
+#if BUILDFLAG(IS_WIN)
+    bool do_update_check_only,
+#endif  // BUILDFLAG(IS_WIN)
     Priority priority,
     PolicySameVersionUpdate policy_same_version_update,
     StateChangeCallback state_update,
@@ -445,6 +497,27 @@ void UpdateServiceImpl::Update(
                                  std::move(callback));
     return;
   }
+
+#if BUILDFLAG(IS_WIN)
+  if (do_update_check_only) {
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &update_client::UpdateClient::Update, update_client_,
+            std::vector<std::string>{app_id},
+            base::BindOnce(&GetComponents, config_, persisted_data_,
+                           AppClientInstallData(),
+                           AppInstallDataIndex(
+                               {std::make_pair(app_id, install_data_index)}),
+                           priority == Priority::kForeground,
+                           /*update_blocked*/ true, policy_same_version_update),
+            MakeUpdateClientCrxStateChangeCallbackForUpdateCheck(config_,
+                                                                 state_update),
+            priority == Priority::kForeground,
+            MakeUpdateClientCallback(std::move(callback))));
+    return;
+  }
+#endif  // BUILDFLAG(IS_WIN)
 
   ShouldBlockUpdateForMeteredNetwork(
       priority,
@@ -515,7 +588,8 @@ void UpdateServiceImpl::RunInstaller(const std::string& app_id,
                                      const std::string& install_settings,
                                      StateChangeCallback state_update,
                                      Callback callback) {
-  VLOG(1) << __func__;
+  VLOG(1) << __func__ << ": " << app_id << ": " << installer_path << ": "
+          << install_args << ": " << install_data << ": " << install_settings;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   int policy = kPolicyEnabled;
@@ -532,7 +606,7 @@ void UpdateServiceImpl::RunInstaller(const std::string& app_id,
                        ? persisted_data_->GetExistenceCheckerPath(app_id)
                        : base::FilePath());
 
-  // Create a thread runner that:
+  // Create a task runner that:
   //   1) has SequencedTaskRunner::CurrentDefaultHandle set, to run
   //      `state_update` callback.
   //   2) may block, since `RunApplicationInstaller` blocks.
@@ -546,7 +620,7 @@ void UpdateServiceImpl::RunInstaller(const std::string& app_id,
       base::BindOnce(
           [](const AppInfo& app_info, const base::FilePath& installer_path,
              const std::string& install_args, const std::string& install_data,
-             StateChangeCallback state_update) {
+             StateChangeCallback state_update, bool usage_stats_enabled) {
             base::ScopedTempDir temp_dir;
             if (!temp_dir.CreateUniqueTempDir()) {
               return InstallerResult(kErrorApplicationInstallerFailed,
@@ -556,7 +630,7 @@ void UpdateServiceImpl::RunInstaller(const std::string& app_id,
             return RunApplicationInstaller(
                 app_info, installer_path, install_args,
                 WriteInstallerDataToTempFile(temp_dir.GetPath(), install_data),
-                kWaitForAppInstaller,
+                usage_stats_enabled, kWaitForAppInstaller,
                 base::BindRepeating(
                     [](StateChangeCallback state_update,
                        const std::string& app_id, int progress) {
@@ -569,7 +643,8 @@ void UpdateServiceImpl::RunInstaller(const std::string& app_id,
                     },
                     state_update, app_info.app_id));
           },
-          app_info, installer_path, install_args, install_data, state_update),
+          app_info, installer_path, install_args, install_data, state_update,
+          persisted_data_->GetUsageStatsEnabled()),
       base::BindOnce(
           [](StateChangeCallback state_update, const std::string& app_id,
              Callback callback, const InstallerResult& result) {

@@ -90,18 +90,14 @@ class SiteSettingsHandler
   void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change);
 
  private:
+  friend class SiteSettingsHandlerBaseTest;
   friend class SiteSettingsHandlerChooserExceptionTest;
   friend class SiteSettingsHandlerInfobarTest;
-  friend class SiteSettingsHandlerTest;
   // TODO(crbug.com/1373962): Remove this friend class when
   // Persistent Permissions is launched.
   friend class PersistentPermissionsSiteSettingsHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(PersistentPermissionsSiteSettingsHandlerTest,
                            HandleGetFileSystemGrants);
-  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerChooserExceptionTest,
-                           HandleGetChooserExceptionListForUsb);
-  FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerChooserExceptionTest,
-                           HandleResetChooserExceptionForSiteForUsb);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerInfobarTest,
                            SettingPermissionsTriggersInfobar);
   FRIEND_TEST_ALL_PREFIXES(SiteSettingsHandlerTest,
@@ -342,11 +338,6 @@ class SiteSettingsHandler
 
   // Gets a plural string for the given number of cookies.
   void HandleGetNumCookiesString(const base::Value::List& args);
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // Get the extension name for a given extension id.
-  void HandleGetExtensionName(const base::Value::List& args);
-#endif
 
   // Provides an opportunity for site data which is not integrated into the
   // tree model to be removed when entries for |origins| are removed.

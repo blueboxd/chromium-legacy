@@ -53,11 +53,6 @@ source_set("time_zone_monitor") {
     sources += [
       "time_zone_monitor_lacros.cc",
       "time_zone_monitor_lacros.h",
-
-      # Keep using linux implementation as a fallback.
-      # TODO(crbug.com/1288168): TODO clean up this, when we no longer need
-      # to support older ash.
-      "time_zone_monitor_linux.cc",
     ]
     deps += [
       "//build:chromeos_buildflags",
@@ -66,7 +61,7 @@ source_set("time_zone_monitor") {
     ]
   }
 
-  if (is_mac) {
+  if (is_apple) {
     sources += [ "time_zone_monitor_mac.mm" ]
     frameworks = [ "Foundation.framework" ]
   }

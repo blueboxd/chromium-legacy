@@ -23,6 +23,13 @@ constexpr auto enabled_by_default_android_only =
     base::FEATURE_DISABLED_BY_DEFAULT;
 #endif
 
+constexpr auto enabled_by_default_ios_only =
+#if BUILDFLAG(IS_IOS)
+    base::FEATURE_ENABLED_BY_DEFAULT;
+#else
+    base::FEATURE_DISABLED_BY_DEFAULT;
+#endif
+
 constexpr auto enabled_by_default_desktop_android =
 #if BUILDFLAG(IS_IOS)
     base::FEATURE_DISABLED_BY_DEFAULT;
@@ -295,7 +302,7 @@ BASE_FEATURE(kShortBookmarkSuggestions,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kShortBookmarkSuggestionsByTotalInputLength,
              "OmniboxShortBookmarkSuggestionsByTotalInputLength",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             enabled_by_default_desktop_only);
 
 // If enabled, inputs may match bookmark paths. These path matches won't
 // contribute to scoring. E.g. 'planets jupiter' can suggest a bookmark titled
@@ -303,7 +310,7 @@ BASE_FEATURE(kShortBookmarkSuggestionsByTotalInputLength,
 // containing 'planet.'
 BASE_FEATURE(kBookmarkPaths,
              "OmniboxBookmarkPaths",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             enabled_by_default_desktop_only);
 
 // If enabled, when updating or creating a shortcut, the last word of the input
 // is expanded, if possible, to a complete word in the suggestion description.
@@ -411,6 +418,12 @@ BASE_FEATURE(kOmniboxMatchToolbarAndStatusBarColor,
 BASE_FEATURE(kOmniboxMostVisitedTilesAddRecycledViewPool,
              "OmniboxMostVisitedTilesAddRecycledViewPool",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Feature used to add most visited tiles to the suggestions when the user is on
+// a search result page that does not do search term replacement.
+BASE_FEATURE(kOmniboxMostVisitedTilesOnSrp,
+             "OmniboxMostVisitedTilesOnSrp",
+             enabled_by_default_ios_only);
 
 // If enabled, adds a grey square background to search icons, and makes answer
 // icon square instead of round.

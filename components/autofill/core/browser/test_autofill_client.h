@@ -27,7 +27,7 @@
 #include "components/autofill/core/browser/payments/credit_card_otp_authenticator.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/test_payments_client.h"
-#include "components/autofill/core/browser/payments/test_strike_database.h"
+#include "components/autofill/core/browser/strike_databases/payments/test_strike_database.h"
 #include "components/autofill/core/browser/test_address_normalizer.h"
 #include "components/autofill/core/browser/test_form_data_importer.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
@@ -70,7 +70,7 @@ class TestAutofillClient : public AutofillClient {
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   IBANManager* GetIBANManager() override;
   MerchantPromoCodeManager* GetMerchantPromoCodeManager() override;
-  CreditCardCVCAuthenticator* GetCVCAuthenticator() override;
+  CreditCardCvcAuthenticator* GetCvcAuthenticator() override;
   CreditCardOtpAuthenticator* GetOtpAuthenticator() override;
   PrefService* GetPrefs() override;
   const PrefService* GetPrefs() const override;
@@ -164,9 +164,10 @@ class TestAutofillClient : public AutofillClient {
       AddressProfileSavePromptCallback callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
-  bool TryToShowFastCheckout(const FormData& form,
-                             const FormFieldData& field,
-                             AutofillDriver* driver) override;
+  bool TryToShowFastCheckout(
+      const FormData& form,
+      const FormFieldData& field,
+      base::WeakPtr<AutofillManager> autofill_manager) override;
   void HideFastCheckout(bool allow_further_runs) override;
   bool IsFastCheckoutSupported() override;
   bool IsShowingFastCheckoutUI() override;
@@ -200,7 +201,6 @@ class TestAutofillClient : public AutofillClient {
   // secure. This can be adjusted by calling set_form_origin() with an
   // http:// URL.
   bool IsContextSecure() const override;
-  bool ShouldShowSigninPromo() override;
   void ExecuteCommand(int id) override;
   void OpenPromoCodeOfferDetailsURL(const GURL& url) override;
   LogManager* GetLogManager() const override;
@@ -228,7 +228,7 @@ class TestAutofillClient : public AutofillClient {
   }
 
   void set_cvc_authenticator(
-      std::unique_ptr<CreditCardCVCAuthenticator> authenticator) {
+      std::unique_ptr<CreditCardCvcAuthenticator> authenticator) {
     cvc_authenticator_ = std::move(authenticator);
   }
 
@@ -384,7 +384,7 @@ class TestAutofillClient : public AutofillClient {
   std::unique_ptr<PrefService> prefs_;
   std::unique_ptr<TestStrikeDatabase> test_strike_database_;
   std::unique_ptr<payments::PaymentsClient> payments_client_;
-  std::unique_ptr<CreditCardCVCAuthenticator> cvc_authenticator_;
+  std::unique_ptr<CreditCardCvcAuthenticator> cvc_authenticator_;
   std::unique_ptr<CreditCardOtpAuthenticator> otp_authenticator_;
 
   // AutofillOfferManager and TestFormDataImporter must be destroyed before

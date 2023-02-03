@@ -38,6 +38,12 @@
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #endif  // BUIDLFLAG(IS_ANDROID)
 
+#if !BUILDFLAG(IS_ANDROID)
+#include "content/browser/webauth/authenticator_environment_impl.h"
+#include "content/public/common/content_switches.h"
+#include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
+#endif
+
 namespace content {
 
 class RenderFrameHostImplTest : public RenderViewHostImplTestHarness {
@@ -866,6 +872,78 @@ TEST_F(RenderFrameHostImplTest, BeforeUnloadCheckForBrowserInitiated) {
                   ->is_waiting_for_beforeunload_completion());
 }
 
+// Tests GetCookieSettingOverrides on a committed frame, and implicitly tests
+// SubresourceLoaderFactoriesConfig::ForLastCommittedNavigation.
+// TODO(crbug.com/1386190): Also add browser tests before the user bypass
+// BREF is actually turned on anywhere.
+TEST_F(RenderFrameHostImplTest, GetCookieSettingOverrides) {
+  GURL url = GURL("https://example.test/");
+  GURL child_url = GURL("https://example.test/child");
+
+  // Start a navigation that has the ThirdPartyCookiesUserBypass feature
+  // enabled (the only feature pertaining to CookieSettingOverrides currently).
+  std::unique_ptr<NavigationSimulator> simulator =
+      NavigationSimulator::CreateRendererInitiated(url, main_rfh());
+  simulator->Start();
+
+  // Set user bypass BREF and prepare to commit.
+  {
+    blink::RuntimeFeatureStateContext& context =
+        NavigationRequest::From(simulator->GetNavigationHandle())
+            ->GetMutableRuntimeFeatureStateContext();
+    context.SetThirdPartyCookiesUserBypassEnabled(true);
+  }
+  simulator->ReadyToCommit();
+
+  // Verify that calling GetCookieSettingOverrides before the main frame
+  // is at least committing will return an empty set. This corresponds to
+  // scenarios like an empty initial document.
+  {
+    auto* rfh = static_cast<TestRenderFrameHost*>(
+        simulator->GetNavigationHandle()->GetRenderFrameHost());
+    EXPECT_TRUE(rfh->GetCookieSettingOverrides().Empty());
+
+    // Check that a child frame gives the same result.
+    EXPECT_TRUE(
+        rfh->AppendChild("child1")->GetCookieSettingOverrides().Empty());
+  }
+
+  // Commit the navigation and check that GetCookieSettingOverrides now
+  // returns the correct override.
+  simulator->Commit();
+  {
+    auto* rfh =
+        static_cast<TestRenderFrameHost*>(simulator->GetFinalRenderFrameHost());
+    EXPECT_TRUE(rfh->GetCookieSettingOverrides().Has(
+        net::CookieSettingOverride::kForceThirdPartyByUser));
+
+    // Check that the child frame gives the same result.
+    EXPECT_EQ(rfh->GetCookieSettingOverrides(),
+              rfh->AppendChild("child2")->GetCookieSettingOverrides());
+  }
+
+  // Start a different navigation on a new child frame and verify that the
+  // CookieSettingOverrides come from committed main frame.
+  {
+    auto* main_rfh =
+        static_cast<TestRenderFrameHost*>(simulator->GetFinalRenderFrameHost());
+    TestRenderFrameHost* child_rfh = main_rfh->AppendChild("child3");
+    std::unique_ptr<NavigationSimulator> child_simulator =
+        NavigationSimulator::CreateRendererInitiated(child_url, child_rfh);
+    child_simulator->Start();
+    blink::RuntimeFeatureStateContext& context =
+        NavigationRequest::From(child_simulator->GetNavigationHandle())
+            ->GetMutableRuntimeFeatureStateContext();
+    context.SetThirdPartyCookiesUserBypassEnabled(false);
+    child_simulator->ReadyToCommit();
+    EXPECT_TRUE(child_rfh->GetCookieSettingOverrides().Has(
+        net::CookieSettingOverride::kForceThirdPartyByUser));
+    child_simulator->Commit();
+    EXPECT_TRUE(child_rfh->GetCookieSettingOverrides().Has(
+        net::CookieSettingOverride::kForceThirdPartyByUser));
+  }
+}
+
 class RenderFrameHostImplThirdPartyStorageTest
     : public RenderViewHostImplTestHarness,
       public testing::WithParamInterface<bool> {
@@ -929,5 +1007,59 @@ TEST_P(RenderFrameHostImplThirdPartyStorageTest,
               child_frame->storage_key());
   }
 }
+
+#if !BUILDFLAG(IS_ANDROID)
+TEST_F(RenderFrameHostImplTest, GetVirtualAuthenticatorManagerWhenInactiveRFH) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableWebAuthDeprecatedMojoTestingApi);
+
+  // Enable a back forward cache.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeaturesAndParameters(
+      {{features::kBackForwardCache, {}}},
+      // Allow BackForwardCache for all devices regardless of their memory.
+      {features::kBackForwardCacheMemoryControls});
+
+  // Create a page with an iframe:
+  contents()->NavigateAndCommit(GURL("https://initial.example.test/"));
+
+  RenderFrameHostImpl* parent_rfh = main_test_rfh();
+  RenderFrameHostImpl* child_rfh = static_cast<RenderFrameHostImpl*>(
+      NavigationSimulator::NavigateAndCommitFromDocument(
+          GURL("https://childframe.com"),
+          RenderFrameHostTester::For(parent_rfh)->AppendChild("child")));
+  EXPECT_TRUE(child_rfh->IsActive());
+
+  // The active child document should enable VirtualAuthenticator.
+  {
+    mojo::Remote<blink::test::mojom::VirtualAuthenticatorManager> remote;
+    child_rfh->GetVirtualAuthenticatorManager(
+        remote.BindNewPipeAndPassReceiver());
+    EXPECT_TRUE(AuthenticatorEnvironmentImpl::GetInstance()
+                    ->IsVirtualAuthenticatorEnabledFor(
+                        contents()->GetPrimaryFrameTree().root()->child_at(0)));
+  }
+
+  // Navigate to another page, causing the two RenderFrameHost to become
+  // inactive.
+  RenderFrameDeletedObserver parent_rfh_deleted(parent_rfh);
+  auto navigation = NavigationSimulatorImpl::CreateBrowserInitiated(
+      GURL("https://final.example.test/"), contents());
+  navigation->set_drop_unload_ack(true);
+  navigation->Commit();
+  ASSERT_FALSE(parent_rfh_deleted.deleted());
+  EXPECT_FALSE(parent_rfh->IsActive());
+
+  // The inactive document should not enable VirtualAuthenticator.
+  {
+    mojo::Remote<blink::test::mojom::VirtualAuthenticatorManager> remote;
+    child_rfh->GetVirtualAuthenticatorManager(
+        remote.BindNewPipeAndPassReceiver());
+    EXPECT_FALSE(AuthenticatorEnvironmentImpl::GetInstance()
+                     ->IsVirtualAuthenticatorEnabledFor(
+                         contents()->GetPrimaryFrameTree().root()));
+  }
+}
+#endif
 
 }  // namespace content

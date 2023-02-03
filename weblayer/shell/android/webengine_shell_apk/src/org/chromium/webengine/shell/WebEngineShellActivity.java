@@ -8,11 +8,16 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,9 +43,7 @@ import java.util.Arrays;
  * Activity for managing the Demo Shell.
  *
  * TODO(swestphal):
- *  - Add url bar
  *  - UI to add/remove/switch tabs
- *  - Progress bar when navigation is ongoing
  *  - Expose some tab/navigation events in the UI
  *  - Move cookie test to manual-test activity
  *  - Move registerWebMessageCallback to manual-test activity
@@ -126,10 +129,14 @@ public class WebEngineShellActivity extends AppCompatActivity {
         CookieManager cookieManager = webEngine.getCookieManager();
 
         Tab activeTab = mTabManager.getActiveTab();
+        ProgressBar progressBar = findViewById(R.id.progress_bar);
+        EditText urlBar = findViewById(R.id.url_bar);
 
-        activeTab.registerTabObserver(new DefaultObservers.DefaultTabObserver());
+        activeTab.registerTabObserver(
+                new DefaultObservers.DefaultTabObserver(urlBar, activeTab, mTabManager));
         activeTab.getNavigationController().registerNavigationObserver(
-                new DefaultObservers.DefaultNavigationObserver() {
+                new DefaultObservers.DefaultNavigationObserver(
+                        progressBar, activeTab, mTabManager) {
                     @Override
                     public void onNavigationCompleted(@NonNull Navigation navigation) {
                         super.onNavigationCompleted(navigation);
@@ -148,7 +155,7 @@ public class WebEngineShellActivity extends AppCompatActivity {
                     }
                 });
 
-        activeTab.getNavigationController().navigate("https://google.com");
+        activeTab.getNavigationController().navigate("https://www.google.com");
 
         activeTab.registerWebMessageCallback(new WebMessageCallback() {
             @Override
@@ -164,7 +171,8 @@ public class WebEngineShellActivity extends AppCompatActivity {
             public void onWebMessageReplyProxyActiveStateChanged(WebMessageReplyProxy proxy) {}
         }, "x", Arrays.asList("*"));
 
-        mTabManager.registerTabListObserver(new DefaultObservers.DefaultTabListObserver());
+        mTabManager.registerTabListObserver(
+                new DefaultObservers.DefaultTabListObserver(progressBar, urlBar, mTabManager));
 
         ListenableFuture<Void> setCookieFuture =
                 cookieManager.setCookie("https://sadchonks.com", "foo=bar123");
@@ -189,6 +197,19 @@ public class WebEngineShellActivity extends AppCompatActivity {
                 Log.w(TAG, "setCookie failed: " + thrown);
             }
         }, mContext.getMainExecutor());
+
+        urlBar.setOnEditorActionListener(new OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                String query = v.getText().toString();
+                activeTab.getNavigationController().navigate(query);
+                // Hides keyboard on Enter key pressed
+                InputMethodManager imm =
+                        (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                return true;
+            }
+        });
 
         getSupportFragmentManager()
                 .beginTransaction()

@@ -45,6 +45,8 @@ try_.builder(
     builderless = False,
     os = os.MAC_DEFAULT,
     cpu = cpu.ARM64,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -55,6 +57,8 @@ try_.builder(
     ],
     builderless = False,
     os = os.MAC_13,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 # This trybot mirrors the trybot mac-rel
@@ -84,6 +88,8 @@ try_.builder(
     mirrors = ["ci/Mac Builder Next"],
     builderless = False,
     os = os.MAC_13,
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -150,7 +156,6 @@ try_.compilator_builder(
     os = os.MAC_DEFAULT,
     main_list_view = "try",
     check_for_flakiness = True,
-    goma_backend = None,
 )
 
 try_.builder(
@@ -169,6 +174,13 @@ try_.builder(
     builderless = True,
     check_for_flakiness = True,
     goma_backend = None,
+)
+
+try_.builder(
+    name = "mac11-wpt-content-shell-fyi-rel",
+    mirrors = [
+        "ci/mac11-wpt-content-shell-fyi-rel",
+    ],
 )
 
 try_.orchestrator_builder(
@@ -195,6 +207,13 @@ try_.compilator_builder(
 )
 
 try_.builder(
+    name = "mac12-arm64-wpt-content-shell-fyi-rel",
+    mirrors = [
+        "ci/mac12-arm64-wpt-content-shell-fyi-rel",
+    ],
+)
+
+try_.builder(
     name = "mac12-wpt-content-shell-fyi-rel",
     mirrors = [
         "ci/mac12-wpt-content-shell-fyi-rel",
@@ -210,6 +229,7 @@ try_.builder(
         "ci/Mac Builder",
         "ci/Mac10.13 Tests",
     ],
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -218,6 +238,8 @@ try_.builder(
         "ci/Mac Builder",
         "ci/Mac10.14 Tests",
     ],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -226,6 +248,8 @@ try_.builder(
         "ci/Mac Builder",
         "ci/Mac10.15 Tests",
     ],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -251,6 +275,8 @@ try_.builder(
     mirrors = [
         "ci/mac-archive-rel",
     ],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -275,7 +301,6 @@ try_.builder(
     ),
     os = os.MAC_DEFAULT,
     main_list_view = "try",
-    goma_backend = None,
     tryjob = try_.job(),
 )
 
@@ -288,6 +313,8 @@ try_.builder(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -296,6 +323,8 @@ try_.builder(
         "ci/Mac Builder (dbg)",
         "ci/Mac12 Tests (dbg)",
     ],
+    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -437,7 +466,6 @@ ios_builder(
         ],
     ),
     use_clang_coverage = True,
-    goma_backend = None,
 )
 
 ios_builder(

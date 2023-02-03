@@ -566,6 +566,31 @@ TEST_F(IntentUtilTest, FileExtensionMatch) {
   EXPECT_TRUE(intent->MatchFilter(file_filter_dot));
 }
 
+TEST_F(IntentUtilTest, FileExtensionMatchCaseInsensitive) {
+  auto lowercase_filter =
+      apps_util::MakeFileFilterForView("text/csv", "csv", "label");
+  auto uppercase_filter =
+      apps_util::MakeFileFilterForView("text/csv", "CSV", "label");
+
+  auto lowercase_intent = std::make_unique<apps::Intent>(
+      apps_util::kIntentActionView,
+      CreateIntentFiles(test_url("abc.csv"), absl::nullopt, false));
+  EXPECT_TRUE(lowercase_intent->MatchFilter(lowercase_filter));
+  EXPECT_TRUE(lowercase_intent->MatchFilter(uppercase_filter));
+
+  auto uppercase_intent = std::make_unique<apps::Intent>(
+      apps_util::kIntentActionView,
+      CreateIntentFiles(test_url("abc.CSV"), absl::nullopt, false));
+  EXPECT_TRUE(uppercase_intent->MatchFilter(lowercase_filter));
+  EXPECT_TRUE(uppercase_intent->MatchFilter(uppercase_filter));
+
+  auto mixcase_intent = std::make_unique<apps::Intent>(
+      apps_util::kIntentActionView,
+      CreateIntentFiles(test_url("abc.CsV"), absl::nullopt, false));
+  EXPECT_TRUE(mixcase_intent->MatchFilter(lowercase_filter));
+  EXPECT_TRUE(mixcase_intent->MatchFilter(uppercase_filter));
+}
+
 TEST_F(IntentUtilTest, FileURLMatch) {
   std::string mp3_url_pattern = R"(filesystem:chrome-extension://.*/.*\.mp3)";
 
@@ -676,6 +701,23 @@ TEST_F(IntentUtilTest, FileWithTitleText) {
   intent = apps_util::MakeShareIntent(urls, mime_types, "", "");
   EXPECT_FALSE(intent->share_text.has_value());
   EXPECT_FALSE(intent->share_title.has_value());
+  EXPECT_TRUE(intent->MatchFilter(filter));
+}
+
+TEST_F(IntentUtilTest, FileWithDlpSourceUrls) {
+  const std::string mime_type = "image/jpeg";
+  const GURL file_url = GURL("https://www.google.com/");
+  const std::string dlp_source_url = "https://www.example.com/";
+
+  auto filter = apps_util::MakeIntentFilterForSend(mime_type);
+  const std::vector<GURL> urls{file_url};
+  const std::vector<std::string> mime_types{mime_type};
+  const std::vector<std::string> dlp_source_urls{dlp_source_url};
+
+  auto intent = apps_util::MakeShareIntent(urls, mime_types, dlp_source_urls);
+  ASSERT_EQ(1u, intent->files.size());
+  EXPECT_EQ(file_url, intent->files[0]->url);
+  EXPECT_EQ(dlp_source_url, intent->files[0]->dlp_source_url);
   EXPECT_TRUE(intent->MatchFilter(filter));
 }
 

@@ -12,6 +12,7 @@
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/attribution_data_model.h"
 #include "content/public/browser/storage_partition.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -103,6 +104,15 @@ class AttributionStorage {
   // a negative number for no limit.
   virtual std::vector<StoredSource> GetActiveSources(int limit = -1) = 0;
 
+  // Returns all distinct reporting_origins as DataKeys for the
+  // Browsing Data Model. Partial data will still be returned
+  // in the event of an error.
+  virtual std::vector<AttributionDataModel::DataKey> GetAllDataKeys() = 0;
+
+  // Deletes all data in storage for storage keys matching the provided
+  // reporting origin in the data key.
+  virtual void DeleteByDataKey(const AttributionDataModel::DataKey&) = 0;
+
   // Deletes the report with the given |report_id|. Returns
   // false if an error occurred.
   [[nodiscard]] virtual bool DeleteReport(AttributionReport::Id report_id) = 0;
@@ -122,14 +132,17 @@ class AttributionStorage {
   // report time in storage, if any.
   virtual absl::optional<base::Time> AdjustOfflineReportTimes() = 0;
 
-  // Deletes all data in storage for storage keys matching `filter`, between
-  // `delete_begin` and `delete_end` time. More specifically, this:
+  // Deletes all data in storage for reporting origins matching `filter`,
+  // between `delete_begin` and `delete_end` time. More specifically, this:
   // 1. Deletes all sources within the time range. If any report is
   //    attributed to this source it is also deleted.
   // 2. Deletes all reports within the time range. All sources
   //    attributed to the report are also deleted.
+  // 3. Deletes any rate limits matching `filter` or whose corresponding source
+  //    was deleted.
   //
-  // Note: if `filter` is null, it means that all storage keys should match.
+  // Note: if `filter` is null, it means that all reporting origins should
+  // match.
   virtual void ClearData(base::Time delete_begin,
                          base::Time delete_end,
                          StoragePartition::StorageKeyMatcherFunction filter,

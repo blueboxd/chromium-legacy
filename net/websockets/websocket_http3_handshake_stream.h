@@ -107,9 +107,10 @@ class NET_EXPORT_PRIVATE WebSocketHttp3HandshakeStream final
       const spdy::Http2HeaderBlock& response_headers) override;
   void OnClose(int status) override;
 
-  void StartRequestCallback();
-
  private:
+  void ReceiveAdapterAndStartRequest(
+      std::unique_ptr<WebSocketQuicStreamAdapter> adapter);
+
   // Validates the response and sends the finished handshake event.
   int ValidateResponse();
 
@@ -121,7 +122,7 @@ class NET_EXPORT_PRIVATE WebSocketHttp3HandshakeStream final
                  int net_error,
                  absl::optional<int> response_code);
 
-  HandshakeResult result_ = HandshakeResult::HTTP2_INCOMPLETE;
+  HandshakeResult result_ = HandshakeResult::HTTP3_INCOMPLETE;
 
   std::unique_ptr<WebSocketSpdyStreamAdapter> adapter_;
 
@@ -161,8 +162,6 @@ class NET_EXPORT_PRIVATE WebSocketHttp3HandshakeStream final
   RequestPriority priority_;
 
   NetLogWithSource net_log_;
-
-  std::unique_ptr<QuicStreamRequest> quic_stream_request_;
 
   // WebSocketQuicStreamAdapter holding a WeakPtr to `stream_`.
   // This can be passed on to WebSocketBasicStream when created.

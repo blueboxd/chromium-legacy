@@ -471,8 +471,11 @@ DOMException* AuthenticatorStatusToDOMException(
     case AuthenticatorStatus::INVALID_PROTOCOL:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kSecurityError,
-          "Public-key credentials are only available to HTTPS origin or HTTP "
-          "origins that fall under 'localhost'. See https://crbug.com/824383");
+          "Public-key credentials are only available to HTTPS origins with "
+          "valid certificates, HTTP origins that fall under 'localhost', or "
+          "pages served from an extension. See "
+          "https://chromium.googlesource.com/chromium/src/+/main/content/"
+          "browser/webauth/origins.md for details");
     case AuthenticatorStatus::BAD_RELYING_PARTY_ID:
       return MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kSecurityError,
@@ -977,40 +980,42 @@ bool IsPaymentExtensionValid(const CredentialCreationOptions* options,
     return false;
   }
 
-  // Currently discoverable credentials on Android do not support the payment
-  // extension. As such, we only allow residentKey=preferred, and later
-  // internally map it to discouraged to receive a non-discoverable credential.
-  //
-  // We do not allow developers to directly specify residentKey=discouraged for
-  // Android, in order to align behavior with desktop platforms.
-  //
-  // TODO(crbug.com/1393662): Remove Android-specific code once OS-level support
-  // is available.
-#if BUILDFLAG(IS_ANDROID)
-  if (!authenticator->hasResidentKey() ||
-      authenticator->residentKey() != "preferred") {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotSupportedError,
-        "A resident key must be 'preferred' for 'payment' extension "
-        "('required' is not supported on Android at this time: "
-        "https://crbug.com/1393662)."));
-    return false;
+  if (RuntimeEnabledFeatures::
+          AllowDiscoverableCredentialsForSecurePaymentConfirmationEnabled()) {
+    if ((!authenticator->hasResidentKey() &&
+         !authenticator->hasRequireResidentKey()) ||
+        (authenticator->hasResidentKey() &&
+         authenticator->residentKey() == "discouraged") ||
+        (!authenticator->hasResidentKey() &&
+         authenticator->hasRequireResidentKey() &&
+         !authenticator->requireResidentKey())) {
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "A resident key must be 'preferred' or 'required' for 'payment' "
+          "extension."));
+      return false;
+    }
+  } else {
+    // Currently discoverable credentials on Android do not support the payment
+    // extension. As such, we only allow residentKey=preferred, and later
+    // internally map it to discouraged to receive a non-discoverable
+    // credential.
+    //
+    // We do not allow developers to directly specify residentKey=discouraged
+    // for Android, in order to align behavior with desktop platforms.
+    //
+    // TODO(crbug.com/1393662): Remove Android-specific code once OS-level
+    // support is available.
+    if (!authenticator->hasResidentKey() ||
+        authenticator->residentKey() != "preferred") {
+      resolver->Reject(MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kNotSupportedError,
+          "A resident key must be 'preferred' for 'payment' extension "
+          "('required' is not supported on Android at this time: "
+          "https://crbug.com/1393662)."));
+      return false;
+    }
   }
-#else
-  if ((!authenticator->hasResidentKey() &&
-       !authenticator->hasRequireResidentKey()) ||
-      (authenticator->hasResidentKey() &&
-       authenticator->residentKey() == "discouraged") ||
-      (!authenticator->hasResidentKey() &&
-       authenticator->hasRequireResidentKey() &&
-       !authenticator->requireResidentKey())) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotSupportedError,
-        "A resident key must be 'preferred' or 'required' for 'payment' "
-        "extension."));
-    return false;
-  }
-#endif
 
   if (!authenticator->hasAuthenticatorAttachment() ||
       authenticator->authenticatorAttachment() != "platform") {
@@ -1218,20 +1223,22 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
       if (options->publicKey()->extensions()->hasPrf()) {
         const char* error = validateGetPublicKeyCredentialPRFExtension(
             *options->publicKey()->extensions()->prf());
-        if (error == nullptr &&
-            options->publicKey()->extensions()->prf()->hasEvalByCredential() &&
+        if (error != nullptr) {
+          resolver->Reject(MakeGarbageCollected<DOMException>(
+              DOMExceptionCode::kSyntaxError, error));
+          return promise;
+        }
+
+        if (options->publicKey()->extensions()->prf()->hasEvalByCredential() &&
             options->publicKey()->allowCredentials().empty()) {
-          error =
-              "'prf' extension has 'evalByCredential' with an empty allow list";
+          resolver->Reject(MakeGarbageCollected<DOMException>(
+              DOMExceptionCode::kNotSupportedError,
+              "'prf' extension has 'evalByCredential' with an empty allow "
+              "list"));
+          return promise;
         }
         // Prohibiting uv=preferred is omitted. See
         // https://github.com/w3c/webauthn/pull/1836.
-
-        if (error != nullptr) {
-          resolver->Reject(MakeGarbageCollected<DOMException>(
-              DOMExceptionCode::kNotSupportedError, error));
-          return promise;
-        }
       }
       if (RuntimeEnabledFeatures::SecurePaymentConfirmationEnabled(context) &&
           options->publicKey()->extensions()->hasPayment()) {

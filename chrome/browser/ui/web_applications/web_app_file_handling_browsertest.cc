@@ -275,6 +275,15 @@ IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest,
+                       FileExtensionCaseInsensitive) {
+  InstallFileHandlingPWA();
+  base::FilePath test_file_path = CreateTestFileWithExtension("TXT");
+  LaunchWithFiles(app_id(), GetTextFileHandlerActionURL(), {test_file_path});
+
+  VerifyPwaDidReceiveFileLaunchParams(true, test_file_path);
+}
+
+IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest,
                        PWAsCanReceiveFileLaunchParamsInTab) {
   InstallFileHandlingPWA();
   base::FilePath test_file_path = CreateTestFileWithExtension("txt");
@@ -502,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(WebAppFileHandlingBrowserTest,
 #endif
 
 class WebAppFileHandlingIconBrowserTest
-    : public InProcessBrowserTest,
+    : public WebAppControllerBrowserTest,
       public testing::WithParamInterface<bool> {
  public:
   WebAppFileHandlingIconBrowserTest() {

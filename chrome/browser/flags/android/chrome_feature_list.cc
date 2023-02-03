@@ -88,7 +88,8 @@ namespace {
 const base::Feature* const kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillAddressProfileSavePromptNicknameSupport,
     &autofill::features::kAutofillCreditCardAuthentication,
-    &autofill::features::kAutofillEnableRankingFormula,
+    &autofill::features::kAutofillEnableRankingFormulaAddressProfiles,
+    &autofill::features::kAutofillEnableRankingFormulaCreditCards,
     &autofill::features::kAutofillEnableManualFallbackForVirtualCards,
     &autofill::features::kAutofillKeyboardAccessory,
     &autofill::features::kAutofillManualFallbackAndroid,
@@ -134,6 +135,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &feature_engagement::kUseClientConfigIPH,
     &feature_guide::features::kFeatureNotificationGuide,
     &feature_guide::features::kSkipCheckForLowEngagedUsers,
+    &feed::kCormorant,
     &feed::kFeedBackToTop,
     &feed::kFeedHeaderStickToTop,
     &feed::kFeedImageMemoryCacheSizePercentage,
@@ -168,7 +170,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAssistantIntentTranslateInfo,
     &kAssistantNonPersonalizedVoiceSearch,
     &kAppMenuMobileSiteOption,
-    &kAppToWebAttribution,
     &kBackgroundThreadPool,
     &kBaselineGM3SurfaceColors,
     &kCastDeviceFilter,
@@ -194,10 +195,10 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTResizable90MaximumHeight,
     &kCCTResizableForThirdParties,
     &kCCTResizableSideSheet,
+    &kCCTResizableSideSheetForThirdParties,
     &kCCTRetainingStateInMemory,
     &kCCTResourcePrefetch,
     &kCCTToolbarCustomizations,
-    &kDiscardOccludedBitmaps,
     &kDontAutoHideBrowserControls,
     &kCacheDeprecatedSystemLocationSetting,
     &kChromeNewDownloadTab,
@@ -208,6 +209,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCommandLineOnNonRooted,
     &kContextMenuEnableLensShoppingAllowlist,
     &kContextMenuGoogleLensChip,
+    &kContextMenuGoogleLensSearchOptimizations,
     &kContextMenuSearchWithGoogleLens,
     &kContextMenuShopWithGoogleLens,
     &kContextMenuSearchAndShopWithGoogleLens,
@@ -230,7 +232,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kInfobarScrollOptimization,
     &kInstanceSwitcher,
     &kInstantStart,
-    &kIsVoiceSearchEnabledCache,
     &kLensCameraAssistedSearch,
     &kLensOnQuickActionSearchWidget,
     &kNotificationPermissionVariant,
@@ -248,14 +249,22 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kProbabilisticCryptidRenderer,
     &kReachedCodeProfiler,
     &kReaderModeInCCT,
+    &kRecordSuppressionMetrics,
     &kReengagementNotification,
     &kRelatedSearches,
-    &kRelatedSearchesInBar,
     &kRelatedSearchesUi,
     &kReportParentalControlSitesChild,
     &kRequestDesktopSiteDefaults,
     &kRequestDesktopSiteDefaultsControl,
+    &kRequestDesktopSiteDefaultsControlCohort1,
+    &kRequestDesktopSiteDefaultsControlCohort2,
+    &kRequestDesktopSiteDefaultsControlCohort3,
+    &kRequestDesktopSiteDefaultsControlCohort4,
     &kRequestDesktopSiteDefaultsControlSynthetic,
+    &kRequestDesktopSiteDefaultsEnabledCohort1,
+    &kRequestDesktopSiteDefaultsEnabledCohort2,
+    &kRequestDesktopSiteDefaultsEnabledCohort3,
+    &kRequestDesktopSiteDefaultsEnabledCohort4,
     &kRequestDesktopSiteDefaultsSynthetic,
     &kRequestDesktopSiteOptInControlSynthetic,
     &kRequestDesktopSiteOptInSynthetic,
@@ -265,6 +274,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kShowScrollableMVTOnNTPAndroid,
     &kFeedPositionAndroid,
     &kSearchResumptionModuleAndroid,
+    &kShouldIgnoreIntentSkipInternalCheck,
     &kSpecialLocaleWrapper,
     &kSpecialUserDecision,
     &kSuppressToolbarCaptures,
@@ -295,7 +305,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kStartSurfaceRefactor,
     &kStartSurfaceDisabledFeedImprovement,
     &kUmaBackgroundSessions,
-    &kUpdateHistoryEntryPointsInIncognito,
     &kUpdateNotificationScheduleServiceImmediateShowOption,
     &kUseLibunwindstackNativeUnwinderAndroid,
     &kVoiceSearchAudioCapturePolicy,
@@ -360,14 +369,13 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &segmentation_platform::features::kContextualPageActionShareModel,
     &send_tab_to_self::kSendTabToSelfSigninPromo,
     &send_tab_to_self::kSendTabToSelfV2,
-    &share::kCormorant,
     &share::kCrowLaunchTab,
-    &share::kPersistShareHubOnAppSwitch,
     &share::kScreenshotsForAndroidV2,
     &share::kUpcomingSharingFeatures,
     &supervised_users::kLocalWebApprovals,
     &supervised_users::kWebFilterInterstitialRefresh,
     &switches::kForceStartupSigninPromo,
+    &switches::kIdentityStatusConsistency,
     &switches::kForceDisableExtendedSyncPromos,
     &switches::kTangibleSync,
     &syncer::kSyncEnableHistoryDataType,
@@ -376,6 +384,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &video_tutorials::features::kVideoTutorials,
     &webapps::features::kInstallableAmbientBadgeInfoBar,
     &webapps::features::kInstallableAmbientBadgeMessage,
+    &webapps::features::kWebApkInstallFailureNotification,
     &webapps::features::kWebApkUniqueId,
 };
 
@@ -464,10 +473,6 @@ BASE_FEATURE(kAssistantNonPersonalizedVoiceSearch,
 
 BASE_FEATURE(kAppMenuMobileSiteOption,
              "AppMenuMobileSiteOption",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kAppToWebAttribution,
-             "AppToWebAttribution",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kBackgroundThreadPool,
@@ -569,6 +574,10 @@ BASE_FEATURE(kCCTResizableSideSheet,
              "CCTResizableSideSheet",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kCCTResizableSideSheetForThirdParties,
+             "CCTResizableSideSheetForThirdParties",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kCCTResourcePrefetch,
              "CCTResourcePrefetch",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -579,10 +588,6 @@ BASE_FEATURE(kCCTRetainingStateInMemory,
 
 BASE_FEATURE(kCCTToolbarCustomizations,
              "CCTToolbarCustomizations",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kDiscardOccludedBitmaps,
-             "DiscardOccludedBitmaps",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDontAutoHideBrowserControls,
@@ -627,6 +632,10 @@ BASE_FEATURE(kContextMenuGoogleLensChip,
 
 BASE_FEATURE(kContextMenuPopupForAllScreenSizes,
              "ContextMenuPopupForAllScreenSizes",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kContextMenuGoogleLensSearchOptimizations,
+             "ContextMenuGoogleLensSearchOptimizations",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kContextMenuSearchWithGoogleLens,
@@ -717,10 +726,6 @@ BASE_FEATURE(kInfobarScrollOptimization,
 
 BASE_FEATURE(kInstantStart, "InstantStart", base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kIsVoiceSearchEnabledCache,
-             "IsVoiceSearchEnabledCache",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kNotificationPermissionVariant,
              "NotificationPermissionVariant",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -785,16 +790,16 @@ BASE_FEATURE(kReaderModeInCCT,
              "ReaderModeInCCT",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kRecordSuppressionMetrics,
+             "RecordSuppressionMetrics",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kReengagementNotification,
              "ReengagementNotification",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRelatedSearches,
              "RelatedSearches",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kRelatedSearchesInBar,
-             "RelatedSearchesInBar",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRelatedSearchesUi,
@@ -813,8 +818,40 @@ BASE_FEATURE(kRequestDesktopSiteDefaultsControl,
              "RequestDesktopSiteDefaultsControl",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kRequestDesktopSiteDefaultsControlCohort1,
+             "RequestDesktopSiteDefaultsControlCohort1",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRequestDesktopSiteDefaultsControlCohort2,
+             "RequestDesktopSiteDefaultsControlCohort2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRequestDesktopSiteDefaultsControlCohort3,
+             "RequestDesktopSiteDefaultsControlCohort3",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRequestDesktopSiteDefaultsControlCohort4,
+             "RequestDesktopSiteDefaultsControlCohort4",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kRequestDesktopSiteDefaultsControlSynthetic,
              "RequestDesktopSiteDefaultsControlSynthetic",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRequestDesktopSiteDefaultsEnabledCohort1,
+             "RequestDesktopSiteDefaultsEnabledCohort1",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRequestDesktopSiteDefaultsEnabledCohort2,
+             "RequestDesktopSiteDefaultsEnabledCohort2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRequestDesktopSiteDefaultsEnabledCohort3,
+             "RequestDesktopSiteDefaultsEnabledCohort3",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRequestDesktopSiteDefaultsEnabledCohort4,
+             "RequestDesktopSiteDefaultsEnabledCohort4",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRequestDesktopSiteDefaultsSynthetic,
@@ -957,6 +994,10 @@ BASE_FEATURE(kSearchResumptionModuleAndroid,
              "SearchResumptionModuleAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kShouldIgnoreIntentSkipInternalCheck,
+             "ShouldIgnoreIntentSkipInternalCheck",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kStartSurfaceReturnTime,
              "StartSurfaceReturnTime",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -972,10 +1013,6 @@ BASE_FEATURE(kStartSurfaceDisabledFeedImprovement,
 // If enabled, keep logging and reporting UMA while chrome is backgrounded.
 BASE_FEATURE(kUmaBackgroundSessions,
              "UMABackgroundSessions",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kUpdateHistoryEntryPointsInIncognito,
-             "UpdateHistoryEntryPointsInIncognito",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kUpdateNotificationScheduleServiceImmediateShowOption,

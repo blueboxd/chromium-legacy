@@ -77,7 +77,8 @@ import java.util.List;
 public class TabSwitcherCoordinator
         implements DestroyObserver, TabSwitcher, TabSwitcher.TabListDelegate,
                    TabSwitcherMediator.ResetHandler, TabSwitcherMediator.MessageItemsController,
-                   TabSwitcherMediator.PriceWelcomeMessageController {
+                   TabSwitcherMediator.PriceWelcomeMessageController,
+                   TabGridItemTouchHelperCallback.OnLongPressTabItemEventListener {
     /**
      * Interface to control the IPH dialog.
      */
@@ -220,7 +221,7 @@ public class TabSwitcherCoordinator
             mTabListCoordinator = new TabListCoordinator(mode, activity, tabModelSelector,
                     mMultiThumbnailCardProvider, titleProvider, true, mMediator, null,
                     TabProperties.UiType.CLOSABLE, null, this, container, true, COMPONENT_NAME,
-                    mRootView, null);
+                    mRootView, null, this);
             mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                     mTabListCoordinator.getContainerView(), TabListContainerViewBinder::bind);
 
@@ -769,6 +770,13 @@ public class TabSwitcherCoordinator
         }
     }
 
+    // OnLongPressTabItemEventListener implementation
+    @Override
+    public void onLongPressEvent(int tabId) {
+        showTabSelectionEditorV2();
+        RecordUserAction.record("TabMultiSelectV2.OpenLongPressInGrid");
+    }
+
     private void appendMessagesTo(int index) {
         if (mMultiWindowModeStateDispatcher.isInMultiWindowMode()) return;
         sAppendedMessagesForTesting = false;
@@ -901,5 +909,10 @@ public class TabSwitcherCoordinator
     static boolean isShowingTabsInMRUOrder(@TabListMode int mode) {
         return StartSurfaceConfiguration.SHOW_TABS_IN_MRU_ORDER.getValue()
                 && mode == TabListMode.CAROUSEL;
+    }
+
+    @Override
+    public void runAnimationOnNextLayout(Runnable runnable) {
+        mTabListCoordinator.runAnimationOnNextLayout(runnable);
     }
 }

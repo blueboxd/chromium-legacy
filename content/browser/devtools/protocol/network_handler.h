@@ -21,8 +21,8 @@
 #include "net/filter/source_stream.h"
 #include "net/net_buildflags.h"
 #include "services/network/public/mojom/devtools_observer.mojom-forward.h"
+#include "services/network/public/mojom/http_raw_headers.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
-#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
@@ -267,7 +267,8 @@ class NetworkHandler : public DevToolsDomainHandler,
       const std::vector<network::mojom::HttpRawHeaderPairPtr>& response_headers,
       const absl::optional<std::string>& response_headers_text,
       network::mojom::IPAddressSpace resource_address_space,
-      int32_t http_status_code);
+      int32_t http_status_code,
+      const absl::optional<net::CookiePartitionKey>& cookie_partition_key);
   void OnTrustTokenOperationDone(
       const std::string& devtools_request_id,
       const network::mojom::TrustTokenOperationResult& result);

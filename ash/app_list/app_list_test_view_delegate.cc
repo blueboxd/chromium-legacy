@@ -6,14 +6,9 @@
 
 #include <string>
 #include <utility>
-#include <vector>
 
 #include "ash/app_list/model/app_list_model.h"
-#include "ash/public/cpp/app_list/app_list_switches.h"
-#include "base/files/file_path.h"
 #include "base/functional/callback.h"
-#include "base/strings/utf_string_conversions.h"
-#include "ui/gfx/image/image_skia.h"
 
 namespace ash {
 namespace test {
@@ -114,11 +109,6 @@ void AppListTestViewDelegate::GetContextMenuModel(
   std::move(callback).Run(std::move(menu_model));
 }
 
-ui::ImplicitAnimationObserver* AppListTestViewDelegate::GetAnimationObserver(
-    ash::AppListViewState target_state) {
-  return nullptr;
-}
-
 void AppListTestViewDelegate::ShowWallpaperContextMenu(
     const gfx::Point& onscreen_location,
     ui::MenuSourceType source_type) {
@@ -131,11 +121,6 @@ bool AppListTestViewDelegate::CanProcessEventsOnApplistViews() {
 
 bool AppListTestViewDelegate::ShouldDismissImmediately() {
   return false;
-}
-
-int AppListTestViewDelegate::GetTargetYForAppListHide(
-    aura::Window* root_window) {
-  return 0;
 }
 
 bool AppListTestViewDelegate::HasValidProfile() const {

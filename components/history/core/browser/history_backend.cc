@@ -1071,7 +1071,6 @@ void HistoryBackend::InitImpl(
 
   // Compute the file names.
   history_dir_ = history_database_params.history_dir;
-  channel_ = history_database_params.channel;
 
 #if DCHECK_IS_ON()
   DCHECK(!HistoryPathsTracker::GetInstance()->HasPath(history_dir_))
@@ -2086,6 +2085,7 @@ std::vector<ClusterVisit> HistoryBackend::ToClusterVisits(
     bool include_duplicates) {
   auto annotated_visits = ToAnnotatedVisits(visit_ids);
   std::vector<ClusterVisit> cluster_visits;
+  std::set<VisitID> seen_duplicate_ids;
   base::ranges::for_each(annotated_visits, [&](const auto& annotated_visit) {
     ClusterVisit cluster_visit =
         db_->GetClusterVisit(annotated_visit.visit_row.visit_id);
@@ -2098,9 +2098,21 @@ std::vector<ClusterVisit> HistoryBackend::ToClusterVisits(
       cluster_visit.duplicate_visits = ToDuplicateClusterVisits(
           db_->GetDuplicateClusterVisitIdsForClusterVisit(
               annotated_visit.visit_row.visit_id));
+      base::ranges::for_each(
+          cluster_visit.duplicate_visits, [&](const auto& duplicate_visit) {
+            seen_duplicate_ids.insert(duplicate_visit.visit_id);
+          });
     }
     cluster_visits.push_back(cluster_visit);
   });
+
+  if (include_duplicates && !seen_duplicate_ids.empty()) {
+    // Prune out top-level visits that are duplicates elsewhere.
+    base::EraseIf(cluster_visits, [&](const auto& cluster_visit) {
+      return seen_duplicate_ids.contains(
+          cluster_visit.annotated_visit.visit_row.visit_id);
+    });
+  }
   return cluster_visits;
 }
 
@@ -2197,6 +2209,30 @@ void HistoryBackend::UpdateClusterTriggerability(
   }
 
   db_->UpdateClusterTriggerability(clusters);
+}
+
+void HistoryBackend::HideVisits(const std::vector<VisitID>& visit_ids) {
+  TRACE_EVENT0("browser", "HistoryBackend::HideVisits");
+  if (!db_)
+    return;
+  db_->HideVisits(visit_ids);
+}
+
+void HistoryBackend::UpdateClusterVisit(
+    const history::ClusterVisit& cluster_visit) {
+  TRACE_EVENT0("browser", "HistoryBackend::UpdateClusterVisit");
+  if (!db_) {
+    return;
+  }
+
+  int64_t cluster_id = db_->GetClusterIdContainingVisit(
+      cluster_visit.annotated_visit.visit_row.visit_id);
+  if (cluster_id == 0) {
+    // No cluster visit persisted, just return.
+    return;
+  }
+
+  db_->UpdateClusterVisit(cluster_id, cluster_visit);
 }
 
 std::vector<Cluster> HistoryBackend::GetMostRecentClusters(

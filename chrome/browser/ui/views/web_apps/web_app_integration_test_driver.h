@@ -52,6 +52,7 @@ enum class Site {
   kStandaloneNestedB,
   kStandaloneNotStartUrl,
   kMinimalUi,
+  kTabbed,
   kNotPromotable,
   kWco,
   kFileHandler,
@@ -69,6 +70,7 @@ enum class InstallableSite {
   kStandaloneNestedB,
   kStandaloneNotStartUrl,
   kMinimalUi,
+  kTabbed,
   kWco,
   kFileHandler,
   kNoServiceWorker,
@@ -93,7 +95,7 @@ enum class IsShown { kShown, kNotShown };
 
 enum class IsOn { kOn, kOff };
 
-enum class Display { kBrowser, kStandalone, kMinimalUi, kWco };
+enum class Display { kBrowser, kStandalone, kMinimalUi, kTabbed, kWco };
 
 enum class WindowOptions { kWindowed, kBrowser };
 
@@ -245,6 +247,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void AwaitManifestUpdate(Site site_mode);
   void CloseCustomToolbar();
   void ClosePwa();
+  void MaybeClosePwa();
   void DisableRunOnOsLogin(Site site);
   void EnableRunOnOsLogin(Site site);
   void DisableFileHandling(Site site);

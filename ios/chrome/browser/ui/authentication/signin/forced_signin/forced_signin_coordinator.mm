@@ -115,9 +115,7 @@
                                    browser:self.browser
                             showFREConsent:NO
                                   delegate:self];
-    case kSignInAndSync_DEPRECATED:
     case kTangibleSync:
-    case kWelcomeAndConsent_DEPRECATED:
     case kDefaultBrowserPromo:
     case kStepsCompleted:
       NOTREACHED() << "Type of screen not supported." << static_cast<int>(type);

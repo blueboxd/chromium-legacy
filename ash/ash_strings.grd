@@ -423,11 +423,20 @@ Style notes:
       <message name="IDS_ASH_STATUS_TRAY_NEARBY_SHARE_BUTTON_LABEL" desc="The shorter label used for the button in the status tray to toggle Nearby Share high visibility mode, which makes the device visible to all nearby devices for file sharing.">
         Nearby visibility
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NEARBY_SHARE_TILE_LABEL" desc="The shorter label used for the feature tile in the status tray to toggle Nearby Share high visibility mode, which makes the device visible to all nearby devices for file sharing.">
+        Nearby Share
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NEARBY_SHARE_OFF_STATE" desc="Sub-label for the Nearby Share system tray button." meaning="Nearby Share high visibility mode is currently inactive. [CHAR_LIMIT=14]">
         Off
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NEARBY_SHARE_ON_STATE" desc="Sub-label for the Nearby Share system tray button." meaning="Nearby Share high visibility mode is currently active with the displayed time remaining. [CHAR_LIMIT=14]">
         On, <ph name="REMAINING_TIME">$1<ex>40 sec</ex></ph>
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NEARBY_SHARE_TILE_OFF_STATE" desc="Sub-label for the Nearby Share system tray feature tile when off." meaning="Nearby Share high visibility mode is currently inactive. [CHAR_LIMIT=14]">
+        Everyone, off
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NEARBY_SHARE_TILE_ON_STATE" desc="Sub-label for the Nearby Share system tray feature tile when on." meaning="Nearby Share high visibility mode is currently active with the displayed time remaining. [CHAR_LIMIT=14]">
+        Everyone, <ph name="REMAINING_TIME">$1<ex>40 sec</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NEARBY_SHARE_REMAINING_MINUTES" desc="A short string showing the nearest number of whole minutes until Nearby Share high visibility turns off. To be used with IDS_ASH_STATUS_TRAY_NEARBY_SHARE_ON_STATE. [CHAR_LIMIT=7]">
         <ph name="MINUTES">$1<ex>2</ex></ph> min
@@ -2650,9 +2659,6 @@ Connect your device to power.
       <message name="IDS_ASH_STATUS_TRAY_LIVE_CAPTION" desc="The label used in the accessibility menu of the system tray to toggle on/off Live Caption feature.">
         Live Caption
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_LIVE_CAPTION_OFF" desc="The label used in the accessibility menu of the system tray when Live Caption is turned off.">
-        Off
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_LIVE_CAPTION_TOGGLE_TOOLTIP" desc="The tooltip text used for the button in the status tray to toggle the Live Caption feature on or off.">
         Toggle Live Caption. <ph name="STATE_TEXT">$1<ex>Live Caption is on.</ex></ph>
       </message>
@@ -2696,6 +2702,9 @@ Connect your device to power.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_AUDIO_INPUT" desc="The label used in audio detailed page for audio input section of ash tray pop up.">
         Input
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY" desc="The label used for the button in the status tray to show the display detailed page.">
+        Display
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_REMOVED_EXCEEDED_MAXIMUM" desc="The label used when user connects more external displays than the maximum that the device can support.">
         This device couldn't support all of your displays, so one has been disconnected
@@ -3872,14 +3881,29 @@ Connect your device to power.
       <message name="IDS_ASH_LOGIN_POD_PASSWORD_TAP_PLACEHOLDER" desc="Text to display as placeholder in the password field when the user can click/tap their profile picture to unlock.">
         Tap your profile image
       </message>
-      <message name="IDS_ASH_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't sign in because password is invalid">
+      <message name="IDS_ASH_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't sign in because PIN or password is invalid">
         Your PIN or password couldn't be verified. Try again.
       </message>
-      <message name="IDS_ASH_LOGIN_ERROR_AUTHENTICATING_2ND_TIME" desc="Couldn't sign in because password is invalid for the 2nd time">
+      <message name="IDS_ASH_LOGIN_ERROR_AUTHENTICATING_2ND_TIME" desc="Couldn't sign in because PIN or password is invalid for the 2nd time">
         Your PIN or password still couldn't be verified. Note: If you recently changed your password, use your old password. Your new password will be applied once you sign out.
       </message>
-      <message name="IDS_ASH_LOGIN_FORGOT_PASSWORD" desc="Label of the button to recover your password">
-        Forgot password
+      <message name="IDS_ASH_LOGIN_ERROR_AUTHENTICATING_2ND_TIME_NEW" desc="Couldn't sign in because PIN or password is invalid for the 2nd time">
+        Your PIN or password still couldn't be verified. Try again.
+      </message>
+      <message name="IDS_ASH_LOGIN_ERROR_AUTHENTICATING_PWD" desc="Couldn't sign in because password is invalid">
+        Your password couldn't be verified. Try again.
+      </message>
+      <message name="IDS_ASH_LOGIN_ERROR_AUTHENTICATING_PWD_2ND_TIME" desc="Couldn't sign in because password is invalid for the 2nd time">
+        Your password still couldn't be verified. Try again.
+      </message>
+      <message name="IDS_ASH_LOGIN_ERROR_RECOVER_USER" desc="Message to let the user know what to do when the user couldn't sign in because password or PIN is invalid for the 2nd time">
+        If you forgot your PIN and password or changed your Google Account password recently, try recovering this user.
+      </message>
+      <message name="IDS_ASH_LOGIN_ERROR_RECOVER_USER_PWD" desc="Message to let the user know what to do when the user couldn't sign in because password is invalid for the 2nd time">
+        If you forgot your password or changed your Google Account password recently, try recovering this user.
+      </message>
+      <message name="IDS_ASH_LOGIN_RECOVER_USER_BUTTON" desc="Label of the button to recover your password">
+        Recover user
       </message>
       <message name="IDS_ASH_LOGIN_ERROR_CAPS_LOCK_HINT" desc="A hint text for the login and lock screens that Caps Lock is on">
         Caps Lock is on.
@@ -6168,6 +6192,14 @@ New install
       </message>
       <message name="IDS_ASH_DO_NOT_DISTURB_NOTIFICATION_TURN_OFF" desc="Label for a button on the 'Do not disturb' notification that turns off 'Do not disturb' mode.">
         Turn off
+      </message>
+
+      <!-- Lock screen notification -->
+      <message name="IDS_ASH_LOCKSCREEN_NOTIFICATION_TITLE" desc="Label used for the notification that shows up when there are hidden notifications on the lock screen.">
+        Notifications are hidden
+      </message>
+      <message name="IDS_ASH_LOCKSCREEN_NOTIFICATION_DESCRIPTION" desc="Text description used for the notification that show up when there are hidden notifications on the lock screen.">
+        Please unlock to view notifications
       </message>
 
       <!-- security curtain -->

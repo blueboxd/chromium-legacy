@@ -526,6 +526,9 @@ void ViewTransition::ProcessCurrentState() {
                                     MakeUnwrappingCrossThreadHandle(this)))));
 
         if (document_->GetFrame()->IsLocalRoot()) {
+          // We need to ensure commits aren't deferred since we rely on commits
+          // to send directives to the compositor and initiate pause of
+          // rendering after one frame.
           document_->GetPage()->GetChromeClient().StopDeferringCommits(
               *document_->GetFrame(),
               cc::PaintHoldingCommitTrigger::kViewTransition);
@@ -682,7 +685,7 @@ void ViewTransition::Trace(Visitor* visitor) const {
 
 bool ViewTransition::MatchForOnlyChild(
     PseudoId pseudo_id,
-    AtomicString view_transition_name) const {
+    const AtomicString& view_transition_name) const {
   if (!style_tracker_)
     return false;
   return style_tracker_->MatchForOnlyChild(pseudo_id, view_transition_name);
@@ -915,18 +918,18 @@ void ViewTransition::WillCommitCompositorFrame() {
     PauseRendering();
 }
 
-gfx::Rect ViewTransition::GetSnapshotViewportRect() const {
+gfx::Size ViewTransition::GetSnapshotRootSize() const {
   if (!style_tracker_)
-    return gfx::Rect();
+    return gfx::Size();
 
-  return style_tracker_->GetSnapshotViewportRect();
+  return style_tracker_->GetSnapshotRootSize();
 }
 
-gfx::Vector2d ViewTransition::GetRootSnapshotPaintOffset() const {
+gfx::Vector2d ViewTransition::GetFrameToSnapshotRootOffset() const {
   if (!style_tracker_)
     return gfx::Vector2d();
 
-  return style_tracker_->GetRootSnapshotPaintOffset();
+  return style_tracker_->GetFrameToSnapshotRootOffset();
 }
 
 void ViewTransition::PauseRendering() {

@@ -52,6 +52,7 @@
 <translation id="1433628812591023318">Για να αποθέσετε αρχεία στο Parallels Desktop, το αρχείο θα πρέπει να μετακινηθεί στα αρχεία των Windows.</translation>
 <translation id="1435838927755162558">Κοινή χρήση φακέλου με το Parallels Desktop</translation>
 <translation id="1439919885608649279">Άτομο με λουλούδια</translation>
+<translation id="1458457385801829801">Αποσύνδεση <ph name="TARGET_NAME" /></translation>
 <translation id="1471718551822868769">Σλοβακικά</translation>
 <translation id="1482884275703521657">Φινλανδικά</translation>
 <translation id="148466539719134488">Ελβετικά</translation>
@@ -130,6 +131,7 @@
 <translation id="2084108471225856927">Ρυθμίσεις συσκευής</translation>
 <translation id="2084809735218147718">Άτομο που λέει ευχαριστώ στη νοηματική γλώσσα</translation>
 <translation id="2088690981887365033">Δίκτυο VPN</translation>
+<translation id="2114191879048183086"><ph name="NUMBER_OF_ITEMS" /> στοιχεία θα διαγραφούν και δεν θα είστε σε θέση να τα επαναφέρετε.</translation>
 <translation id="2122305276694332719">Η αυτόματη σύνδεση σε ένα κρυφό δίκτυο επιτρέπει σε άλλα άτομα να βλέπουν τη συσκευή σας και ορισμένες ρυθμίσεις δικτύου σας και δεν συνιστάται.</translation>
 <translation id="2125607626296734455">Xμερ</translation>
 <translation id="2139545522194199494">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />%, Διαχειριζόμενο από τον διαχειριστή σας, Σύνδεση</translation>
@@ -222,6 +224,7 @@
 <translation id="2888807692577297075">Δεν υπάρχουν στοιχεία σε αντιστοιχία με το &lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt;</translation>
 <translation id="2894654529758326923">Πληροφορίες</translation>
 <translation id="2902734494705624966">Εκτεταμένο ΗΠΑ</translation>
+<translation id="2904378509913846215">Υπάρχει ήδη ένας φάκελος με το όνομα "<ph name="FILENAME" />". Θέλετε να τον αντικαταστήσετε με τον φάκελο που μετακινείτε;</translation>
 <translation id="290843123675549676">Μαραθικά</translation>
 <translation id="2923240520113693977">Εσθονικά
 </translation>
@@ -353,6 +356,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Επικόλληση</translation>
 <translation id="3952872973865944257">Φωνητική εισαγωγή Τελούγκου</translation>
+<translation id="3954354850384043518">Σε εξέλιξη</translation>
 <translation id="3958548648197196644">Ακτινίδιο</translation>
 <translation id="3971140002794351170">Λήψη προφίλ κινητού, Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Αγγλικά (ΗΒ)</translation>
@@ -404,6 +408,7 @@
 <translation id="4398096759193130964">Επαναφέρετε τα στοιχεία ή σύρετέ τα σε νέο φάκελο εκτός του κάδου.</translation>
 <translation id="4401287888955153199">Εξαγωγή όλων</translation>
 <translation id="4410695710508688828">Η λειτουργία εξαγωγής απέτυχε. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4414834425328380570">Το αρχείο <ph name="FILE_NAME" /> θα διαγραφεί και δεν θα μπορείτε να το επαναφέρετε.</translation>
 <translation id="4418686080762064601">Δημιουργήστε μια συντόμευση για τα αρχεία σας</translation>
 <translation id="4425149324548788773">Το Drive μου</translation>
 <translation id="4439427728133035643">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />%, Σύνδεση</translation>
@@ -652,6 +657,7 @@
 <translation id="6241349547798190358">Ολλανδικά (Βέλγιο)</translation>
 <translation id="6267547857941397424">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="PHONE_NAME" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />%, Μπαταρία τηλεφώνου <ph name="BATTERY_STATUS" />%, Σύνδεση</translation>
 <translation id="6269630227984243955">Μαλαισιανά</translation>
+<translation id="6271903698064569429">Δεν είναι δυνατή η μεταφόρτωση αρχείων, επειδή το <ph name="SHARED_DRIVE_NAME" /> δεν έχει αρκετό αποθηκευτικό χώρο.</translation>
 <translation id="6287852322318138013">Επιλέξτε μια εφαρμογή για να ανοίξετε αυτό το αρχείο</translation>
 <translation id="6295542640242147836">Κλείδωμα SIM</translation>
 <translation id="6296410173147755564">Μη έγκυρος κωδικός PUK</translation>
@@ -697,6 +703,7 @@
 <translation id="6657585470893396449">Κωδικός πρόσβασης</translation>
 <translation id="6658865850469097484">Τα αρχεία που βρίσκονται στον κάδο για περισσότερες από 30 ημέρες θα διαγράφονται αυτόματα.</translation>
 <translation id="6673674183150363784">Γαλλικά (Γαλλίας) με πληκτρολόγιο BÉPO</translation>
+<translation id="670380500182402678">Αντικατάσταση όλων</translation>
 <translation id="6710022688720561421">Ρομπότ</translation>
 <translation id="6710213216561001401">Προηγούμενο</translation>
 <translation id="6732801395666424405">Δεν έχουν φορτωθεί τα πιστοποιητικά</translation>
@@ -921,6 +928,7 @@
 <translation id="8386903983509584791">Η σάρωση ολοκληρώθηκε</translation>
 <translation id="8387733224523483503">Έγινε εξαγωγή του στοιχείου <ph name="FILE_NAME" />.</translation>
 <translation id="8395901698320285466">Διαστάσεις</translation>
+<translation id="8404498045299006085">Διατήρηση όλων</translation>
 <translation id="8408068190360279472">Δίκτυο <ph name="NETWORK_TYPE" />, σύνδεση σε εξέλιξη</translation>
 <translation id="8425213833346101688">Αλλαγή</translation>
 <translation id="8431909052837336408">Αλλαγή αριθμού PIN της κάρτας SIM</translation>
@@ -948,6 +956,7 @@
 <translation id="8560515948038859357">Καντονικά</translation>
 <translation id="8561206103590473338">Ελέφαντας</translation>
 <translation id="8566466896628108558">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, ισχύς σήματος <ph name="SIGNAL_STRENGTH" />%, Αποκλείστηκε από τον διαχειριστή σας, Λεπτομέρειες</translation>
+<translation id="8568374623837201676">Οριστική διαγραφή αυτού του αρχείου;</translation>
 <translation id="8569764466147087991">Επιλέξτε αρχείο για άνοιγμα</translation>
 <translation id="8577897833047451336">Κροατικά</translation>
 <translation id="8578308463707544055">Ινδονησιακά</translation>

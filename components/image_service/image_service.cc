@@ -12,7 +12,9 @@
 #include "base/memory/weak_ptr.h"
 #include "components/omnibox/browser/remote_suggestions_service.h"
 #include "components/omnibox/browser/search_suggestion_parser.h"
+#include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -125,6 +127,23 @@ class ImageService::SuggestEntityImageURLFetcher {
 
   // `callback` is called with the result.
   void Start(base::OnceCallback<void(const GURL&)> callback) {
+    const TemplateURLService* template_url_service =
+        autocomplete_provider_client_->GetTemplateURLService();
+    if (template_url_service == nullptr) {
+      return std::move(callback).Run(GURL());
+    }
+
+    // We are relying on the user's consent to Sync History, which in practice
+    // means only Google should get URL-keyed metadata requests via Suggest.
+    const TemplateURL* template_url =
+        template_url_service->GetDefaultSearchProvider();
+    if (template_url == nullptr ||
+        template_url->GetEngineType(
+            template_url_service->search_terms_data()) !=
+            SEARCH_ENGINE_GOOGLE) {
+      return std::move(callback).Run(GURL());
+    }
+
     DCHECK(!callback_);
     callback_ = std::move(callback);
 
@@ -137,20 +156,17 @@ class ImageService::SuggestEntityImageURLFetcher {
         autocomplete_provider_client_
             ->GetRemoteSuggestionsService(/*create_if_necessary=*/true)
             ->StartSuggestionsRequest(
-                search_terms_args,
-                autocomplete_provider_client_->GetTemplateURLService(),
+                template_url, search_terms_args,
+                template_url_service->search_terms_data(),
                 base::BindOnce(&SuggestEntityImageURLFetcher::OnURLLoadComplete,
                                weak_factory_.GetWeakPtr()));
   }
 
  private:
   void OnURLLoadComplete(const network::SimpleURLLoader* source,
+                         const bool response_received,
                          std::unique_ptr<std::string> response_body) {
     DCHECK_EQ(loader_.get(), source);
-    const bool response_received =
-        response_body && source->NetError() == net::OK &&
-        (source->ResponseInfo() && source->ResponseInfo()->headers &&
-         source->ResponseInfo()->headers->response_code() == 200);
     if (!response_received) {
       return std::move(callback_).Run(GURL());
     }

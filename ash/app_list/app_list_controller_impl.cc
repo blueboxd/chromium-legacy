@@ -11,17 +11,14 @@
 #include "ash/app_list/app_list_bubble_presenter.h"
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_presenter_impl.h"
+#include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_toast_container_view.h"
 #include "ash/app_list/views/app_list_toast_view.h"
 #include "ash/app_list/views/app_list_view.h"
-#include "ash/app_list/views/apps_container_view.h"
-#include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/contents_view.h"
-#include "ash/app_list/views/paged_apps_grid_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/assistant/assistant_controller_impl.h"
-#include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
@@ -29,7 +26,6 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_client.h"
-#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_controller_observer.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_notifier.h"
@@ -41,7 +37,6 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
@@ -65,21 +60,18 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_enums.h"
 #include "chromeos/ui/wm/features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "extensions/common/constants.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/util/display_util.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_animations.h"
-#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
@@ -359,15 +351,6 @@ void AppListControllerImpl::DismissAppList() {
   fullscreen_presenter_->Dismiss(base::TimeTicks());
 }
 
-void AppListControllerImpl::GetAppInfoDialogBounds(
-    GetAppInfoDialogBoundsCallback callback) {
-  AppListView* app_list_view = fullscreen_presenter_->GetView();
-  gfx::Rect bounds = gfx::Rect();
-  if (app_list_view)
-    bounds = app_list_view->GetAppInfoDialogBounds();
-  std::move(callback).Run(bounds);
-}
-
 void AppListControllerImpl::ShowAppList(AppListShowSource source) {
   if (Shell::Get()->session_controller()->GetSessionState() !=
       session_manager::SessionState::ACTIVE) {
@@ -449,9 +432,6 @@ void AppListControllerImpl::OnSessionStateChanged(
 }
 
 void AppListControllerImpl::OnUserSessionAdded(const AccountId& account_id) {
-  if (!features::IsLauncherAppSortEnabled())
-    return;
-
   if (!client_)
     return;
 
@@ -499,8 +479,6 @@ void AppListControllerImpl::UpdateAppListWithNewTemporarySortOrder(
     const absl::optional<AppListSortOrder>& new_order,
     bool animate,
     base::OnceClosure update_position_closure) {
-  DCHECK(features::IsLauncherAppSortEnabled());
-
   if (new_order) {
     RecordAppListSortAction(*new_order, IsInTabletMode());
 
@@ -1276,14 +1254,6 @@ void AppListControllerImpl::GetContextMenuModel(
                                  std::move(callback));
 }
 
-ui::ImplicitAnimationObserver* AppListControllerImpl::GetAnimationObserver(
-    AppListViewState target_state) {
-  // |presenter_| observes the close animation only.
-  if (target_state == AppListViewState::kClosed)
-    return fullscreen_presenter_.get();
-  return nullptr;
-}
-
 void AppListControllerImpl::ShowWallpaperContextMenu(
     const gfx::Point& onscreen_location,
     ui::MenuSourceType source_type) {
@@ -1308,14 +1278,6 @@ bool AppListControllerImpl::CanProcessEventsOnApplistViews() {
 
 bool AppListControllerImpl::ShouldDismissImmediately() {
   return should_dismiss_immediately_;
-}
-
-int AppListControllerImpl::GetTargetYForAppListHide(aura::Window* root_window) {
-  DCHECK(Shell::HasInstance());
-  gfx::Point top_center =
-      Shelf::ForWindow(root_window)->GetShelfBoundsInScreen().top_center();
-  wm::ConvertPointFromScreen(root_window, &top_center);
-  return top_center.y();
 }
 
 AssistantViewDelegate* AppListControllerImpl::GetAssistantViewDelegate() {

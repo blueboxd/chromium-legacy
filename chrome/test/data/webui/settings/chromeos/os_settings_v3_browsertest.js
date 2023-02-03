@@ -53,9 +53,17 @@ var OSSettingsDevicePageV3Test = class extends OSSettingsV3BrowserTest {
   }
 };
 
-// TODO(crbug.com/1403981): Test is flaky on chromeos dbg builds.
-TEST_F(
-    'OSSettingsDevicePageV3Test', 'DISABLED_All',
+// TODO(https://crbug.com/1411677): Re-enable in debug builds once test suite
+// does not time out anymore.
+TEST_F_WITH_PREAMBLE(
+    `
+#if !defined(NDEBUG)
+#define MAYBE_All DISABLED_All
+#else
+#define MAYBE_All All
+#endif
+    `,
+    'OSSettingsDevicePageV3Test', 'MAYBE_All',
     () => mocha.grep('/^((?!arrow_key_arrangement_disabled).)*$/').run());
 
 // TODO(crbug.com/1347746): move this to the generic test lists below after the
@@ -388,7 +396,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['FakeInputDeviceSettings', 'fake_input_device_settings_provider_test.js'],
  ['FilesPage', 'os_files_page_test.js'],
  ['FingerprintPage', 'fingerprint_browsertest_chromeos.js'],
- ['FindShortcutBehaviorTest', 'find_shortcut_behavior_test.js'],
  ['GoogleAssistantPage', 'google_assistant_page_test.js'],
  ['GuestOsSharedPaths', 'guest_os_shared_paths_test.js'],
  ['GuestOsSharedUsbDevices', 'guest_os_shared_usb_devices_test.js'],
@@ -406,6 +413,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
    'HotspotSummaryItem',
    'hotspot_summary_item_tests.js',
    {enabled: ['ash::features::kHotspot']},
+ ],
+ [
+   'InputDeviceMojoInterfaceProvider',
+   'input_device_mojo_interface_provider_test.js'
  ],
  ['InputMethodOptionPage', 'input_method_options_page_test.js'],
  ['InputPage', 'input_page_test.js'],
@@ -495,6 +506,14 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['ParentalControlsPage', 'parental_controls_page_test.js'],
  ['PeoplePage', 'os_people_page_test.js'],
  ['PeoplePageQuickUnlock', 'quick_unlock_authenticate_browsertest_chromeos.js'],
+ ['PerDeviceKeyboard', 'per_device_keyboard_test.js'],
+ ['PerDeviceKeyboardSubsection', 'per_device_keyboard_subsection_test.js'],
+ ['PerDeviceMouseSubsection', 'per_device_mouse_subsection_test.js'],
+ [
+   'PerDevicePointingStickSubsection',
+   'per_device_pointing_stick_subsection_test.js'
+ ],
+ ['PerDeviceTouchpadSubsection', 'per_device_touchpad_subsection_test.js'],
  [
    'PersonalizationPageWithPersonalizationHub',
    'personalization_page_with_personalization_hub_test.js',

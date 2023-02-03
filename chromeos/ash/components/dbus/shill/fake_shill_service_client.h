@@ -127,6 +127,8 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
   void SetConnectBehavior(const std::string& service_path,
                           const base::RepeatingClosure& behavior) override;
   void SetErrorForNextConnectionAttempt(const std::string& error_name) override;
+  void SetErrorForNextSetPropertiesAttempt(
+      const std::string& error_name) override;
   void SetRequestPortalState(const std::string& state) override;
   void SetHoldBackServicePropertyUpdates(bool hold_back) override;
   void SetRequireServiceToGetProperties(
@@ -149,7 +151,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
   void ContinueConnect(const std::string& service_path);
   void SetDefaultFakeTrafficCounters();
 
-  base::Value stub_services_{base::Value::Type::DICTIONARY};
+  base::Value stub_services_{base::Value::Type::DICT};
 
   // Per network service, stores a closure that is executed on each connection
   // attempt. The callback can for example modify the services properties in
@@ -158,6 +160,9 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
 
   // If set the next Connect call will fail with this error_name.
   absl::optional<std::string> connect_error_name_;
+
+  // If set the next SetProperties call will fail with this error_name.
+  absl::optional<std::string> set_properties_error_name_;
 
   // Optional state to set after a call to RequestPortalDetection.
   absl::optional<std::string> request_portal_state_;

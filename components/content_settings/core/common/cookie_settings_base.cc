@@ -23,12 +23,16 @@
 
 namespace content_settings {
 
+bool CookieSettingsBase::storage_access_api_grants_unpartitioned_storage_ =
+    false;
+
+void CookieSettingsBase::
+    SetStorageAccessAPIGrantsUnpartitionedStorageForTesting(bool grants) {
+  storage_access_api_grants_unpartitioned_storage_ = grants;
+}
+
 CookieSettingsBase::CookieSettingsBase()
-    : storage_access_api_enabled_(
-          base::FeatureList::IsEnabled(net::features::kStorageAccessAPI)),
-      storage_access_api_grants_unpartitioned_storage_(
-          net::features::kStorageAccessAPIGrantsUnpartitionedStorage.Get()),
-      is_storage_partitioned_(base::FeatureList::IsEnabled(
+    : is_storage_partitioned_(base::FeatureList::IsEnabled(
           net::features::kThirdPartyStoragePartitioning)),
       is_privacy_sandbox_v4_enabled_(
 #if BUILDFLAG(IS_IOS)
@@ -64,9 +68,9 @@ bool CookieSettingsBase::ShouldDeleteCookieOnExit(
   GURL origin = net::cookie_util::CookieOriginToURL(domain, is_https);
   // Pass GURL() as first_party_url since we don't know the context and
   // don't want to match against (*, exception) pattern.
-  ContentSetting setting =
-      GetCookieSetting(origin, is_privacy_sandbox_v4_enabled_ ? GURL() : origin,
-                       nullptr, QueryReason::kCookies);
+  ContentSetting setting = GetCookieSetting(
+      origin, is_privacy_sandbox_v4_enabled_ ? GURL() : origin,
+      net::CookieSettingOverrides(), nullptr, QueryReason::kCookies);
   DCHECK(IsValidSetting(setting));
   if (setting == CONTENT_SETTING_ALLOW)
     return false;
@@ -127,7 +131,7 @@ bool CookieSettingsBase::IsCookieSessionOnly(const GURL& origin,
   // don't want to match against (*, exception) pattern.
   ContentSetting setting =
       GetCookieSetting(origin, is_privacy_sandbox_v4_enabled_ ? GURL() : origin,
-                       nullptr, query_reason);
+                       net::CookieSettingOverrides(), nullptr, query_reason);
   DCHECK(IsValidSetting(setting));
   return setting == CONTENT_SETTING_SESSION_ONLY;
 }
@@ -151,25 +155,26 @@ CookieSettingsBase::GetCookieAccessSemanticsForDomain(
 bool CookieSettingsBase::ShouldConsiderStorageAccessGrants(
     QueryReason query_reason) const {
   return CookieSettingsBase::ShouldConsiderStorageAccessGrantsInternal(
-      query_reason, storage_access_api_enabled_,
-      storage_access_api_grants_unpartitioned_storage_,
+      query_reason, storage_access_api_grants_unpartitioned_storage_,
       is_storage_partitioned_);
 }
 
 bool CookieSettingsBase::ShouldConsiderTopLevelStorageAccessGrants(
-    QueryReason query_reason) const {
+    QueryReason query_reason,
+    net::CookieSettingOverrides overrides) const {
   // Unlike the standard Storage Access API, the top-level version does not
   // unlock unpartitioned storage more generally. It applies only to cookies.
-  return CookieSettingsBase::ShouldConsiderStorageAccessGrantsInternal(
-      query_reason, storage_access_api_enabled_,
-      /*storage_access_api_grants_unpartitioned_storage=*/false,
-      is_storage_partitioned_);
+  return overrides.Has(
+             net::CookieSettingOverride::kTopLevelStorageAccessGrantEligible) &&
+         CookieSettingsBase::ShouldConsiderStorageAccessGrantsInternal(
+             query_reason,
+             /*storage_access_api_grants_unpartitioned_storage=*/false,
+             is_storage_partitioned_);
 }
 
 // static
 bool CookieSettingsBase::ShouldConsiderStorageAccessGrantsInternal(
     QueryReason query_reason,
-    bool storage_access_api_enabled,
     bool storage_access_api_grants_unpartitioned_storage,
     bool is_storage_partitioned) {
   switch (query_reason) {
@@ -178,11 +183,10 @@ bool CookieSettingsBase::ShouldConsiderStorageAccessGrantsInternal(
     case QueryReason::kPrivacySandbox:
       return false;
     case QueryReason::kSiteStorage:
-      return storage_access_api_enabled &&
-             (storage_access_api_grants_unpartitioned_storage ||
-              is_storage_partitioned);
+      return storage_access_api_grants_unpartitioned_storage ||
+             is_storage_partitioned;
     case QueryReason::kCookies:
-      return storage_access_api_enabled;
+      return true;
   }
 }
 

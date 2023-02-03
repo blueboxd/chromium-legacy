@@ -14,7 +14,6 @@
 #include "base/allocator/partition_allocator/partition_address_space.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/debug/debugging_buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
-#include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_hooks.h"
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
 #include "base/allocator/partition_allocator/partition_oom.h"
@@ -22,9 +21,9 @@
 #include "base/allocator/partition_allocator/partition_root.h"
 #include "base/allocator/partition_allocator/partition_stats.h"
 
-#if BUILDFLAG(STARSCAN)
+#if BUILDFLAG(USE_STARSCAN)
 #include "base/allocator/partition_allocator/starscan/pcscan.h"
-#endif  // BUILDFLAG(STARSCAN)
+#endif
 
 namespace partition_alloc {
 
@@ -105,15 +104,15 @@ void PartitionAllocGlobalUninitForTesting() {
 #if BUILDFLAG(ENABLE_PKEYS)
   internal::PartitionAddressSpace::UninitPkeyPoolForTesting();
 #endif
-#if BUILDFLAG(STARSCAN)
+#if BUILDFLAG(USE_STARSCAN)
   internal::PCScan::UninitForTesting();  // IN-TEST
-#endif                                   // BUILDFLAG(STARSCAN)
+#endif
 #if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-#if PA_CONFIG(HAS_64_BITS_POINTERS)
+#if BUILDFLAG(HAS_64_BIT_POINTERS)
   internal::PartitionAddressSpace::UninitForTesting();
 #else
   internal::AddressPoolManager::GetInstance().ResetForTesting();
-#endif  // PA_CONFIG(HAS_64_BITS_POINTERS)
+#endif  // BUILDFLAG(HAS_64_BIT_POINTERS)
 #endif  // !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   internal::g_oom_handling_function = nullptr;
 }

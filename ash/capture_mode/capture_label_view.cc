@@ -146,8 +146,8 @@ class DropToStopRecordingButtonAnimation : public gfx::LinearAnimation {
 
 CaptureLabelView::CaptureLabelView(
     CaptureModeSession* capture_mode_session,
-    base::RepeatingClosure on_capture_button_pressed,
-    base::RepeatingClosure on_drop_down_button_pressed)
+    views::Button::PressedCallback on_capture_button_pressed,
+    views::Button::PressedCallback on_drop_down_button_pressed)
     : capture_mode_session_(capture_mode_session) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
@@ -159,7 +159,8 @@ CaptureLabelView::CaptureLabelView(
 
   capture_button_container_ = AddChildView(std::make_unique<CaptureButtonView>(
       std::move(on_capture_button_pressed),
-      std::move(on_drop_down_button_pressed)));
+      std::move(on_drop_down_button_pressed),
+      capture_mode_session_->is_in_projector_mode()));
   capture_button_container_->SetPaintToLayer();
   capture_button_container_->layer()->SetFillsBoundsOpaquely(false);
   capture_button_container_->SetNotifyEnterExitOnChild(true);
@@ -332,20 +333,6 @@ void CaptureLabelView::OnThemeChanged() {
   views::View::OnThemeChanged();
 
   UpdateIconAndText();
-}
-
-views::View* CaptureLabelView::GetView() {
-  return capture_button_container_->capture_button();
-}
-
-std::unique_ptr<views::HighlightPathGenerator>
-CaptureLabelView::CreatePathGenerator() {
-  // Regular focus rings are drawn outside the view's bounds. Since this view is
-  // the same size as its widget, inset by half the focus ring thickness to
-  // ensure the focus ring is drawn inside the widget bounds.
-  return std::make_unique<views::RoundRectHighlightPathGenerator>(
-      gfx::Insets(views::FocusRing::kDefaultHaloThickness / 2),
-      kCaptureLabelRadius);
 }
 
 void CaptureLabelView::AnimationEnded(const gfx::Animation* animation) {

@@ -1886,33 +1886,6 @@ const Vector<AppliedTextDecoration>& ComputedStyle::AppliedTextDecorations()
   return AppliedTextDecorationsInternal()->data;
 }
 
-bool ComputedStyle::IsAppliedTextDecorationsSame(
-    const ComputedStyle& other) const {
-  if (HasSimpleUnderlineInternal() != other.HasSimpleUnderlineInternal()) {
-    return false;
-  }
-  if (AppliedTextDecorationsInternal().get() ==
-      other.AppliedTextDecorationsInternal().get()) {
-    return true;
-  }
-
-  // Rare but sometimes two instances of |AppliedTextDecorations()| may have the
-  // same items. Check if all items are the same.
-  // e.g., tables/mozilla/bugs/bug126742.html
-  const Vector<AppliedTextDecoration>& decorations = AppliedTextDecorations();
-  const Vector<AppliedTextDecoration>& other_decorations =
-      other.AppliedTextDecorations();
-  if (decorations.size() != other_decorations.size()) {
-    return false;
-  }
-  for (wtf_size_t index = 0; index < decorations.size(); ++index) {
-    if (decorations[index] != other_decorations[index]) {
-      return false;
-    }
-  }
-  return true;
-}
-
 static bool HasInitialVariables(const StyleInitialData* initial_data) {
   return initial_data && initial_data->HasInitialVariables();
 }
@@ -2401,29 +2374,32 @@ EPaintOrderType ComputedStyle::PaintOrderType(unsigned index) const {
   return static_cast<EPaintOrderType>(pt);
 }
 
-bool ComputedStyle::ShouldApplyAnyContainment(const Element& element) const {
+bool ComputedStyle::ShouldApplyAnyContainment(const Element& element,
+                                              const DisplayStyle& display_style,
+                                              unsigned effective_containment) {
   DCHECK(IsA<HTMLBodyElement>(element) || IsA<HTMLHtmlElement>(element))
       << "Since elements can override the computed display for which box type "
          "to create, this method is not generally correct. Use "
          "LayoutObject::ShouldApplyAnyContainment if possible.";
-  if (ContainsStyle()) {
+  if (effective_containment & kContainsStyle) {
     return true;
   }
-  if (!element.LayoutObjectIsNeeded(*this)) {
+  if (!element.LayoutObjectIsNeeded(display_style)) {
     return false;
   }
-  if (Display() == EDisplay::kInline) {
+  EDisplay display = display_style.Display();
+  if (display == EDisplay::kInline) {
     return false;
   }
-  if ((ContainsInlineSize() || ContainsBlockSize()) &&
-      (!IsDisplayTableType() || Display() == EDisplay::kTableCaption ||
-       ShouldUseContentDataForElement(GetContentData()))) {
+  if ((effective_containment & kContainsSize) &&
+      (!IsDisplayTableType(display) || display == EDisplay::kTableCaption ||
+       ShouldUseContentDataForElement(display_style.GetContentData()))) {
     return true;
   }
-  return (ContainsLayout() || ContainsPaint()) &&
-         (!IsDisplayTableType() || IsDisplayTableBox() ||
-          Display() == EDisplay::kTableCell ||
-          Display() == EDisplay::kTableCaption);
+  return (effective_containment & (kContainsLayout | kContainsPaint)) &&
+         (!IsDisplayTableType(display) || IsDisplayTableBox(display) ||
+          display == EDisplay::kTableCell ||
+          display == EDisplay::kTableCaption);
 }
 
 bool ComputedStyle::CanMatchSizeContainerQueries(const Element& element) const {

@@ -8,10 +8,16 @@
 #include <memory>
 #include <vector>
 
+#include "build/build_config.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/mojom/referrer_policy.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/referrer.mojom-forward.h"
 #include "ui/base/page_transition_types.h"
+
+#if !BUILDFLAG(IS_ANDROID)
+#include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom-forward.h"
+#endif
 
 class GURL;
 
@@ -124,6 +130,19 @@ class RenderFrameHostOwner {
 
   // Return the iframe.credentialless attribute value.
   virtual bool Credentialless() const = 0;
+
+  // Stores the payload that will be sent as part of an automatic beacon. Right
+  // now only the "reserved.top_navigation" beacon is supported.
+  virtual void SetFencedFrameAutomaticBeaconReportEventData(
+      const std::string& event_data,
+      const std::vector<blink::FencedFrame::ReportingDestination>&
+          destination) = 0;
+
+#if !BUILDFLAG(IS_ANDROID)
+  virtual void GetVirtualAuthenticatorManager(
+      mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
+          receiver) = 0;
+#endif
 };
 
 }  // namespace content

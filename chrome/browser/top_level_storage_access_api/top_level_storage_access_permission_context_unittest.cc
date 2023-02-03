@@ -27,12 +27,12 @@
 #include "net/first_party_sets/first_party_set_entry.h"
 #include "net/first_party_sets/global_first_party_sets.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features_generated.h"
 
 namespace {
 
-constexpr char kGrantIsImplicitHistogram[] =
-    "API.StorageAccess.GrantIsImplicit";
-constexpr char kRequestOutcomeHistogram[] = "API.StorageAccess.RequestOutcome";
+constexpr char kRequestOutcomeHistogram[] =
+    "API.TopLevelStorageAccess.RequestOutcome";
 
 GURL GetTopLevelURL() {
   return GURL("https://embedder.example.com");
@@ -55,9 +55,9 @@ class TopLevelStorageAccessPermissionContextTest
     std::vector<base::test::FeatureRef> enabled;
     std::vector<base::test::FeatureRef> disabled;
     if (saa_enabled) {
-      enabled.push_back(net::features::kStorageAccessAPI);
+      enabled.push_back(blink::features::kStorageAccessAPI);
     } else {
-      disabled.push_back(net::features::kStorageAccessAPI);
+      disabled.push_back(blink::features::kStorageAccessAPI);
     }
     features_.InitWithFeatures(enabled, disabled);
   }
@@ -184,7 +184,7 @@ class TopLevelStorageAccessPermissionContextAPIWithFirstPartySetsTest
   TopLevelStorageAccessPermissionContextAPIWithFirstPartySetsTest() {
     features_.InitWithFeatures(
         /*enabled_features=*/
-        {features::kFirstPartySets, net::features::kStorageAccessAPI},
+        {features::kFirstPartySets, blink::features::kStorageAccessAPI},
         /*disabled_features=*/{});
   }
   void SetUp() override {
@@ -232,9 +232,6 @@ TEST_F(TopLevelStorageAccessPermissionContextAPIWithFirstPartySetsTest,
                 kRequestOutcomeHistogram,
                 CookieRequestOutcome::kGrantedByFirstPartySet),
             1);
-  histogram_tester().ExpectTotalCount(kGrantIsImplicitHistogram, 1);
-  histogram_tester().ExpectBucketCount(kGrantIsImplicitHistogram,
-                                       /*sample=*/true, 1);
 
   // Check the `SessionModel::NonRestorableUserSession` settings granted by FPS.
   settings_map->GetSettingsForOneType(
@@ -285,7 +282,7 @@ class TopLevelStorageAccessPermissionContextAPIFirstPartySetsDisabledTest
   TopLevelStorageAccessPermissionContextAPIFirstPartySetsDisabledTest() {
     features_.InitWithFeatures(
         /*enabled_features=*/
-        {net::features::kStorageAccessAPI},
+        {blink::features::kStorageAccessAPI},
         /*disabled_features=*/{features::kFirstPartySets});
   }
 

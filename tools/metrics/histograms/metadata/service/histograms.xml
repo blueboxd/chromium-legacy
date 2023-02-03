@@ -387,7 +387,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.FetchEvent.MainResource.Status"
-    enum="ServiceWorkerStatusCode" expires_after="2023-05-27">
+    enum="ServiceWorkerStatusCode" expires_after="2023-07-30">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -411,7 +411,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.FetchEvent.Subresource.Status"
-    enum="ServiceWorkerStatusCode" expires_after="2023-05-27">
+    enum="ServiceWorkerStatusCode" expires_after="2023-07-30">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -450,6 +450,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     Execution time of FindRegistrationForClientUrl until continuation is called.
     The metric is not recorded during startup.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.FoundServiceWorkerRegistrationOnNavigation"
+    enum="BooleanFound" expires_after="2023-12-01">
+  <owner>chikamune@chromium.org</owner>
+  <owner>chrome-worker@google.com</owner>
+  <summary>
+    Whether ServiceWorkerControlleeRequestHandler::MaybeCreateLoader found a
+    service worker registration after looking up the registration by using
+    FindRegistrationForClientUrl.
   </summary>
 </histogram>
 

@@ -20,7 +20,12 @@
 #include "content/browser/attribution_reporting/rate_limit_table.h"
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/attribution_data_model.h"
 #include "content/public/browser/storage_partition.h"
+
+namespace attribution_reporting {
+class SuitableOrigin;
+}  // namespace attribution_reporting
 
 namespace base {
 class GUID;
@@ -112,6 +117,8 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   std::vector<AttributionReport> GetReports(
       const std::vector<AttributionReport::Id>& ids) override;
   std::vector<StoredSource> GetActiveSources(int limit = -1) override;
+  std::vector<AttributionDataModel::DataKey> GetAllDataKeys() override;
+  void DeleteByDataKey(const AttributionDataModel::DataKey& datakey) override;
   bool DeleteReport(AttributionReport::Id report_id) override;
   bool UpdateReportForSendFailure(AttributionReport::Id report_id,
                                   base::Time new_report_time) override;
@@ -201,13 +208,15 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   [[nodiscard]] absl::optional<AttributionReport::EventLevelData::Id>
-  StoreEventLevelReport(StoredSource::Id source_id,
-                        uint64_t trigger_data,
-                        base::Time trigger_time,
-                        base::Time report_time,
-                        int64_t priority,
-                        const base::GUID& external_report_id,
-                        absl::optional<uint64_t> trigger_debug_key)
+  StoreEventLevelReport(
+      StoredSource::Id source_id,
+      uint64_t trigger_data,
+      base::Time trigger_time,
+      base::Time report_time,
+      int64_t priority,
+      const base::GUID& external_report_id,
+      absl::optional<uint64_t> trigger_debug_key,
+      const attribution_reporting::SuitableOrigin& context_origin)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   absl::optional<AttributionReport> ReadReportFromStatement(sql::Statement&)
@@ -261,7 +270,8 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       absl::optional<uint64_t> dedup_key,
       int num_conversions,
       absl::optional<AttributionReport>& replaced_report,
-      absl::optional<AttributionReport>& dropped_report)
+      absl::optional<AttributionReport>& dropped_report,
+      const attribution_reporting::SuitableOrigin& context_origin)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // Initializes the database if necessary, and returns whether the database is
@@ -357,11 +367,14 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       AttributionReport& report,
       int64_t aggregatable_budget_consumed,
       absl::optional<uint64_t> dedup_key,
-      absl::optional<int64_t>& aggregatable_budget_per_source)
+      absl::optional<int64_t>& aggregatable_budget_per_source,
+      const attribution_reporting::SuitableOrigin& destination_origin)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   [[nodiscard]] bool StoreAggregatableAttributionReport(
-      AttributionReport& report) VALID_CONTEXT_REQUIRED(sequence_checker_);
+      AttributionReport& report,
+      const attribution_reporting::SuitableOrigin& destination_origin)
+      VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   absl::optional<AttributionReport>
   ReadAggregatableAttributionReportFromStatement(sql::Statement&)

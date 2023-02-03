@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
 #include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/slot_assignment_engine.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
@@ -1487,7 +1488,8 @@ void AXObject::SerializeElementAttributes(ui::AXNodeData* node_data) {
   // Expose StringAttribute::kRole, which is used for the xml-roles object
   // attribute. Prefer the raw ARIA role attribute value, otherwise, the ARIA
   // equivalent role is used, if it is a role that is exposed in xml-roles.
-  const AtomicString& role_str = GetRoleAttributeStringForObjectAttribute();
+  const AtomicString& role_str =
+      GetRoleAttributeStringForObjectAttribute(node_data);
   TruncateAndAddStringAttribute(
       node_data, ax::mojom::blink::StringAttribute::kRole, role_str);
 }
@@ -2331,25 +2333,25 @@ AXObject* AXObject::GetControlsListboxForTextfieldCombobox() {
   return listbox_candidate;
 }
 
-const AtomicString& AXObject::GetRoleAttributeStringForObjectAttribute() {
+const AtomicString& AXObject::GetRoleAttributeStringForObjectAttribute(
+    ui::AXNodeData* node_data) {
   // All ARIA roles are exposed in xml-roles.
   if (const AtomicString& role_str =
           GetAOMPropertyOrARIAAttribute(AOMStringProperty::kRole)) {
     return role_str;
   }
 
-  ax::mojom::blink::Role landmark_role = RoleValue();
+  ax::mojom::blink::Role landmark_role = node_data->role;
   if (landmark_role == ax::mojom::blink::Role::kFooter) {
     // - Treat <footer> as "contentinfo" in xml-roles object attribute.
     landmark_role = ax::mojom::blink::Role::kContentInfo;
   } else if (landmark_role == ax::mojom::blink::Role::kHeader) {
     // - Treat <header> as "banner" in xml-roles object attribute.
     landmark_role = ax::mojom::blink::Role::kBanner;
-  } else if (!ui::IsLandmark(RoleValue())) {
+  } else if (!ui::IsLandmark(node_data->role)) {
     // Landmarks are the only roles exposed in xml-roles, matching Firefox.
     return g_null_atom;
   }
-
   return ARIARoleName(landmark_role);
 }
 
@@ -2424,8 +2426,9 @@ ax::mojom::blink::Role AXObject::ComputeFinalRoleForSerialization() const {
   // AXLayoutObject::RoleFromLayoutObjectOrNode is called, that node's
   // accessible children have not been calculated. Rather than force calculation
   // there, wait until we have the full tree.
-  if (role_ == ax::mojom::blink::Role::kSvgRoot && !UnignoredChildCount())
+  if (role_ == ax::mojom::blink::Role::kSvgRoot && !UnignoredChildCount()) {
     return ax::mojom::blink::Role::kImage;
+  }
 
   // DPUB ARIA 1.1 deprecated doc-biblioentry and doc-endnote, but it's still
   // possible to create these internal roles / platform mappings with a listitem
@@ -2448,6 +2451,28 @@ ax::mojom::blink::Role AXObject::ComputeFinalRoleForSerialization() const {
         if (ancestor_role == ax::mojom::blink::Role::kDocEndnotes)
           return ax::mojom::blink::Role::kDocEndnote;
       }
+    }
+  }
+
+  if (role_ == ax::mojom::blink::Role::kHeader) {
+    if (IsDescendantOfLandmarkDisallowedElement()) {
+      return ax::mojom::blink::Role::kHeaderAsNonLandmark;
+    }
+  }
+
+  if (role_ == ax::mojom::blink::Role::kFooter) {
+    if (IsDescendantOfLandmarkDisallowedElement()) {
+      return ax::mojom::blink::Role::kFooterAsNonLandmark;
+    }
+  }
+
+  // An <aside> element should not be considered a landmark region
+  // if it is a child of a landmark disallowed element, UNLESS it has
+  // an accessible name.
+  if (role_ == ax::mojom::blink::Role::kComplementary) {
+    if (IsDescendantOfLandmarkDisallowedElement() &&
+        !IsNameFromAuthorAttribute()) {
+      return ax::mojom::blink::Role::kGenericContainer;
     }
   }
 
@@ -2878,6 +2903,20 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
     SetNeedsToUpdateChildren();
   }
 
+  // Call children changed on included ancestor.
+  // This must be called before cached_is_ignored_* are updated, otherwise a
+  // performance optimization depending on LastKnownIsIncludedInTreeValue()
+  // may misfire.
+  if (included_in_tree_changed) {
+    if (AXObject* parent = CachedParentObject()) {
+      // Defers a ChildrenChanged() on the first included ancestor.
+      // Must defer it, otherwise it can cause reentry into
+      // UpdateCachedAttributeValuesIfNeeded() on |this|.
+      // ParentObjectUnignored()->SetNeedsToUpdateChildren();
+      AXObjectCache().ChildrenChangedOnAncestorOf(const_cast<AXObject*>(this));
+    }
+  }
+
   cached_is_ignored_ = is_ignored;
   cached_is_ignored_but_included_in_tree_ = is_ignored_but_included_in_tree;
   // Compute live region root, which can be from any ARIA live value, including
@@ -2897,15 +2936,6 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
   }
   cached_aria_column_index_ = ComputeAriaColumnIndex();
   cached_aria_row_index_ = ComputeAriaRowIndex();
-
-  if (included_in_tree_changed) {
-    if (AXObject* parent = CachedParentObject()) {
-      // Defers a ChildrenChanged() on the first included ancestor.
-      // Must defer it, otherwise it can cause reentry into
-      // UpdateCachedAttributeValuesIfNeeded() on |this|.
-      AXObjectCache().ChildrenChangedOnAncestorOf(const_cast<AXObject*>(this));
-    }
-  }
 
   if (GetLayoutObject() && GetLayoutObject()->IsText()) {
     cached_local_bounding_box_rect_for_accessibility_ =
@@ -3488,24 +3518,24 @@ const AXObject* AXObject::GetAtomicTextFieldAncestor(
   return nullptr;
 }
 
-const AXObject* AXObject::DatetimeAncestor(int max_levels_to_check) const {
-  switch (RoleValue()) {
-    case ax::mojom::blink::Role::kDateTime:
-    case ax::mojom::blink::Role::kDate:
-    case ax::mojom::blink::Role::kInputTime:
-    case ax::mojom::blink::Role::kTime:
-      return this;
-    default:
-      break;
-  }
-
-  if (max_levels_to_check == 0)
+const AXObject* AXObject::DatetimeAncestor() const {
+  ShadowRoot* shadow_root = GetNode()->ContainingShadowRoot();
+  if (!shadow_root || shadow_root->GetType() != ShadowRootType::kUserAgent) {
     return nullptr;
-
-  if (AXObject* parent = ParentObject())
-    return parent->DatetimeAncestor(max_levels_to_check - 1);
-
-  return nullptr;
+  }
+  auto* input = DynamicTo<HTMLInputElement>(&shadow_root->host());
+  if (!input) {
+    return nullptr;
+  }
+  if (input->type() != input_type_names::kDatetimeLocal &&
+      input->type() != input_type_names::kDatetime &&
+      input->type() != input_type_names::kDate &&
+      input->type() != input_type_names::kTime &&
+      input->type() != input_type_names::kMonth &&
+      input->type() != input_type_names::kWeek) {
+    return nullptr;
+  }
+  return AXObjectCache().GetOrCreate(input);
 }
 
 bool AXObject::LastKnownIsIgnoredValue() const {
@@ -4248,6 +4278,10 @@ AccessibilityOrientation AXObject::Orientation() const {
 }
 
 AXObject* AXObject::GetChildFigcaption() const { return nullptr; }
+
+bool AXObject::IsDescendantOfLandmarkDisallowedElement() const {
+  return false;
+}
 
 void AXObject::LoadInlineTextBoxes() {}
 

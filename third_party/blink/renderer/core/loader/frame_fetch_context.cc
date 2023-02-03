@@ -108,7 +108,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loading_log.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_timing_utils.h"
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/mhtml/mhtml_archive.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
@@ -395,7 +395,9 @@ void FrameFetchContext::PrepareRequest(
   }
 }
 
-void FrameFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
+void FrameFetchContext::AddResourceTiming(
+    mojom::blink::ResourceTimingInfoPtr info,
+    const AtomicString& initiator_type) {
   // Normally, |document_| is cleared on Document shutdown. In that case,
   // early return, as there is nothing to report the resource timing to.
   if (GetResourceFetcherProperties().IsDetached())
@@ -404,7 +406,7 @@ void FrameFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
   // Timing for main resource is handled in DocumentLoader.
   // All other resources are reported to the corresponding Document.
   DOMWindowPerformance::performance(*document_->domWindow())
-      ->GenerateAndAddResourceTiming(info);
+      ->AddResourceTiming(std::move(info), initiator_type);
 }
 
 bool FrameFetchContext::AllowImage(bool images_enabled, const KURL& url) const {
@@ -887,10 +889,15 @@ CoreProbeSink* FrameFetchContext::Probe() const {
 
 void FrameFetchContext::UpdateSubresourceLoadMetrics(
     uint32_t number_of_subresources_loaded,
-    uint32_t number_of_subresource_loads_handled_by_service_worker) {
+    uint32_t number_of_subresource_loads_handled_by_service_worker,
+    bool pervasive_payload_requested,
+    int64_t pervasive_bytes_fetched,
+    int64_t total_bytes_fetched) {
   document_loader_->UpdateSubresourceLoadMetrics(
       number_of_subresources_loaded,
-      number_of_subresource_loads_handled_by_service_worker);
+      number_of_subresource_loads_handled_by_service_worker,
+      pervasive_payload_requested, pervasive_bytes_fetched,
+      total_bytes_fetched);
 }
 
 }  // namespace blink

@@ -71,12 +71,18 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageActionController.ExtensionsWithPageActions" units="units"
-    expires_after="2023-06-18">
+    expires_after="2023-04-30">
+  <obsolete>
+    Histogram is in the process of being removed in in favor of
+    Extensions.ExtensionsWithPageActions that emits only on profile open for
+    &quot;user&quot; profiles (profiles where people can install extensions,
+    specifically profiles that can have non-component extensions installed).
+  </obsolete>
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
-    The number of Extensions that have Page Actions. Measured once per startup
-    per profile.
+    The number of Extensions that have Page Actions. Measured once per profile
+    open.
   </summary>
 </histogram>
 
@@ -167,6 +173,7 @@ chromium-metrics-reviews@google.com.
     <variant name="ReaderMode"/>
     <variant name="SaveAutofillAddress"/>
     <variant name="SaveCard"/>
+    <variant name="SaveIban"/>
     <variant name="SendTabToSelf"/>
     <variant name="SharingHub"/>
     <variant name="SideSearch"/>
@@ -686,6 +693,31 @@ chromium-metrics-reviews@google.com.
 
     This histogram has incomplete data. It expired after M78 and was re-added in
     M90, and also after 2022-12-11 until M111.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.Clients.CacheTransparency.PaintTiming.NavigationToFirstContentfulPaint"
+    units="ms" expires_after="2023-07-01">
+  <owner>nidhijaju@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <summary>
+    The time from navigation start to first &quot;contentful&quot; paint. This
+    metric is recorded iff the page loads and the event happens in the
+    foreground.
+  </summary>
+</histogram>
+
+<histogram
+    name="PageLoad.Clients.CacheTransparency.PaintTiming.NavigationToLargestContentfulPaint2"
+    units="ms" expires_after="2023-07-01">
+  <owner>nidhijaju@chromium.org</owner>
+  <owner>ricea@chromium.org</owner>
+  <summary>
+    The time from navigation start to the time the largest content (text or
+    image) is first painted, across all frames. This metric is recorded at the
+    end of each page load or the latest time when we can reliably record, iff
+    the page loads and the event happens in the foreground.
   </summary>
 </histogram>
 
@@ -2393,6 +2425,17 @@ chromium-metrics-reviews@google.com.
     Counts page load events related to Prerender2, like navigation in
     prerendered main frame and prerendering activation navigation. Recorded when
     those events are observed in PageLoadTracker.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Internal.Prerender2.ObserverEvent"
+    enum="PageLoadPrerenderObserverEvent" expires_after="2023-07-26">
+  <owner>nhiroki@chromium.org</owner>
+  <owner>src/content/browser/preloading/prerender/OWNERS</owner>
+  <summary>
+    Counts page load observer events related to Prerender2, like
+    FirstContentfulPaint. Recorded when those events are observed in
+    PrerenderPageLoaderMetricsObserver.
   </summary>
 </histogram>
 

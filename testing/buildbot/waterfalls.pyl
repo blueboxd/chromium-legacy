@@ -670,6 +670,9 @@
             },
           ],
         },
+        'additional_compile_targets': [
+          'monochrome_static_initializers',
+        ],
         'test_suites': {
           'gtest_tests': 'android_10_rel_gtests',
         },
@@ -701,7 +704,7 @@
         ],
         'os_type': 'android',
         'test_suites': {
-          'gtest_tests': 'android_12_emulator_gtests',
+          'gtest_tests': 'android_12_13_emulator_gtests',
         }
       },
       'android-12l-x64-dbg-tests': {
@@ -715,6 +718,19 @@
         'os_type': 'android',
         'test_suites': {
           'gtest_tests': 'android_12l_emulator_gtests',
+        }
+      },
+      'android-13-x64-rel': {
+        'mixins': [
+          '13-x64-emulator',
+          'emulator-8-cores',
+          'has_native_resultdb_integration',
+          'linux-bionic',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'android_12_13_emulator_gtests',
         }
       },
       'android-arm64-proguard-rel': {
@@ -982,9 +998,6 @@
           'pie_fleet',
           'walleye',
         ],
-        'additional_compile_targets': [
-          'monochrome_static_initializers',
-        ],
         'args': [
           '--use-persistent-shell',
         ],
@@ -1119,6 +1132,19 @@
         'os_type': 'android',
         'test_suites': {
           'gtest_tests': 'webview_bot_all_gtests',
+        }
+      },
+      'android-webview-13-x64-dbg-tests': {
+        'mixins': [
+          '13-x64-emulator',
+          'emulator-8-cores',
+          'has_native_resultdb_integration',
+          'linux-bionic',
+          'x86-64',
+        ],
+        'os_type': 'android',
+        'test_suites': {
+          'gtest_tests': 'webview_trichrome_64_cts_gtests',
         }
       },
       'android-webview-pie-x86-wpt-fyi-rel': {
@@ -2053,6 +2079,127 @@
     },
   },
   {
+    'name': 'chromium.coverage',
+    'mixins': ['chromium-tester-service-account'],
+    'machines': {
+      'android-code-coverage': {
+        'mixins': [
+          'has_native_resultdb_integration',
+          'isolate_profile_data',
+          'pie_fleet',
+          'walleye',
+        ],
+        'test_suites': {
+          'gtest_tests': 'android_pie_coverage_instrumentation_tests',
+          'junit_tests': 'chromium_junit_tests_no_swarming',
+        },
+        'os_type': 'android',
+      },
+      'android-code-coverage-native': {
+        'mixins': [
+          'has_native_resultdb_integration',
+          'isolate_profile_data',
+          'pie_fleet',
+          'walleye',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_android_gtests',
+        },
+        'os_type': 'android',
+      },
+      'fuchsia-code-coverage': {
+        'additional_compile_targets': [
+          'chrome_pkg',
+        ],
+        'test_suites': {
+          'gtest_tests': 'fuchsia_gtests',
+          'isolated_scripts': 'gpu_angle_fuchsia_unittests_isolated_scripts',
+        },
+        'mixins': [
+          'femu-additional-ram',
+          'fuchsia-code-coverage',
+          'isolate_profile_data',
+          'linux-bionic',
+        ],
+      },
+      'ios-simulator-code-coverage': {
+        'mixins': [
+          'has_native_resultdb_integration',
+          'ios_output_disabled_tests',
+          'isolate_profile_data',
+          'mac_12_x64',
+          'mac_toolchain',
+          'out_dir_arg',
+          'xcode_14_main',
+          'xctest',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'ios_code_coverage_tests',
+        },
+      },
+      'linux-chromeos-code-coverage': {
+        'mixins': [
+          'isolate_profile_data',
+          'linux-bionic',
+        ],
+        'additional_compile_targets': [
+          'gn_all',
+        ],
+        'test_suites': {
+          'gtest_tests': 'linux_chromeos_gtests',
+        },
+      },
+      'linux-code-coverage': {
+        'mixins': [
+          'isolate_profile_data',
+          'linux-bionic',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_gtests',
+          'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
+          'scripts': 'chromium_linux_scripts',
+        },
+      },
+      'linux-js-code-coverage': {
+        'mixins': [
+          'isolate_profile_data',
+          'linux-bionic',
+        ],
+        'test_suites': {
+          'gtest_tests': 'js_code_coverage_browser_tests'
+        },
+      },
+      'linux-lacros-code-coverage': {
+        'additional_compile_targets': [
+          'chrome',
+        ],
+        'mixins': [
+          'isolate_profile_data',
+        ],
+        'test_suites': {
+          'gtest_tests': 'linux_lacros_gtests',
+        },
+      },
+      'mac-code-coverage': {
+        'mixins': [
+          'isolate_profile_data',
+          'mac_12_x64',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_mac_gtests',
+        },
+      },
+      'win10-code-coverage': {
+        'mixins': [
+          'isolate_profile_data',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_win_gtests',
+        },
+      },
+    }
+  },
+  {
     'name': 'chromium.dawn',
     'mixins': ['chromium-tester-service-account'],
     'machines': {
@@ -2609,28 +2756,6 @@
           'gtest_tests': 'fuchsia_chrome_large_gtests',
         },
       },
-      'fuchsia-x64-workstation': {
-        'browser_config': 'fuchsia-chrome',
-        'os_type': 'fuchsia',
-        'mixins': [
-          'fuchsia-test-workstation',
-          'linux-bionic',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'kvm': '1',
-            },
-          ],
-        },
-        'test_suites': {
-          # TODO(crbug.com/1372220): Consider running all telemetry tests.
-          'gpu_telemetry_tests': 'gpu_fuchsia_telemetry_experimental_tests',
-          # TODO(crbug.com/1372220): Consider running more gtests here, Ideally
-          # "fuchsia_gtests".
-          'gtest_tests': 'fuchsia_chrome_large_gtests',
-        },
-      },
     },
   },
   {
@@ -2915,16 +3040,6 @@
           'scripts': 'chromium_win_scripts',
         },
       },
-      'Win x64 Builder (reclient)(cross)': {
-        # Copied from
-        # https://source.chromium.org/chromium/chromium/src/+/7b147a6777cb32d6a12e1716c61a0ed50dc1229a:testing/buildbot/waterfalls.pyl;l=6023-6030
-        'additional_compile_targets': [
-          'pdf_fuzzers'
-        ],
-        'test_suites': {
-          'scripts': 'chromium_win_scripts',
-        },
-      },
       'Win x64 Builder reclient staging': {
         # Copied from
         # https://source.chromium.org/chromium/chromium/src/+/7b147a6777cb32d6a12e1716c61a0ed50dc1229a:testing/buildbot/waterfalls.pyl;l=6023-6030
@@ -2995,31 +3110,6 @@
           '--enable-features=PartitionAllocBackupRefPtr:enabled-processes/non-renderer',
         ],
       },
-      'android-code-coverage': {
-        'mixins': [
-          'has_native_resultdb_integration',
-          'isolate_profile_data',
-          'pie_fleet',
-          'walleye',
-        ],
-        'test_suites': {
-          'gtest_tests': 'android_pie_coverage_instrumentation_tests',
-          'junit_tests': 'chromium_junit_tests_no_swarming',
-        },
-        'os_type': 'android',
-      },
-      'android-code-coverage-native': {
-        'mixins': [
-          'has_native_resultdb_integration',
-          'isolate_profile_data',
-          'pie_fleet',
-          'walleye',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_android_gtests',
-        },
-        'os_type': 'android',
-      },
       'android-fieldtrial-rel': {
         'mixins': [
           'has_native_resultdb_integration',
@@ -3073,21 +3163,6 @@
           'gtest_tests': 'chromeos_vm_gtests',
           'isolated_scripts': 'chromeos_isolated_scripts',
         },
-      },
-      'fuchsia-code-coverage': {
-        'additional_compile_targets': [
-          'chrome_pkg',
-        ],
-        'test_suites': {
-          'gtest_tests': 'fuchsia_gtests',
-          'isolated_scripts': 'gpu_angle_fuchsia_unittests_isolated_scripts',
-        },
-        'mixins': [
-          'femu-additional-ram',
-          'fuchsia-code-coverage',
-          'isolate_profile_data',
-          'linux-bionic',
-        ],
       },
       # A temporary builder to test new Fuchsia testing scripts on arm64.
       'fuchsia-fyi-arm64-cfv2-script': {
@@ -3161,21 +3236,6 @@
         ],
         'test_suites': {
           'isolated_scripts': 'ios_simulator_cronet_tests'
-        },
-      },
-      'ios-simulator-code-coverage': {
-        'mixins': [
-          'has_native_resultdb_integration',
-          'ios_output_disabled_tests',
-          'isolate_profile_data',
-          'mac_12_x64',
-          'mac_toolchain',
-          'out_dir_arg',
-          'xcode_14_main',
-          'xctest',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'ios_code_coverage_tests',
         },
       },
       'ios-simulator-cronet': {
@@ -3400,29 +3460,6 @@
           'scripts': 'test_traffic_annotation_auditor_script'
         },
       },
-      'linux-chromeos-code-coverage': {
-        'mixins': [
-          'isolate_profile_data',
-          'linux-bionic',
-        ],
-        'additional_compile_targets': [
-          'gn_all',
-        ],
-        'test_suites': {
-          'gtest_tests': 'linux_chromeos_gtests',
-        },
-      },
-      'linux-code-coverage': {
-        'mixins': [
-          'isolate_profile_data',
-          'linux-bionic',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_gtests',
-          'isolated_scripts': 'chromium_linux_rel_isolated_scripts',
-          'scripts': 'chromium_linux_scripts',
-        },
-      },
       'linux-fieldtrial-rel': {
         'mixins': [
           'linux-bionic',
@@ -3434,27 +3471,6 @@
       'linux-headless-shell-rel': {
         'test_suites': {
           'gtest_tests': 'headless_browser_gtests',
-        },
-      },
-
-      'linux-js-code-coverage': {
-        'mixins': [
-          'isolate_profile_data',
-          'linux-bionic',
-        ],
-        'test_suites': {
-          'gtest_tests': 'js_code_coverage_browser_tests'
-        },
-      },
-      'linux-lacros-code-coverage': {
-        'additional_compile_targets': [
-          'chrome',
-        ],
-        'mixins': [
-          'isolate_profile_data',
-        ],
-        'test_suites': {
-          'gtest_tests': 'linux_lacros_gtests',
         },
       },
       'linux-lacros-dbg-tests-fyi': {
@@ -3594,15 +3610,6 @@
           'isolated_scripts': 'wpt_web_tests_input',
         },
       },
-      # TODO(crbug.com/1252626): remove this after the migration.
-      'mac-arm64-on-arm64-rel-reclient': {
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'scripts': 'chromium_mac_scripts',
-        }
-      },
       'mac-backuprefptr-x64-fyi-rel': {
         'test_suites': {
           'gtest_tests': 'chromium_mac_and_dangling_pointer_detection_gtests',
@@ -3615,15 +3622,6 @@
         'gtest_args': [
           '--enable-features=PartitionAllocBackupRefPtr:enabled-processes/non-renderer',
         ],
-      },
-      'mac-code-coverage': {
-        'mixins': [
-          'isolate_profile_data',
-          'mac_12_x64',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_mac_gtests',
-        },
       },
       'mac-fieldtrial-tester': {
         'mixins': [
@@ -3677,6 +3675,15 @@
       'mac11-wpt-content-shell-fyi-rel': {
         'mixins': [
           'mac_11_x64',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'wpt_web_tests_content_shell',
+        },
+        'os_type': 'mac',
+      },
+      'mac12-arm64-wpt-content-shell-fyi-rel': {
+        'mixins': [
+          'mac_12_arm64',
         ],
         'test_suites': {
           'isolated_scripts': 'wpt_web_tests_content_shell',
@@ -3747,14 +3754,6 @@
           'isolated_scripts': 'upload_perfetto',
         },
         'use_swarming': False,
-      },
-      'win10-code-coverage': {
-        'mixins': [
-          'isolate_profile_data',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_win_gtests',
-        },
       },
       'win10-rel-no-external-ip': {
         'mixins': [
@@ -5224,7 +5223,7 @@
       },
       'WebKit Linux MSAN': {
         'mixins': [
-          'linux-bionic',
+          'linux-focal',
         ],
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
@@ -5531,7 +5530,7 @@
         'test_suites': {
           'gtest_tests': 'rust_gtests',
           # Currently `can_build_rust_unit_tests` is false on Android (because
-          # `rustc_can_link` is false).
+          # we need to construct an APK instead of compile an exe).
           # TODO(https://crbug.com/1260120): Cover `rust_native_tests` here.
         },
       },
@@ -5544,7 +5543,7 @@
         'test_suites': {
           'gtest_tests': 'rust_gtests',
           # Currently `can_build_rust_unit_tests` is false on Android (because
-          # `rustc_can_link` is false).
+          # we need to construct an APK instead of compile an exe).
           # TODO(https://crbug.com/1260120): Cover `rust_native_tests` here.
         },
       },
@@ -5854,12 +5853,9 @@
         },
       },
 
-      # TODO(crbug.com/1381588, crbug.com/1405483): replace
-      # `updater_gtests_mac_user` with `updater_gtests_mac` once
-      # crbug.com/1394839 is resolved.
       'mac12-x64-updater-tester-asan-dbg': {
         'test_suites': {
-          'gtest_tests': 'updater_gtests_mac_user',
+          'gtest_tests': 'updater_gtests_mac',
         },
         'swarming': {
           'dimension_sets': [
@@ -5870,11 +5866,9 @@
           ]
         },
       },
-      # TODO(crbug.com/1405483): replace `updater_gtests_mac_user` with
-      # `updater_gtests_mac` once crbug.com/1394839 is resolved.
       'mac13-arm64-updater-tester-dbg': {
         'test_suites': {
-          'gtest_tests': 'updater_gtests_mac_user',
+          'gtest_tests': 'updater_gtests_mac',
         },
         'swarming': {
           'dimension_sets': [
@@ -5885,11 +5879,9 @@
           ]
         },
       },
-      # TODO(crbug.com/1405483): replace `updater_gtests_mac_user` with
-      # `updater_gtests_mac` once crbug.com/1394839 is resolved.
       'mac13-x64-updater-tester-rel': {
         'test_suites': {
-          'gtest_tests': 'updater_gtests_mac_user',
+          'gtest_tests': 'updater_gtests_mac',
         },
         'swarming': {
           'dimension_sets': [
@@ -6644,6 +6636,17 @@
           'isolated_scripts': 'chromeos_isolated_scripts',
         },
       },
+      'chromeos-betty-pi-arc-finch-smoke-chrome': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'mixins': [
+          'chromeos-betty-finch',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_browser_finch_tests',
+        },
+      },
       'lacros-amd64-generic-chrome-fyi': {
         'additional_compile_targets': [
           'chrome',
@@ -6765,6 +6768,22 @@
       'mac12.0.arm64-blink-rel': {
         'mixins': [
           'mac_12_arm64',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
+      'mac13-blink-rel': {
+        'mixins': [
+          'mac_beta_x64',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
+      'mac13.arm64-blink-rel': {
+        'mixins': [
+          'mac_beta_arm64',
         ],
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',

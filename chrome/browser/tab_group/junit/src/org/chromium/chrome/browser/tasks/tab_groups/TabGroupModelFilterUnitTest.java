@@ -199,7 +199,7 @@ public class TabGroupModelFilterUnitTest {
         mTabModel.addTab(
                 tab, index, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
         mTabModelObserverCaptor.getValue().didAddTab(
-                tab, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+                tab, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND, false);
         return tab;
     }
 
@@ -213,37 +213,37 @@ public class TabGroupModelFilterUnitTest {
         mTabModel.addTab(
                 mTab1, -1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
         mTabModelObserverCaptor.getValue().didAddTab(
-                mTab1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+                mTab1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND, false);
 
         doReturn(isIncognito).when(mTab2).isIncognito();
         mTabModel.addTab(
                 mTab2, -1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
         mTabModelObserverCaptor.getValue().didAddTab(
-                mTab2, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+                mTab2, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND, false);
 
         doReturn(isIncognito).when(mTab3).isIncognito();
         mTabModel.addTab(
                 mTab3, -1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
         mTabModelObserverCaptor.getValue().didAddTab(
-                mTab3, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+                mTab3, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND, false);
 
         doReturn(isIncognito).when(mTab4).isIncognito();
         mTabModel.addTab(
                 mTab4, -1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
         mTabModelObserverCaptor.getValue().didAddTab(
-                mTab4, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+                mTab4, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND, false);
 
         doReturn(isIncognito).when(mTab5).isIncognito();
         mTabModel.addTab(
                 mTab5, -1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
         mTabModelObserverCaptor.getValue().didAddTab(
-                mTab5, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+                mTab5, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND, false);
 
         doReturn(isIncognito).when(mTab6).isIncognito();
         mTabModel.addTab(
                 mTab6, -1, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
         mTabModelObserverCaptor.getValue().didAddTab(
-                mTab6, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND);
+                mTab6, TabLaunchType.FROM_CHROME_UI, TabCreationState.LIVE_IN_FOREGROUND, false);
 
         if (isTabRestoreCompleted) {
             mTabGroupModelFilter.restoreCompleted();
@@ -1193,5 +1193,84 @@ public class TabGroupModelFilterUnitTest {
 
         int totalTabCount = mTabGroupModelFilter.getTotalTabCount();
         assertThat("Should have 6 total tabs", totalTabCount, equalTo(6));
+    }
+
+    @Test
+    public void mergeGroupToGroupNonAdjacent_notifyFilterObserver() {
+        List<Tab> expectedGroup = new ArrayList<>(Arrays.asList(mTab5, mTab6, mTab2, mTab3));
+        List<Tab> expectedSourceTabs = mTabGroupModelFilter.getRelatedTabList(mTab2.getId());
+        List<Integer> originalIndexes = new ArrayList<>();
+        List<Integer> originalRootIds = new ArrayList<>();
+
+        for (Tab tab : expectedSourceTabs) {
+            // Use tab2 initial index for both related tabs index as the logic moves tab2 after
+            // saving its index but before retrieving index for related tab3.
+            originalIndexes.add(TabModelUtils.getTabIndexById(
+                    mTabGroupModelFilter.getTabModel(), mTab2.getId()));
+            originalRootIds.add(mTabGroupModelFilter.getRootId(tab));
+        }
+
+        mTabGroupModelFilter.mergeTabsToGroup(mTab2.getId(), mTab5.getId(), false);
+        verify(mTabGroupModelFilterObserver)
+                .didCreateGroup(expectedSourceTabs, originalIndexes, originalRootIds);
+        assertArrayEquals(mTabGroupModelFilter.getRelatedTabList(mTab2.getId()).toArray(),
+                expectedGroup.toArray());
+    }
+
+    @Test
+    public void mergeGroupToTabAdjacent_notifyFilterObserver() {
+        List<Tab> expectedGroup = new ArrayList<>(Arrays.asList(mTab4, mTab2, mTab3));
+        List<Tab> expectedSourceTabs = mTabGroupModelFilter.getRelatedTabList(mTab3.getId());
+        List<Integer> originalIndexes = new ArrayList<>();
+        List<Integer> originalRootIds = new ArrayList<>();
+
+        for (Tab tab : expectedSourceTabs) {
+            originalIndexes.add(TabModelUtils.getTabIndexById(
+                    mTabGroupModelFilter.getTabModel(), mTab2.getId()));
+            originalRootIds.add(mTabGroupModelFilter.getRootId(tab));
+        }
+
+        mTabGroupModelFilter.mergeTabsToGroup(mTab3.getId(), mTab4.getId(), false);
+        verify(mTabGroupModelFilterObserver)
+                .didCreateGroup(expectedSourceTabs, originalIndexes, originalRootIds);
+        assertArrayEquals(mTabGroupModelFilter.getRelatedTabList(mTab2.getId()).toArray(),
+                expectedGroup.toArray());
+    }
+
+    @Test
+    public void mergeTabToTab_notifyFilterObserver() {
+        List<Tab> expectedGroup = new ArrayList<>(Arrays.asList(mTab4, mTab1));
+        List<Tab> expectedSourceTabs = mTabGroupModelFilter.getRelatedTabList(mTab1.getId());
+        List<Integer> originalIndexes = new ArrayList<>();
+        List<Integer> originalRootIds = new ArrayList<>();
+
+        for (Tab tab : expectedSourceTabs) {
+            originalIndexes.add(
+                    TabModelUtils.getTabIndexById(mTabGroupModelFilter.getTabModel(), tab.getId()));
+            originalRootIds.add(mTabGroupModelFilter.getRootId(tab));
+        }
+
+        mTabGroupModelFilter.mergeTabsToGroup(mTab1.getId(), mTab4.getId(), false);
+        verify(mTabGroupModelFilterObserver)
+                .didCreateGroup(expectedSourceTabs, originalIndexes, originalRootIds);
+        assertArrayEquals(mTabGroupModelFilter.getRelatedTabList(mTab1.getId()).toArray(),
+                expectedGroup.toArray());
+    }
+
+    @Test
+    public void mergeTabToTab_doNotNotifyFilterObserver() {
+        List<Tab> expectedSourceTabs = mTabGroupModelFilter.getRelatedTabList(mTab1.getId());
+        List<Integer> originalIndexes = new ArrayList<>();
+        List<Integer> originalRootIds = new ArrayList<>();
+
+        for (Tab tab : expectedSourceTabs) {
+            originalIndexes.add(
+                    TabModelUtils.getTabIndexById(mTabGroupModelFilter.getTabModel(), tab.getId()));
+            originalRootIds.add(mTabGroupModelFilter.getRootId(tab));
+        }
+
+        mTabGroupModelFilter.mergeTabsToGroup(mTab1.getId(), mTab4.getId(), true);
+        verify(mTabGroupModelFilterObserver, never())
+                .didCreateGroup(expectedSourceTabs, originalIndexes, originalRootIds);
     }
 }

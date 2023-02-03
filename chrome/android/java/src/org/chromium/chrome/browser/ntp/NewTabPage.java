@@ -55,6 +55,7 @@ import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.omnibox.OmniboxFocusReason;
 import org.chromium.chrome.browser.omnibox.OmniboxStub;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteControllerProvider;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -82,6 +83,7 @@ import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePageHost;
+import org.chromium.chrome.browser.util.BrowserUiUtils;
 import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger.SurfaceType;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
@@ -283,7 +285,8 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
     private class NewTabPageTileGroupDelegate extends TileGroupDelegateImpl {
         private NewTabPageTileGroupDelegate(Context context, Profile profile,
                 SuggestionsNavigationDelegate navigationDelegate, SnackbarManager snackbarManager) {
-            super(context, profile, navigationDelegate, snackbarManager);
+            super(context, profile, navigationDelegate, snackbarManager,
+                    BrowserUiUtils.HostSurface.NEW_TAB_PAGE);
         }
 
         @Override
@@ -426,12 +429,14 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         // For example, the user changes theme when a NTP is showing, which leads to the recreation
         // of the ChromeTabbedActivity and showing the NTP as the last visited Tab.
         if (mTabModelSelector.isTabStateInitialized()) {
-            mayCreateSearchResumptionModule(profile);
+            mayCreateSearchResumptionModule(
+                    profile, AutocompleteControllerProvider.from(windowAndroid));
         } else {
             mTabModelSelector.addObserver(new TabModelSelectorObserver() {
                 @Override
                 public void onTabStateInitialized() {
-                    mayCreateSearchResumptionModule(profile);
+                    mayCreateSearchResumptionModule(
+                            profile, AutocompleteControllerProvider.from(windowAndroid));
                     mTabModelSelector.removeObserver(this);
                 }
             });
@@ -494,7 +499,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
 
         FeedActionDelegate actionDelegate = new FeedActionDelegateImpl(activity, snackbarManager,
                 mNewTabPageManager.getNavigationDelegate(), BookmarkModel.getForProfile(profile),
-                crowButtonDelegate) {
+                crowButtonDelegate, BrowserUiUtils.HostSurface.NEW_TAB_PAGE) {
             @Override
             public void openHelpPage() {
                 NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_LEARN_MORE);
@@ -992,6 +997,17 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         return mNewTabPageManager;
     }
 
+    @VisibleForTesting
+    public TileGroup.Delegate getTileGroupDelegateForTesting() {
+        return mTileGroupDelegate;
+    }
+
+    @VisibleForTesting
+    public FeedActionDelegate getFeedActionDelegateForTesting() {
+        return ((FeedSurfaceCoordinator) mFeedSurfaceProvider)
+                .getActionDelegateForTesting(); // IN-TEST
+    }
+
     /**
      * @param isTopMargin True to return the top margin; False to return bottom margin.
      * @return The top margin or bottom margin of the logo.
@@ -1006,13 +1022,14 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                                    R.dimen.ntp_logo_margin_bottom);
     }
 
-    private void mayCreateSearchResumptionModule(Profile profile) {
+    private void mayCreateSearchResumptionModule(
+            Profile profile, AutocompleteControllerProvider provider) {
         // The module is disabled on tablets.
         if (mIsTablet) return;
 
         mSearchResumptionModuleCoordinator =
                 SearchResumptionModuleUtils.mayCreateSearchResumptionModule(mNewTabPageLayout,
-                        mTabModelSelector.getCurrentModel(), mTab, profile,
+                        provider, mTabModelSelector.getCurrentModel(), mTab, profile,
                         R.id.search_resumption_module_container_stub);
     }
 }

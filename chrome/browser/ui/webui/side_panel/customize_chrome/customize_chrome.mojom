@@ -19,6 +19,10 @@ struct BackgroundImage {
   string title;
   // The main color of the background image.
   skia.mojom.SkColor? main_color;
+  // Collection id of the background image.
+  string collection_id;
+  // Whether daily refresh is enabled.
+  bool daily_refresh_enabled;
 };
 
 // Additional info for third-party themes.
@@ -33,7 +37,7 @@ struct ThirdPartyThemeInfo {
 struct Theme {
   // The background image.
   BackgroundImage? background_image;
-  // Whether the user is using a third party theme.
+  // User's third party theme info.
   ThirdPartyThemeInfo? third_party_theme_info;
   // Whether the OS is in dark mode.
   bool system_dark_mode;
@@ -47,8 +51,8 @@ struct Theme {
   skia.mojom.SkColor color_picker_icon_color;
   // True if the colors are managed by a policy.
   bool colors_managed_by_policy;
-  // Selected collection for daily refresh.
-  string? daily_refresh_collection_id;
+  // True if the background is managed by a policy.
+  bool background_managed_by_policy;
 };
 
 struct ChromeColor {
@@ -83,6 +87,8 @@ struct CollectionImage {
   url.mojom.Url image_url;
   // URL to a preview of the image. Can point to untrusted content.
   url.mojom.Url preview_image_url;
+  // Collection id of the image;
+  string collection_id;
 };
 
 // Settings associated with a given module.
@@ -93,6 +99,12 @@ struct ModuleSettings {
   string name;
   // Whether the module is enabled or not.
   bool enabled;
+};
+
+enum CustomizeChromeSection {
+  kAppearance,
+  kShortcuts,
+  kModules,
 };
 
 // Used by the WebUI page to bootstrap bidirectional communication.
@@ -134,8 +146,8 @@ interface CustomizeChromePageHandler {
   // Sets a Chrome theme generated from |seed_color|.
   SetSeedColor(skia.mojom.SkColor seed_color);
 
-  // Sets theme to default classic chrome.
-  SetClassicChromeDefaultTheme();
+  // Removes background image.
+  RemoveBackgroundImage();
 
   // Choose custom background from local file system.
   ChooseLocalCustomBackground() => (bool success);
@@ -143,7 +155,7 @@ interface CustomizeChromePageHandler {
   // Sets the background image and notifies all NTPs of the change.
   SetBackgroundImage(string attribution_1, string attribution_2,
       url.mojom.Url attribution_url, url.mojom.Url image_url,
-      url.mojom.Url thumbnail_url);
+      url.mojom.Url thumbnail_url, string collection_id);
 
   // Sets collection id for daily refresh. When |collection_id| is empty, the
   // daily refresh is turned off.
@@ -160,6 +172,9 @@ interface CustomizeChromePageHandler {
 
   // Disables module with ID `module_id` if `disabled`. Enables otherwise.
   SetModuleDisabled(string module_id, bool disabled);
+
+  // Triggers a call to |CustomizeChromePage.UpdateScrollToSection()|.
+  UpdateScrollToSection();
 };
 
 // WebUI-side handler for requests from the browser.
@@ -172,4 +187,7 @@ interface CustomizeChromePage {
   SetMostVisitedSettings(bool custom_links_enabled, bool visible);
    // Sets the current theme.
    SetTheme(Theme theme);
+  // Scrolls side panel to |section|. Possibly a response to a call to
+  // |CustomizeChromePageHandler.UpdateScrollToSection()|.
+  ScrollToSection(CustomizeChromeSection section);
 };

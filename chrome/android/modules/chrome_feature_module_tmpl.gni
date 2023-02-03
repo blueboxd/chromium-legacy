@@ -12,15 +12,17 @@ import("//components/module_installer/android/module_desc_java.gni")
 # Supports most variables of the android_app_bundle_module, plus:
 #   module_desc: Descriptor of this module. See
 #     //chrome/android/modules/chrome_feature_modules.gni for the format.
-#   is_monochrome_or_trichrome: (Optional) Whether this module is packaged into
-#     Monochrome or Trichrome.
+#   is_monochrome: (Optional) Whether this module is Monochrome.
+#   is_trichrome: (Optional) Whether this module is Trichrome.
 #   is_64_bit_browser: (Optional) Whether Chrome (as opposed to WebView) runs in
 #     64 bit.
 template("chrome_feature_module") {
   assert(defined(invoker.module_desc))
   _module_desc = invoker.module_desc
-  _is_monochrome_or_trichrome = defined(invoker.is_monochrome_or_trichrome) &&
-                                invoker.is_monochrome_or_trichrome
+  _is_monochrome_or_trichrome =
+      (defined(invoker.is_monochrome) && invoker.is_monochrome) ||
+      (defined(invoker.is_trichrome) && invoker.is_trichrome)
+  not_needed(invoker, [ "is_trichrome" ])
 
   _loadable_modules_32_bit = []
   if (defined(_module_desc.loadable_modules_32_bit)) {
@@ -89,6 +91,7 @@ template("chrome_feature_module") {
                              "add_view_trace_events",
                              "base_module_target",
                              "custom_assertion_handler",
+                             "enable_jni_multiplexing",
                              "expected_android_manifest",
                              "expected_android_manifest_base",
                              "manifest_package",
@@ -98,19 +101,18 @@ template("chrome_feature_module") {
                              "version_code",
                              "version_name",
                            ])
-    android_manifest = _module_desc.android_manifest
-    if (defined(_module_desc.android_manifest_dep)) {
-      android_manifest_dep = _module_desc.android_manifest_dep
-    }
+    forward_variables_from(_module_desc,
+                           [
+                             "android_manifest",
+                             "android_manifest_dep",
+                             "uses_split",
+                           ])
     deps = [ ":${target_name}__module_desc_java" ]
     if (defined(_module_desc.pak_deps)) {
       deps += [ ":${target_name}__pak_assets" ]
     }
     if (defined(_module_desc.java_deps)) {
       deps += _module_desc.java_deps
-    }
-    if (defined(_module_desc.uses_split)) {
-      uses_split = _module_desc.uses_split
     }
 
     # Don't embed more translations than required (http://crbug.com/932017).

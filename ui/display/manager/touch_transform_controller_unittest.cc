@@ -17,8 +17,8 @@
 #include "ui/display/screen_base.h"
 #include "ui/events/devices/device_data_manager.h"
 
-namespace display {
-namespace test {
+namespace display::test {
+
 namespace {
 
 constexpr int kDisplayId1 = 1;
@@ -281,7 +281,7 @@ TEST_F(TouchTransformControllerTest, MirrorModePillarboxing) {
   EXPECT_EQ(100, y);
 
   // In pillarboxing, there is (1-768*(1024/768)/1366)/2 = 12.5% of the
-  // width on both the left & rigth region of the screen is blank.
+  // width on both the left & right region of the screen is blank.
   // When touch events coming at X range [0, 1024), the mapping should be
   // [0, ~128] ---> < 0
   // [~128, ~896] ---> [0, 1024)
@@ -900,5 +900,4 @@ TEST_F(TouchTransformControllerTest, PillarBoxingUserTouchCalibration) {
   EXPECT_NEAR(0.0f, y, 0.01f);
 }
 
-}  // namespace test
-}  // namespace display
+}  // namespace display::test

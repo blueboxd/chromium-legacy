@@ -12,13 +12,13 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/raw_ptr.h"
-#include "cc/layers/layer.h"
-#include "cc/layers/ui_resource_layer.h"
 #include "chrome/browser/ui/android/layouts/scene_layer.h"
 
-namespace cc {
+namespace cc::slim {
+class Layer;
 class SolidColorLayer;
-}
+class UIResourceLayer;
+}  // namespace cc::slim
 
 namespace android {
 
@@ -151,7 +151,8 @@ class TabStripSceneLayer : public SceneLayer {
       jfloat bottom_offset_y,
       jfloat close_button_padding,
       jfloat close_button_alpha,
-      jfloat divider_alpha,
+      jboolean is_start_divider_visible,
+      jboolean is_end_divider_visible,
       jboolean is_loading,
       jfloat spinner_rotation,
       jfloat brightness,
@@ -168,15 +169,15 @@ class TabStripSceneLayer : public SceneLayer {
 
   typedef std::vector<scoped_refptr<TabHandleLayer>> TabHandleLayerList;
 
-  scoped_refptr<cc::SolidColorLayer> tab_strip_layer_;
-  scoped_refptr<cc::Layer> scrollable_strip_layer_;
-  scoped_refptr<cc::SolidColorLayer> scrim_layer_;
-  scoped_refptr<cc::UIResourceLayer> new_tab_button_;
-  scoped_refptr<cc::UIResourceLayer> new_tab_button_background_;
-  scoped_refptr<cc::UIResourceLayer> left_fade_;
-  scoped_refptr<cc::UIResourceLayer> right_fade_;
-  scoped_refptr<cc::UIResourceLayer> model_selector_button_;
-  scoped_refptr<cc::UIResourceLayer> model_selector_button_background_;
+  scoped_refptr<cc::slim::SolidColorLayer> tab_strip_layer_;
+  scoped_refptr<cc::slim::Layer> scrollable_strip_layer_;
+  scoped_refptr<cc::slim::SolidColorLayer> scrim_layer_;
+  scoped_refptr<cc::slim::UIResourceLayer> new_tab_button_;
+  scoped_refptr<cc::slim::UIResourceLayer> new_tab_button_background_;
+  scoped_refptr<cc::slim::UIResourceLayer> left_fade_;
+  scoped_refptr<cc::slim::UIResourceLayer> right_fade_;
+  scoped_refptr<cc::slim::UIResourceLayer> model_selector_button_;
+  scoped_refptr<cc::slim::UIResourceLayer> model_selector_button_background_;
 
   unsigned write_index_;
   TabHandleLayerList tab_handle_layers_;

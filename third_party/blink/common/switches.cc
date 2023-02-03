@@ -165,10 +165,6 @@ const char kJavaScriptFlags[] = "js-flags";
 // Controls whether WebSQL is force enabled.
 const char kWebSQLAccess[] = "web-sql-access";
 
-// Controls whether WebSQL for non-secure context is force enabled.
-const char kWebSQLNonSecureContextEnabled[] =
-    "web-sql-non-secure-context-enabled";
-
 // Used to communicate managed policy for the EventPath feature. This feature is
 // typically controlled by base::Feature (see blink/common/features.*) but
 // requires an enterprise policy override. This is implicitly a tri-state, and
@@ -177,6 +173,14 @@ const char kWebSQLNonSecureContextEnabled[] =
 extern const char kEventPathPolicy[] = "event-path-policy";
 extern const char kEventPathPolicy_ForceDisable[] = "0";
 extern const char kEventPathPolicy_ForceEnable[] = "1";
+
+// The EventPath feature is disabled by default on almost all platforms and
+// channels, with a few exceptions that require a more gradual removal. Those
+// platforms/channels should pass this flag to renderer to enable the feature.
+// The flag has higher precedence than Blink runtime enabled feature, but lower
+// precedence than base::Feature overrides and enterprise policy.
+extern const char kEventPathEnabledByDefault[] =
+    "event-path-enabled-by-default";
 
 // Used to communicate managed policy for the OffsetParentNewSpecBehavior
 // feature. This feature is typically controlled by base::Feature (see
@@ -199,9 +203,6 @@ extern const char kSendMouseEventsDisabledFormControlsPolicy_ForceDisable[] =
     "0";
 extern const char kSendMouseEventsDisabledFormControlsPolicy_ForceEnable[] =
     "1";
-
-// Controls whether legacy quota API webkitStorageInfo is forced enabled.
-const char kPrefixedStorageInfoEnabled[] = "prefixed-storage-info-enabled";
 
 }  // namespace switches
 }  // namespace blink

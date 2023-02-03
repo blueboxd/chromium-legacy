@@ -6,20 +6,13 @@
 #include <memory>
 #include <string>
 
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
-#include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/numerics/checked_math.h"
-#include "base/process/launch.h"
-#include "base/process/process.h"
-#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
-#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -28,20 +21,21 @@
 #include "build/buildflag.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/ipc/ipc_support.h"
-#include "chrome/updater/persisted_data.h"
-#include "chrome/updater/prefs.h"
-#include "chrome/updater/registration_data.h"
 #include "chrome/updater/test/integration_test_commands.h"
 #include "chrome/updater/test/integration_tests_impl.h"
 #include "chrome/updater/test/server.h"
-#include "chrome/updater/test_scope.h"
 #include "chrome/updater/update_service.h"
-#include "chrome/updater/updater_scope.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util/unittest_util.h"
-#include "chrome/updater/util/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(IS_LINUX)
+#include <unistd.h>
+
+#include "base/environment.h"
+#include "base/strings/strcat.h"
+#endif
 
 #if BUILDFLAG(IS_WIN)
 #include <shlobj.h>
@@ -49,6 +43,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/updater/app/server/win/updater_legacy_idl.h"
+#include "chrome/updater/test_scope.h"
 #include "chrome/updater/util/win_util.h"
 #include "chrome/updater/win/win_constants.h"
 #endif  // BUILDFLAG(IS_WIN)
@@ -98,6 +93,17 @@ class IntegrationTest : public ::testing::Test {
     // TODO(crbug.com/1233612) - reenable the code when system tests pass.
     // SetUpTestService();
     ASSERT_NO_FATAL_FAILURE(EnterTestMode(GURL("http://localhost:1234")));
+
+#if BUILDFLAG(IS_LINUX)
+    // On LUCI the XDG_RUNTIME_DIR environment variable may not be set. This is
+    // required for systemctl to connect to its bus in user mode.
+    std::unique_ptr<base::Environment> env = base::Environment::Create();
+    if (!env->HasVar("XDG_RUNTIME_DIR")) {
+      ASSERT_TRUE(env->SetVar(
+          "XDG_RUNTIME_DIR",
+          base::StrCat({"/run/user/", base::NumberToString(getuid())})));
+    }
+#endif
   }
 
   void TearDown() override {
@@ -296,6 +302,15 @@ class IntegrationTest : public ::testing::Test {
 #if BUILDFLAG(IS_WIN)
     test_commands_->TearDownTestService();
 #endif  // BUILDFLAG(IS_WIN)
+  }
+
+  void ExpectUpdateCheckSequence(ScopedServer* test_server,
+                                 const std::string& app_id,
+                                 const std::string& install_data_index,
+                                 const base::Version& from_version,
+                                 const base::Version& to_version) {
+    test_commands_->ExpectUpdateCheckSequence(
+        test_server, app_id, install_data_index, from_version, to_version);
   }
 
   void ExpectUpdateSequence(ScopedServer* test_server,
@@ -638,38 +653,6 @@ TEST_F(IntegrationTest, MarshalInterface) {
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
-TEST_F(IntegrationTest, LegacyUpdate3Web) {
-  ScopedServer test_server(test_commands_);
-  ASSERT_NO_FATAL_FAILURE(Install());
-
-  const char kAppId[] = "test1";
-  ASSERT_NO_FATAL_FAILURE(InstallApp(kAppId));
-
-  ASSERT_NO_FATAL_FAILURE(ExpectNoUpdateSequence(&test_server, kAppId));
-  ASSERT_NO_FATAL_FAILURE(
-      ExpectLegacyUpdate3WebSucceeds(kAppId, STATE_NO_UPDATE, S_OK));
-
-  base::Value::Dict group_policies;
-  group_policies.Set("Updatetest1", kPolicyAutomaticUpdatesOnly);
-  ASSERT_NO_FATAL_FAILURE(SetGroupPolicies(group_policies));
-  ASSERT_NO_FATAL_FAILURE(ExpectLegacyUpdate3WebSucceeds(
-      kAppId, STATE_ERROR, GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL));
-
-  group_policies.Set("Updatetest1", kPolicyDisabled);
-  ASSERT_NO_FATAL_FAILURE(SetGroupPolicies(group_policies));
-  ExpectLegacyUpdate3WebSucceeds(kAppId, STATE_ERROR,
-                                 GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY);
-
-  group_policies.clear();
-  ASSERT_NO_FATAL_FAILURE(SetGroupPolicies(group_policies));
-  ASSERT_NO_FATAL_FAILURE(ExpectUpdateSequence(
-      &test_server, kAppId, "", base::Version("0.1"), base::Version("0.2")));
-  ASSERT_NO_FATAL_FAILURE(
-      ExpectLegacyUpdate3WebSucceeds(kAppId, STATE_INSTALL_COMPLETE, S_OK));
-
-  ASSERT_NO_FATAL_FAILURE(Uninstall());
-}
-
 TEST_F(IntegrationTest, LegacyProcessLauncher) {
   ASSERT_NO_FATAL_FAILURE(Install());
   ASSERT_NO_FATAL_FAILURE(ExpectLegacyProcessLauncherSucceeds());
@@ -988,6 +971,73 @@ TEST_F(IntegrationTest, LegacySilentOfflineInstall) {
                                             /*is_silent_install=*/true));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
+
+#if BUILDFLAG(IS_WIN)
+class IntegrationTestLegacyUpdate3Web : public IntegrationTest {
+ public:
+  IntegrationTestLegacyUpdate3Web() = default;
+  ~IntegrationTestLegacyUpdate3Web() override = default;
+
+ protected:
+  void SetUp() override {
+    IntegrationTest::SetUp();
+
+    test_server_ = std::make_unique<ScopedServer>(test_commands_);
+    ASSERT_NO_FATAL_FAILURE(Install());
+    ASSERT_NO_FATAL_FAILURE(InstallApp(kAppId));
+  }
+
+  void TearDown() override {
+    ASSERT_NO_FATAL_FAILURE(Uninstall());
+
+    IntegrationTest::TearDown();
+  }
+
+  std::unique_ptr<ScopedServer> test_server_;
+  static constexpr char kAppId[] = "test1";
+};
+
+TEST_F(IntegrationTestLegacyUpdate3Web, NoUpdate) {
+  ASSERT_NO_FATAL_FAILURE(ExpectNoUpdateSequence(test_server_.get(), kAppId));
+  ASSERT_NO_FATAL_FAILURE(
+      ExpectLegacyUpdate3WebSucceeds(kAppId, STATE_NO_UPDATE, S_OK));
+}
+
+TEST_F(IntegrationTestLegacyUpdate3Web, DisabledPolicyManual) {
+  base::Value::Dict group_policies;
+  group_policies.Set("Updatetest1", kPolicyAutomaticUpdatesOnly);
+  ASSERT_NO_FATAL_FAILURE(SetGroupPolicies(group_policies));
+  ASSERT_NO_FATAL_FAILURE(ExpectLegacyUpdate3WebSucceeds(
+      kAppId, STATE_ERROR, GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL));
+}
+
+TEST_F(IntegrationTestLegacyUpdate3Web, DisabledPolicy) {
+  base::Value::Dict group_policies;
+  group_policies.Set("Updatetest1", kPolicyDisabled);
+  ASSERT_NO_FATAL_FAILURE(SetGroupPolicies(group_policies));
+  ExpectLegacyUpdate3WebSucceeds(kAppId, STATE_ERROR,
+                                 GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY);
+}
+
+TEST_F(IntegrationTestLegacyUpdate3Web, CheckForUpdate) {
+  ASSERT_NO_FATAL_FAILURE(ExpectUpdateCheckSequence(test_server_.get(), kAppId,
+                                                    "", base::Version("0.1"),
+                                                    base::Version("0.2")));
+  ASSERT_NO_FATAL_FAILURE(
+      ExpectLegacyUpdate3WebSucceeds(kAppId, STATE_UPDATE_AVAILABLE, S_OK));
+}
+
+TEST_F(IntegrationTestLegacyUpdate3Web, Update) {
+  ASSERT_NO_FATAL_FAILURE(ExpectUpdateCheckSequence(test_server_.get(), kAppId,
+                                                    "", base::Version("0.1"),
+                                                    base::Version("0.2")));
+  ASSERT_NO_FATAL_FAILURE(ExpectUpdateSequence(test_server_.get(), kAppId, "",
+                                               base::Version("0.1"),
+                                               base::Version("0.2")));
+  ASSERT_NO_FATAL_FAILURE(
+      ExpectLegacyUpdate3WebSucceeds(kAppId, STATE_INSTALL_COMPLETE, S_OK));
+}
+#endif  // BUILDFLAG(IS_WIN)
 
 #endif  // BUILDFLAG(IS_WIN) || !defined(COMPONENT_BUILD)
 

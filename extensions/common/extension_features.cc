@@ -127,6 +127,8 @@ BASE_FEATURE(kExtensionSourceUrlEnforcement,
 // view MPArch migration. See
 // https://docs.google.com/document/d/1RVbtvklXUg9QCNvMT0r-1qDwJNeQFGoTCOD1Ur9mDa4/edit?usp=sharing
 // for details.
+// TODO(crbug.com/1261928): When enabling this by default, also launch the
+// ChromeAppsWebViewPermissiveBehaviorAllowed enterprise policy.
 BASE_FEATURE(kWebviewTagMPArchBehavior,
              "WebviewTagMPArchBehavior",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -146,5 +148,12 @@ BASE_FEATURE(kExtensionsManifestV3Only,
 BASE_FEATURE(kMinimumMV3CSPWithInlineSpeculationRules,
              "MinimumMV3CSPWithInlineSpeculationRules",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// If enabled, APIs of the Telemetry Extension platform that have pending
+// approval will be enabled. Read more about the platform here:
+// https://chromium.googlesource.com/chromium/src/+/master/docs/telemetry_extension/README.md.
+BASE_FEATURE(kTelemetryExtensionPendingApprovalApi,
+             "TelemetryExtensionPendingApprovalApi",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace extensions_features

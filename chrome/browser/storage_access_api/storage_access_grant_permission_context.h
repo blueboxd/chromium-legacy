@@ -66,9 +66,11 @@ class StorageAccessGrantPermissionContext
       bool user_gesture,
       permissions::BrowserPermissionCallback callback);
 
+  static void SetImplicitGrantLimitForTesting(int limit);
+  static void SetAutodenyOutsideFPSForTesting(bool deny);
+
  private:
   // PermissionContextBase:
-  bool IsRestrictedToSecureOrigins() const override;
   void DecidePermission(
       const permissions::PermissionRequestID& id,
       const GURL& requesting_origin,

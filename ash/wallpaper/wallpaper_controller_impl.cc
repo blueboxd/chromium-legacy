@@ -34,6 +34,7 @@
 #include "ash/wallpaper/wallpaper_utils/wallpaper_calculated_colors.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_color_calculator.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_ephemeral_user.h"
+#include "ash/wallpaper/wallpaper_utils/wallpaper_file_utils.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resizer.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_resolution.h"
 #include "ash/wallpaper/wallpaper_view.h"
@@ -48,7 +49,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
@@ -66,10 +66,8 @@
 #include "ui/compositor/layer.h"
 #include "ui/display/screen.h"
 #include "ui/display/util/display_util.h"
-#include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/image/image_skia_operations.h"
 #include "url/gurl.h"
 
 using color_utils::ColorProfile;
@@ -104,9 +102,6 @@ constexpr base::TimeDelta kLockAnimationBlurAnimationDuration =
 // Duration of the cross fade animation when loading wallpaper.
 constexpr base::TimeDelta kWallpaperLoadAnimationDuration =
     base::Milliseconds(250);
-
-// Default quality for encoding wallpaper.
-constexpr int kDefaultEncodingQuality = 90;
 
 // The color of the wallpaper if no other wallpaper images are available.
 constexpr SkColor kDefaultWallpaperColor = SK_ColorGRAY;
@@ -242,78 +237,6 @@ std::string GetCustomWallpaperSubdirForCurrentResolution() {
   return resolution == WallpaperResolution::kSmall
              ? WallpaperControllerImpl::kSmallWallpaperSubDir
              : WallpaperControllerImpl::kLargeWallpaperSubDir;
-}
-
-// Resizes |image| to a resolution which is nearest to |preferred_width| and
-// |preferred_height| while respecting the |layout| choice. Encodes the image to
-// JPEG and saves to |output|. Returns true on success.
-bool ResizeAndEncodeImage(const gfx::ImageSkia& image,
-                          WallpaperLayout layout,
-                          int preferred_width,
-                          int preferred_height,
-                          scoped_refptr<base::RefCountedBytes>* output) {
-  int width = image.width();
-  int height = image.height();
-  int resized_width;
-  int resized_height;
-  *output = base::MakeRefCounted<base::RefCountedBytes>();
-
-  if (layout == WALLPAPER_LAYOUT_CENTER_CROPPED) {
-    // Do not resize wallpaper if it is smaller than preferred size.
-    if (width < preferred_width || height < preferred_height)
-      return false;
-
-    double horizontal_ratio = static_cast<double>(preferred_width) / width;
-    double vertical_ratio = static_cast<double>(preferred_height) / height;
-    if (vertical_ratio > horizontal_ratio) {
-      resized_width =
-          base::ClampRound(static_cast<double>(width) * vertical_ratio);
-      resized_height = preferred_height;
-    } else {
-      resized_width = preferred_width;
-      resized_height =
-          base::ClampRound(static_cast<double>(height) * horizontal_ratio);
-    }
-  } else if (layout == WALLPAPER_LAYOUT_STRETCH) {
-    resized_width = preferred_width;
-    resized_height = preferred_height;
-  } else {
-    resized_width = width;
-    resized_height = height;
-  }
-
-  gfx::ImageSkia resized_image = gfx::ImageSkiaOperations::CreateResizedImage(
-      image, skia::ImageOperations::RESIZE_LANCZOS3,
-      gfx::Size(resized_width, resized_height));
-
-  SkBitmap bitmap = *(resized_image.bitmap());
-  gfx::JPEGCodec::Encode(bitmap, kDefaultEncodingQuality, &(*output)->data());
-  return true;
-}
-
-// Resizes |image| to a resolution which is nearest to |preferred_width| and
-// |preferred_height| while respecting the |layout| choice and saves the
-// resized wallpaper to |path|. Returns true on success.
-bool ResizeAndSaveWallpaper(const gfx::ImageSkia& image,
-                            const base::FilePath& path,
-                            WallpaperLayout layout,
-                            int preferred_width,
-                            int preferred_height) {
-  if (layout == WALLPAPER_LAYOUT_CENTER) {
-    if (base::PathExists(path))
-      base::DeleteFile(path);
-    return false;
-  }
-  scoped_refptr<base::RefCountedBytes> data;
-  if (!ResizeAndEncodeImage(image, layout, preferred_width, preferred_height,
-                            &data)) {
-    return false;
-  }
-
-  // Saves |data| to |path| in local file system.
-  size_t written_bytes =
-      base::WriteFile(path, data->front_as<const char>(), data->size());
-  return written_bytes == data->size();
 }
 
 // Creates a 1x1 solid color image.
@@ -543,24 +466,6 @@ user_manager::UserType GetUserType(const AccountId& id) {
   return user_session->user_info.type;
 }
 
-// Returns the WallpaperCalculatedColors from `pref_manager`, if it exists,
-// using the location from `info`.
-absl::optional<WallpaperCalculatedColors> GetCachedCalculatedColors(
-    const WallpaperPrefManager& pref_manager,
-    const WallpaperInfo& info) {
-  base::StringPiece location = info.location;
-  absl::optional<std::vector<SkColor>> cached_colors =
-      pref_manager.GetCachedProminentColors(location);
-  absl::optional<SkColor> cached_k_mean_color =
-      pref_manager.GetCachedKMeanColor(location);
-  if (cached_colors.has_value() && cached_k_mean_color.has_value()) {
-    return WallpaperCalculatedColors(cached_colors.value(),
-                                     cached_k_mean_color.value());
-  }
-
-  return absl::nullopt;
-}
-
 // Gets |account_id|'s custom wallpaper at |wallpaper_path|. Falls back to the
 // original custom wallpaper. Verifies that the returned path exists. If a valid
 // path cannot be found, returns an empty FilePath. Must run on wallpaper
@@ -676,9 +581,6 @@ WallpaperControllerImpl::WallpaperControllerImpl(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {
   DCHECK(!color_profiles_.empty());
-  calculated_colors_ = WallpaperCalculatedColors(
-      std::vector<SkColor>(color_profiles_.size(), kInvalidWallpaperColor),
-      kInvalidWallpaperColor);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
   theme_observation_.Observe(ui::NativeTheme::GetInstanceForNativeUi());
@@ -724,14 +626,19 @@ base::FilePath WallpaperControllerImpl::GetCustomWallpaperDir(
 
 SkColor WallpaperControllerImpl::GetProminentColor(
     ColorProfile color_profile) const {
+  if (!calculated_colors_) {
+    return kInvalidWallpaperColor;
+  }
+
   ColorProfileType type = GetColorProfileType(color_profile);
   size_t index = static_cast<size_t>(type);
-  DCHECK_LT(index, calculated_colors_.prominent_colors.size());
-  return calculated_colors_.prominent_colors[index];
+  DCHECK_LT(index, calculated_colors_->prominent_colors.size());
+  return calculated_colors_->prominent_colors[index];
 }
 
 SkColor WallpaperControllerImpl::GetKMeanColor() const {
-  return calculated_colors_.k_mean_color;
+  return calculated_colors_ ? calculated_colors_->k_mean_color
+                            : kInvalidWallpaperColor;
 }
 
 gfx::ImageSkia WallpaperControllerImpl::GetWallpaper() const {
@@ -1006,6 +913,19 @@ void WallpaperControllerImpl::Init(
       chromeos_wallpapers_path.Append("google_photos/"));
   SetGlobalChromeOSCustomWallpapersDir(chromeos_custom_wallpapers_path);
   SetDevicePolicyWallpaperPath(device_policy_wallpaper_path);
+}
+
+bool WallpaperControllerImpl::CanSetUserWallpaper(
+    const AccountId& account_id) const {
+  // There is no visible wallpaper in kiosk mode.
+  if (IsInKioskMode()) {
+    return false;
+  }
+  // Don't allow user wallpapers while policy is in effect.
+  if (IsWallpaperControlledByPolicy(account_id)) {
+    return false;
+  }
+  return true;
 }
 
 void WallpaperControllerImpl::SetCustomWallpaper(
@@ -1716,19 +1636,23 @@ void WallpaperControllerImpl::OnWallpaperResized() {
 }
 
 void WallpaperControllerImpl::OnColorCalculationComplete(
+    const WallpaperInfo& info,
     const WallpaperCalculatedColors& wallpaper_calculated_colors) {
-  const AccountId account_id = GetActiveAccountId();
+  // Since we delete `color_calculator_` in `ShowWallpaperImage()`,
+  // `current_wallpaper_` should always be the same as the wallpaper for which
+  // color computation has been completed in production.
+  DCHECK(current_wallpaper_->wallpaper_info().MatchesAsset(info));
 
   // Use |WallpaperInfo::location| as the key for storing |prominent_colors_| in
   // the |kWallpaperColors| pref.
-  // TODO(crbug.com/787134): The |prominent_colors_| of wallpapers with empty
-  // location should be cached as well.
-  // TODO(skau): This does not guarantee that the current wallpaper is the same
-  // wallpaper for which the colors were calculated.
   pref_manager_->CacheProminentColors(
-      account_id, wallpaper_calculated_colors.prominent_colors);
-  pref_manager_->CacheKMeanColor(account_id,
+      info.location, wallpaper_calculated_colors.prominent_colors);
+  pref_manager_->CacheKMeanColor(info.location,
                                  wallpaper_calculated_colors.k_mean_color);
+  if (features::IsJellyEnabled()) {
+    pref_manager_->CacheCelebiColor(info.location,
+                                    wallpaper_calculated_colors.celebi_color);
+  }
   SetCalculatedColors(wallpaper_calculated_colors);
 
   // Release the color calculator after it has returned a result by calling this
@@ -2046,17 +1970,6 @@ void WallpaperControllerImpl::SetDefaultWallpaperImpl(
   }
 }
 
-bool WallpaperControllerImpl::CanSetUserWallpaper(
-    const AccountId& account_id) const {
-  // There is no visible wallpaper in kiosk mode.
-  if (IsInKioskMode())
-    return false;
-  // Don't allow user wallpapers while policy is in effect.
-  if (IsWallpaperControlledByPolicy(account_id))
-    return false;
-  return true;
-}
-
 bool WallpaperControllerImpl::WallpaperIsAlreadyLoaded(
     const gfx::ImageSkia& image,
     bool compare_layouts,
@@ -2130,7 +2043,7 @@ void WallpaperControllerImpl::OnWallpaperVariantsFetched(
     bool start_daily_refresh_timer,
     SetWallpaperCallback callback,
     absl::optional<OnlineWallpaperParams> params) {
-  DCHECK(type == WallpaperType::kDaily || type == WallpaperType::kOnline);
+  DCHECK(IsOnlineWallpaper(type));
   if (params) {
     SetOnlineWallpaper(*params, std::move(callback));
 
@@ -2464,8 +2377,7 @@ void WallpaperControllerImpl::SetWallpaperFromInfo(const AccountId& account_id,
   }
 
   base::FilePath wallpaper_path;
-  if (info.type == WallpaperType::kOnline ||
-      info.type == WallpaperType::kDaily) {
+  if (IsOnlineWallpaper(info.type)) {
     wallpaper_path =
         GetOnlineWallpaperPath(info.location, GetAppropriateResolution());
 
@@ -2679,6 +2591,8 @@ void WallpaperControllerImpl::ReloadWallpaper(bool clear_cache) {
 
 void WallpaperControllerImpl::SetCalculatedColors(
     const WallpaperCalculatedColors& calculated_colors) {
+  // Observers should be notified if this is the first call to
+  // `SetCalculatedColors` no matter what.
   if (calculated_colors == calculated_colors_) {
     return;
   }
@@ -2691,8 +2605,10 @@ void WallpaperControllerImpl::SetCalculatedColors(
 void WallpaperControllerImpl::ResetCalculatedColors() {
   static const std::vector<SkColor> kInvalidColors(color_profiles_.size(),
                                                    kInvalidWallpaperColor);
-  SetCalculatedColors(
-      WallpaperCalculatedColors(kInvalidColors, kInvalidWallpaperColor));
+  SetCalculatedColors(WallpaperCalculatedColors(
+      /*prominent_colors=*/kInvalidColors,
+      /*k_mean_color=*/kInvalidWallpaperColor,
+      /*celebi_color=*/kInvalidWallpaperColor));
 }
 
 void WallpaperControllerImpl::CalculateWallpaperColors() {
@@ -2704,8 +2620,9 @@ void WallpaperControllerImpl::CalculateWallpaperColors() {
     color_calculator_.reset();
   }
 
-  absl::optional<WallpaperCalculatedColors> colors = GetCachedCalculatedColors(
-      *pref_manager_, current_wallpaper_->wallpaper_info());
+  absl::optional<WallpaperCalculatedColors> colors =
+      pref_manager_->GetCachedWallpaperColors(
+          current_wallpaper_->wallpaper_info().location);
   if (colors) {
     SetCalculatedColors(std::move(*colors));
     return;
@@ -2721,9 +2638,9 @@ void WallpaperControllerImpl::CalculateWallpaperColors() {
 
   color_calculator_ = std::make_unique<WallpaperColorCalculator>(
       GetWallpaper(), color_profiles_);
-  if (!color_calculator_->StartCalculation(
-          base::BindOnce(&WallpaperControllerImpl::OnColorCalculationComplete,
-                         weak_factory_.GetWeakPtr()))) {
+  if (!color_calculator_->StartCalculation(base::BindOnce(
+          &WallpaperControllerImpl::OnColorCalculationComplete,
+          weak_factory_.GetWeakPtr(), current_wallpaper_->wallpaper_info()))) {
     ResetCalculatedColors();
   }
 }
@@ -2974,6 +2891,11 @@ constexpr bool WallpaperControllerImpl::IsWallpaperTypeSyncable(
 void WallpaperControllerImpl::SetDailyRefreshCollectionId(
     const AccountId& account_id,
     const std::string& collection_id) {
+  if (!CanSetUserWallpaper(account_id)) {
+    LOG(WARNING) << "Invalid request to set daily refresh collection id";
+    return;
+  }
+
   WallpaperInfo info;
   if (!GetUserWallpaperInfo(account_id, &info))
     return;
@@ -3310,8 +3232,7 @@ void WallpaperControllerImpl::HandleGooglePhotosWallpaperInfoSyncedIn(
 void WallpaperControllerImpl::HandleSettingOnlineWallpaperFromWallpaperInfo(
     const AccountId& account_id,
     const WallpaperInfo& info) {
-  DCHECK(info.type == WallpaperType::kDaily ||
-         info.type == WallpaperType::kOnline);
+  DCHECK(IsOnlineWallpaper(info.type));
   if (!info.asset_id.has_value()) {
     // If a user has not changed their wallpaper since the addition of asset_id,
     // we can have a WallpaperInfo without an asset_id from synced data.

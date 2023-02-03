@@ -9,7 +9,11 @@
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_notifier.h"
+#include "ash/system/federated/federated_service_controller.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
+#include "chromeos/ash/services/federated/public/cpp/service_connection.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace app_list {
 
@@ -19,7 +23,9 @@ class FederatedMetricsManager : ash::AppListNotifier::Observer {
   using Result = ash::AppListNotifier::Result;
   using Location = ash::AppListNotifier::Location;
 
-  explicit FederatedMetricsManager(ash::AppListNotifier* notifier);
+  FederatedMetricsManager(
+      ash::AppListNotifier* notifier,
+      ash::federated::FederatedServiceController* controller);
   ~FederatedMetricsManager() override;
 
   FederatedMetricsManager(const FederatedMetricsManager&) = delete;
@@ -35,8 +41,17 @@ class FederatedMetricsManager : ash::AppListNotifier::Observer {
                 const std::u16string& query) override;
 
  private:
+  // Note: There's no guarantee that the federated service will stay
+  // available, so call `IsFederatedServiceAvailable()` before each attempt at
+  // interacting with the service.
+  bool IsFederatedServiceAvailable();
+  void TryToBindFederatedServiceIfNecessary();
+  void LogExample(const std::string& example_str);
+
   base::ScopedObservation<ash::AppListNotifier, ash::AppListNotifier::Observer>
       observation_{this};
+  mojo::Remote<chromeos::federated::mojom::FederatedService> federated_service_;
+  const raw_ptr<ash::federated::FederatedServiceController> controller_;
 };
 
 }  // namespace app_list

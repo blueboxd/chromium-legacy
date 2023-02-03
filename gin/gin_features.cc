@@ -113,16 +113,8 @@ BASE_FEATURE(kV8TurboFastApiCalls,
              "V8TurboFastApiCalls",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Artificially delays script execution.
-BASE_FEATURE(kV8ScriptAblation,
-             "V8ScriptAblation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-const base::FeatureParam<int> kV8ScriptDelayOnceMs{&kV8ScriptAblation,
-                                                   "V8ScriptDelayOnceMs", 0};
-const base::FeatureParam<int> kV8ScriptDelayMs{&kV8ScriptAblation,
-                                               "V8ScriptDelayMs", 0};
-const base::FeatureParam<double> kV8ScriptDelayFraction{
-    &kV8ScriptAblation, "V8ScriptDelayFraction", 0.0};
+// Enables faster DOM methods for megamorphic ICs
+BASE_FEATURE(kV8MegaDomIC, "V8MegaDomIC", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables slow histograms that provide detailed information at increased
 // runtime overheads.
@@ -139,9 +131,6 @@ BASE_FEATURE(kV8SlowHistogramsSparkplug,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kV8SlowHistogramsSparkplugAndroid,
              "V8SlowHistogramsSparkplugAndroid",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kV8SlowHistogramsScriptAblation,
-             "V8SlowHistogramsScriptAblation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kV8DelayMemoryReducer,
@@ -174,6 +163,14 @@ BASE_FEATURE(kJavaScriptRabGsab,
 // Enables the well-formed JavaScript strings proposal.
 BASE_FEATURE(kJavaScriptStringIsWellFormed,
              "JavaScriptStringIsWellFormed",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// WebAssembly features.
+
+// Enable support for the WebAssembly tail-call proposal:
+// https://github.com/WebAssembly/tail-call.
+BASE_FEATURE(kWebAssemblyTailCall,
+             "WebAssemblyTailCall",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features

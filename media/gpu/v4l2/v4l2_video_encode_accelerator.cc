@@ -24,6 +24,7 @@
 #include "base/memory/shared_memory_mapping.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -126,6 +127,18 @@ absl::optional<VideoFrameLayout> AsMultiPlanarLayout(
   return VideoFrameLayout::CreateMultiPlanar(
       layout.format(), layout.coded_size(), layout.planes());
 }
+
+scoped_refptr<base::SequencedTaskRunner> CreateEncoderTaskRunner() {
+  if (base::FeatureList::IsEnabled(kUSeSequencedTaskRunnerForVEA)) {
+    return base::ThreadPool::CreateSequencedTaskRunner(
+        {base::WithBaseSyncPrimitives(), base::TaskPriority::USER_VISIBLE,
+         base::MayBlock()});
+  } else {
+    return base::ThreadPool::CreateSingleThreadTaskRunner(
+        {base::WithBaseSyncPrimitives(), base::MayBlock()},
+        base::SingleThreadTaskRunnerThreadMode::DEDICATED);
+  }
+}
 }  // namespace
 
 struct V4L2VideoEncodeAccelerator::BitstreamBufferRef {
@@ -169,7 +182,7 @@ base::AtomicRefCount V4L2VideoEncodeAccelerator::num_instances_(0);
 V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
     scoped_refptr<V4L2Device> device)
     : can_use_encoder_(num_instances_.Increment() < kMaxNumOfInstances),
-      child_task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()),
+      child_task_runner_(base::SequencedTaskRunner::GetCurrentDefault()),
       native_input_mode_(false),
       output_buffer_byte_size_(0),
       output_format_fourcc_(0),
@@ -178,13 +191,9 @@ V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
       device_(std::move(device)),
       input_memory_type_(V4L2_MEMORY_USERPTR),
       is_flush_supported_(false),
-      // TODO(akahuang): Change to use SequencedTaskRunner to see if the
-      // performance is affected.
       // TODO(akahuang): Remove WithBaseSyncPrimitives() after replacing poll
       // thread by V4L2DevicePoller.
-      encoder_task_runner_(base::ThreadPool::CreateSingleThreadTaskRunner(
-          {base::WithBaseSyncPrimitives(), base::MayBlock()},
-          base::SingleThreadTaskRunnerThreadMode::DEDICATED)),
+      encoder_task_runner_(CreateEncoderTaskRunner()),
       device_poll_thread_("V4L2EncoderDevicePollThread") {
   DCHECK_CALLED_ON_VALID_SEQUENCE(child_sequence_checker_);
   DETACH_FROM_SEQUENCE(encoder_sequence_checker_);
@@ -277,6 +286,8 @@ bool V4L2VideoEncodeAccelerator::Initialize(
     return false;
   }
 
+  driver_name_ = device_->GetDriverName();
+
   encoder_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::InitializeTask,
                                 weak_this_, config));
@@ -286,6 +297,9 @@ bool V4L2VideoEncodeAccelerator::Initialize(
 void V4L2VideoEncodeAccelerator::InitializeTask(const Config& config) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
   TRACE_EVENT0("media,gpu", "V4L2VEA::InitializeTask");
+
+  // Set kInitialized here so that NotifyError() is invoked from here.
+  encoder_state_ = kInitialized;
 
   native_input_mode_ =
       config.storage_type.value_or(Config::StorageType::kShmem) ==
@@ -348,7 +362,6 @@ void V4L2VideoEncodeAccelerator::InitializeTask(const Config& config) {
     return;
   }
 
-  encoder_state_ = kInitialized;
   uint32_t bitrate_mode = V4L2_MPEG_VIDEO_BITRATE_MODE_CBR;
   switch (config.bitrate.mode()) {
     case Bitrate::Mode::kConstant:
@@ -468,6 +481,7 @@ bool V4L2VideoEncodeAccelerator::CreateImageProcessor(
     VLOGF(1) << "Failed initializing image processor";
     return false;
   }
+  VLOGF(2) << "ImageProcessor is created: " << image_processor_->backend_type();
   num_frames_in_image_processor_ = 0;
 
   // The output of image processor is the input of encoder. Output coded
@@ -1411,10 +1425,14 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord(
         return false;
       }
 
-      // Keep |gmb_handle| alive as long as |frame| is alive so that fds passed
-      // to the driver are valid during encoding.
-      frame->AddDestructionObserver(base::BindOnce(
-          [](gfx::GpuMemoryBufferHandle) {}, std::move(gmb_handle)));
+      // TODO(b/266443239): Remove this workaround once RK3399 boards reaches
+      // EOL. v4lplugin holds v4l2_buffer in QBUF without duplicating the passed
+      // fds and resumes the QBUF request later after VIDIOC_QBUF returns. It is
+      // required to keep the passed fds valid until DQBUF is complete.
+      if (driver_name_ == "hantro-vpu") {
+        frame->AddDestructionObserver(base::BindOnce(
+            [](gfx::GpuMemoryBufferHandle) {}, std::move(gmb_handle)));
+      }
       break;
     }
     default:
@@ -1423,6 +1441,8 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord(
       return false;
   }
 
+  // Keep |frame| in |input_record| so that a client doesn't use |frame| until
+  // a driver finishes using it, that is, VIDIOC_DQBUF is called.
   InputRecord& input_record = input_buffer_map_[buffer_id];
   input_record.frame = frame;
   input_record.ip_output_buffer_index = frame_info.ip_output_buffer_index;
@@ -1523,7 +1543,7 @@ void V4L2VideoEncodeAccelerator::NotifyError(Error error) {
   VLOGF(1) << "error=" << error;
   DCHECK(child_task_runner_);
 
-  if (child_task_runner_->BelongsToCurrentThread()) {
+  if (child_task_runner_->RunsTasksInCurrentSequence()) {
     if (client_) {
       client_->NotifyError(error);
       client_ptr_factory_.reset();
@@ -1539,7 +1559,7 @@ void V4L2VideoEncodeAccelerator::NotifyError(Error error) {
 void V4L2VideoEncodeAccelerator::SetErrorState(Error error) {
   // We can touch encoder_state_ only if this is the encoder thread or the
   // encoder thread isn't running.
-  if (!encoder_task_runner_->BelongsToCurrentThread()) {
+  if (!encoder_task_runner_->RunsTasksInCurrentSequence()) {
     encoder_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::SetErrorState,
                                   weak_this_, error));

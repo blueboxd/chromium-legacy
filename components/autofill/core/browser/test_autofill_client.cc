@@ -67,9 +67,9 @@ MerchantPromoCodeManager* TestAutofillClient::GetMerchantPromoCodeManager() {
   return &mock_merchant_promo_code_manager_;
 }
 
-CreditCardCVCAuthenticator* TestAutofillClient::GetCVCAuthenticator() {
+CreditCardCvcAuthenticator* TestAutofillClient::GetCvcAuthenticator() {
   if (!cvc_authenticator_)
-    cvc_authenticator_ = std::make_unique<CreditCardCVCAuthenticator>(this);
+    cvc_authenticator_ = std::make_unique<CreditCardCvcAuthenticator>(this);
   return cvc_authenticator_.get();
 }
 
@@ -302,9 +302,10 @@ bool TestAutofillClient::HasCreditCardScanFeature() {
 
 void TestAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {}
 
-bool TestAutofillClient::TryToShowFastCheckout(const FormData& form,
-                                               const FormFieldData& field,
-                                               AutofillDriver* driver) {
+bool TestAutofillClient::TryToShowFastCheckout(
+    const FormData& form,
+    const FormFieldData& field,
+    base::WeakPtr<AutofillManager> autofill_manager) {
   return false;
 }
 
@@ -378,10 +379,6 @@ void TestAutofillClient::DidFillOrPreviewField(
 bool TestAutofillClient::IsContextSecure() const {
   // Simplified secure context check for tests.
   return form_origin_.SchemeIs("https");
-}
-
-bool TestAutofillClient::ShouldShowSigninPromo() {
-  return false;
 }
 
 void TestAutofillClient::ExecuteCommand(int id) {}

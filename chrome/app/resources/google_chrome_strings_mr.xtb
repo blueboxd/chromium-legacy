@@ -54,7 +54,6 @@
 <translation id="1874309113135274312">Google Chrome बीटा (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome कालबाह्य आहे</translation>
 <translation id="1919130412786645364">Chrome मध्ये साइन इन करण्यासाठी अनुमती द्या</translation>
-<translation id="1952239763774043237">भविष्यातील Google Chrome अपडेट मिळवण्यासाठी, तुमच्याकडे macOS 10.13 किंवा त्यानंतरची आवृत्ती असणे आवश्यक आहे. हा कॉंप्युटर macOS 10.12 वापरत आहे.</translation>
 <translation id="1953553007165777902">डाउनलोड करत आहे... <ph name="MINUTE" /> मिनिट(मिनिटे) शिल्‍लक आहे(आहेत)</translation>
 <translation id="2018528049276128029">प्रत्येक प्रोफाइलमध्ये तिची स्वतःची Chrome माहिती असते जसे की, बुकमार्क, इतिहास, पासवर्ड आणि आणखी बरेच काही</translation>
 <translation id="2018879682492276940">इंस्टॉलेशन करता आले नाही. कृपया पुन्हा प्रयत्न करा.</translation>
@@ -187,6 +186,7 @@
 <translation id="4335235004908507846">Chrome तुम्हाला डेटा भंग, खराब एक्स्टेंशन आणि बर्‍याच गोष्टींपासून सुरक्षित ठेवण्यात मदत करू शकते</translation>
 <translation id="4343195214584226067"><ph name="EXTENSION_NAME" /> हे Chrome मध्‍ये जोडले गेले आहे</translation>
 <translation id="4384570495110188418">तुम्ही साइन इन केलेले नसल्यामुळे Chrome तुमचे पासवर्ड तपासू शकत नाही</translation>
+<translation id="4393248995085527349">भविष्यातील Google Chrome अपडेट मिळवण्यासाठी, तुमच्याकडे macOS 10.15 किंवा त्यानंतरची आवृत्ती असणे आवश्यक आहे. हा कॉंप्युटर macOS 10.13 वापरत आहे.</translation>
 <translation id="4427306783828095590">वर्धित सुरक्षितता फिशिंग आणि मालवेअर अधिक चांगल्यारितीने ब्लॉक करते</translation>
 <translation id="4450664632294415862">Chrome - नेटवर्क साइन इन - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Google Chrome वर दुसरे ऑपरेशन प्रगतीपथावर आहे. कृपया नंतर पुन्हा प्रयत्न करा.</translation>
@@ -216,7 +216,6 @@
 <translation id="4970880042055371251">ChromeOS ची आवृत्ती</translation>
 <translation id="4970947549776831107">या प्रकारची फाइल धोकादायक असल्यामुळे Chrome ने ती ब्लॉक केली आहे</translation>
 <translation id="4990567037958725628">Google Chrome कॅनरी</translation>
-<translation id="5037581483200764584">भविष्यातील Google Chrome अपडेट मिळवण्यासाठी, तुमच्याकडे macOS 10.13 किंवा त्यानंतरची आवृत्ती असणे आवश्यक आहे. हा कॉंप्युटर OS X 10.11 ही आवृत्ती वापरत आहे.</translation>
 <translation id="5098668839038261629">सुरू केलेले असेल, तेव्हा तुम्हाला Chrome मधूनदेखील साइन आउट केले जाईल</translation>
 <translation id="5132929315877954718">Google Chrome साठी उत्कृष्ट ॲप, खेळ, विस्तार आणि थीम शोधा.</translation>
 <translation id="5139423532931106058">तुमची Chrome प्रोफाइल कस्टमाइझ करा</translation>
@@ -257,6 +256,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="5941711191222866238">कमी करा</translation>
 <translation id="5941830788786076944">Google Chromeला डीफॉल्ट ब्राउझर बनवा</translation>
 <translation id="6003112304606738118">डाउनलोड करत आहे... <ph name="HOURS" /> तास शिल्लक आहे(आहेत)</translation>
+<translation id="6010556343189461180">भविष्यातील Google Chrome अपडेट मिळवण्यासाठी, तुमच्याकडे macOS 10.15 किंवा त्यानंतरची आवृत्ती असणे आवश्यक आहे. हा कॉंप्युटर macOS 10.14 वापरत आहे.</translation>
 <translation id="6022388122721048220">{0,plural, =0{Chrome will close now.}=1{Chrome एका सेकंदामध्ये बंद होईल.}other{Chrome # सेकंदांमध्ये बंद होईल.}}</translation>
 <translation id="6040143037577758943">बंद करा</translation>
 <translation id="6070348360322141662">अतिरिक्त सुरक्षिततेसाठी, Google Chrome तुमचा डेटा एंक्रिप्ट करेल</translation>
@@ -419,6 +419,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="922152298093051471">Chrome कस्टमाइझ करा</translation>
 <translation id="93760716455950538">ChromeOS Flex रीस्टार्ट करा</translation>
 <translation id="940313311831216333">तुमचा Chrome आशय तुमच्या सर्व डिव्हाइसवर अ‍ॅक्सेस करण्यासाठी साइन इन करा, त्यानंतर सिंक सुरू करा.</translation>
+<translation id="943390475793766444">Chrome हे ही फाइल स्कॅन करण्याची शिफारस करते, कारण ती धोकादायक असू शकते.</translation>
 <translation id="989369509083708165">Google Chrome तुमचा डीफॉल्ट ब्राउझर आहे</translation>
 <translation id="989816563149873169"><ph name="SHORTCUT" /> Chrome प्रोफाइलदरम्यान स्विच करू शकतात</translation>
 </translationbundle>

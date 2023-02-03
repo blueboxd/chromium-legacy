@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/values_equivalent.h"
+#include "third_party/blink/renderer/core/animation/timeline_offset.h"
 #include "third_party/blink/renderer/core/css/css_content_distribution_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
@@ -429,13 +430,13 @@ const CSSValue* AnimationRange::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  const Vector<absl::optional<Timing::TimelineOffset>>& range_start_list =
+  const Vector<absl::optional<TimelineOffset>>& range_start_list =
       style.Animations() ? style.Animations()->RangeStartList()
-                         : Vector<absl::optional<Timing::TimelineOffset>>{
+                         : Vector<absl::optional<TimelineOffset>>{
                                CSSAnimationData::InitialRangeStart()};
-  const Vector<absl::optional<Timing::TimelineOffset>>& range_end_list =
+  const Vector<absl::optional<TimelineOffset>>& range_end_list =
       style.Animations() ? style.Animations()->RangeEndList()
-                         : Vector<absl::optional<Timing::TimelineOffset>>{
+                         : Vector<absl::optional<TimelineOffset>>{
                                CSSAnimationData::InitialRangeEnd()};
 
   if (range_start_list.size() != range_end_list.size()) {
@@ -445,8 +446,8 @@ const CSSValue* AnimationRange::CSSValueFromComputedStyleInternal(
   auto* outer_list = CSSValueList::CreateCommaSeparated();
 
   for (wtf_size_t i = 0; i < range_start_list.size(); ++i) {
-    const absl::optional<Timing::TimelineOffset>& start = range_start_list[i];
-    const absl::optional<Timing::TimelineOffset>& end = range_end_list[i];
+    const absl::optional<TimelineOffset>& start = range_start_list[i];
+    const absl::optional<TimelineOffset>& end = range_end_list[i];
 
     // E.g. "enter 0% enter 100%" must be shortened to just "enter".
     if (start.has_value() && end.has_value() && start->name == end->name &&
@@ -458,11 +459,11 @@ const CSSValue* AnimationRange::CSSValueFromComputedStyleInternal(
     }
 
     auto* inner_list = CSSValueList::CreateSpaceSeparated();
-    inner_list->Append(
-        *ComputedStyleUtils::ValueForAnimationRangeStart(range_start_list[i]));
-    if (end != CSSTimingData::InitialRangeEnd()) {
-      inner_list->Append(
-          *ComputedStyleUtils::ValueForAnimationRangeEnd(range_end_list[i]));
+    inner_list->Append(*ComputedStyleUtils::ValueForAnimationRangeStart(
+        range_start_list[i], style));
+    if (end != CSSAnimationData::InitialRangeEnd()) {
+      inner_list->Append(*ComputedStyleUtils::ValueForAnimationRangeEnd(
+          range_end_list[i], style));
     }
     outer_list->Append(*inner_list);
   }
@@ -3242,11 +3243,17 @@ static CSSValue* CSSValueForTimelineShorthand(
     const Vector<TimelineAxis>& axis_vector) {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
 
-  if (name_vector.size() == axis_vector.size()) {
-    for (wtf_size_t i = 0; i < name_vector.size(); ++i) {
-      list->Append(*ComputedStyleUtils::SingleValueForTimelineShorthand(
-          name_vector[i].Get(), axis_vector[i]));
-    }
+  if (name_vector.size() != axis_vector.size()) {
+    return list;
+  }
+  if (name_vector.empty()) {
+    list->Append(*ComputedStyleUtils::SingleValueForTimelineShorthand(
+        /* name */ nullptr, TimelineAxis::kBlock));
+    return list;
+  }
+  for (wtf_size_t i = 0; i < name_vector.size(); ++i) {
+    list->Append(*ComputedStyleUtils::SingleValueForTimelineShorthand(
+        name_vector[i].Get(), axis_vector[i]));
   }
 
   return list;

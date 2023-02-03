@@ -121,6 +121,9 @@ BASE_DECLARE_FEATURE(kSyncTrustedVaultResetKeysAreStale);
 // Enables storing MD5 hashed trusted vault file instead of OSCrypt encrypted.
 BASE_DECLARE_FEATURE(kSyncTrustedVaultUseMD5HashedFile);
 
+// Bypasses throttling of trusted vault requests upon network errors.
+BASE_DECLARE_FEATURE(kSyncTrustedVaultBypassThrottlingForNetworkErrors);
+
 // If enabled, the device will register with FCM and listen to new
 // invalidations. Also, FCM token will be set in DeviceInfo, which signals to
 // the server that device listens to new invalidations.
@@ -154,6 +157,8 @@ inline constexpr base::FeatureParam<int>
         &kSyncEnableHistoryDataType, "foreign_visit_deletions_per_batch", 100};
 
 BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataType);
+BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataTypeInTransportMode);
+BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataTypeForCustomPassphraseUsers);
 
 // If enabled, issues error and disables bookmarks sync when limit is crossed.
 BASE_DECLARE_FEATURE(kSyncEnforceBookmarksCountLimit);
@@ -169,6 +174,20 @@ BASE_DECLARE_FEATURE(kSyncDoNotPropagateBrowserShutdownToDataTypes);
 
 // Enables codepath to allow clearing metadata when the data type is stopped.
 BASE_DECLARE_FEATURE(kSyncAllowClearingMetadataWhenDataTypeIsStopped);
+
+// Enabled by default, this acts as a kill switch for a timeout introduced over
+// loading of models for enabled types in ModelLoadManager. When enabled, it
+// skips waiting for types not loaded yet and tries to stop them once they
+// finish loading.
+BASE_DECLARE_FEATURE(kSyncEnableLoadModelsTimeout);
+
+// Timeout duration for loading data types in ModelLoadManager.
+// TODO(crbug.com/992340): Update the timeout duration based on uma metrics
+// Sync.ModelLoadManager.LoadModelsElapsedTime
+inline constexpr base::FeatureParam<base::TimeDelta>
+    kSyncLoadModelsTimeoutDuration{&kSyncEnableLoadModelsTimeout,
+                                   "sync_load_models_timeout_duration",
+                                   base::Seconds(30)};
 
 }  // namespace syncer
 

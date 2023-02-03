@@ -77,7 +77,6 @@
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/ui/ash/system_tray_client_impl.h"
 #include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
@@ -1069,7 +1068,7 @@ void ExistingUserController::OnPasswordChangeDetected(
   for (auto& auth_status_consumer : auth_status_consumers_)
     auth_status_consumer.OnPasswordChangeDetected(user_context);
 
-  if (features::IsCryptohomeRecoveryFlowEnabled()) {
+  if (features::IsCryptohomeRecoveryEnabled()) {
     GetLoginDisplayHost()->GetSigninUI()->StartCryptohomeRecovery(
         std::make_unique<UserContext>(user_context));
   } else {

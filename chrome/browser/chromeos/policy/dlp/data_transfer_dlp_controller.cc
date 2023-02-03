@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_reporting_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
@@ -37,8 +36,6 @@ namespace {
 // - at 5 ms DataTransferDlpBlinkBrowserTest.Reporting test starts to be flaky
 // - 100 ms is approximately the time a human needs to press a key.
 // See DataTransferDlpController::LastReportedEndpoints struct for details.
-// TODO(crbug.com/1381095): Improve timeout tuning since duplicate warning
-// proceed events delay is very variable.
 const base::TimeDelta kSkipReportingTimeout = base::Milliseconds(75);
 
 // In case the clipboard data is in warning mode, it will be allowed to

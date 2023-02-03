@@ -56,6 +56,7 @@
 #include "net/cookies/cookie_access_result.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/cookies/cookie_inclusion_status.h"
+#include "net/cookies/cookie_setting_override.h"
 #include "net/cookies/cookie_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_network_session.h"
@@ -645,7 +646,8 @@ struct URLLoaderOptions {
         std::move(trust_token_helper_factory), std::move(cookie_observer),
         std::move(trust_token_observer), std::move(url_loader_network_observer),
         std::move(devtools_observer), std::move(accept_ch_frame_observer),
-        third_party_cookies_enabled, cache_transparency_settings);
+        third_party_cookies_enabled, cookie_setting_overrides,
+        cache_transparency_settings);
   }
 
   int32_t options = mojom::kURLLoadOptionNone;
@@ -667,6 +669,7 @@ struct URLLoaderOptions {
   mojo::PendingRemote<mojom::AcceptCHFrameObserver> accept_ch_frame_observer =
       mojo::NullRemote();
   bool third_party_cookies_enabled = true;
+  net::CookieSettingOverrides cookie_setting_overrides;
   raw_ptr<CacheTransparencySettings> cache_transparency_settings = nullptr;
 
  private:
@@ -857,6 +860,7 @@ class URLLoaderTest : public testing::Test {
     url_loader_options.accept_ch_frame_observer =
         accept_ch_frame_observer_ ? accept_ch_frame_observer_->Bind()
                                   : mojo::NullRemote();
+    url_loader_options.cookie_setting_overrides = cookie_setting_overrides_;
     url_loader = url_loader_options.MakeURLLoader(
         context(), DeleteLoaderCallback(&delete_run_loop, &url_loader),
         loader.BindNewPipeAndPassReceiver(), request, client_.CreateRemote());
@@ -1045,6 +1049,10 @@ class URLLoaderTest : public testing::Test {
       MockAcceptCHFrameObserver* observer) {
     accept_ch_frame_observer_ = observer;
   }
+  void set_cookie_setting_overrides(
+      const net::CookieSettingOverrides& overrides) {
+    cookie_setting_overrides_ = overrides;
+  }
 
   // Convenience methods after calling Load();
   std::string mime_type() const {
@@ -1179,6 +1187,7 @@ class URLLoaderTest : public testing::Test {
   net::HttpRequestHeaders additional_headers_;
   mojom::IPAddressSpace target_ip_address_space_ =
       mojom::IPAddressSpace::kUnknown;
+  net::CookieSettingOverrides cookie_setting_overrides_;
 
   bool corb_enabled_ = false;
 
@@ -1931,7 +1940,7 @@ TEST_F(URLLoaderTest, AddsNetLogEntryForPrivateNetworkAccessCheckSuccess) {
   ASSERT_THAT(entries, SizeIs(1));
 
   const base::Value& params = entries[0].params;
-  ASSERT_EQ(params.type(), base::Value::Type::DICTIONARY);
+  ASSERT_EQ(params.type(), base::Value::Type::DICT);
 
   EXPECT_THAT(params.GetDict().FindString("client_address_space"),
               Pointee(Eq("local")));
@@ -1960,7 +1969,7 @@ TEST_F(URLLoaderTest, AddsNetLogEntryForPrivateNetworkAccessCheckFailure) {
   ASSERT_THAT(entries, SizeIs(1));
 
   const base::Value& params = entries[0].params;
-  ASSERT_EQ(params.type(), base::Value::Type::DICTIONARY);
+  ASSERT_EQ(params.type(), base::Value::Type::DICT);
 
   EXPECT_THAT(params.GetDict().FindString("client_address_space"),
               Pointee(Eq("public")));
@@ -4745,6 +4754,93 @@ TEST_F(URLLoaderTest, AllowAllCookies) {
   EXPECT_TRUE(url_loader->AllowCookies(third_party_url, site_for_cookies));
 }
 
+class URLLoaderCookieSettingOverridesTest
+    : public URLLoaderTest,
+      public ::testing::WithParamInterface<std::tuple<bool, bool>> {
+ public:
+  ~URLLoaderCookieSettingOverridesTest() override = default;
+
+  void SetUpRequest(ResourceRequest& request) {
+    if (IsCors()) {
+      request.mode = network::mojom::RequestMode::kCors;
+    } else {
+      // Request mode is `no-cors` by default.
+      EXPECT_EQ(request.mode, network::mojom::RequestMode::kNoCors);
+    }
+    request.is_outermost_main_frame = IsOuterMostFrame();
+  }
+
+  net::CookieSettingOverrides GetCookieSettingOverrides() const {
+    if (IsCors() && IsOuterMostFrame()) {
+      return net::CookieSettingOverrides(
+          net::CookieSettingOverride::kTopLevelStorageAccessGrantEligible);
+    }
+    return net::CookieSettingOverrides();
+  }
+
+ private:
+  bool IsCors() const { return std::get<0>(GetParam()); }
+  bool IsOuterMostFrame() const { return std::get<1>(GetParam()); }
+};
+
+TEST_P(URLLoaderCookieSettingOverridesTest, TopLevelStorageAccessOverride) {
+  GURL url("http://www.example.com.test/");
+  base::RunLoop delete_run_loop;
+  ResourceRequest request = CreateResourceRequest("GET", url);
+  SetUpRequest(request);
+
+  mojo::PendingRemote<mojom::URLLoader> loader;
+  std::unique_ptr<URLLoader> url_loader;
+  context().mutable_factory_params().process_id = mojom::kBrowserProcessId;
+  url_loader = URLLoaderOptions().MakeURLLoader(
+      context(), DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      loader.InitWithNewPipeAndPassReceiver(), request,
+      client()->CreateRemote());
+
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
+
+  const std::vector<net::CookieSettingOverrides> records =
+      test_network_delegate()->cookie_setting_overrides_records();
+  EXPECT_THAT(records, ElementsAre(GetCookieSettingOverrides(),
+                                   GetCookieSettingOverrides()));
+}
+
+TEST_P(URLLoaderCookieSettingOverridesTest,
+       TopLevelStorageAccessOverride_UnchangedOnRedirects) {
+  GURL dest_url("http://www.example.com.test/");
+  GURL redirecting_url =
+      test_server()->GetURL("/server-redirect?" + dest_url.spec());
+
+  base::RunLoop delete_run_loop;
+  ResourceRequest request = CreateResourceRequest("GET", redirecting_url);
+  SetUpRequest(request);
+
+  mojo::Remote<mojom::URLLoader> loader;
+  std::unique_ptr<URLLoader> url_loader;
+  context().mutable_factory_params().process_id = mojom::kBrowserProcessId;
+  url_loader = URLLoaderOptions().MakeURLLoader(
+      context(), DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      loader.BindNewPipeAndPassReceiver(), request, client()->CreateRemote());
+
+  client()->RunUntilRedirectReceived();
+  loader->FollowRedirect({}, {}, {}, absl::nullopt);
+  client()->RunUntilComplete();
+  delete_run_loop.Run();
+
+  const std::vector<net::CookieSettingOverrides> records =
+      test_network_delegate()->cookie_setting_overrides_records();
+  EXPECT_EQ(records.size(), 4u);
+  for (size_t i = 0; i < records.size(); i++) {
+    EXPECT_EQ(records[i], GetCookieSettingOverrides())
+        << "element at index " << i << " mismatched.";
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         URLLoaderCookieSettingOverridesTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
+
 namespace {
 
 enum class TestMode {
@@ -5852,6 +5948,29 @@ class ExpectBypassCacheInterceptor : public net::URLRequestInterceptor {
   }
 };
 
+class ExpectCookieSettingOverridesURLRequestInterceptor
+    : public net::URLRequestInterceptor {
+ public:
+  explicit ExpectCookieSettingOverridesURLRequestInterceptor(
+      net::CookieSettingOverrides cookie_setting_overrides,
+      bool* was_intercepted)
+      : cookie_setting_overrides_(cookie_setting_overrides),
+        was_intercepted_(was_intercepted) {}
+
+  // net::URLRequestInterceptor:
+  std::unique_ptr<net::URLRequestJob> MaybeInterceptRequest(
+      net::URLRequest* request) const override {
+    EXPECT_FALSE(*was_intercepted_);
+    EXPECT_EQ(request->cookie_setting_overrides(), cookie_setting_overrides_);
+    *was_intercepted_ = true;
+    return nullptr;
+  }
+
+ private:
+  const net::CookieSettingOverrides cookie_setting_overrides_;
+  bool* const was_intercepted_;
+};
+
 }  // namespace
 
 class URLLoaderSyncOrAsyncTrustTokenOperationTest
@@ -6882,6 +7001,20 @@ TEST_F(URLLoaderTest, RecordRadioWakeupTrigger_IntervalTooShort) {
 }
 
 #endif  // BUILDFLAG(IS_ANDROID)
+
+TEST_F(URLLoaderTest, CookieSettingOverridesCopiedToURLRequest) {
+  GURL url = test_server()->GetURL("/simple_page.html");
+  net::CookieSettingOverrides cookie_setting_overrides =
+      net::CookieSettingOverrides::All();
+  set_cookie_setting_overrides(cookie_setting_overrides);
+  bool was_intercepted = false;
+  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
+      url, std::make_unique<ExpectCookieSettingOverridesURLRequestInterceptor>(
+               cookie_setting_overrides, &was_intercepted));
+
+  EXPECT_THAT(Load(url), IsOk());
+  EXPECT_TRUE(was_intercepted);
+}
 
 using ExtraHeaders = std::vector<std::pair<std::string, std::string>>;
 

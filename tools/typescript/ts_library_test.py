@@ -42,6 +42,8 @@ class TsLibraryTest(unittest.TestCase):
     args = [
         '--output_suffix',
         'build_ts',
+        '--root_gen_dir',
+        os.path.relpath(self._out_folder, gen_dir),
         '--root_dir',
         os.path.join(_HERE_DIR, 'tests', 'project1'),
         '--gen_dir',
@@ -78,17 +80,24 @@ class TsLibraryTest(unittest.TestCase):
     self.assertFalse(os.path.exists(os.path.join(gen_dir, tsbuildinfo)),
                      tsbuildinfo)
 
-  # Builds project2 which depends on files from project1 and project3, both via
-  # relative URLs, as well as via absolute chrome:// URLs.
-  def _build_project2(self, project1_gen_dir, project3_gen_dir):
+  # Builds project2 which depends on files from project1 and project3, project6,
+  # both via relative URLs, as well as via absolute chrome:// and
+  # chrome://resources/ URLs.
+  def _build_project2(self, project1_gen_dir, project3_gen_dir,
+                      project6_gen_dir):
     root_dir = os.path.join(_HERE_DIR, 'tests', 'project2')
     gen_dir = os.path.join(self._out_folder, 'project2')
     project1_gen_dir = os.path.relpath(project1_gen_dir, gen_dir)
     project3_gen_dir = os.path.relpath(project3_gen_dir, gen_dir)
+    project6_gen_dir = os.path.relpath(project6_gen_dir, gen_dir)
 
     ts_library.main([
         '--output_suffix',
         'build_ts',
+        '--root_gen_dir',
+        os.path.relpath(self._out_folder, gen_dir),
+        '--raw_deps',
+        '//ui/webui/resources/js:build_ts',
         '--root_dir',
         root_dir,
         '--gen_dir',
@@ -100,6 +109,7 @@ class TsLibraryTest(unittest.TestCase):
         '--deps',
         os.path.join(project1_gen_dir, 'tsconfig_build_ts.json'),
         os.path.join(project3_gen_dir, 'tsconfig_build_ts.json'),
+        os.path.join(project6_gen_dir, 'tsconfig_build_ts.json'),
         '--path_mappings',
         'chrome://some-other-source/*|' + os.path.join(project1_gen_dir, '*'),
         '--tsconfig_base',
@@ -130,6 +140,8 @@ class TsLibraryTest(unittest.TestCase):
     ts_library.main([
         '--output_suffix',
         'build_ts',
+        '--root_gen_dir',
+        os.path.relpath(self._out_folder, gen_dir),
         '--root_dir',
         os.path.join(_HERE_DIR, 'tests', 'project3'),
         '--gen_dir',
@@ -157,6 +169,8 @@ class TsLibraryTest(unittest.TestCase):
     ts_library.main([
         '--output_suffix',
         'build_ts',
+        '--root_gen_dir',
+        os.path.relpath(self._out_folder, gen_dir),
         '--root_dir',
         os.path.join(_HERE_DIR, 'tests', 'project4'),
         '--gen_dir',
@@ -201,6 +215,8 @@ class TsLibraryTest(unittest.TestCase):
         '--output_suffix',
         'build_ts',
         '--composite',
+        '--root_gen_dir',
+        os.path.relpath(self._out_folder, gen_dir),
         '--root_dir',
         os.path.join(_HERE_DIR, 'tests', 'project5'),
         '--gen_dir',
@@ -215,8 +231,11 @@ class TsLibraryTest(unittest.TestCase):
     ts_library.main([
         '--output_suffix',
         'test_build_ts',
+        '--raw_deps',
         '--deps',
         os.path.join(gen_dir, 'tsconfig_build_ts.json'),
+        '--root_gen_dir',
+        os.path.relpath(self._out_folder, gen_dir),
         '--root_dir',
         os.path.join(_HERE_DIR, 'tests', 'project5'),
         '--gen_dir',
@@ -244,6 +263,53 @@ class TsLibraryTest(unittest.TestCase):
     self.assertTrue(os.path.exists(manifest_test))
     self._assert_manifest_files(manifest_test, ['bar_test.js'])
 
+  def _build_project6(self):
+    gen_dir = os.path.join(self._out_folder, 'ui', 'webui', 'resources', 'js')
+    out_dir = os.path.join(self._out_folder, 'ui', 'webui', 'resources', 'tsc',
+                           'js')
+
+    # Build project6, which simulates the build setup and location of shared
+    # ui/webui/resources/ projects, and is used to test the codepath that infers
+    # |path_mappings| from |raw_deps|.
+    ts_library.main([
+        '--output_suffix',
+        'build_ts',
+        '--root_gen_dir',
+        os.path.relpath(self._out_folder, gen_dir),
+        '--root_dir',
+        os.path.join(_HERE_DIR, 'tests', 'ui', 'webui', 'resources', 'js'),
+        '--gen_dir',
+        gen_dir,
+        '--out_dir',
+        out_dir,
+        '--in_files',
+        'assert.ts',
+        '--composite',
+    ])
+
+    return (gen_dir, out_dir)
+
+  def _assert_project6_output(self, gen_dir, out_dir):
+    gen_dir_files = [
+        'tsconfig_build_ts.json',
+        'build_ts.manifest',
+    ]
+    for f in gen_dir_files:
+      self.assertTrue(os.path.exists(os.path.join(gen_dir, f)), f)
+
+    # Check that the generated .tsbuildinfo file is deleted.
+    tsbuildinfo = 'tsconfig_build_ts.tsbuildinfo'
+    self.assertFalse(os.path.exists(os.path.join(gen_dir, tsbuildinfo)),
+                     tsbuildinfo)
+
+    out_dir_files = [
+        'assert.d.ts',
+        'assert.js',
+    ]
+    for f in out_dir_files:
+      self.assertTrue(os.path.exists(os.path.join(out_dir, f)), f)
+
+
   # Test success case where both project1 and project2 are compiled successfully
   # and no errors are thrown.
   def testSuccess(self):
@@ -254,7 +320,11 @@ class TsLibraryTest(unittest.TestCase):
     project3_gen_dir = self._build_project3()
     self._assert_project3_output(project3_gen_dir)
 
-    project2_gen_dir = self._build_project2(project1_gen_dir, project3_gen_dir)
+    (project6_gen_dir, project6_out_dir) = self._build_project6()
+    self._assert_project6_output(project6_gen_dir, project6_out_dir)
+
+    project2_gen_dir = self._build_project2(project1_gen_dir, project3_gen_dir,
+                                            project6_gen_dir)
     self._assert_project2_output(project2_gen_dir)
 
     project4_gen_dir = self._build_project4()
@@ -272,6 +342,8 @@ class TsLibraryTest(unittest.TestCase):
       ts_library.main([
           '--output_suffix',
           'build_ts',
+          '--root_gen_dir',
+          os.path.relpath(self._out_folder, gen_dir),
           '--root_dir',
           os.path.join(_HERE_DIR, 'tests', 'project1'),
           '--gen_dir',
@@ -300,6 +372,8 @@ class TsLibraryTest(unittest.TestCase):
       ts_library.main([
           '--output_suffix',
           'build_ts',
+          '--root_gen_dir',
+          os.path.relpath(self._out_folder, gen_dir),
           '--root_dir',
           root_dir,
           '--gen_dir',

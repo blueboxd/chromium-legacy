@@ -31,9 +31,26 @@
   },
   {
     "prefix": "pna-permission",
-    "platforms": ["Linux", "Mac", "Win", "Fuchsia"],
+    "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/fetch/private-network-access"],
     "args": ["--enable-features=PrivateNetworkAccessPermissionPrompt"],
+    "expires": "Jul 1, 2023"
+  },
+  {
+    "prefix": "pna-workers-disabled",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/fetch/private-network-access"],
+    "args": ["--disable-features=PrivateNetworkAccessForWorkers"],
+    "expires": "Jul 1, 2023"
+  },
+  {
+    "prefix": "pna-workers-enabled",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["external/wpt/fetch/private-network-access"],
+    "args": [
+      "--enable-features=PrivateNetworkAccessForWorkers",
+      "--disable-features=PrivateNetworkAccessForWorkersWarningOnly"
+    ],
     "expires": "Jul 1, 2023"
   },
   {
@@ -187,10 +204,6 @@
     "platforms": ["Linux", "Mac", "Win", "Fuchsia"],
     "bases": ["fast/css3-text/css3-text-decoration/stable",
               "fast/dom/Window",
-              "external/wpt/css/css-color/parsing/",
-              "external/wpt/css/css-transitions/parsing/",
-              "external/wpt/css/css-animations/parsing/",
-              "external/wpt/css/css-images/parsing/",
               "http/tests/navigation",
               "http/tests/sendbeacon",
               "http/tests/serviceworker/webexposed",
@@ -520,8 +533,7 @@
               "http/tests/workers",
               "inspector-protocol/worker"
             ],
-    "args": ["--enable-features=PlzDedicatedWorker",
-             "--disable-features=PrivateNetworkAccessForWorkersWarningOnly"],
+    "args": ["--enable-features=PlzDedicatedWorker"],
     "expires": "Jul 1, 2023"
   },
   {
@@ -882,9 +894,9 @@
     "expires": "Jul 1, 2023"
   },
   {
-    "prefix": "storage-access-api-for-origin-extension",
+    "prefix": "top-level-storage-access-api",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": [ "wpt_internal/storage-access-api" ],
+    "bases": [ "external/wpt/top-level-storage-access-api" ],
     "args": [ "--enable-features=StorageAccessAPI,StorageAccessAPIForOriginExtension" ],
     "expires": "Jul 1, 2023"
   },
@@ -1138,9 +1150,7 @@
               "view-transition",
               "inspector-protocol/css/css-get-styles-for-view-transition.js"],
     "exclusive_tests": "ALL",
-    "args": ["--enable-features=ViewTransition",
-             "--enable-threaded-compositing",
-             "--enable-gpu-rasterization"],
+    "args": ["--enable-threaded-compositing"],
     "expires": "Jul 1, 2023"
   },
   {
@@ -1148,9 +1158,8 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["wpt_internal/view-transition-on-navigation"],
     "exclusive_tests": "ALL",
-    "args": ["--enable-features=ViewTransition,ViewTransitionOnNavigation",
-             "--enable-threaded-compositing",
-             "--enable-gpu-rasterization"],
+    "args": ["--enable-features=ViewTransitionOnNavigation",
+             "--enable-threaded-compositing"],
     "expires": "Jul 1, 2023"
   },
   {
@@ -1161,9 +1170,7 @@
               "view-transition",
               "inspector-protocol/css/css-get-styles-for-view-transition.js"],
     "exclusive_tests": "ALL",
-    "args": ["--enable-features=ViewTransition",
-             "--enable-threaded-compositing",
-             "--enable-gpu-rasterization",
+    "args": ["--enable-threaded-compositing",
              "--force-color-profile=display-p3-d65"],
     "expires": "Jul 1, 2023"
   },
@@ -1757,5 +1764,19 @@
     ],
     "args": ["--disable-features=UseBlinkSchedulerTaskRunnerWithCustomDeleter"],
     "expires": "Jul 1, 2023"
+  },
+  {
+    "prefix": "date-input-inline-block-disabled",
+    "platforms": ["Linux"],
+    "bases": [
+      "external/wpt/html/rendering/non-replaced-elements/form-controls/resets.html",
+      "fast/forms/suggested-value.html",
+      "fast/forms/date/date-appearance-pseudo-elements.html",
+      "fast/forms/month/month-appearance-pseudo-elements.html",
+      "fast/forms/time/time-appearance-pseudo-elements.html",
+      "fast/forms/week/week-appearance-pseudo-elements.html"
+    ],
+    "args": ["--disable-blink-features=DateInputInlineBlock"],
+    "expires": "Jun 1, 2023"
   }
 ]

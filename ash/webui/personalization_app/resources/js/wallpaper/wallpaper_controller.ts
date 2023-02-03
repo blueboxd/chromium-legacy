@@ -350,9 +350,7 @@ export async function selectWallpaper(
   store.dispatch(action.beginSelectImageAction(image));
   store.dispatch(action.beginLoadSelectedImageAction());
   const {tabletMode} = await provider.isInTabletMode();
-  const shouldPreview = tabletMode &&
-      loadTimeData.getBoolean('fullScreenPreviewEnabled') &&
-      !isDefaultImage(image);
+  const shouldPreview = tabletMode && !isDefaultImage(image);
   if (shouldPreview) {
     provider.makeTransparent();
   }

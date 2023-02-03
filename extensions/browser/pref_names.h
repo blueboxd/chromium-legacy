@@ -52,6 +52,11 @@ extern const char kExtensions[];
 // policy.
 extern const char kExtensionManagement[];
 
+// An integer that indicates the availability of extensions that are unpublished
+// on the Chrome Web Store. More details can be found at
+// ExtensionUnpublishedAvailability.yaml
+extern const char kExtensionUnpublishedAvailability[];
+
 // Policy that indicates whether CRX2 extension updates are allowed.
 extern const char kInsecureExtensionUpdatesEnabled[];
 
@@ -109,6 +114,10 @@ extern const char kDeletedComponentExtensions[];
 // for Chrome Apps by enterprise policy.
 extern const char kChromeAppsEnabled[];
 #endif
+
+// A preference for an enterprise policy which is a temporary workaround for
+// behaviour changes to <webview>.
+extern const char kChromeAppsWebViewPermissiveBehaviorAllowed[];
 
 // Properties in kExtensions dictionaries --------------------------------------
 

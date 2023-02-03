@@ -12,6 +12,7 @@
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/cxx17_backports.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/i18n/rtl.h"
@@ -65,17 +66,16 @@
 #include "ui/views/views_features.h"
 #include "ui/views/widget/root_view.h"
 
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chromeos/ui/base/window_properties.h"
+#include "chromeos/ui/base/window_state_type.h"  // nogncheck
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/window_properties.h"  // nogncheck
-#include "chromeos/ui/base/window_properties.h"
-#include "chromeos/ui/base/window_state_type.h"  // nogncheck
 #include "ui/aura/window_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/ui/base/window_properties.h"
 #endif
 
 #if BUILDFLAG(IS_MAC)
@@ -126,7 +126,7 @@ bool PlatformProvidesAbsoluteWindowPositions() {
 #endif
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 
 // Returns the aura::Window which stores the window properties for tab-dragging.
 aura::Window* GetWindowForTabDraggingProperties(const TabDragContext* context) {
@@ -142,6 +142,16 @@ bool IsSnapped(const TabDragContext* context) {
   return type == chromeos::WindowStateType::kPrimarySnapped ||
          type == chromeos::WindowStateType::kSecondarySnapped;
 }
+
+#else
+
+bool IsSnapped(const TabDragContext* context) {
+  return false;
+}
+
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 // In Chrome OS tablet mode, when dragging a tab/tabs around, the desired
 // browser size during dragging is one-fourth of the workspace size or the
@@ -197,10 +207,6 @@ bool CanDetachFromTabStrip(TabDragContext* context) {
 }
 
 #else
-bool IsSnapped(const TabDragContext* context) {
-  return false;
-}
-
 bool IsShowingInOverview(TabDragContext* context) {
   return false;
 }
@@ -2685,8 +2691,34 @@ bool TabDragController::CanAttachTo(gfx::NativeWindow window) {
 #else
   TabStripModel* model = other_browser->tab_strip_model();
   DCHECK(model);
-  if (model->IsTabBlocked(model->active_index()))
+
+  const int active_index = model->active_index();
+
+  // TODO(crbug.com/1411448): Investigate whether active index being kNoTab is
+  // expected or not. Remove DumpWithoutCrashing() when it is resolved.
+  if (!model->ContainsIndex(active_index)) {
+    if (active_index == TabStripModel::kNoTab) {
+      LOG(ERROR) << "TabStripModel of the browser tyring to attach to has no "
+                    "active tab.";
+    } else {
+      LOG(ERROR)
+          << "TabStripModel of the browser trying to attach to has invalid "
+          << "active index: " << active_index;
+    }
+
+    // Avoid dumping too many times not to impact the performance as this may be
+    // called multiple times for each mouse drag.
+    static bool has_crash_reported = false;
+    if (!has_crash_reported) {
+      base::debug::DumpWithoutCrashing();
+      has_crash_reported = true;
+    }
     return false;
+  }
+
+  if (model->IsTabBlocked(active_index)) {
+    return false;
+  }
 #endif
 
   // We don't allow drops on windows that don't have tabstrips.

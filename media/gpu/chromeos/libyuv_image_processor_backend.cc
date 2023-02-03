@@ -346,6 +346,10 @@ LibYUVImageProcessorBackend::~LibYUVImageProcessorBackend() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
 }
 
+std::string LibYUVImageProcessorBackend::type() const {
+  return "LibYUVImageProcessor";
+}
+
 void LibYUVImageProcessorBackend::Process(
     scoped_refptr<VideoFrame> input_frame,
     scoped_refptr<VideoFrame> output_frame,
@@ -384,7 +388,9 @@ void LibYUVImageProcessorBackend::Process(
 
   int res;
   {
-    TRACE_EVENT0("media", "LibYUVImageProcessorBackend::Process");
+    TRACE_EVENT2("media", "LibYUVImageProcessorBackend::Process", "input_frame",
+                 input_frame->AsHumanReadableString(), "output_frame",
+                 mapped_frame->AsHumanReadableString());
     SCOPED_UMA_HISTOGRAM_TIMER("LibYUVImageProcessorBackend::Process");
     res = DoConversion(input_frame.get(), mapped_frame.get());
   }

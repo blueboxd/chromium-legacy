@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/style/computed_style_initial_values.h"
 #include "third_party/blink/renderer/core/style/cursor_list.h"
 #include "third_party/blink/renderer/core/style/data_ref.h"
+#include "third_party/blink/renderer/core/style/display_style.h"
 #include "third_party/blink/renderer/core/style/style_cached_data.h"
 #include "third_party/blink/renderer/core/style/style_highlight_data.h"
 #include "third_party/blink/renderer/core/style/transform_origin.h"
@@ -988,8 +989,13 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Column utility functions.
+  static bool SpecifiesColumns(bool has_auto_column_count,
+                               bool has_auto_column_width) {
+    return !has_auto_column_count || !has_auto_column_width;
+  }
   bool SpecifiesColumns() const {
-    return !HasAutoColumnCount() || !HasAutoColumnWidth();
+    return ComputedStyle::SpecifiesColumns(HasAutoColumnCount(),
+                                           HasAutoColumnWidth());
   }
   bool ColumnRuleIsTransparent() const {
     return !ColumnRuleColor()
@@ -1633,39 +1639,74 @@ class ComputedStyle : public ComputedStyleBase,
   // Contain utility functions.
   //
   // Containment can be enabled from a variety of sources, not just the
-  // 'contain' property itself. The return values represent whether or not
-  // we should enable containment of a given type, taking those different
-  // sources into account.
+  // 'contain' property itself. The "effective containment" represents whether
+  //  or not we should enable containment of a given type, taking those
+  //  different sources into account.
   //
-  // Note that even with a return value of |true|, containment may still not
-  // be applied if the layout object is ineligible for the given containment
-  // type. See |LayoutObject::IsEligibleForSizeContainment| and similar
-  // functions.
+  // Note that even a certain type of containment appears to be in effect from
+  // the perspective of ComputedStyle, containment may still not be applied if
+  // the LayoutObject is ineligible for the given containment type. See
+  // |LayoutObject::IsEligibleForSizeContainment| and similar functions.
 
-  bool ContainsPaint() const {
-    return (Contain() & kContainsPaint) || !IsContentVisibilityVisible();
+  static unsigned EffectiveContainment(unsigned contain,
+                                       unsigned container_type,
+                                       EContentVisibility content_visibility,
+                                       const AtomicString& toggle_visibility,
+                                       bool skips_contents) {
+    unsigned effective = contain;
+
+    if (container_type & kContainerTypeInlineSize) {
+      effective |= kContainsStyle;
+      effective |= kContainsLayout;
+      effective |= kContainsInlineSize;
+    }
+    if (container_type & kContainerTypeBlockSize) {
+      effective |= kContainsStyle;
+      effective |= kContainsLayout;
+      effective |= kContainsBlockSize;
+    }
+    if (!IsContentVisibilityVisible(content_visibility, toggle_visibility)) {
+      effective |= kContainsStyle;
+      effective |= kContainsLayout;
+      effective |= kContainsPaint;
+    }
+    if (skips_contents) {
+      effective |= kContainsSize;
+    }
+
+    return effective;
   }
-  bool ContainsStyle() const {
-    return (Contain() & kContainsStyle) || IsInlineOrBlockSizeContainer() ||
-           !IsContentVisibilityVisible();
+
+  unsigned EffectiveContainment() const {
+    return ComputedStyle::EffectiveContainment(
+        Contain(), ContainerType(), ContentVisibility(), ToggleVisibility(),
+        SkipsContents());
   }
+
+  bool ContainsStyle() const { return EffectiveContainment() & kContainsStyle; }
+  bool ContainsPaint() const { return EffectiveContainment() & kContainsPaint; }
   bool ContainsLayout() const {
-    return (Contain() & kContainsLayout) || IsInlineOrBlockSizeContainer() ||
-           !IsContentVisibilityVisible();
+    return EffectiveContainment() & kContainsLayout;
   }
   bool ContainsSize() const {
-    return ((Contain() & kContainsSize) == kContainsSize) ||
-           IsSizeContainer() || SkipsContents();
+    return (EffectiveContainment() & kContainsSize) == kContainsSize;
   }
   bool ContainsInlineSize() const {
-    return (Contain() & kContainsInlineSize) || IsInlineSizeContainer() ||
-           SkipsContents();
+    return EffectiveContainment() & kContainsInlineSize;
   }
   bool ContainsBlockSize() const {
-    return (Contain() & kContainsBlockSize) || IsBlockSizeContainer() ||
-           SkipsContents();
+    return EffectiveContainment() & kContainsBlockSize;
   }
-  CORE_EXPORT bool ShouldApplyAnyContainment(const Element& element) const;
+
+  CORE_EXPORT static bool ShouldApplyAnyContainment(
+      const Element& element,
+      const DisplayStyle&,
+      unsigned effective_containment);
+
+  CORE_EXPORT bool ShouldApplyAnyContainment(const Element& element) const {
+    return ShouldApplyAnyContainment(element, GetDisplayStyle(),
+                                     EffectiveContainment());
+  }
 
   // Return true if an element can match size container queries. In addition to
   // checking if it has a size container-type, we check if we are never able to
@@ -1676,9 +1717,15 @@ class ComputedStyle : public ComputedStyleBase,
     return IsInlineOrBlockSizeContainer() && StyleType() == kPseudoIdNone;
   }
 
+  static bool IsContentVisibilityVisible(
+      EContentVisibility content_visibility,
+      const AtomicString& toggle_visibility) {
+    return content_visibility == EContentVisibility::kVisible &&
+           toggle_visibility.IsNull();
+  }
+
   bool IsContentVisibilityVisible() const {
-    return ContentVisibility() == EContentVisibility::kVisible &&
-           ToggleVisibility().IsNull();
+    return IsContentVisibilityVisible(ContentVisibility(), ToggleVisibility());
   }
 
   // Interleaving roots are elements that may require layout to fully update
@@ -1725,25 +1772,16 @@ class ComputedStyle : public ComputedStyleBase,
   // Isolation utility functions.
   bool HasIsolation() const { return Isolation() != EIsolation::kAuto; }
 
+  DisplayStyle GetDisplayStyle() const {
+    return DisplayStyle(Display(), StyleType(), GetContentData());
+  }
+
   // Content utility functions.
   bool ContentBehavesAsNormal() const {
-    switch (StyleType()) {
-      case kPseudoIdMarker:
-        return !GetContentData();
-      default:
-        return !GetContentData() || GetContentData()->IsNone();
-    }
+    return GetDisplayStyle().ContentBehavesAsNormal();
   }
   bool ContentPreventsBoxGeneration() const {
-    switch (StyleType()) {
-      case kPseudoIdBefore:
-      case kPseudoIdAfter:
-        return ContentBehavesAsNormal();
-      case kPseudoIdMarker:
-        return GetContentData() && GetContentData()->IsNone();
-      default:
-        return false;
-    }
+    return GetDisplayStyle().ContentPreventsBoxGeneration();
   }
 
   // Cursor utility functions.
@@ -1812,7 +1850,6 @@ class ComputedStyle : public ComputedStyleBase,
   CORE_EXPORT const Vector<AppliedTextDecoration>& AppliedTextDecorations()
       const;
   CORE_EXPORT TextDecorationLine TextDecorationsInEffect() const;
-  bool IsAppliedTextDecorationsSame(const ComputedStyle& other) const;
 
   // Overflow utility functions.
 
@@ -1871,22 +1908,28 @@ class ComputedStyle : public ComputedStyleBase,
     return true;
   }
 
+  static bool HasAutoScroll(EOverflow overflow) {
+    return overflow == EOverflow::kAuto || overflow == EOverflow::kOverlay;
+  }
+
+  static bool ScrollsOverflow(EOverflow overflow) {
+    return overflow == EOverflow::kScroll || HasAutoScroll(overflow);
+  }
+
   bool HasAutoHorizontalScroll() const {
-    return OverflowX() == EOverflow::kAuto ||
-           OverflowX() == EOverflow::kOverlay;
+    return ComputedStyle::HasAutoScroll(OverflowX());
   }
 
   bool HasAutoVerticalScroll() const {
-    return OverflowY() == EOverflow::kAuto ||
-           OverflowY() == EOverflow::kOverlay;
+    return ComputedStyle::HasAutoScroll(OverflowY());
   }
 
   bool ScrollsOverflowX() const {
-    return OverflowX() == EOverflow::kScroll || HasAutoHorizontalScroll();
+    return ComputedStyle::ScrollsOverflow(OverflowX());
   }
 
   bool ScrollsOverflowY() const {
-    return OverflowY() == EOverflow::kScroll || HasAutoVerticalScroll();
+    return ComputedStyle::ScrollsOverflow(OverflowY());
   }
 
   bool ScrollsOverflow() const {
@@ -2140,9 +2183,18 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Pseudo element styles.
+  static bool HasPseudoElementStyle(unsigned pseudo_styles, PseudoId pseudo) {
+    DCHECK(pseudo >= kFirstPublicPseudoId);
+    DCHECK(pseudo <= kLastTrackedPublicPseudoId);
+    return (1 << (pseudo - kFirstPublicPseudoId)) & pseudo_styles;
+  }
+
   bool HasAnyPseudoElementStyles() const;
   bool HasAnyHighlightPseudoElementStyles() const;
-  bool HasPseudoElementStyle(PseudoId) const;
+  bool HasPseudoElementStyle(PseudoId pseudo) const {
+    return ComputedStyle::HasPseudoElementStyle(PseudoElementStylesInternal(),
+                                                pseudo);
+  }
 
   // Note: CanContainAbsolutePositionObjects should return true if
   // CanContainFixedPositionObjects.  We currently never use this value
@@ -2676,12 +2728,6 @@ inline bool ComputedStyle::HasAnyHighlightPseudoElementStyles() const {
   return mask & PseudoElementStylesInternal();
 }
 
-inline bool ComputedStyle::HasPseudoElementStyle(PseudoId pseudo) const {
-  DCHECK(pseudo >= kFirstPublicPseudoId);
-  DCHECK(pseudo <= kLastTrackedPublicPseudoId);
-  return (1 << (pseudo - kFirstPublicPseudoId)) & PseudoElementStylesInternal();
-}
-
 class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   STACK_ALLOCATED();
 
@@ -2739,6 +2785,12 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   // that are not explicitly set in this style.
   void PropagateIndependentInheritedProperties(
       const ComputedStyle& parent_style);
+
+  // Pseudo-elements
+  bool HasPseudoElementStyle(PseudoId pseudo) const {
+    return ComputedStyle::HasPseudoElementStyle(PseudoElementStylesInternal(),
+                                                pseudo);
+  }
 
   // animations
   const CSSAnimationData* Animations() const {
@@ -2863,6 +2915,19 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     SetColumnWidthInternal(0);
   }
 
+  bool SpecifiesColumns() const {
+    return ComputedStyle::SpecifiesColumns(HasAutoColumnCount(),
+                                           HasAutoColumnWidth());
+  }
+  // contain
+  bool ShouldApplyAnyContainment(const Element& element) const {
+    unsigned effective_containment = ComputedStyle::EffectiveContainment(
+        Contain(), ContainerType(), ContentVisibility(), ToggleVisibility(),
+        SkipsContents());
+    return ComputedStyle::ShouldApplyAnyContainment(element, GetDisplayStyle(),
+                                                    effective_containment);
+  }
+
   // content
   ContentData* GetContentData() const { return ContentInternal().Get(); }
 
@@ -2933,6 +2998,9 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
            Display() == EDisplay::kTableRowGroup ||
            Display() == EDisplay::kTableColumn ||
            Display() == EDisplay::kTableColumnGroup;
+  }
+  DisplayStyle GetDisplayStyle() const {
+    return DisplayStyle(Display(), StyleType(), GetContentData());
   }
 
   // filter
@@ -3063,6 +3131,12 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
 
   // orphans
   void SetOrphans(int16_t o) { SetOrphansInternal(ClampTo<int16_t>(o, 1)); }
+
+  // overflow
+  bool ScrollsOverflow() const {
+    return ComputedStyle::ScrollsOverflow(OverflowX()) ||
+           ComputedStyle::ScrollsOverflow(OverflowY());
+  }
 
   // padding-*
   void SetPaddingTop(const Length& v) {
@@ -3215,6 +3289,15 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
     if (!CallbackSelectors().Contains(selector)) {
       MutableCallbackSelectorsInternal().push_back(selector);
     }
+  }
+
+  // DocumentRulesSelectors
+  void AddDocumentRulesSelector(StyleRule* selector) {
+    if (!DocumentRulesSelectors()) {
+      MutableDocumentRulesSelectorsInternal() =
+          MakeGarbageCollected<HeapHashSet<WeakMember<StyleRule>>>();
+    }
+    DocumentRulesSelectors()->insert(selector);
   }
 
   // ::selection, etc

@@ -11,6 +11,7 @@
 #include <queue>
 #include <string>
 
+#include "base/callback_list.h"
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
@@ -23,7 +24,6 @@
 #include "chrome/browser/metrics/incognito_observer.h"
 #include "chrome/browser/metrics/metrics_memory_details.h"
 #include "chrome/browser/privacy_budget/identifiability_study_state.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "components/metrics/file_metrics_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
@@ -45,6 +45,7 @@
 
 class BrowserActivityWatcher;
 class Profile;
+class ProfileManager;
 class PrefRegistrySimple;
 
 namespace network_time {
@@ -109,7 +110,7 @@ class ChromeMetricsServiceClient
   void LoadingStateChanged(bool is_loading) override;
   bool IsReportingPolicyManaged() override;
   metrics::EnableMetricsDefault GetMetricsReportingDefaultState() override;
-  bool IsUMACellularUploadLogicEnabled() override;
+  bool IsOnCellularConnection() override;
   bool IsUkmAllowedForAllProfiles() override;
   bool AreNotificationListenersEnabledOnAllProfiles() override;
   std::string GetAppPackageNameIfLoggable() override;
@@ -117,6 +118,8 @@ class ChromeMetricsServiceClient
   static void SetNotificationListenerSetupFailedForTesting(
       bool simulate_failure);
   bool ShouldResetClientIdsOnClonedInstall() override;
+  base::CallbackListSubscription AddOnClonedInstallDetectedCallback(
+      base::OnceClosure callback) override;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   bool ShouldUploadMetricsForUserId(const uint64_t user_id) override;
   void InitPerUserMetrics() override;
@@ -184,9 +187,6 @@ class ChromeMetricsServiceClient
   void OnMemoryDetailCollectionDone();
   void OnHistogramSynchronizationDone();
 
-  // Records metrics about the switches present on the command line.
-  void RecordCommandLineMetrics();
-
   // Registers |this| as an observer for notifications which indicate that a
   // user is performing work. This is useful to allow some features to sleep,
   // until the machine becomes active, such as precluding UMA uploads unless
@@ -200,12 +200,6 @@ class ChromeMetricsServiceClient
 
   // Called when a URL is opened from the Omnibox.
   void OnURLOpenedFromOmnibox(OmniboxLog* log);
-
-#if BUILDFLAG(IS_WIN)
-  // Counts (and removes) the browser crash dump attempt signals left behind by
-  // any previous browser processes which generated a crash dump.
-  void CountBrowserCrashDumpAttempts();
-#endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Helper function for initialization of system profile provider.

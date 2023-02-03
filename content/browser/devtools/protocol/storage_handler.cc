@@ -485,6 +485,10 @@ void StorageHandler::ClearDataForStorageKey(
 
   absl::optional<blink::StorageKey> key =
       blink::StorageKey::Deserialize(storage_key);
+  if (!key) {
+    return callback->sendFailure(
+        Response::InvalidParams("Unable to deserialize storage key"));
+  }
   storage_partition_->ClearData(
       remove_mask, StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, *key,
       base::Time(), base::Time::Max(),
@@ -773,45 +777,6 @@ void StorageHandler::GetTrustTokens(
 
   storage_partition_->GetNetworkContext()->GetStoredTrustTokenCounts(
       base::BindOnce(&SendTrustTokens, std::move(callback)));
-}
-
-namespace {
-
-void SendClearTrustTokensStatus(
-    std::unique_ptr<StorageHandler::ClearTrustTokensCallback> callback,
-    network::mojom::DeleteStoredTrustTokensStatus status) {
-  switch (status) {
-    case network::mojom::DeleteStoredTrustTokensStatus::kSuccessTokensDeleted:
-      callback->sendSuccess(/* didDeleteTokens */ true);
-      break;
-    case network::mojom::DeleteStoredTrustTokensStatus::kSuccessNoTokensDeleted:
-      callback->sendSuccess(/* didDeleteTokens */ false);
-      break;
-    case network::mojom::DeleteStoredTrustTokensStatus::kFailureFeatureDisabled:
-      callback->sendFailure(
-          Response::ServerError("The Trust Tokens feature is disabled."));
-      break;
-    case network::mojom::DeleteStoredTrustTokensStatus::kFailureInvalidOrigin:
-      callback->sendFailure(
-          Response::InvalidParams("The provided issuerOrigin is invalid. It "
-                                  "must be a HTTP/HTTPS trustworthy origin."));
-      break;
-  }
-}
-
-}  // namespace
-
-void StorageHandler::ClearTrustTokens(
-    const std::string& issuerOrigin,
-    std::unique_ptr<ClearTrustTokensCallback> callback) {
-  if (!storage_partition_) {
-    callback->sendFailure(Response::InternalError());
-    return;
-  }
-
-  storage_partition_->GetNetworkContext()->DeleteStoredTrustTokens(
-      url::Origin::Create(GURL(issuerOrigin)),
-      base::BindOnce(&SendClearTrustTokensStatus, std::move(callback)));
 }
 
 void StorageHandler::OnInterestGroupAccessed(

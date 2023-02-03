@@ -196,6 +196,12 @@ BASE_FEATURE(kIPHRequestDesktopSiteDefaultOnFeature,
 BASE_FEATURE(kIPHRequestDesktopSiteOptInFeature,
              "IPH_RequestDesktopSiteOptIn",
              base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHRequestDesktopSiteExceptionsGenericFeature,
+             "IPH_RequestDesktopSiteExceptionsGeneric",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHRequestDesktopSiteExceptionsSpecificFeature,
+             "IPH_RequestDesktopSiteExceptionsSpecific",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHShoppingListSaveFlowFeature,
              "IPH_ShoppingListSaveFlow",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -281,6 +287,9 @@ BASE_FEATURE(kIPHPageInfoFeature,
 BASE_FEATURE(kIPHPageInfoStoreInfoFeature,
              "IPH_PageInfoStoreInfo",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHPageZoomFeature,
+             "IPH_PageZoom",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHPreviewsOmniboxUIFeature,
              "IPH_PreviewsOmniboxUI",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -421,6 +430,9 @@ BASE_FEATURE(kIPHiOSDefaultBrowserOverflowMenuBadgeFeature,
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHiOSDefaultBrowserSettingsBadgeFeature,
              "IPH_iOSDefaultBrowserSettingsBadge",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHiOSAppStorePromoFeature,
+             "IPH_iOSAppStorePromo",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_IOS)
 

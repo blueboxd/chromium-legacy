@@ -26,7 +26,7 @@
 #include "build/build_config.h"
 
 // The feature is not applicable to 32-bit address space.
-#if PA_CONFIG(HAS_64_BITS_POINTERS)
+#if BUILDFLAG(HAS_64_BIT_POINTERS)
 
 namespace partition_alloc {
 
@@ -267,16 +267,6 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionAddressSpace {
   static constexpr size_t kPkeyPoolSize = kGiB / 4;
   static_assert(base::bits::IsPowerOfTwo(kPkeyPoolSize));
 #endif
-#if PA_CONFIG(DYNAMICALLY_SELECT_POOL_SIZE)
-  // We can't afford pool sizes as large as kPoolMaxSize on Windows <8.1 (see
-  // crbug.com/1101421 and crbug.com/1217759).
-  static constexpr size_t kRegularPoolSizeForLegacyWindows = 4 * kGiB;
-  static constexpr size_t kBRPPoolSizeForLegacyWindows = 4 * kGiB;
-  static_assert(kRegularPoolSizeForLegacyWindows < kRegularPoolSize);
-  static_assert(kBRPPoolSizeForLegacyWindows < kBRPPoolSize);
-  static_assert(base::bits::IsPowerOfTwo(kRegularPoolSizeForLegacyWindows));
-  static_assert(base::bits::IsPowerOfTwo(kBRPPoolSizeForLegacyWindows));
-#endif  // PA_CONFIG(DYNAMICALLY_SELECT_POOL_SIZE)
   static constexpr size_t kConfigurablePoolMaxSize = kPoolMaxSize;
   static constexpr size_t kConfigurablePoolMinSize = 1 * kGiB;
   static_assert(kConfigurablePoolMinSize <= kConfigurablePoolMaxSize);
@@ -485,6 +475,6 @@ PA_ALWAYS_INLINE bool IsConfigurablePoolAvailable() {
 
 }  // namespace partition_alloc
 
-#endif  // PA_CONFIG(HAS_64_BITS_POINTERS)
+#endif  // BUILDFLAG(HAS_64_BIT_POINTERS)
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ADDRESS_SPACE_H_

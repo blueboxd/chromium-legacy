@@ -13,9 +13,9 @@ import 'chrome://resources/polymer/v3_0/iron-iconset-svg/iron-iconset-svg.js';
 import '../../common/icons.html.js';
 import '../../css/wallpaper.css.js';
 
-import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 
+import {isGooglePhotosSharedAlbumsEnabled} from '../load_time_booleans.js';
 import {CurrentWallpaper, WallpaperLayout, WallpaperType} from '../personalization_app.mojom-webui.js';
 import {Paths} from '../personalization_router_element.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
@@ -43,6 +43,11 @@ export class WallpaperSelected extends WithPersonalizationStore {
        * The current collection id to display.
        */
       collectionId: String,
+
+      /**
+       * Whether the google photos album is shared.
+       */
+      googlePhotosAlbumIsShared: String,
 
       /**
        * The current Google Photos Album id to display.
@@ -77,6 +82,8 @@ export class WallpaperSelected extends WithPersonalizationStore {
         type: Boolean,
         computed: 'computeHasError_(image_, isLoading_, error_)',
       },
+
+      shouldShowDailyRefreshConfirmationDialog_: Boolean,
 
       showImage_: {
         type: Boolean,
@@ -132,10 +139,10 @@ export class WallpaperSelected extends WithPersonalizationStore {
         value: null,
       },
 
-      showPreviewButton_: {
+      googlePhotosSharedAlbumsEnabled_: {
         type: Boolean,
         value() {
-          return loadTimeData.getBoolean('fullScreenPreviewEnabled');
+          return isGooglePhotosSharedAlbumsEnabled();
         },
       },
     };
@@ -145,6 +152,7 @@ export class WallpaperSelected extends WithPersonalizationStore {
   // since we can't be in a Backdrop collection or a Google Photos album
   // simultaneously
   collectionId: string|undefined;
+  googlePhotosAlbumIsShared: string|undefined;
   googlePhotosAlbumId: string|undefined;
   path: string;
   private image_: CurrentWallpaper|null;
@@ -153,6 +161,7 @@ export class WallpaperSelected extends WithPersonalizationStore {
   private dailyRefreshState_: DailyRefreshState|null;
   private isLoading_: boolean;
   private hasError_: boolean;
+  private shouldShowDailyRefreshConfirmationDialog_: boolean;
   private showImage_: boolean;
   private showWallpaperOptions_: boolean;
   private showCollectionOptions_: boolean;
@@ -162,7 +171,7 @@ export class WallpaperSelected extends WithPersonalizationStore {
   private fillIcon_: string;
   private centerIcon_: string;
   private error_: string;
-  private showPreviewButton_: boolean;
+  private googlePhotosSharedAlbumsEnabled_: boolean;
 
   override connectedCallback() {
     super.connectedCallback();
@@ -306,17 +315,12 @@ export class WallpaperSelected extends WithPersonalizationStore {
   }
 
   private onClickDailyRefreshToggle_() {
-    const isDailyRefreshId = this.isDailyRefreshId_(
+    const dailyRefreshEnabled = this.isDailyRefreshId_(
         this.collectionId || this.googlePhotosAlbumId, this.dailyRefreshState_);
-    if (this.googlePhotosAlbumId) {
-      assert(!this.collectionId);
-      selectGooglePhotosAlbum(
-          isDailyRefreshId ? '' : this.googlePhotosAlbumId,
-          getWallpaperProvider(), this.getStore());
+    if (dailyRefreshEnabled) {
+      this.disableDailyRefresh_();
     } else {
-      setDailyRefreshCollectionId(
-          isDailyRefreshId ? '' : this.collectionId!, getWallpaperProvider(),
-          this.getStore());
+      this.enableDailyRefresh_();
     }
   }
 
@@ -335,6 +339,46 @@ export class WallpaperSelected extends WithPersonalizationStore {
       id: string|undefined,
       dailyRefreshState: DailyRefreshState|null): boolean {
     return dailyRefreshState ? id === dailyRefreshState.id : false;
+  }
+
+  private disableDailyRefresh_() {
+    if (this.googlePhotosAlbumId) {
+      assert(!this.collectionId);
+      selectGooglePhotosAlbum(
+          /*albumId=*/ '', getWallpaperProvider(), this.getStore());
+    } else {
+      setDailyRefreshCollectionId(
+          /*collectionId=*/ '', getWallpaperProvider(), this.getStore());
+    }
+  }
+
+  private enableDailyRefresh_() {
+    if (this.googlePhotosAlbumId) {
+      assert(!this.collectionId);
+      if (this.googlePhotosSharedAlbumsEnabled_ &&
+          this.googlePhotosAlbumIsShared === 'true') {
+        this.shouldShowDailyRefreshConfirmationDialog_ = true;
+      } else {
+        this.enableGooglePhotosAlbumDailyRefresh_();
+      }
+    } else {
+      setDailyRefreshCollectionId(
+          this.collectionId!, getWallpaperProvider(), this.getStore());
+    }
+  }
+
+  private enableGooglePhotosAlbumDailyRefresh_() {
+    selectGooglePhotosAlbum(
+        this.googlePhotosAlbumId!, getWallpaperProvider(), this.getStore());
+  }
+
+  private closeDialog_() {
+    this.shouldShowDailyRefreshConfirmationDialog_ = false;
+  }
+
+  private onClickProceed_() {
+    this.enableGooglePhotosAlbumDailyRefresh_();
+    this.closeDialog_();
   }
 
   private onClickUpdateDailyRefreshWallpaper_() {

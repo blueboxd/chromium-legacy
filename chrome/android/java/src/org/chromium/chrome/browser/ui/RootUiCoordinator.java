@@ -955,7 +955,10 @@ public class RootUiCoordinator
                     mModalDialogManagerSupplier.get(), mActivityTabProvider.get().getWebContents());
             return true;
         } else if (id == R.id.page_zoom_id) {
-            mPageZoomCoordinator.show(mActivityTabProvider.get().getWebContents());
+            Tab tab = mActivityTabProvider.get();
+            TrackerFactory.getTrackerForProfile(Profile.fromWebContents(tab.getWebContents()))
+                    .notifyEvent(EventConstants.PAGE_ZOOM_OPENED);
+            mPageZoomCoordinator.show(tab.getWebContents());
         }
 
         return false;
@@ -1069,17 +1072,17 @@ public class RootUiCoordinator
             mIdentityDiscController = new IdentityDiscController(
                     mActivity, mActivityLifecycleDispatcher, mProfileSupplier);
             PriceTrackingButtonController priceTrackingButtonController =
-                    new PriceTrackingButtonController(mActivityTabProvider,
+                    new PriceTrackingButtonController(mActivity, mActivityTabProvider,
                             mModalDialogManagerSupplier.get(), getBottomSheetController(),
                             AppCompatResources.getDrawable(
                                     mActivity, R.drawable.price_tracking_disabled),
                             mTabBookmarkerSupplier);
             ReaderModeToolbarButtonController readerModeToolbarButtonController =
-                    new ReaderModeToolbarButtonController(mActivityTabProvider,
+                    new ReaderModeToolbarButtonController(mActivity, mActivityTabProvider,
                             mModalDialogManagerSupplier.get(),
                             AppCompatResources.getDrawable(
                                     mActivity, R.drawable.ic_mobile_friendly));
-            ShareButtonController shareButtonController = new ShareButtonController(
+            ShareButtonController shareButtonController = new ShareButtonController(mActivity,
                     AppCompatResources.getDrawable(
                             mActivity, R.drawable.ic_toolbar_share_offset_24dp),
                     mActivityTabProvider, mShareDelegateSupplier, trackerSupplier, new ShareUtils(),
@@ -1105,7 +1108,7 @@ public class RootUiCoordinator
                         }
                     };
             VoiceToolbarButtonController voiceToolbarButtonController =
-                    new VoiceToolbarButtonController(
+                    new VoiceToolbarButtonController(mActivity,
                             AppCompatResources.getDrawable(mActivity, R.drawable.btn_mic),
                             mActivityTabProvider, trackerSupplier,
                             mModalDialogManagerSupplier.get(), voiceSearchDelegate);
@@ -1145,11 +1148,10 @@ public class RootUiCoordinator
                     mProfileSupplier, mBookmarkModelSupplier, mCanAnimateBrowserControls,
                     mLayoutStateProviderOneShotSupplier, mAppMenuSupplier,
                     shouldShowMenuUpdateBadge(), mTabModelSelectorSupplier, mStartSurfaceSupplier,
-                    mOmniboxFocusStateSupplier, mIntentMetadataOneshotSupplier,
-                    mPromoShownOneshotSupplier, mWindowAndroid, mIsInOverviewModeSupplier,
-                    mModalDialogManagerSupplier, mStatusBarColorController, mAppMenuDelegate,
-                    mActivityLifecycleDispatcher, mStartSurfaceParentTabSupplier,
-                    mBottomSheetController, mIsWarmOnResumeSupplier,
+                    mOmniboxFocusStateSupplier, mPromoShownOneshotSupplier, mWindowAndroid,
+                    mIsInOverviewModeSupplier, mModalDialogManagerSupplier,
+                    mStatusBarColorController, mAppMenuDelegate, mActivityLifecycleDispatcher,
+                    mStartSurfaceParentTabSupplier, mBottomSheetController, mIsWarmOnResumeSupplier,
                     mTabContentManagerSupplier.get(), mTabCreatorManagerSupplier.get(),
                     mSnackbarManagerSupplier.get(), mJankTracker,
                     getMerchantTrustSignalsCoordinatorSupplier(), mTabReparentingControllerSupplier,

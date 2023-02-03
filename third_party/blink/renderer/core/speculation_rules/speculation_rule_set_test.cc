@@ -671,6 +671,23 @@ void PropagateRulesToStubSpeculationHostWithMicrotasksScope(
   });
 }
 
+// Same as above, except it runs a style update after the functor and before
+// performing a microtask checkpoint.
+template <typename F>
+void PropagateRulesToStubSpeculationHostWithStyleUpdate(
+    DummyPageHolder& page_holder,
+    StubSpeculationHost& speculation_host,
+    const F& functor) {
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host, [&]() {
+    auto* script_state = ToScriptStateForMainWorld(&page_holder.GetFrame());
+    v8::MicrotasksScope microtasks_scope(script_state->GetIsolate(),
+                                         ToMicrotaskQueue(script_state),
+                                         v8::MicrotasksScope::kRunMicrotasks);
+    functor();
+    page_holder.GetFrameView().UpdateAllLifecyclePhasesForTest();
+  });
+}
+
 // This function adds a speculationrules script to the given page, and simulates
 // the process of sending the parsed candidates to the browser.
 void PropagateRulesToStubSpeculationHost(DummyPageHolder& page_holder,
@@ -679,6 +696,44 @@ void PropagateRulesToStubSpeculationHost(DummyPageHolder& page_holder,
   PropagateRulesToStubSpeculationHost(page_holder, speculation_host, [&]() {
     InsertSpeculationRules(page_holder.GetDocument(), speculation_script);
   });
+}
+
+// Similar to the function above, but also runs a full lifecycle update.
+void PropagateRulesToStubSpeculationHostWithStyleUpdate(
+    DummyPageHolder& page_holder,
+    StubSpeculationHost& speculation_host,
+    const String& speculation_script) {
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host, [&]() {
+    InsertSpeculationRules(page_holder.GetDocument(), speculation_script);
+    page_holder.GetFrameView().UpdateAllLifecyclePhasesForTest();
+  });
+}
+
+template <typename F>
+void AssertNoRulesPropagatedToStubSpeculationHost(
+    DummyPageHolder& page_holder,
+    StubSpeculationHost& speculation_host,
+    const F& functor) {
+  LocalFrame& frame = page_holder.GetFrame();
+  auto& broker = frame.DomWindow()->GetBrowserInterfaceBroker();
+  broker.SetBinderForTesting(
+      mojom::blink::SpeculationHost::Name_,
+      WTF::BindRepeating(&StubSpeculationHost::BindUnsafe,
+                         WTF::Unretained(&speculation_host)));
+
+  base::RunLoop run_loop;
+  speculation_host.SetDoneClosure(
+      base::BindLambdaForTesting([]() { NOTREACHED(); }));
+  {
+    auto* script_state = ToScriptStateForMainWorld(&frame);
+    v8::MicrotasksScope microtasks_scope(script_state->GetIsolate(),
+                                         ToMicrotaskQueue(script_state),
+                                         v8::MicrotasksScope::kRunMicrotasks);
+    functor();
+  }
+  run_loop.RunUntilIdle();
+
+  broker.SetBinderForTesting(mojom::blink::SpeculationHost::Name_, {});
 }
 
 TEST_F(SpeculationRuleSetTest, PropagatesAllRulesToBrowser) {
@@ -1195,6 +1250,27 @@ class DocumentRulesTest : public SpeculationRuleSetTest {
   DocumentRulePredicate* CreatePredicate(
       String where_text,
       KURL base_url = KURL("https://example.com/")) {
+    String parse_error;
+    auto* rule_set =
+        CreateRuleSetWithPredicate(where_text, base_url, &parse_error);
+    DCHECK(!rule_set->prefetch_rules().empty())
+        << "Invalid predicate: " << parse_error;
+    return rule_set->prefetch_rules()[0]->predicate();
+  }
+
+  String CreateInvalidPredicate(String where_text) {
+    String parse_error;
+    auto* rule_set = CreateRuleSetWithPredicate(
+        where_text, KURL("https://example.com"), &parse_error);
+    EXPECT_TRUE(!rule_set || rule_set->prefetch_rules().empty())
+        << "Rule set is valid.";
+    return parse_error;
+  }
+
+ private:
+  SpeculationRuleSet* CreateRuleSetWithPredicate(String where_text,
+                                                 KURL base_url,
+                                                 String* parse_error) {
     // clang-format off
     auto* rule_set =
         CreateRuleSet(
@@ -1205,14 +1281,12 @@ class DocumentRulesTest : public SpeculationRuleSetTest {
                 "where": {%s}
               }]
             })",
-            where_text.Latin1().c_str()), base_url, execution_context()
-        );
+            where_text.Latin1().c_str()),
+          base_url, execution_context(), parse_error);
     // clang-format on
-    DCHECK(!rule_set->prefetch_rules().empty()) << "Invalid predicate.";
-    return rule_set->prefetch_rules()[0]->predicate();
+    return rule_set;
   }
 
- private:
   ScopedSpeculationRulesDocumentRulesForTest enable_document_rules_{true};
 };
 
@@ -1507,6 +1581,132 @@ TEST_F(DocumentRulesTest, DropInvalidRules) {
                   And({Or({Href({URLPattern("/hello.html")}),
                            Selector({StyleRuleWithSelectorText(".valid")})}),
                        Neg(And({Href({URLPattern("https://world.com")})}))}))));
+}
+
+// Tests that errors of individual rules which cause them to be ignored are
+// logged to the console.
+TEST_F(DocumentRulesTest, ConsoleWarningForInvalidRule) {
+  auto* chrome_client = MakeGarbageCollected<ConsoleCapturingChromeClient>();
+  DummyPageHolder page_holder(/*initial_view_size=*/{}, chrome_client);
+  page_holder.GetFrame().GetSettings()->SetScriptEnabled(true);
+
+  Document& document = page_holder.GetDocument();
+  HTMLScriptElement* script =
+      MakeGarbageCollected<HTMLScriptElement>(document, CreateElementFlags());
+  script->setAttribute(html_names::kTypeAttr, "speculationrules");
+  script->setText(
+      R"({
+        "prefetch": [{
+          "source": "document",
+          "where": {"and": [], "or": []}
+        }]
+      })");
+  document.head()->appendChild(script);
+
+  EXPECT_TRUE(base::ranges::any_of(
+      chrome_client->ConsoleMessages(), [](const String& message) {
+        return message.Contains("Document rule predicate type is ambiguous");
+      }));
+}
+
+TEST_F(DocumentRulesTest, DocumentRuleParseErrors) {
+  String parse_error;
+  CreateRuleSet(R"({"prefetch": [{
+    "source": "document", "relative_to": "document"
+  }]})",
+                KURL("https://example.com"), execution_context(), &parse_error);
+  EXPECT_THAT(
+      parse_error.Utf8(),
+      ::testing::HasSubstr("A document rule cannot have \"relative_to\" "
+                           "outside the \"where\" clause"));
+
+  parse_error = String();
+  CreateRuleSet(R"({"prefetch": [{
+    "source": "document",
+    "urls": ["/one",  "/two"]
+  }]})",
+                KURL("https://example.com"), execution_context(), &parse_error);
+  EXPECT_THAT(
+      parse_error.Utf8(),
+      ::testing::HasSubstr("A document rule cannot have a \"urls\" key"));
+}
+
+TEST_F(DocumentRulesTest, DocumentRulePredicateParseErrors) {
+  ScopedSpeculationRulesDocumentRulesSelectorMatchesForTest
+      selector_matches_enabled{true};
+  String parse_error;
+
+  parse_error = CreateInvalidPredicate(R"("and": [], "not": {})");
+  EXPECT_THAT(
+      parse_error.Utf8(),
+      ::testing::HasSubstr(
+          "Document rule predicate type is ambiguous, two types found"));
+
+  parse_error = CreateInvalidPredicate(R"()");
+  EXPECT_THAT(parse_error.Utf8(),
+              ::testing::HasSubstr("Could not infer type of document rule "
+                                   "predicate, no valid type specified"));
+
+  parse_error =
+      CreateInvalidPredicate(R"("not": [{"href_matches": "foo.com"}])");
+  EXPECT_THAT(
+      parse_error.Utf8(),
+      ::testing::HasSubstr("Document rule predicate must be an object"));
+
+  parse_error =
+      CreateInvalidPredicate(R"("and": [], "relative_to": "document")");
+  EXPECT_THAT(
+      parse_error.Utf8(),
+      ::testing::HasSubstr(
+          "Document rule predicate with \"and\" key cannot have other keys."));
+
+  parse_error = CreateInvalidPredicate(R"("or": {})");
+  EXPECT_THAT(parse_error.Utf8(),
+              ::testing::HasSubstr("\"or\" key should have a list value"));
+
+  parse_error = CreateInvalidPredicate(R"("href_matches": {"port": 1234})");
+  EXPECT_THAT(
+      parse_error.Utf8(),
+      ::testing::HasSubstr("Values for a URL pattern object must be strings"));
+
+  parse_error =
+      CreateInvalidPredicate(R"("href_matches": {"path_name": "foo"})");
+  EXPECT_THAT(parse_error.Utf8(),
+              ::testing::HasSubstr("Invalid key \"path_name\" for a URL "
+                                   "pattern object found"));
+
+  parse_error =
+      CreateInvalidPredicate(R"("href_matches": [["bar.com/foo.html"]])");
+  EXPECT_THAT(parse_error.Utf8(),
+              ::testing::HasSubstr("Value for \"href_matches\" should "
+                                   "either be a string"));
+
+  parse_error = CreateInvalidPredicate(
+      R"("href_matches": "/home", "relative_to": "window")");
+  EXPECT_THAT(
+      parse_error.Utf8(),
+      ::testing::HasSubstr("Unrecognized \"relative_to\" value: \"window\""));
+
+  parse_error = CreateInvalidPredicate(
+      R"("href_matches": "/home", "relativeto": "document")");
+  EXPECT_THAT(parse_error.Utf8(),
+              ::testing::HasSubstr("Unrecognized key found: \"relativeto\""));
+
+  parse_error = CreateInvalidPredicate(R"("href_matches": "https//:")");
+  EXPECT_THAT(parse_error.Utf8(),
+              ::testing::HasSubstr("URL Pattern for \"href_matches\" could not "
+                                   "be parsed: \"https//:\""));
+
+  parse_error = CreateInvalidPredicate(R"("selector_matches": {})");
+  EXPECT_THAT(
+      parse_error.Utf8(),
+      ::testing::HasSubstr("Value for \"selector_matches\" must be a string"));
+
+  parse_error =
+      CreateInvalidPredicate(R"("selector_matches": "##bad_selector")");
+  EXPECT_THAT(
+      parse_error.Utf8(),
+      ::testing::HasSubstr("\"##bad_selector\" is not a valid selector"));
 }
 
 TEST_F(DocumentRulesTest, DefaultPredicate) {
@@ -2278,6 +2478,569 @@ TEST_F(DocumentRulesTest, ParseSelectorMatches) {
   EXPECT_THAT(
       selector_matches_with_compound_selector,
       Selector({StyleRuleWithSelectorText(".interesting-section > a")}));
+}
+
+TEST_F(DocumentRulesTest, GetStyleRules) {
+  ScopedSpeculationRulesDocumentRulesSelectorMatchesForTest
+      enabled_selector_matches_{true};
+  auto* predicate = CreatePredicate(R"(
+    "and": [
+      {"or": [
+        {"not": {"selector_matches": "span.fizz > a"}},
+        {"selector_matches": "#bar a"}
+      ]},
+      {"selector_matches": "a.foo"}
+    ]
+  )");
+  EXPECT_THAT(
+      predicate,
+      And({Or({Neg(Selector({StyleRuleWithSelectorText("span.fizz > a")})),
+               Selector({StyleRuleWithSelectorText("#bar a")})}),
+           Selector({StyleRuleWithSelectorText("a.foo")})}));
+  EXPECT_THAT(predicate->GetStyleRules(),
+              UnorderedElementsAre(StyleRuleWithSelectorText("span.fizz > a"),
+                                   StyleRuleWithSelectorText("#bar a"),
+                                   StyleRuleWithSelectorText("a.foo")));
+}
+
+TEST_F(DocumentRulesTest, SelectorMatchesAddsCandidates) {
+  ScopedSpeculationRulesDocumentRulesSelectorMatchesForTest
+      enabled_selector_matches_{true};
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  document.body()->setInnerHTML(R"HTML(
+    <div id="important-section"></div>
+    <div id="unimportant-section"></div>
+  )HTML");
+  auto* important_section = document.getElementById("important-section");
+  auto* unimportant_section = document.getElementById("unimportant-section");
+
+  AddAnchor(*important_section, "https://foo.com/foo");
+  AddAnchor(*unimportant_section, "https://foo.com/bar");
+  AddAnchor(*important_section, "https://foo.com/fizz");
+  AddAnchor(*unimportant_section, "https://foo.com/buzz");
+
+  String speculation_script = R"(
+    {"prefetch": [{
+      "source": "document",
+      "where": {"selector_matches": "#important-section > a"}
+    }]}
+  )";
+  PropagateRulesToStubSpeculationHostWithStyleUpdate(
+      page_holder, speculation_host, speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_THAT(candidates, HasURLs(KURL("https://foo.com/foo"),
+                                  KURL("https://foo.com/fizz")));
+}
+
+TEST_F(DocumentRulesTest, SelectorMatchesIsDynamic) {
+  ScopedSpeculationRulesDocumentRulesSelectorMatchesForTest
+      enabled_selector_matches_{true};
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  document.body()->setInnerHTML(R"HTML(
+    <div id="important-section"></div>
+    <div id="unimportant-section"></div>
+  )HTML");
+  auto* important_section = document.getElementById("important-section");
+  auto* unimportant_section = document.getElementById("unimportant-section");
+
+  String speculation_script = R"(
+    {"prefetch": [{
+      "source": "document",
+      "where": {"or": [
+        {"selector_matches": "#important-section > a"},
+        {"selector_matches": ".important-link"}
+      ]}
+    }]}
+  )";
+  PropagateRulesToStubSpeculationHostWithStyleUpdate(
+      page_holder, speculation_host, speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_TRUE(candidates.empty());
+
+  HTMLAnchorElement* second_anchor = nullptr;
+  PropagateRulesToStubSpeculationHostWithStyleUpdate(
+      page_holder, speculation_host, [&]() {
+        AddAnchor(*important_section, "https://foo.com/fizz");
+        second_anchor = AddAnchor(*unimportant_section, "https://foo.com/buzz");
+      });
+  EXPECT_THAT(candidates, HasURLs(KURL("https://foo.com/fizz")));
+
+  PropagateRulesToStubSpeculationHostWithStyleUpdate(
+      page_holder, speculation_host, [&]() {
+        second_anchor->setAttribute(html_names::kClassAttr, "important-link");
+      });
+  EXPECT_THAT(candidates, HasURLs(KURL("https://foo.com/fizz"),
+                                  KURL("https://foo.com/buzz")));
+
+  PropagateRulesToStubSpeculationHostWithStyleUpdate(
+      page_holder, speculation_host,
+      [&]() { important_section->SetIdAttribute("random-section"); });
+  EXPECT_THAT(candidates, HasURLs(KURL("https://foo.com/buzz")));
+}
+
+TEST_F(DocumentRulesTest, AddingDocumentRulesInvalidatesStyle) {
+  ScopedSpeculationRulesDocumentRulesSelectorMatchesForTest
+      enabled_selector_matches_{true};
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  document.body()->setInnerHTML(R"HTML(
+    <div id="important-section"></div>
+    <div id="unimportant-section"></div>
+  )HTML");
+  auto* important_section = document.getElementById("important-section");
+  auto* unimportant_section = document.getElementById("unimportant-section");
+
+  AddAnchor(*important_section, "https://foo.com/fizz");
+  AddAnchor(*unimportant_section, "https://foo.com/buzz");
+
+  page_holder.GetFrame().GetSettings()->SetScriptEnabled(true);
+  page_holder.GetFrameView().UpdateAllLifecyclePhasesForTest();
+  ASSERT_FALSE(document.NeedsLayoutTreeUpdate());
+
+  auto* script_without_selector_matches = InsertSpeculationRules(document, R"(
+    {"prefetch": [{"source": "document", "where": {"href_matches": "/foo"}}]}
+  )");
+  ASSERT_FALSE(important_section->NeedsStyleInvalidation());
+
+  auto* script_with_irrelevant_selector_matches =
+      InsertSpeculationRules(document, R"(
+    {"prefetch": [{
+      "source": "document",
+      "where": {"selector_matches": "#irrelevant a"}
+    }]}
+  )");
+  ASSERT_FALSE(important_section->NeedsStyleInvalidation());
+
+  auto* script_with_selector_matches = InsertSpeculationRules(document, R"(
+    {"prefetch": [{
+      "source": "document",
+      "where": {"selector_matches": "#important-section a"}
+    }]}
+  )");
+  EXPECT_TRUE(important_section->NeedsStyleInvalidation());
+
+  page_holder.GetFrameView().UpdateAllLifecyclePhasesForTest();
+  ASSERT_FALSE(important_section->NeedsStyleInvalidation());
+
+  // Test removing SpeculationRuleSets, removing a ruleset should also cause
+  // invalidations.
+  script_with_selector_matches->remove();
+  EXPECT_TRUE(important_section->NeedsStyleInvalidation());
+  page_holder.GetFrameView().UpdateAllLifecyclePhasesForTest();
+
+  script_without_selector_matches->remove();
+  ASSERT_FALSE(important_section->NeedsStyleInvalidation());
+
+  script_with_irrelevant_selector_matches->remove();
+  ASSERT_FALSE(important_section->NeedsStyleInvalidation());
+}
+
+TEST_F(DocumentRulesTest, BasicStyleInvalidation) {
+  ScopedSpeculationRulesDocumentRulesSelectorMatchesForTest
+      enabled_selector_matches_{true};
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  document.body()->setInnerHTML(R"HTML(
+    <div id="important-section"></div>
+    <div id="unimportant-section"></div>
+  )HTML");
+  auto* important_section = document.getElementById("important-section");
+  auto* unimportant_section = document.getElementById("unimportant-section");
+
+  AddAnchor(*important_section, "https://foo.com/fizz");
+  AddAnchor(*unimportant_section, "https://foo.com/buzz");
+
+  String speculation_script = R"(
+    {"prefetch": [{
+      "source": "document",
+      "where": {"selector_matches": "#important-section > a"}
+    }]}
+  )";
+  PropagateRulesToStubSpeculationHostWithStyleUpdate(
+      page_holder, speculation_host, speculation_script);
+
+  EXPECT_FALSE(document.NeedsLayoutTreeUpdate());
+  unimportant_section->SetIdAttribute("random-section");
+  EXPECT_FALSE(document.NeedsLayoutTreeUpdate());
+  unimportant_section->SetIdAttribute("important-section");
+  EXPECT_TRUE(document.NeedsLayoutTreeUpdate());
+}
+
+TEST_F(DocumentRulesTest, IrrelevantDOMChangeShouldNotInvalidateCandidateList) {
+  ScopedSpeculationRulesDocumentRulesSelectorMatchesForTest
+      enabled_selector_matches_{true};
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  document.body()->setInnerHTML(R"HTML(
+    <div id="important-section"></div>
+    <div id="unimportant-section"></div>
+  )HTML");
+  auto* important_section = document.getElementById("important-section");
+  auto* unimportant_section = document.getElementById("unimportant-section");
+
+  AddAnchor(*important_section, "https://foo.com/fizz");
+  AddAnchor(*unimportant_section, "https://foo.com/buzz");
+
+  String speculation_script = R"(
+    {"prefetch": [{
+      "source": "document",
+      "where": {"selector_matches": "#important-section > a"}
+    }]}
+  )";
+  PropagateRulesToStubSpeculationHostWithStyleUpdate(
+      page_holder, speculation_host, speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_THAT(candidates, HasURLs(KURL("https://foo.com/fizz")));
+
+  AssertNoRulesPropagatedToStubSpeculationHost(
+      page_holder, speculation_host, [&]() {
+        unimportant_section->SetIdAttribute("random-section");
+        page_holder.GetFrameView().UpdateAllLifecyclePhasesForTest();
+      });
+}
+
+TEST_F(DocumentRulesTest, SelectorMatchesInsideShadowTree) {
+  ScopedSpeculationRulesDocumentRulesSelectorMatchesForTest
+      enabled_selector_matches_{true};
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  ShadowRoot& shadow_root =
+      document.body()->AttachShadowRootInternal(ShadowRootType::kOpen);
+  shadow_root.setInnerHTML(R"HTML(
+    <div id="important-section"></div>
+    <div id="unimportant-section"></div>
+  )HTML");
+  auto* important_section = shadow_root.getElementById("important-section");
+  auto* unimportant_section = shadow_root.getElementById("unimportant-section");
+
+  AddAnchor(*important_section, "https://foo.com/fizz");
+  AddAnchor(*unimportant_section, "https://foo.com/buzz");
+
+  String speculation_script = R"(
+    {"prefetch": [{
+      "source": "document",
+      "where": {"selector_matches": "#important-section > a"}
+    }]}
+  )";
+  PropagateRulesToStubSpeculationHostWithStyleUpdate(
+      page_holder, speculation_host, speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  // TODO(crbug.com/1371522): Having document as the scoping root while matching
+  // 'selector_matches' means no link inside a shadow tree can ever be matched.
+  // If https://github.com/WICG/nav-speculation/pull/241 changes this, update
+  // this expectation.
+  EXPECT_THAT(candidates, HasURLs());
+}
+
+TEST_F(DocumentRulesTest, SelectorMatchesWithScopePseudoSelector) {
+  ScopedSpeculationRulesDocumentRulesSelectorMatchesForTest
+      enabled_selector_matches_{true};
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  document.body()->setAttribute(html_names::kClassAttr, "foo");
+  document.body()->setInnerHTML(R"HTML(
+    <a href="https://foo.com/fizz"></a>
+    <div class="foo">
+      <a href="https://foo.com/buzz"></a>
+    </div>
+  )HTML");
+
+  String speculation_script = R"(
+    {"prefetch": [{
+      "source": "document",
+      "where": {"selector_matches": ":scope > .foo > a"}
+    }]}
+  )";
+  PropagateRulesToStubSpeculationHostWithStyleUpdate(
+      page_holder, speculation_host, speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_THAT(candidates, HasURLs(KURL("https://foo.com/fizz")));
+}
+
+// Basic test to check that we wait for UpdateStyle before sending a list of
+// updated candidates to the browser process when there are "selector_matches"
+// predicates.
+TEST_F(DocumentRulesTest, UpdateQueueingWithSelectorMatches_1) {
+  ScopedSpeculationRulesDocumentRulesSelectorMatchesForTest
+      enabled_selector_matches_{true};
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  document.body()->setInnerHTML(R"HTML(
+    <div id="important-section"></div>
+    <div id="unimportant-section"></div>
+  )HTML");
+  auto* important_section = document.getElementById("important-section");
+  auto* unimportant_section = document.getElementById("unimportant-section");
+
+  String speculation_script = R"(
+    {"prefetch": [{
+      "source": "document",
+      "where": {"href_matches": "https://bar.com/*"}
+    }]}
+  )";
+  // The list of candidates is updated without waiting for a style update.
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host,
+                                      speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_THAT(candidates, HasURLs());
+
+  // The list of candidates is updated without waiting for a style update.
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host,
+      [&]() { AddAnchor(*document.body(), "https://bar.com/fizz.html"); });
+  ASSERT_TRUE(document.NeedsLayoutTreeUpdate());
+  EXPECT_THAT(candidates, HasURLs(KURL("https://bar.com/fizz.html")));
+
+  String speculation_script_with_selector_matches = R"(
+    {"prefetch": [{
+      "source": "document",
+      "where": {"selector_matches": "#important-section a"}
+    }]}
+  )";
+  // Now that we have a ruleset with a "selector_matches" predicate, an updated
+  // list of candidates is not sent until style is clean.
+  AssertNoRulesPropagatedToStubSpeculationHost(
+      page_holder, speculation_host, [&]() {
+        InsertSpeculationRules(document,
+                               speculation_script_with_selector_matches);
+      });
+  PropagateRulesToStubSpeculationHostWithStyleUpdate(page_holder,
+                                                     speculation_host, []() {});
+  EXPECT_THAT(candidates, HasURLs(KURL("https://bar.com/fizz.html")));
+
+  // No updates should be sent after DOM updates and microtasks run, before
+  // style is clean.
+  AssertNoRulesPropagatedToStubSpeculationHost(
+      page_holder, speculation_host, [&]() {
+        AddAnchor(*important_section, "https://foo.com/fizz.html");
+        AddAnchor(*unimportant_section, "https://foo.com/buzz.html");
+      });
+  ASSERT_TRUE(document.NeedsLayoutTreeUpdate());
+  PropagateRulesToStubSpeculationHostWithStyleUpdate(page_holder,
+                                                     speculation_host, []() {});
+  EXPECT_THAT(candidates, HasURLs(KURL("https://bar.com/fizz.html"),
+                                  KURL("https://foo.com/fizz.html")));
+}
+
+// This tests that we don't need to wait for a style update if an operation
+// does not invalidate style.
+TEST_F(DocumentRulesTest, UpdateQueueingWithSelectorMatches_2) {
+  ScopedSpeculationRulesDocumentRulesSelectorMatchesForTest
+      enabled_selector_matches_{true};
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  document.body()->setInnerHTML(R"HTML(
+    <div id="important-section"></div>
+  )HTML");
+  auto* important_section = document.getElementById("important-section");
+  AddAnchor(*important_section, "https://foo.com/bar");
+  String speculation_script = R"(
+    {"prefetch": [{
+      "source": "document",
+      "where": {"selector_matches": "#important-section a"}
+    }]}
+  )";
+  PropagateRulesToStubSpeculationHostWithStyleUpdate(
+      page_holder, speculation_host, speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_THAT(candidates, HasURLs(KURL("https://foo.com/bar")));
+
+  // We shouldn't have to wait for UpdateStyle if the update doesn't cause
+  // style invalidation.
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host, [&]() {
+        DCHECK(!document.NeedsLayoutTreeUpdate());
+        auto* referrer_meta = MakeGarbageCollected<HTMLMetaElement>(
+            document, CreateElementFlags());
+        referrer_meta->setAttribute(html_names::kNameAttr, "referrer");
+        referrer_meta->setAttribute(html_names::kContentAttr, "strict-origin");
+        document.head()->appendChild(referrer_meta);
+        DCHECK(!document.NeedsLayoutTreeUpdate());
+      });
+  EXPECT_THAT(candidates, HasURLs(KURL("https://foo.com/bar")));
+}
+
+// This tests a scenario where we queue an update microtask, invalidate style,
+// update style, and then run the microtask.
+TEST_F(DocumentRulesTest, UpdateQueueingWithSelectorMatches_3) {
+  ScopedSpeculationRulesDocumentRulesSelectorMatchesForTest
+      enabled_selector_matches_{true};
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  document.body()->setInnerHTML(R"HTML(
+    <div id="important-section"></div>
+  )HTML");
+  auto* important_section = document.getElementById("important-section");
+  String speculation_script = R"(
+    {"prefetch": [{
+      "source": "document",
+      "where": {"selector_matches": "#important-section a"}
+    }]}
+  )";
+  PropagateRulesToStubSpeculationHostWithStyleUpdate(
+      page_holder, speculation_host, speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_THAT(candidates, HasURLs());
+
+  // Note: AddAnchor below will queue a microtask before invalidating style
+  // (Node::InsertedInto is called before style invalidation).
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host, [&]() {
+        AddAnchor(*important_section, "https://foo.com/bar.html");
+        document.UpdateStyleAndLayoutTree();
+      });
+  EXPECT_THAT(candidates, HasURLs(KURL("https://foo.com/bar.html")));
+}
+
+// This tests a scenario where we queue a microtask update, invalidate style,
+// and then run the microtask.
+TEST_F(DocumentRulesTest, UpdateQueueingWithSelectorMatches_4) {
+  ScopedSpeculationRulesDocumentRulesSelectorMatchesForTest
+      enabled_selector_matches_{true};
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  document.body()->setInnerHTML(R"HTML(
+    <div id="important-section"></div>
+  )HTML");
+  auto* important_section = document.getElementById("important-section");
+  String speculation_script = R"(
+    {"prefetch": [{
+      "source": "document",
+      "where": {"selector_matches": "#important-section a"}
+    }]}
+  )";
+  PropagateRulesToStubSpeculationHostWithStyleUpdate(
+      page_holder, speculation_host, speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_THAT(candidates, HasURLs());
+
+  // A microtask will be queued and run before a style update - but no list of
+  // candidates should be sent as style isn't clean. Note: AddAnchor below will
+  // queue a microtask before invalidating style (Node::InsertedInto is called
+  // before style invalidation).
+  AssertNoRulesPropagatedToStubSpeculationHost(
+      page_holder, speculation_host,
+      [&]() { AddAnchor(*important_section, "https://foo.com/bar"); });
+  ASSERT_TRUE(document.NeedsLayoutTreeUpdate());
+  // Updating style should trigger UpdateSpeculationCandidates.
+  PropagateRulesToStubSpeculationHostWithStyleUpdate(page_holder,
+                                                     speculation_host, []() {});
+  EXPECT_THAT(candidates, HasURLs(KURL("https://foo.com/bar")));
+}
+
+// Tests update queueing after making a DOM modification that doesn't directly
+// affect a link.
+TEST_F(DocumentRulesTest, UpdateQueueingWithSelectorMatches_5) {
+  ScopedSpeculationRulesDocumentRulesSelectorMatchesForTest
+      enabled_selector_matches_{true};
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  document.body()->setInnerHTML(R"HTML(
+    <div id="important-section"></div>
+  )HTML");
+  auto* important_section = document.getElementById("important-section");
+  AddAnchor(*important_section, "https://foo.com/bar");
+  String speculation_script = R"(
+    {"prefetch": [{
+      "source": "document",
+      "where": {"selector_matches": "#important-section a"}
+    }]}
+  )";
+  PropagateRulesToStubSpeculationHostWithStyleUpdate(
+      page_holder, speculation_host, speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_THAT(candidates, HasURLs(KURL("https://foo.com/bar")));
+
+  // Changing the link's container's ID will not queue a microtask on its own.
+  AssertNoRulesPropagatedToStubSpeculationHost(
+      page_holder, speculation_host,
+      [&]() { important_section->SetIdAttribute("unimportant-section"); });
+  // After style updates, we should update the list of speculation candidates.
+  PropagateRulesToStubSpeculationHostWithStyleUpdate(page_holder,
+                                                     speculation_host, []() {});
+  EXPECT_THAT(candidates, HasURLs());
+}
+
+// Tests update queueing after removal of the last rule set with
+// "selector_matches".
+TEST_F(DocumentRulesTest, UpdateQueueingWithSelectorMatches_6) {
+  ScopedSpeculationRulesDocumentRulesSelectorMatchesForTest
+      enabled_selector_matches_{true};
+  DummyPageHolder page_holder;
+  StubSpeculationHost speculation_host;
+  Document& document = page_holder.GetDocument();
+
+  document.body()->setInnerHTML(R"HTML(
+    <div id="important-section"></div>
+  )HTML");
+  auto* important_section = document.getElementById("important-section");
+  AddAnchor(*important_section, "https://fizz.com/buzz");
+  AddAnchor(*document.body(), "https://foo.com/bar");
+
+  String speculation_script = R"(
+    {"prefetch": [{
+      "source": "document",
+      "where": {"href_matches": "https://foo.com/*"}
+    }]}
+  )";
+  PropagateRulesToStubSpeculationHost(page_holder, speculation_host,
+                                      speculation_script);
+  const auto& candidates = speculation_host.candidates();
+  EXPECT_THAT(candidates, HasURLs(KURL("https://foo.com/bar")));
+
+  String speculation_script_with_selector_matches = R"(
+    {"prefetch": [{
+      "source": "document",
+      "where": {"selector_matches": "#important-section a"}
+    }]}
+  )";
+  HTMLScriptElement* script_element = nullptr;
+  PropagateRulesToStubSpeculationHostWithStyleUpdate(
+      page_holder, speculation_host, [&]() {
+        script_element = InsertSpeculationRules(
+            document, speculation_script_with_selector_matches);
+      });
+  EXPECT_THAT(candidates, HasURLs(KURL("https://foo.com/bar"),
+                                  KURL("https://fizz.com/buzz")));
+
+  // We shouldn't have to wait for UpdateStyle after we remove the only ruleset
+  // with selectors.
+  PropagateRulesToStubSpeculationHostWithMicrotasksScope(
+      page_holder, speculation_host, [&]() { script_element->remove(); });
+  EXPECT_THAT(candidates, HasURLs(KURL("https://foo.com/bar")));
+  // Style will be dirty because of the removed ruleset. However, updating
+  // style should not trigger an update, as there are no remaining rulesets with
+  // "selector_matches" predicates.
+  ASSERT_TRUE(document.NeedsLayoutTreeUpdate());
+  AssertNoRulesPropagatedToStubSpeculationHost(
+      page_holder, speculation_host,
+      [&]() { page_holder.GetFrameView().UpdateAllLifecyclePhasesForTest(); });
 }
 
 TEST_F(SpeculationRuleSetTest, EagernessRuntimeEnabledFlag) {

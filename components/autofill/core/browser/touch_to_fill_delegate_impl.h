@@ -40,13 +40,15 @@ enum class TouchToFillCreditCardTriggerOutcome {
   // There was a try to display the bottom sheet, but it failed due to unknown
   // reason.
   kFailedToDisplayBottomSheet = 6,
-  kMaxValue = kFailedToDisplayBottomSheet
+  // The sheet was not shown because the payment form was incomplete.
+  kIncompleteForm = 7,
+  kMaxValue = kIncompleteForm
 };
 
 constexpr const char kUmaTouchToFillCreditCardTriggerOutcome[] =
     "Autofill.TouchToFill.CreditCard.TriggerOutcome";
 
-class AutofillDriver;
+class AutofillManager;
 class BrowserAutofillManager;
 
 // Delegate for in-browser Touch To Fill (TTF) surface display and selection.
@@ -83,7 +85,7 @@ class TouchToFillDelegateImpl : public TouchToFillDelegate {
   virtual void Reset();
 
   // TouchToFillDelegate:
-  AutofillDriver* GetDriver() override;
+  AutofillManager* GetManager() override;
   bool ShouldShowScanCreditCard() override;
   void ScanCreditCard() override;
   void OnCreditCardScanned(const CreditCard& card) override;

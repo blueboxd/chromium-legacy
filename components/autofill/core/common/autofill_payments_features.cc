@@ -65,7 +65,7 @@ BASE_FEATURE(kAutofillEnableCardProductName,
 // options.
 BASE_FEATURE(kAutofillEnableCvcForVcnYellowPath,
              "AutofillEnableCvcForVcnYellowPath",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, a progress dialog will display while authenticating with FIDO.
 // TODO(crbug.com/1337380): Clean up kAutofillEnableFIDOProgressDialog when it's
@@ -77,14 +77,6 @@ BASE_FEATURE(kAutofillEnableFIDOProgressDialog,
 // When enabled, enable manual falling component for virtual cards on Android.
 BASE_FEATURE(kAutofillEnableManualFallbackForVirtualCards,
              "AutofillEnableManualFallbackForVirtualCards",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// When enabled, if the user attempts to use a virtual card on a website
-// where the merchant has opted out of virtual cards, a descriptive error
-// message will appear letting the user know that the merchant has opted
-// out.
-BASE_FEATURE(kAutofillEnableMerchantOptOutErrorDialog,
-             "AutofillEnableMerchantOptOutErrorDialog",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, a notification will be displayed on page navigation if the

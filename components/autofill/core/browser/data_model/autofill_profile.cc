@@ -288,6 +288,20 @@ AutofillMetadata AutofillProfile::GetMetadata() const {
   return metadata;
 }
 
+double AutofillProfile::GetRankingScore(base::Time current_time) const {
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableRankingFormulaAddressProfiles)) {
+    // Exponentially decay the use count by the days since the data model was
+    // last used.
+    return log10(use_count() + 1) *
+           exp(-GetDaysSinceLastUse(current_time) /
+               features::kAutofillRankingFormulaAddressProfilesUsageHalfLife
+                   .Get());
+  }
+  // Default to legacy frecency scoring.
+  return AutofillDataModel::GetRankingScore(current_time);
+}
+
 bool AutofillProfile::SetMetadata(const AutofillMetadata& metadata) {
   // Make sure the ids matches.
   if (metadata.id != (record_type_ == LOCAL_PROFILE ? guid() : server_id_))
@@ -1137,6 +1151,19 @@ bool AutofillProfile::HasStructuredData() {
   return base::ranges::any_of(kStructuredDataTypes, [this](auto type) {
     return !this->GetRawInfo(type).empty();
   });
+}
+
+AutofillProfile AutofillProfile::ConvertToAccountProfile() const {
+  DCHECK_EQ(source(), Source::kLocalOrSyncable);
+  AutofillProfile account_profile = *this;
+  // Since GUIDs are assumed to be unique across all profile sources, a new GUID
+  // is assigned.
+  account_profile.set_guid(base::GenerateGUID());
+  account_profile.source_ = Source::kAccount;
+  // Initial creator and last modifier are unused for kLocalOrSyncable profiles.
+  account_profile.initial_creator_id_ = kInitialCreatorOrModifierChrome;
+  account_profile.last_modifier_id_ = kInitialCreatorOrModifierChrome;
+  return account_profile;
 }
 
 ServerFieldTypeSet AutofillProfile::FindInaccessibleProfileValues() const {

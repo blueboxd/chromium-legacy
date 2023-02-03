@@ -36,6 +36,7 @@
 #import "ios/chrome/test/earl_grey/earl_grey_scoped_block_swizzler.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
+#import "ios/testing/earl_grey/matchers.h"
 #import "ios/web/public/test/element_selector.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -54,6 +55,7 @@ using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::TabGridEditButton;
 using chrome_test_util::TextFieldForCellWithLabelId;
 using chrome_test_util::TurnTableViewSwitchOn;
+using testing::ElementWithAccessibilityLabelSubtring;
 
 namespace {
 
@@ -213,10 +215,20 @@ id<GREYMatcher> DeleteButton() {
       nullptr);
 }
 
-// Matcher for the Delete button in Confirmation Alert for password deletion.
+// TODO(crbug.com/1359392): Remove this override when kPasswordsGrouping flag is
+// removed. Matcher for the Delete button in Confirmation Alert for password
+// deletion.
 id<GREYMatcher> DeleteConfirmationButton() {
   return grey_allOf(ButtonWithAccessibilityLabel(l10n_util::GetNSString(
                         IDS_IOS_CONFIRM_PASSWORD_DELETION)),
+                    grey_interactable(), nullptr);
+}
+
+// Matcher for the Delete button in Confirmation Alert for password deletion
+// when password grouping is enabled.
+id<GREYMatcher> DeleteConfirmationButtonForGrouping() {
+  return grey_allOf(ButtonWithAccessibilityLabel(
+                        l10n_util::GetNSString(IDS_IOS_DELETE_ACTION_TITLE)),
                     grey_interactable(), nullptr);
 }
 
@@ -764,9 +776,17 @@ id<GREYMatcher> EditDoneButton() {
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:DeleteButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:[self groupingEnabled]
+                                          ? DeleteButtonForUsernameAndPassword(
+                                                @"concrete username",
+                                                @"concrete password")
+                                          : DeleteButton()]
+      performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:DeleteConfirmationButton()]
+  [[EarlGrey
+      selectElementWithMatcher:[self groupingEnabled]
+                                   ? DeleteConfirmationButtonForGrouping()
+                                   : DeleteConfirmationButton()]
       performAction:grey_tap()];
 
   // Wait until the alert and the detail view are dismissed.
@@ -821,9 +841,17 @@ id<GREYMatcher> EditDoneButton() {
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:DeleteButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:[self groupingEnabled]
+                                          ? DeleteButtonForUsernameAndPassword(
+                                                @"concrete username",
+                                                @"concrete password")
+                                          : DeleteButton()]
+      performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:DeleteConfirmationButton()]
+  [[EarlGrey
+      selectElementWithMatcher:[self groupingEnabled]
+                                   ? DeleteConfirmationButtonForGrouping()
+                                   : DeleteConfirmationButton()]
       performAction:grey_tap()];
 
   // Wait until the alert and the detail view are dismissed.
@@ -1033,14 +1061,8 @@ id<GREYMatcher> EditDoneButton() {
 }
 
 // Checks that deleting a password from password details can be cancelled.
-- (void)testCancelDeletionInDetailView {
-  // TODO(crbug.com/1405037): Test fails on iPad device.
-#if !TARGET_IPHONE_SIMULATOR
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    EARL_GREY_TEST_DISABLED(@"This test fails on iPad device.");
-  }
-#endif
-
+// TODO(crbug.com/1405037): The test is flaky.
+- (void)DISABLED_testCancelDeletionInDetailView {
   // Save form to be deleted later.
   SaveExamplePasswordForm();
 
@@ -1057,7 +1079,12 @@ id<GREYMatcher> EditDoneButton() {
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:DeleteButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:[self groupingEnabled]
+                                          ? DeleteButtonForUsernameAndPassword(
+                                                @"concrete username",
+                                                @"concrete password")
+                                          : DeleteButton()]
+      performAction:grey_tap()];
 
   // Close the dialog by taping on Password Details screen.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -2123,7 +2150,8 @@ id<GREYMatcher> EditDoneButton() {
 }
 
 // Tests the add password flow from the toolbar button.
-- (void)testAddNewPasswordCredential {
+// TODO(crbug.com/1411944): Flaky, please re-enable once fixed.
+- (void)DISABLED_testAddNewPasswordCredential {
   OpenPasswordManager();
 
   // Press "Add".
@@ -2666,7 +2694,7 @@ id<GREYMatcher> EditDoneButton() {
                                           @"user1", @"password1")]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:DeleteConfirmationButton()]
+  [[EarlGrey selectElementWithMatcher:DeleteConfirmationButtonForGrouping()]
       performAction:grey_tap()];
 
   // Check that the current view is still the password details since there is
@@ -2689,7 +2717,7 @@ id<GREYMatcher> EditDoneButton() {
                                           @"user2", @"password2")]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:DeleteConfirmationButton()]
+  [[EarlGrey selectElementWithMatcher:DeleteConfirmationButtonForGrouping()]
       performAction:grey_tap()];
 
   // Check that the current view is now the password manager since we deleted
@@ -2716,8 +2744,6 @@ id<GREYMatcher> EditDoneButton() {
 - (void)testAccountStorageSwitchHiddenIfSignedInAndFlagDisabled {
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:kSyncInitializedTimeout];
 
   OpenPasswordManager();
   OpenSettingsSubmenu();
@@ -2732,31 +2758,31 @@ id<GREYMatcher> EditDoneButton() {
 - (void)testAccountStorageSwitchShownIfSignedInAndFlagEnabled {
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:kSyncInitializedTimeout];
 
   OpenPasswordManager();
   OpenSettingsSubmenu();
 
-  GREYAssert(![PasswordSettingsAppInterface isOptedInForAccountStorage],
-             @"User should be opted out by default after sign-in");
+  // User should be opted in by default after sign-in.
   GREYElementInteraction* accountStorageSwitch =
       [EarlGrey selectElementWithMatcher:
                     chrome_test_util::TableViewSwitchCell(
                         kPasswordSettingsAccountStorageSwitchTableViewId,
-                        /*is_toggled_on=*/NO)];
+                        /*is_toggled_on=*/YES)];
+  // The toggle text must contain the signed-in account.
+  [EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(
+              grey_descendant(grey_accessibilityID(
+                  kPasswordSettingsAccountStorageSwitchTableViewId)),
+              ElementWithAccessibilityLabelSubtring(fakeIdentity.userEmail),
+              nil)];
 
-  [accountStorageSwitch performAction:TurnTableViewSwitchOn(YES)];
+  [accountStorageSwitch performAction:TurnTableViewSwitchOn(NO)];
 
-  bool success = base::test::ios::WaitUntilConditionOrTimeout(
-      base::test::ios::kWaitForActionTimeout, ^{
-        return [PasswordSettingsAppInterface isOptedInForAccountStorage];
-      });
-  GREYAssert(success, @"Flipping the toggle should have opted in the user");
   [EarlGrey selectElementWithMatcher:
                 chrome_test_util::TableViewSwitchCell(
                     kPasswordSettingsAccountStorageSwitchTableViewId,
-                    /*is_toggled_on=*/YES)];
+                    /*is_toggled_on=*/NO)];
 }
 
 - (void)testAccountStorageSwitchHiddenIfSignedOut {

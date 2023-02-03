@@ -20,25 +20,25 @@
 
 namespace autofill {
 
-// Test class for requesting authentication from CreditCardCVCAuthenticator or
-// CreditCardFIDOAuthenticator.
+// Test class for requesting authentication from CreditCardCvcAuthenticator or
+// CreditCardFidoAuthenticator.
 #if BUILDFLAG(IS_IOS)
 class TestAuthenticationRequester
-    : public CreditCardCVCAuthenticator::Requester,
+    : public CreditCardCvcAuthenticator::Requester,
       public CreditCardOtpAuthenticator::Requester {
 #else
 class TestAuthenticationRequester
-    : public CreditCardCVCAuthenticator::Requester,
-      public CreditCardFIDOAuthenticator::Requester,
+    : public CreditCardCvcAuthenticator::Requester,
+      public CreditCardFidoAuthenticator::Requester,
       public CreditCardOtpAuthenticator::Requester {
 #endif
  public:
   TestAuthenticationRequester();
   ~TestAuthenticationRequester() override;
 
-  // CreditCardCVCAuthenticator::Requester:
-  void OnCVCAuthenticationComplete(
-      const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response)
+  // CreditCardCvcAuthenticator::Requester:
+  void OnCvcAuthenticationComplete(
+      const CreditCardCvcAuthenticator::CvcAuthenticationResponse& response)
       override;
 #if BUILDFLAG(IS_ANDROID)
   bool ShouldOfferFidoAuth() const override;
@@ -46,9 +46,9 @@ class TestAuthenticationRequester
 #endif
 
 #if !BUILDFLAG(IS_IOS)
-  // CreditCardFIDOAuthenticator::Requester:
+  // CreditCardFidoAuthenticator::Requester:
   void OnFIDOAuthenticationComplete(
-      const CreditCardFIDOAuthenticator::FidoAuthenticationResponse& response)
+      const CreditCardFidoAuthenticator::FidoAuthenticationResponse& response)
       override;
   void OnFidoAuthorizationComplete(bool did_succeed) override;
 
@@ -73,7 +73,7 @@ class TestAuthenticationRequester
   }
 
  private:
-  // Set when CreditCardFIDOAuthenticator invokes IsUserVerifiableCallback().
+  // Set when CreditCardFidoAuthenticator invokes IsUserVerifiableCallback().
   absl::optional<bool> is_user_verifiable_;
 
   // Is set to true if authentication was successful.

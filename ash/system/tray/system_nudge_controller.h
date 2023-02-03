@@ -30,7 +30,8 @@ class ASH_EXPORT SystemNudgeController {
   virtual ~SystemNudgeController();
 
   // Records Nudge "TimeToAction" metric, which tracks the time from when a
-  // nudge was shown to when the action the nudge informs of was performed.
+  // nudge was shown to when the nudge's suggested action was performed.
+  // The metric is not recorded if the nudge hasn't been shown before.
   static void RecordNudgeAction(NudgeCatalogName catalog_name);
 
   // Shows the nudge widget.
@@ -49,14 +50,14 @@ class ASH_EXPORT SystemNudgeController {
   // shown.
   void ResetNudgeRegistryForTesting();
 
+  // Hides the nudge widget.
+  void HideNudge();
+
  protected:
   // Concrete subclasses must implement this method to return a
   // SystemNudge that creates a label and specifies an icon specific
   // to the nudge.
   virtual std::unique_ptr<SystemNudge> CreateSystemNudge() = 0;
-
-  // Hides the nudge widget.
-  void HideNudge();
 
  private:
   // Returns the registry which keeps track of when a nudge was last shown.
@@ -74,7 +75,7 @@ class ASH_EXPORT SystemNudgeController {
   std::unique_ptr<SystemNudge> nudge_;
 
   // Timer to hide the nudge.
-  base::OneShotTimer hide_nudge_timer_;
+  std::unique_ptr<base::OneShotTimer> hide_nudge_timer_;
 
   std::unique_ptr<ui::ImplicitAnimationObserver> hide_nudge_animation_observer_;
 

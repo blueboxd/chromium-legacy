@@ -104,11 +104,10 @@ base::Value* GetOrCreateNestedDictionary(const std::string& key1,
                                          const std::string& key2,
                                          base::Value* dict) {
   base::Value* inner_dict =
-      dict->FindPathOfType({key1, key2}, base::Value::Type::DICTIONARY);
+      dict->FindPathOfType({key1, key2}, base::Value::Type::DICT);
   if (inner_dict)
     return inner_dict;
-  return dict->SetPath({key1, key2},
-                       base::Value(base::Value::Type::DICTIONARY));
+  return dict->SetPath({key1, key2}, base::Value(base::Value::Type::DICT));
 }
 
 void ApplyGlobalAutoconnectPolicy(NetworkProfile::Type profile_type,
@@ -296,8 +295,8 @@ base::Value CreateShillConfiguration(const NetworkProfile& profile,
 
   // Remove irrelevant fields.
   onc::Normalizer normalizer(true /* remove recommended fields */);
-  effective = normalizer.NormalizeObject(
-      &chromeos::onc::kNetworkConfigurationSignature, effective);
+  effective = base::Value(normalizer.NormalizeObject(
+      &chromeos::onc::kNetworkConfigurationSignature, effective.GetDict()));
 
   base::Value shill_dictionary = onc::TranslateONCObjectToShill(
       &chromeos::onc::kNetworkConfigurationSignature, effective);

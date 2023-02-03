@@ -292,7 +292,7 @@ cc::PaintCanvas* OffscreenCanvasRenderingContext2D::GetOrCreatePaintCanvas() {
   return GetPaintCanvas();
 }
 
-cc::PaintCanvas* OffscreenCanvasRenderingContext2D::GetPaintCanvas() const {
+cc::PaintCanvas* OffscreenCanvasRenderingContext2D::GetPaintCanvas() {
   if (!is_valid_size_ || !GetCanvasResourceProvider())
     return nullptr;
   return GetCanvasResourceProvider()->Canvas();
@@ -731,7 +731,7 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
         TextRunPaintInfo text_run_paint_info(text_run);
         this->AccessFont().DrawBidiText(
             paint_canvas, text_run_paint_info, location,
-            Font::kUseFallbackIfFontNotReady, kCDeviceScaleFactor, *flags);
+            Font::kUseFallbackIfFontNotReady, *flags);
       },
       [](const SkIRect& rect)  // overdraw test lambda
       { return false; },

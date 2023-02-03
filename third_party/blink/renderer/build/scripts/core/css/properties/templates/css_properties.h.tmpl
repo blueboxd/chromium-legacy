@@ -43,6 +43,7 @@ namespace {{namespace}} {
   (property.is_animation_property and 'kAnimation' or ''),
   (property.supports_incremental_style and 'kSupportsIncrementalStyle' or ''),
   (property.idempotent and 'kIdempotent' or ''),
+  (property.accepts_numeric_literal and 'kAcceptsNumericLiteral' or ''),
   ((property.overlapping or property.legacy_overlapping) and 'kOverlapping' or ''),
   (property.legacy_overlapping and 'kLegacyOverlapping' or ''),
   (property.valid_for_first_letter and 'kValidForFirstLetter' or ''),
@@ -60,7 +61,6 @@ namespace {{namespace}} {
   (property.is_border_radius and 'kBorderRadius' or ''),
   (property.is_highlight_colors and 'kHighlightColors' or ''),
   (property.is_visited_highlight_colors and 'kVisitedHighlightColors' or ''),
-  (property.tree_scoped_value and 'kTreeScopedValue' or ''),
   (property.valid_for_highlight_legacy and 'kValidForHighlightLegacy' or ''),
   (property.valid_for_highlight and 'kValidForHighlight' or ''),
   (property.logical_property_group and 'kInLogicalPropertyGroup' or ''),
@@ -120,9 +120,6 @@ class {{class_name}} final : public {{property.superclass}} {
   void ApplyInitial(StyleResolverState&) const override;
   void ApplyInherit(StyleResolverState&) const override;
   void ApplyValue(StyleResolverState&, const CSSValue&) const override;
-  {% if property.tree_scoped_value %}
-  void ApplyValue(StyleResolverState&, const ScopedCSSValue&) const override;
-  {% endif %}
   {% endif %}
   {% endif %} {# not is_alias #}
 };

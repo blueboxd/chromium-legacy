@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,19 +23,18 @@
 #include "chrome/browser/ui/views/user_education/browser_feature_promo_controller.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/feature_list.h"
-#include "components/performance_manager/public/decorators/process_metrics_decorator.h"
 #include "components/performance_manager/public/features.h"
-#include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/public/user_tuning/prefs.h"
 #include "components/user_education/views/help_bubble_factory_views.h"
 #include "components/user_education/views/help_bubble_view.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/mock_navigation_handle.h"
-#include "content/public/test/test_navigation_observer.h"
+#include "net/dns/mock_host_resolver.h"
 #include "ui/base/page_transition_types.h"
-#include "ui/base/text/bytes_formatting.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/controls/styled_label.h"
@@ -47,22 +46,6 @@
 namespace {
 
 constexpr base::TimeDelta kShortDelay = base::Seconds(1);
-
-class QuitRunLoopOnMemoryMetricsRefreshObserver
-    : public performance_manager::user_tuning::UserPerformanceTuningManager::
-          Observer {
- public:
-  explicit QuitRunLoopOnMemoryMetricsRefreshObserver(
-      base::OnceClosure quit_closure)
-      : quit_closure_(std::move(quit_closure)) {}
-
-  ~QuitRunLoopOnMemoryMetricsRefreshObserver() override = default;
-
-  void OnMemoryMetricsRefreshed() override { std::move(quit_closure_).Run(); }
-
- private:
-  base::OnceClosure quit_closure_;
-};
 }  // namespace
 
 class HighEfficiencyChipViewBrowserTest : public InProcessBrowserTest {
@@ -93,10 +76,16 @@ class HighEfficiencyChipViewBrowserTest : public InProcessBrowserTest {
     resource_coordinator::GetTabLifecycleUnitSource()
         ->SetFocusedTabStripModelForTesting(browser()->tab_strip_model());
 
-    ASSERT_TRUE(AddTabAtIndex(0, GURL(chrome::kChromeUINewTabURL),
-                              ui::PAGE_TRANSITION_TYPED));
-    ASSERT_TRUE(AddTabAtIndex(1, GURL(chrome::kChromeUINewTabURL),
-                              ui::PAGE_TRANSITION_TYPED));
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->Start());
+    GURL test_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), test_url, WindowOpenDisposition::CURRENT_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), test_url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   }
 
   void TearDown() override { InProcessBrowserTest::TearDown(); }
@@ -176,30 +165,6 @@ class HighEfficiencyChipViewBrowserTest : public InProcessBrowserTest {
         ->GetTargetInkDropState();
   }
 
-  void ForceRefreshMemoryMetricsForTesting() {
-    performance_manager::user_tuning::UserPerformanceTuningManager* manager =
-        performance_manager::user_tuning::UserPerformanceTuningManager::
-            GetInstance();
-
-    base::RunLoop run_loop;
-    QuitRunLoopOnMemoryMetricsRefreshObserver observer(run_loop.QuitClosure());
-    base::ScopedObservation<
-        performance_manager::user_tuning::UserPerformanceTuningManager,
-        QuitRunLoopOnMemoryMetricsRefreshObserver>
-        memory_metrics_observer(&observer);
-    memory_metrics_observer.Observe(manager);
-
-    performance_manager::PerformanceManager::CallOnGraph(
-        FROM_HERE,
-        base::BindLambdaForTesting([](performance_manager::Graph* graph) {
-          auto* metrics_decorator = graph->GetRegisteredObjectAs<
-              performance_manager::ProcessMetricsDecorator>();
-          metrics_decorator->RefreshMetricsForTesting();
-        }));
-
-    run_loop.Run();
-  }
-
  private:
   feature_engagement::test::ScopedIphFeatureList iph_features_;
   base::SimpleTestTickClock test_clock_;
@@ -220,13 +185,13 @@ IN_PROC_BROWSER_TEST_F(HighEfficiencyChipViewBrowserTest,
   EXPECT_TRUE(GetFeaturePromoController()->IsPromoActive(
       feature_engagement::kIPHHighEfficiencyInfoModeFeature));
 
-  content::TestNavigationObserver navigation_observer(
-      browser()->tab_strip_model()->GetWebContentsAt(0));
   ClickIPHSettingsButton();
-  navigation_observer.Wait();
-
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  EXPECT_EQ(3, tab_strip_model->count());
+  content::WebContents* web_contents = tab_strip_model->GetWebContentsAt(2);
+  WaitForLoadStop(web_contents);
   GURL expected(chrome::kChromeUIPerformanceSettingsURL);
-  EXPECT_EQ(expected.host(), navigation_observer.last_navigation_url().host());
+  EXPECT_EQ(expected.host(), web_contents->GetLastCommittedURL().host());
 }
 
 IN_PROC_BROWSER_TEST_F(HighEfficiencyChipViewBrowserTest,
@@ -269,25 +234,4 @@ IN_PROC_BROWSER_TEST_F(HighEfficiencyChipViewBrowserTest,
   // The deactivated state is HIDDEN on Mac but DEACTIVATED on Linux.
   EXPECT_TRUE(current_state == views::InkDropState::HIDDEN ||
               current_state == views::InkDropState::DEACTIVATED);
-}
-
-IN_PROC_BROWSER_TEST_F(HighEfficiencyChipViewBrowserTest,
-                       BubbleCorrectlyReportingMemorySaved) {
-  ForceRefreshMemoryMetricsForTesting();
-  DiscardTabAt(0);
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetWebContentsAt(0);
-  auto* pre_discard_resource_usage =
-      performance_manager::user_tuning::UserPerformanceTuningManager::
-          PreDiscardResourceUsage::FromWebContents(web_contents);
-  int resident_set_kb =
-      pre_discard_resource_usage->memory_footprint_estimate_kb();
-  chrome::SelectNumberedTab(browser(), 0);
-  content::WaitForLoadStop(
-      browser()->tab_strip_model()->GetActiveWebContents());
-  ClickHighEfficiencyChip();
-  views::StyledLabel* label = GetHighEfficiencyBubbleLabel();
-
-  EXPECT_NE(label->GetText().find(ui::FormatBytes(resident_set_kb * 1024)),
-            std::string::npos);
 }

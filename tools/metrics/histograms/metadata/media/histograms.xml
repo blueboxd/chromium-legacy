@@ -263,10 +263,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Media.Audio.Capture.Mac.MicSystemPermission.FixedTime.SinceFirstFailure"
-    units="ms" expires_after="2023-07-16">
-  <owner>grunell@chromium.org</owner>
-  <owner>engedy@chromium.org</owner>
-  <owner>hkamila@chromium.org</owner>
+    units="ms" expires_after="2023-07-01">
+  <owner>toprice@chromium.org</owner>
+  <owner>video-cmi-apis@google.com</owner>
   <owner>webrtc-audio-uma@google.com</owner>
   <summary>
     The time from the first microphone access failure due to blocked system
@@ -279,10 +278,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Media.Audio.Capture.Mac.MicSystemPermission.FixedTime.SinceLastFailure"
-    units="ms" expires_after="2023-03-01">
-  <owner>grunell@chromium.org</owner>
-  <owner>engedy@chromium.org</owner>
-  <owner>hkamila@chromium.org</owner>
+    units="ms" expires_after="2023-07-01">
+  <owner>toprice@chromium.org</owner>
+  <owner>video-cmi-apis@google.com</owner>
   <owner>webrtc-audio-uma@google.com</owner>
   <summary>
     The time from the last microphone access failure due to blocked system
@@ -294,10 +292,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Audio.Capture.Mac.MicSystemPermission.Startup"
-    enum="SystemMediaCapturePermission" expires_after="2023-07-02">
-  <owner>grunell@chromium.org</owner>
-  <owner>engedy@chromium.org</owner>
-  <owner>hkamila@chromium.org</owner>
+    enum="SystemMediaCapturePermission" expires_after="2023-07-01">
+  <owner>toprice@chromium.org</owner>
+  <owner>video-cmi-apis@google.com</owner>
   <owner>webrtc-audio-uma@google.com</owner>
   <summary>
     The Mac system permission state for microphone. Logged once at browser
@@ -310,10 +307,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Media.Audio.Capture.Mac.MicSystemPermission.StartupAfterFailure"
-    enum="SystemMediaCapturePermission" expires_after="2023-07-16">
-  <owner>grunell@chromium.org</owner>
-  <owner>engedy@chromium.org</owner>
-  <owner>hkamila@chromium.org</owner>
+    enum="SystemMediaCapturePermission" expires_after="2023-07-01">
+  <owner>toprice@chromium.org</owner>
+  <owner>video-cmi-apis@google.com</owner>
   <owner>webrtc-audio-uma@google.com</owner>
   <summary>
     The Mac system permission state for microphone. Logged once at browser
@@ -327,10 +323,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Audio.Capture.Mac.MicSystemPermission.UserMedia"
-    enum="SystemMediaCapturePermission" expires_after="2023-07-02">
-  <owner>grunell@chromium.org</owner>
-  <owner>engedy@chromium.org</owner>
-  <owner>hkamila@chromium.org</owner>
+    enum="SystemMediaCapturePermission" expires_after="2023-07-01">
+  <owner>toprice@chromium.org</owner>
+  <owner>video-cmi-apis@google.com</owner>
   <owner>webrtc-audio-uma@google.com</owner>
   <summary>
     The Mac system permission state for microphone at the time of a user media
@@ -527,7 +522,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Audio.InputStartupSuccessMac" enum="BooleanSuccess"
-    expires_after="2023-05-27">
+    expires_after="2023-07-30">
   <owner>henrika@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
   <summary>
@@ -808,7 +803,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Audio.RawProcessingSupportedWin" enum="BooleanSupported"
-    expires_after="2023-02-12">
+    expires_after="2024-02-12">
   <owner>henrika@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
@@ -821,7 +816,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Audio.Render.FramesRequested" units="frames"
-    expires_after="2023-05-27">
+    expires_after="2023-07-30">
   <owner>guidou@chromium.org</owner>
   <owner>olka@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
@@ -837,7 +832,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Audio.Render.GetSourceDataTime.WebRTC"
-    units="microseconds" expires_after="2023-05-27">
+    units="microseconds" expires_after="2023-07-30">
   <owner>guidou@chromium.org</owner>
   <owner>olka@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
@@ -937,7 +932,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Media.Audio.Render.SinkCache.GetOutputDeviceInfoCacheUtilization"
-    enum="GetOutputDeviceInfoCacheHit" expires_after="2023-05-27">
+    enum="GetOutputDeviceInfoCacheHit" expires_after="2023-07-30">
   <owner>guidou@chromium.org</owner>
   <owner>olka@chromium.org</owner>
   <summary>
@@ -1344,7 +1339,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.AudioOutputStreamProxy.StreamFormat"
-    enum="AudioOutputProxyStreamFormat" expires_after="2023-05-27">
+    enum="AudioOutputProxyStreamFormat" expires_after="2023-07-30">
   <owner>olka@chromium.org</owner>
   <owner>tguilbert@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
@@ -2007,7 +2002,7 @@ chromium-metrics-reviews@google.com.
   <summary>The result from an attempt to load a library CDM.</summary>
 </histogram>
 
-<histogram name="Media.EME.CdmLoadTime" units="ms" expires_after="2023-05-27">
+<histogram name="Media.EME.CdmLoadTime" units="ms" expires_after="2023-07-30">
   <owner>xhwang@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>The time spent to load a library CDM.</summary>
@@ -2232,7 +2227,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Media.EME.MediaFoundationService.ErrorNotAfterPowerOrDisplayChange"
-    enum="Hresult" expires_after="2023-05-07">
+    enum="Hresult" expires_after="2023-07-30">
   <owner>xhwang@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -2375,7 +2370,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.EME.Widevine.HardwareSecure.Support"
-    enum="BooleanSupported" expires_after="2023-07-23">
+    enum="BooleanSupported" expires_after="2023-07-30">
   <owner>xhwang@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -2410,7 +2405,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.EME.Widevine.VideoCapability.HasEmptyRobustness"
-    enum="BooleanEmpty" expires_after="2023-05-27">
+    enum="BooleanEmpty" expires_after="2023-07-30">
   <owner>xhwang@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -3098,7 +3093,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.MeanTimeBetweenRebuffers" units="ms"
-    expires_after="2023-05-27">
+    expires_after="2023-07-30">
   <owner>dalecurtis@chromium.org</owner>
   <summary>
     The total watch time (see Media.WatchTime) of a given playback divided by
@@ -3547,6 +3542,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Media.MSE.Mp4ConsecutiveEmptySamples" units="samples"
     expires_after="2023-07-02">
+  <obsolete>
+    Removed Jan 2023, no further data needed.
+  </obsolete>
   <owner>wolenetz@chromium.org</owner>
   <owner>sandersd@chromium.org</owner>
   <summary>
@@ -3560,6 +3558,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Media.MSE.Mp4EmptySamplesInTRun" units="samples"
     expires_after="2022-04-17">
+  <obsolete>
+    Removed Jan 2023, no further data needed.
+  </obsolete>
   <owner>wolenetz@chromium.org</owner>
   <owner>sandersd@chromium.org</owner>
   <summary>
@@ -3571,6 +3572,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Media.MSE.Mp4SampleSize" units="bytes"
     expires_after="2023-07-02">
+  <obsolete>
+    Removed Jan 2023, no further data needed.
+  </obsolete>
   <owner>wolenetz@chromium.org</owner>
   <owner>sandersd@chromium.org</owner>
   <summary>
@@ -3582,6 +3586,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Media.MSE.Mp4TrunSampleCount" units="samples"
     expires_after="2023-07-02">
+  <obsolete>
+    Removed Jan 2023, no further data needed.
+  </obsolete>
   <owner>wolenetz@chromium.org</owner>
   <owner>sandersd@chromium.org</owner>
   <summary>
@@ -3784,6 +3791,18 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the peak number of WebMediaPlayer objects per RenderFrame upon
     RenderFrame destruction (both cleanly and via render process termination).
+  </summary>
+</histogram>
+
+<histogram name="Media.PepperVideoDecoder.HardwareAccelerationBehavior"
+    enum="PepperVideoDecoderHardwareAccelerationBehavior" expires_after="never">
+<!-- expires-never: used by ChromeOS test infrastructure -->
+
+  <owner>pmolinalopez@chromium.org</owner>
+  <owner>chromeos-gfx-video@google.com</owner>
+  <summary>
+    The hardware/software decoding behavior used for a PPB_VideoDecoder API
+    instance. This UMA is recorded when the PepperVideoDecoderHost is destroyed.
   </summary>
 </histogram>
 
@@ -4201,7 +4220,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.RtcLowLatencyVideoRenderer.MaxSizeDropQueueCount"
-    units="count" expires_after="2023-05-27">
+    units="count" expires_after="2023-07-30">
   <owner>kron@chromium.org</owner>
   <owner>webrtc-video@google.com</owner>
   <summary>
@@ -4737,10 +4756,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Media.Video.Capture.Mac.CameraSystemPermission.FixedTime.SinceFirstFailure"
-    units="ms" expires_after="2023-03-01">
-  <owner>grunell@chromium.org</owner>
-  <owner>engedy@chromium.org</owner>
-  <owner>hkamila@chromium.org</owner>
+    units="ms" expires_after="2023-07-01">
+  <owner>toprice@chromium.org</owner>
+  <owner>video-cmi-apis@google.com</owner>
   <summary>
     The time from the first camera access failure due to blocked system
     permission before the last browser restart to startup after browser restart.
@@ -4752,10 +4770,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Media.Video.Capture.Mac.CameraSystemPermission.FixedTime.SinceLastFailure"
-    units="ms" expires_after="2023-03-01">
-  <owner>grunell@chromium.org</owner>
-  <owner>engedy@chromium.org</owner>
-  <owner>hkamila@chromium.org</owner>
+    units="ms" expires_after="2023-07-01">
+  <owner>toprice@chromium.org</owner>
+  <owner>video-cmi-apis@google.com</owner>
   <summary>
     The time from the last camera access failure due to blocked system
     permission before the last browser restart to startup after browser restart.
@@ -4767,9 +4784,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Media.Video.Capture.Mac.CameraSystemPermission.Startup"
     enum="SystemMediaCapturePermission" expires_after="2023-07-23">
-  <owner>grunell@chromium.org</owner>
-  <owner>engedy@chromium.org</owner>
-  <owner>hkamila@chromium.org</owner>
+  <owner>toprice@chromium.org</owner>
+  <owner>video-cmi-apis@google.com</owner>
   <summary>
     The Mac system permission state for camera. Logged once at browser startup.
     For more information on the values, see
@@ -4781,10 +4797,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Media.Video.Capture.Mac.CameraSystemPermission.StartupAfterFailure"
-    enum="SystemMediaCapturePermission" expires_after="2023-03-01">
-  <owner>grunell@chromium.org</owner>
-  <owner>engedy@chromium.org</owner>
-  <owner>hkamila@chromium.org</owner>
+    enum="SystemMediaCapturePermission" expires_after="2023-07-01">
+  <owner>toprice@chromium.org</owner>
+  <owner>video-cmi-apis@google.com</owner>
   <summary>
     The Mac system permission state for camera. Logged once at browser startup
     if there was a failure accessing the camera due to blocked system permission
@@ -4796,10 +4811,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Video.Capture.Mac.CameraSystemPermission.UserMedia"
-    enum="SystemMediaCapturePermission" expires_after="2023-07-16">
-  <owner>grunell@chromium.org</owner>
-  <owner>engedy@chromium.org</owner>
-  <owner>hkamila@chromium.org</owner>
+    enum="SystemMediaCapturePermission" expires_after="2023-07-01">
+  <owner>toprice@chromium.org</owner>
+  <owner>video-cmi-apis@google.com</owner>
   <summary>
     The Mac system permission state for camera at the time of a user media
     request. Logged when the system permission is checked. If the permission is
@@ -5119,7 +5133,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.VideoCapture.Win.D3DDeviceRemovedReason" enum="Hresult"
-    expires_after="2023-05-10">
+    expires_after="2023-07-30">
   <owner>ilnik@chromium.org</owner>
   <owner>video-cmi-mpp@chromium.org</owner>
   <summary>
@@ -5235,7 +5249,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.VideoCaptureManager.DesktopCaptureImplementationAndType"
-    enum="DesktopCaptureImplementationAndType" expires_after="2023-01-06">
+    enum="DesktopCaptureImplementationAndType" expires_after="2024-01-23">
   <owner>handellm@chromium.org</owner>
   <owner>ccameron@chromium.org</owner>
   <summary>
@@ -5599,7 +5613,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.WebrtcVideoPerfHistory.GetPerfInfoCodecProfile"
-    enum="VideoCodecProfile" expires_after="2023-06-04">
+    enum="VideoCodecProfile" expires_after="2024-02-01">
   <owner>kron@chromium.org</owner>
   <owner>webrtc-video@google.com</owner>
   <summary>
@@ -5609,7 +5623,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.WebrtcVideoPerfHistory.SavePerfRecordCodecProfile"
-    enum="VideoCodecProfile" expires_after="2023-04-01">
+    enum="VideoCodecProfile" expires_after="2024-02-01">
   <owner>kron@chromium.org</owner>
   <owner>webrtc-video@google.com</owner>
   <summary>
@@ -5619,7 +5633,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.WebrtcVideoPerfHistory.SmoothPrediction.{Operation}"
-    units="custom" expires_after="2023-02-01">
+    units="custom" expires_after="2024-02-01">
   <owner>kron@chromium.org</owner>
   <owner>webrtc-video@google.com</owner>
   <summary>
@@ -5640,7 +5654,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Media.WebrtcVideoPerfHistory.SmoothVolatility.{Operation}.{Framerate}"
-    enum="SmoothVolatility" expires_after="2023-02-01">
+    enum="SmoothVolatility" expires_after="2024-02-01">
   <owner>kron@chromium.org</owner>
   <owner>webrtc-video@google.com</owner>
   <summary>
@@ -6308,7 +6322,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MediaRouter.Sink.SelectedType" enum="MediaSinkType"
-    expires_after="2023-07-23">
+    expires_after="2023-07-30">
   <owner>takumif@chromium.org</owner>
   <owner>openscreen-eng@google.com</owner>
   <summary>
@@ -6402,7 +6416,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MediaRouter.Ui.Device.Count" units="units"
-    expires_after="2023-07-23">
+    expires_after="2023-07-30">
   <owner>takumif@chromium.org</owner>
   <owner>openscreen-eng@google.com</owner>
   <summary>

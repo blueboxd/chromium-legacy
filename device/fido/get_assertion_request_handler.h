@@ -85,7 +85,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
     kWaitingForTouch,
     kWaitingForToken,
     kWaitingForResponseWithToken,
-    kReadingMultipleResponses,
     kFinished,
   };
 
@@ -118,33 +117,18 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
                             std::set<pin::Permissions> permissions,
                             bool skip_pin_touch,
                             bool internal_uv_locked);
-  void HandleResponse(
-      FidoAuthenticator* authenticator,
-      CtapGetAssertionRequest request,
-      base::ElapsedTimer request_timer,
-      CtapDeviceResponseCode response_code,
-      absl::optional<AuthenticatorGetAssertionResponse> response);
-  void HandleNextResponse(
-      FidoAuthenticator* authenticator,
-      CtapGetAssertionRequest request,
-      CtapDeviceResponseCode response_code,
-      absl::optional<AuthenticatorGetAssertionResponse> response);
+  void HandleResponse(FidoAuthenticator* authenticator,
+                      CtapGetAssertionRequest request,
+                      base::ElapsedTimer request_timer,
+                      CtapDeviceResponseCode response_code,
+                      std::vector<AuthenticatorGetAssertionResponse> response);
   void TerminateUnsatisfiableRequestPostTouch(FidoAuthenticator* authenticator);
   void DispatchRequestWithToken(pin::TokenResponse token);
-  void OnGetAssertionSuccess(FidoAuthenticator* authenticator,
-                             CtapGetAssertionRequest request);
-  void OnReadLargeBlobs(
-      FidoAuthenticator* authenticator,
-      CtapDeviceResponseCode status,
-      absl::optional<std::vector<std::pair<LargeBlobKey, LargeBlob>>> blobs);
-  void OnWriteLargeBlob(FidoAuthenticator* authenticator,
-                        CtapDeviceResponseCode status);
 
   CompletionCallback completion_callback_;
   State state_ = State::kWaitingForTouch;
   const CtapGetAssertionRequest request_;
-  const CtapGetAssertionOptions options_;
-  absl::optional<pin::TokenResponse> pin_token_;
+  CtapGetAssertionOptions options_;
 
   // If true, and if at the time the request is dispatched to the first
   // authenticator no other authenticators are available, the request handler
@@ -158,14 +142,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) GetAssertionRequestHandler
   // object and this pointer is cleared if it's removed during processing.
   raw_ptr<FidoAuthenticator> selected_authenticator_for_pin_uv_auth_token_ =
       nullptr;
-
-  // responses_ holds the set of responses while they are incrementally read
-  // from the device. Only used when more than one response is returned.
-  std::vector<AuthenticatorGetAssertionResponse> responses_;
-
-  // remaining_responses_ contains the number of responses that remain to be
-  // read when multiple responses are returned.
-  size_t remaining_responses_ = 0;
 
   // auth_token_requester_map_ holds active AuthTokenRequesters for
   // authenticators that need a pinUvAuthToken to service the request.

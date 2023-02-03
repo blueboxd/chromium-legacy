@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/mediastream/identifiability_metrics.h"
-#include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -105,23 +104,17 @@ void NavigatorMediaStream::getUserMedia(
     surface = IdentifiableSurface::FromTypeAndToken(
         surface_type, TokenFromConstraints(options));
   }
-  MediaErrorState error_state;
+
   UserMediaRequest* request = UserMediaRequest::Create(
       navigator.DomWindow(), user_media, UserMediaRequestType::kUserMedia,
       options,
       MakeGarbageCollected<V8Callbacks>(success_callback, error_callback),
-      error_state, surface);
+      exception_state, surface);
   if (!request) {
-    DCHECK(error_state.HadException());
-    if (error_state.CanGenerateException()) {
-      error_state.RaiseException(exception_state);
-    } else {
-      error_callback->InvokeAndReportException(nullptr,
-                                               error_state.CreateError());
-    }
+    DCHECK(exception_state.HadException());
     RecordIdentifiabilityMetric(
         surface, navigator.GetExecutionContext(),
-        IdentifiabilityBenignStringToken(error_state.GetErrorMessage()));
+        IdentifiabilityBenignStringToken(exception_state.Message()));
     return;
   }
 

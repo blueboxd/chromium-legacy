@@ -434,9 +434,7 @@ class SavedDeskTest : public OverviewTestBase {
   // OverviewTestBase:
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        {features::kDesksTemplates, features::kEnableSavedDesks,
-         features::kDesksCloseAll},
-        {});
+        {features::kDesksTemplates, features::kEnableSavedDesks}, {});
     OverviewTestBase::SetUp();
 
     // The `FullRestoreSaveHandler` isn't setup during tests so every window we
@@ -972,16 +970,14 @@ TEST_F(SavedDeskTest, SaveDeskButtonFocusRingColor) {
   // Verify the focus ring of the given button is as expected.
   auto verify_button_focus_ring_color = [this](SavedDeskSaveDeskButton* button,
                                                bool highlighted) {
-    EXPECT_EQ(
-        cc::ExactPixelComparator(/*discard_alpha=*/false)
-            .Compare(
-                GetFocusRingBitmap(views::FocusRing::Get(button)),
-                GetBitmapWithInnerRoundedRect(
-                    views::FocusRing::Get(button)->size(),
-                    /*stroke_width=*/2,
-                    ColorProvider::Get()->GetControlsLayerColor(
-                        ColorProvider::ControlsLayerType::kFocusRingColor))),
-        highlighted);
+    EXPECT_EQ(cc::ExactPixelComparator().Compare(
+                  GetFocusRingBitmap(views::FocusRing::Get(button)),
+                  GetBitmapWithInnerRoundedRect(
+                      views::FocusRing::Get(button)->size(),
+                      /*stroke_width=*/2,
+                      ColorProvider::Get()->GetControlsLayerColor(
+                          ColorProvider::ControlsLayerType::kFocusRingColor))),
+              highlighted);
   };
 
   // Both buttons are not highlighted.
@@ -4592,35 +4588,4 @@ TEST_F(SavedDeskTest, SpamClickSaveDeskButtons) {
       GetItemViewsFromDeskLibrary(overview_grid2);
   EXPECT_EQ(2u, GetItemViewsFromDeskLibrary(overview_grid2).size());
 }
-
-// This tests that unknown desk types added into the desk model do not affect
-// the UI.  This is done by adding a template in the normal way and then
-// injecting an unknown type template into the storage model.  The result should
-// be that the saved desk library only shows the normal template.
-TEST_F(SavedDeskTest, UiIgnoresUnknownDeskTypes) {
-  // Add a window.
-  auto test_window = CreateAppWindow();
-
-  // Enter overview.
-  ToggleOverview();
-  ASSERT_TRUE(GetOverviewSession());
-
-  // Save a normal template here.
-  aura::Window* root = Shell::GetPrimaryRootWindow();
-  SavedDeskSaveDeskButton* save_template_button =
-      GetSaveDeskAsTemplateButtonForRoot(root);
-  ASSERT_TRUE(save_template_button);
-  ClickOnView(save_template_button);
-  WaitForSavedDeskUI();
-  WaitForSavedDeskLibrary();
-
-  // Add unknown type into model.
-  AddEntry(base::GUID::GenerateRandomV4(), "Unknown desk type name\n",
-           base::Time::Now(), DeskTemplateType::kUnknown);
-
-  // Ensure only the normal template appears in the overview grid.
-  OverviewGrid* overview_grid = GetOverviewGridList().front().get();
-  EXPECT_EQ(1u, GetItemViewsFromDeskLibrary(overview_grid).size());
-}
-
 }  // namespace ash

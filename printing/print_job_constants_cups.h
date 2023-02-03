@@ -9,6 +9,11 @@
 #include "build/build_config.h"
 #include "printing/buildflags/buildflags.h"
 
+#if BUILDFLAG(IS_MAC)
+#include "base/containers/span.h"
+#include "base/strings/string_piece.h"
+#endif
+
 #if !BUILDFLAG(USE_CUPS)
 #error "CUPS must be enabled."
 #endif
@@ -20,12 +25,14 @@ COMPONENT_EXPORT(PRINTING_BASE) extern const char kCUPSColorMode[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kCUPSColorModel[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kCUPSPrintoutMode[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kCUPSProcessColorModel[];
-COMPONENT_EXPORT(PRINTING_BASE) extern const char kCUPSSelectColor[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kCUPSBrotherMonoColor[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kCUPSBrotherPrintQuality[];
+COMPONENT_EXPORT(PRINTING_BASE) extern const char kCUPSCanonCNColorMode[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kCUPSCanonCNIJGrayScale[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kCUPSEpsonInk[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kCUPSHpColorMode[];
+COMPONENT_EXPORT(PRINTING_BASE)
+extern const char kCUPSKonicaMinoltaSelectColor[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kCUPSLexmarkBLW[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kCUPSOkiControl[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kCUPSSharpARCMode[];
@@ -50,6 +57,8 @@ COMPONENT_EXPORT(PRINTING_BASE) extern const char kGreyscale[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kHighGray[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kHpColorPrint[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kHpGrayscalePrint[];
+COMPONENT_EXPORT(PRINTING_BASE) extern const char kKonicaMinoltaColor[];
+COMPONENT_EXPORT(PRINTING_BASE) extern const char kKonicaMinoltaGrayscale[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kLexmarkBLWFalse[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kLexmarkBLWTrue[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kMono[];
@@ -69,6 +78,25 @@ COMPONENT_EXPORT(PRINTING_BASE) extern const char kSharpCMBW[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kXeroxAutomatic[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kXeroxBW[];
 COMPONENT_EXPORT(PRINTING_BASE) extern const char kZero[];
+
+#if BUILDFLAG(IS_MAC)
+// Represents set identifier used to specifier to select the color model for a
+// particular printer manufacturer, and the corresponding names used with that
+// to choose either black and white or color printing.
+struct COMPONENT_EXPORT(PRINTING_BASE) PpdColorSetting {
+  constexpr PpdColorSetting(base::StringPiece name,
+                            base::StringPiece bw,
+                            base::StringPiece color)
+      : name(name), bw(bw), color(color) {}
+
+  base::StringPiece name;
+  base::StringPiece bw;
+  base::StringPiece color;
+};
+
+COMPONENT_EXPORT(PRINTING_BASE)
+base::span<const PpdColorSetting> GetKnownPpdColorSettings();
+#endif
 
 }  // namespace printing
 

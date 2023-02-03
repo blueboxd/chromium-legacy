@@ -3,14 +3,18 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/intro/intro_handler.h"
+
 #include "base/cancelable_callback.h"
 #include "base/functional/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/ui/managed_ui.h"
+#include "chrome/browser/ui/webui/intro/intro_ui.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
@@ -28,16 +32,30 @@ policy::CloudPolicyStore* GetCloudPolicyStore() {
 
 // PolicyStoreState will make it easier to handle all the states in a single
 // callback.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class PolicyStoreState {
-  // Store has been loaded before the time delay ends.
-  kSuccess,
-  // Store did not load in time.
-  kTimeout,
-  // OnStoreError called.
-  kStoreError,
   // Store was already loaded when we attached the observer.
-  kSuccessAlreadyLoaded,
+  kSuccessAlreadyLoaded = 0,
+  // Store has been loaded before the time delay ends.
+  kSuccess = 1,
+  // Store did not load in time.
+  kTimeout = 2,
+  // OnStoreError called.
+  kStoreError = 3,
+  kMaxValue = kStoreError,
 };
+
+void RecordDisclaimerMetrics(PolicyStoreState state,
+                             base::TimeTicks start_time) {
+  base::UmaHistogramEnumeration("ProfilePicker.FirstRun.PolicyStoreState",
+                                state);
+  if (state == PolicyStoreState::kSuccess) {
+    base::UmaHistogramTimes(
+        "ProfilePicker.FirstRun.OrganizationAvailableTiming",
+        /*sample*/ base::TimeTicks::Now() - start_time);
+  }
+}
 
 class PolicyStoreObserver : public policy::CloudPolicyStore::Observer {
  public:
@@ -45,6 +63,8 @@ class PolicyStoreObserver : public policy::CloudPolicyStore::Observer {
       base::OnceCallback<void(std::string)> handle_policy_store_change)
       : handle_policy_store_change_(std::move(handle_policy_store_change)) {
     DCHECK(handle_policy_store_change_);
+    start_time_ = base::TimeTicks::Now();
+
     // Update the disclaimer directly if the policy store is already loaded.
     auto* policy_store = GetCloudPolicyStore();
     if (policy_store->is_initialized()) {
@@ -87,6 +107,7 @@ class PolicyStoreObserver : public policy::CloudPolicyStore::Observer {
   }
 
   void HandlePolicyStoreStatusChange(PolicyStoreState state) {
+    RecordDisclaimerMetrics(state, start_time_);
     std::string managed_device_disclaimer;
     if (state == PolicyStoreState::kSuccess ||
         state == PolicyStoreState::kSuccessAlreadyLoaded) {
@@ -110,11 +131,12 @@ class PolicyStoreObserver : public policy::CloudPolicyStore::Observer {
       policy_store_observation_{this};
   base::OnceCallback<void(std::string)> handle_policy_store_change_;
   base::CancelableOnceCallback<void()> on_organization_fetch_timeout_;
+  base::TimeTicks start_time_;
 };
 #endif
 }  // namespace
 
-IntroHandler::IntroHandler(base::RepeatingCallback<void(bool sign_in)> callback,
+IntroHandler::IntroHandler(base::RepeatingCallback<void(IntroChoice)> callback,
                            bool is_device_managed)
     : callback_(std::move(callback)), is_device_managed_(is_device_managed) {
   DCHECK(callback_);
@@ -123,10 +145,12 @@ IntroHandler::IntroHandler(base::RepeatingCallback<void(bool sign_in)> callback,
 IntroHandler::~IntroHandler() = default;
 
 void IntroHandler::RegisterMessages() {
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   web_ui()->RegisterMessageCallback(
       "continueWithoutAccount",
       base::BindRepeating(&IntroHandler::HandleContinueWithoutAccount,
                           base::Unretained(this)));
+#endif
   web_ui()->RegisterMessageCallback(
       "continueWithAccount",
       base::BindRepeating(&IntroHandler::HandleContinueWithAccount,
@@ -149,13 +173,15 @@ void IntroHandler::OnJavascriptAllowed() {
 
 void IntroHandler::HandleContinueWithAccount(const base::Value::List& args) {
   CHECK(args.empty());
-  callback_.Run(/*sign_in=*/true);
+  callback_.Run(IntroChoice::kContinueWithAccount);
 }
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void IntroHandler::HandleContinueWithoutAccount(const base::Value::List& args) {
   CHECK(args.empty());
-  callback_.Run(/*sign_in=*/false);
+  callback_.Run(IntroChoice::kContinueWithoutAccount);
 }
+#endif
 
 void IntroHandler::HandleInitializeMainView(const base::Value::List& args) {
   CHECK(args.empty());

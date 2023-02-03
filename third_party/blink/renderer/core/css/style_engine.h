@@ -81,6 +81,7 @@ class CSSValue;
 class Document;
 class DocumentStyleSheetCollection;
 class ElementRuleCollector;
+class Font;
 class FontSelector;
 class HTMLBodyElement;
 class HTMLSelectElement;
@@ -227,6 +228,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void AdoptedStyleSheetRemoved(TreeScope& tree_scope, CSSStyleSheet* sheet);
 
   void WatchedSelectorsChanged();
+  void DocumentRulesSelectorsChanged();
   void InitialStyleChanged();
   void ColorSchemeChanged();
   void SetOwnerColorScheme(mojom::blink::ColorScheme);
@@ -246,6 +248,10 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   RuleSet* WatchedSelectorsRuleSet() {
     DCHECK(global_rule_set_);
     return global_rule_set_->WatchedSelectorsRuleSet();
+  }
+  RuleSet* DocumentRulesSelectorsRuleSet() {
+    DCHECK(global_rule_set_);
+    return global_rule_set_->DocumentRulesSelectorsRuleSet();
   }
 
   // Helper class for making sure RuleSets that are ensured when collecting
@@ -340,8 +346,8 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   void SetRuleUsageTracker(StyleRuleUsageTracker*);
 
-  void ComputeFont(Element& element,
-                   ComputedStyle* font_style,
+  Font ComputeFont(Element& element,
+                   ComputedStyle& font_style,
                    const CSSPropertyValueSet& font_properties);
 
   PendingInvalidations& GetPendingNodeInvalidations() {

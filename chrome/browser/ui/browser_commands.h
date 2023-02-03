@@ -168,6 +168,7 @@ bool MarkCurrentTabAsReadInReadLater(Browser* browser);
 bool IsCurrentTabUnreadInReadLater(Browser* browser);
 void ShowOffersAndRewardsForPage(Browser* browser);
 void SaveCreditCard(Browser* browser);
+void SaveIBAN(Browser* browser);
 void MigrateLocalCards(Browser* browser);
 void SaveAutofillAddress(Browser* browser);
 void ShowVirtualCardManualFallbackBubble(Browser* browser);
@@ -244,6 +245,9 @@ bool CanViewSource(const Browser* browser);
 bool CanToggleCaretBrowsing(Browser* browser);
 void ToggleCaretBrowsing(Browser* browser);
 void PromptToNameWindow(Browser* browser);
+#if BUILDFLAG(IS_CHROMEOS)
+void ToggleMultitaskMenu(Browser* browser);
+#endif
 void ToggleCommander(Browser* browser);
 void ExecuteUIDebugCommand(int id, const Browser* browser);
 

@@ -234,10 +234,26 @@ PrivacySandboxService::PrivacySandboxService(
       base::BindRepeating(&PrivacySandboxService::OnAdMeasurementPrefChanged,
                           base::Unretained(this)));
 
-  // If the Sandbox is currently restricted, disable the V2 preference. The user
-  // must manually enable the sandbox if they stop being restricted.
+  // If the Sandbox is currently restricted, disable it and reset any consent
+  // information. The user must manually enable the sandbox if they stop being
+  // restricted.
   if (IsPrivacySandboxRestricted()) {
+    // Disable trials prefs.
     pref_service_->SetBoolean(prefs::kPrivacySandboxApisEnabledV2, false);
+
+    // Disable M1 prefs.
+    pref_service_->SetBoolean(prefs::kPrivacySandboxM1TopicsEnabled, false);
+    pref_service_->SetBoolean(prefs::kPrivacySandboxM1FledgeEnabled, false);
+    pref_service_->SetBoolean(prefs::kPrivacySandboxM1AdMeasurementEnabled,
+                              false);
+
+    // Clear any recorded consent information.
+    pref_service_->ClearPref(prefs::kPrivacySandboxTopicsConsentGiven);
+    pref_service_->ClearPref(prefs::kPrivacySandboxTopicsConsentLastUpdateTime);
+    pref_service_->ClearPref(
+        prefs::kPrivacySandboxTopicsConsentLastUpdateReason);
+    pref_service_->ClearPref(
+        prefs::kPrivacySandboxTopicsConsentTextAtLastUpdate);
   }
 
   // Check for FPS pref init at each startup.
@@ -267,7 +283,6 @@ PrivacySandboxService::GetRequiredPromptType() {
 
 void PrivacySandboxService::PromptActionOccurred(
     PrivacySandboxService::PromptAction action) {
-  InformSentimentService(action);
   RecordPromptActionMetrics(action);
 
   if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4)) {
@@ -275,6 +290,7 @@ void PrivacySandboxService::PromptActionOccurred(
     return;
   }
 
+  InformSentimentService(action);
   if (PromptAction::kNoticeShown == action &&
       PromptType::kNotice == GetRequiredPromptType()) {
     // The Privacy Sandbox pref can be enabled when the notice has been
@@ -293,6 +309,10 @@ void PrivacySandboxService::PromptActionOccurred(
 
 void PrivacySandboxService::PromptActionOccurredM1(
     PrivacySandboxService::PromptAction action) {
+  DCHECK(
+      base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings4));
+
+  InformSentimentServiceM1(action);
   if (PromptAction::kNoticeAcknowledge == action ||
       PromptAction::kNoticeOpenSettings == action) {
     if (privacy_sandbox::kPrivacySandboxSettings4ConsentRequired.Get()) {
@@ -312,11 +332,15 @@ void PrivacySandboxService::PromptActionOccurredM1(
     pref_service_->SetBoolean(prefs::kPrivacySandboxM1ConsentDecisionMade,
                               true);
     pref_service_->SetBoolean(prefs::kPrivacySandboxM1TopicsEnabled, true);
+    RecordUpdatedTopicsConsent(
+        privacy_sandbox::TopicsConsentUpdateSource::kConfirmation, true);
   } else if (PromptAction::kConsentDeclined == action) {
     DCHECK(privacy_sandbox::kPrivacySandboxSettings4ConsentRequired.Get());
     pref_service_->SetBoolean(prefs::kPrivacySandboxM1ConsentDecisionMade,
                               true);
     pref_service_->SetBoolean(prefs::kPrivacySandboxM1TopicsEnabled, false);
+    RecordUpdatedTopicsConsent(
+        privacy_sandbox::TopicsConsentUpdateSource::kConfirmation, false);
   }
 }
 
@@ -810,7 +834,9 @@ void PrivacySandboxService::ConvertInterestGroupDataKeysForDisplay(
 std::vector<privacy_sandbox::CanonicalTopic>
 PrivacySandboxService::GetCurrentTopTopics() const {
   if (privacy_sandbox::kPrivacySandboxSettings3ShowSampleDataForTesting.Get() ||
-      privacy_sandbox::kPrivacySandboxSettings4ShowSampleDataForTesting.Get()) {
+      (pref_service_->GetBoolean(prefs::kPrivacySandboxM1TopicsEnabled) &&
+       privacy_sandbox::kPrivacySandboxSettings4ShowSampleDataForTesting
+           .Get())) {
     return {fake_current_topics_.begin(), fake_current_topics_.end()};
   }
 
@@ -955,20 +981,13 @@ bool PrivacySandboxService::IsPartOfManagedFirstPartySet(
   return first_party_sets_policy_service_->IsSiteInManagedSet(site);
 }
 
-void PrivacySandboxService::TopicsConfirmationDecisionMade(
-    bool confirmed) const {
-  RecordUpdatedTopicsConsent(
-      privacy_sandbox::TopicsConsentUpdateSource::kConfirmation, confirmed);
-}
-
 void PrivacySandboxService::TopicsToggleChanged(bool new_value) const {
   RecordUpdatedTopicsConsent(
       privacy_sandbox::TopicsConsentUpdateSource::kSettings, new_value);
 }
 
-void PrivacySandboxService::TopicsConsentRequired() const {
-  // TODO(crbug.com/1332513): Implement + Test.
-  NOTIMPLEMENTED();
+bool PrivacySandboxService::TopicsConsentRequired() const {
+  return privacy_sandbox::kPrivacySandboxSettings4ConsentRequired.Get();
 }
 
 bool PrivacySandboxService::TopicsHasActiveConsent() const {
@@ -1426,6 +1445,38 @@ void PrivacySandboxService::InformSentimentService(
   }
 
   sentiment_service_->InteractedWithPrivacySandbox3(area);
+#endif
+}
+
+void PrivacySandboxService::InformSentimentServiceM1(
+    PrivacySandboxService::PromptAction action) {
+#if !BUILDFLAG(IS_ANDROID)
+  if (!sentiment_service_) {
+    return;
+  }
+
+  TrustSafetySentimentService::FeatureArea area;
+  switch (action) {
+    case PromptAction::kNoticeOpenSettings:
+      area = TrustSafetySentimentService::FeatureArea::
+          kPrivacySandbox4NoticeSettings;
+      break;
+    case PromptAction::kNoticeAcknowledge:
+      area = TrustSafetySentimentService::FeatureArea::kPrivacySandbox4NoticeOk;
+      break;
+    case PromptAction::kConsentAccepted:
+      area = TrustSafetySentimentService::FeatureArea::
+          kPrivacySandbox4ConsentAccept;
+      break;
+    case PromptAction::kConsentDeclined:
+      area = TrustSafetySentimentService::FeatureArea::
+          kPrivacySandbox4ConsentDecline;
+      break;
+    default:
+      return;
+  }
+
+  sentiment_service_->InteractedWithPrivacySandbox4(area);
 #endif
 }
 

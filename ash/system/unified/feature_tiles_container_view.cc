@@ -97,8 +97,7 @@ FeatureTilesContainerView::FeatureTilesContainerView(
   DCHECK(controller_);
   pagination_model_->AddObserver(this);
   SetLayoutManager(std::make_unique<views::FlexLayout>())
-      ->SetOrientation(views::LayoutOrientation::kHorizontal)
-      .SetDefault(views::kMarginsKey, kRowContainerMargins);
+      ->SetOrientation(views::LayoutOrientation::kHorizontal);
 }
 
 FeatureTilesContainerView::~FeatureTilesContainerView() {
@@ -170,6 +169,7 @@ void FeatureTilesContainerView::RelayoutTiles() {
   // Re-add tiles to container.
   AddTiles(std::move(tiles));
 
+  // Update bubble height in case number of rows changed.
   controller_->UpdateBubble();
 }
 
@@ -219,6 +219,43 @@ void FeatureTilesContainerView::OnScrollEvent(ui::ScrollEvent* event) {
 bool FeatureTilesContainerView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   return controller_->pagination_controller()->OnScroll(event.offset(),
                                                         event.type());
+}
+
+void FeatureTilesContainerView::Layout() {
+  views::View::Layout();
+
+  // `SelectedPageChanged` is called in order to recalculate the bounds of the
+  // page we're currently in.
+  SelectedPageChanged(0, pagination_model_->selected_page());
+}
+
+void FeatureTilesContainerView::AddedToWidget() {
+  GetFocusManager()->AddFocusChangeListener(this);
+}
+
+void FeatureTilesContainerView::RemovedFromWidget() {
+  GetFocusManager()->RemoveFocusChangeListener(this);
+}
+
+void FeatureTilesContainerView::OnWillChangeFocus(views::View* before,
+                                                  views::View* now) {}
+
+void FeatureTilesContainerView::OnDidChangeFocus(views::View* before,
+                                                 views::View* now) {
+  if (!now || !views::IsViewClass<FeatureTile>(now)) {
+    return;
+  }
+
+  auto* current_page = now->parent()->parent();
+  DCHECK(views::IsViewClass<PageContainer>(current_page));
+  auto page_index = GetIndexOf(current_page);
+  if (!page_index.has_value()) {
+    return;
+  }
+  if (pagination_model_->selected_page() !=
+      static_cast<int>(page_index.value())) {
+    pagination_model_->SelectPage(page_index.value(), false /*animate*/);
+  }
 }
 
 int FeatureTilesContainerView::CalculateRowsFromHeight(int height) {

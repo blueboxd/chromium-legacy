@@ -15,7 +15,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/policy/messaging_layer/upload/record_handler_impl.h"
 #include "chrome/browser/policy/messaging_layer/util/reporting_server_connector.h"
 #include "chrome/browser/policy/messaging_layer/util/reporting_server_connector_test_util.h"
 #include "chrome/browser/policy/messaging_layer/util/test_request_payload.h"
@@ -121,7 +120,7 @@ TEST_P(UploadClientTest, CreateUploadClientAndUploadRecords) {
   static constexpr int64_t kExpectedCallTimes = 10;
   static constexpr int64_t kGenerationId = 1234;
 
-  base::Value data{base::Value::Type::DICTIONARY};
+  base::Value data{base::Value::Type::DICT};
   data.SetKey("TEST_KEY", base::Value("TEST_VALUE"));
 
   std::string json_data;

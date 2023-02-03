@@ -18,14 +18,15 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.jank_tracker.JankTracker;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.OneShotCallback;
 import org.chromium.base.supplier.OneshotSupplier;
-import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
 import org.chromium.chrome.browser.ApplicationLifetime;
 import org.chromium.chrome.browser.SwipeRefreshHandler;
+import org.chromium.chrome.browser.accessibility.PageZoomIPHController;
 import org.chromium.chrome.browser.app.tab_activity_glue.TabReparentingController;
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.banners.AppBannerInProductHelpController;
@@ -38,6 +39,7 @@ import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTa
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
+import org.chromium.chrome.browser.desktop_site.DesktopSiteSettingsIPHController;
 import org.chromium.chrome.browser.feature_guide.notifications.FeatureNotificationUtils;
 import org.chromium.chrome.browser.feature_guide.notifications.FeatureType;
 import org.chromium.chrome.browser.feed.webfeed.WebFeedFollowIntroController;
@@ -96,7 +98,6 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
-import org.chromium.chrome.browser.tasks.tab_management.TabSwitcherCustomViewManager;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.UndoGroupSnackbarController;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
@@ -114,6 +115,7 @@ import org.chromium.chrome.browser.webapps.AddToHomescreenIPHController;
 import org.chromium.chrome.browser.webapps.AddToHomescreenMostVisitedTileClickObserver;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.chrome.features.start_surface.StartSurfaceUserData;
+import org.chromium.components.browser_ui.accessibility.PageZoomCoordinator;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.components.browser_ui.widget.InsetObserverView;
@@ -147,6 +149,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
     private OfflineIndicatorControllerV2 mOfflineIndicatorController;
     private OfflineIndicatorInProductHelpController mOfflineIndicatorInProductHelpController;
     private ReadLaterIPHController mReadLaterIPHController;
+    private DesktopSiteSettingsIPHController mDesktopSiteSettingsIPHController;
     private WebFeedFollowIntroController mWebFeedFollowIntroController;
     private UrlFocusChangeListener mUrlFocusChangeListener;
     private @Nullable ToolbarButtonInProductHelpController mToolbarButtonInProductHelpController;
@@ -404,6 +407,11 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
             mTabSwitcherCustomViewManagerCallbackController.destroy();
         }
 
+        if (mDesktopSiteSettingsIPHController != null) {
+            mDesktopSiteSettingsIPHController.destroy();
+            mDesktopSiteSettingsIPHController = null;
+        }
+
         super.onDestroy();
     }
 
@@ -549,27 +557,6 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
      */
     @Override
     protected IncognitoReauthCoordinatorFactory getIncognitoReauthCoordinatorFactory() {
-        OneshotSupplierImpl<TabSwitcherCustomViewManager> tabSwitcherCustomViewSupplier =
-                new OneshotSupplierImpl<>();
-        mTabSwitcherCustomViewManagerCallbackController = new CallbackController();
-        mStartSurfaceSupplier.onAvailable(
-                mTabSwitcherCustomViewManagerCallbackController.makeCancelable((startSurface) -> {
-                    startSurface.getTabSwitcherCustomViewManagerSupplier().onAvailable(
-                            (tabSwitcherCustomViewManager) -> {
-                                if (!tabSwitcherCustomViewSupplier.hasValue()) {
-                                    tabSwitcherCustomViewSupplier.set(tabSwitcherCustomViewManager);
-                                }
-                            });
-                }));
-
-        mTabSwitcherSupplier.onAvailable(
-                mTabSwitcherCustomViewManagerCallbackController.makeCancelable((tabSwitcher) -> {
-                    if (!tabSwitcherCustomViewSupplier.hasValue()) {
-                        tabSwitcherCustomViewSupplier.set(
-                                tabSwitcher.getTabSwitcherCustomViewManager());
-                    }
-                }));
-
         // TODO(crbug.com/1324211, crbug.com/1227656) : Refactor below to remove
         // IncognitoReauthTopToolbarDelegate and pass TopToolbarInteractabilityManager.
         IncognitoReauthTopToolbarDelegate incognitoReauthTopToolbarDelegate =
@@ -587,12 +574,39 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                     }
                 };
 
-        return new IncognitoReauthCoordinatorFactory(mActivity, mTabModelSelectorSupplier.get(),
-                mModalDialogManagerSupplier.get(), new IncognitoReauthManager(),
-                new SettingsLauncherImpl(), tabSwitcherCustomViewSupplier,
-                incognitoReauthTopToolbarDelegate, mLayoutManager,
-                /*showRegularOverviewIntent= */ null,
-                /*isTabbedActivity=*/true);
+        IncognitoReauthCoordinatorFactory incognitoReauthCoordinatorFactory =
+                new IncognitoReauthCoordinatorFactory(mActivity, mTabModelSelectorSupplier.get(),
+                        mModalDialogManagerSupplier.get(), new IncognitoReauthManager(),
+                        new SettingsLauncherImpl(), incognitoReauthTopToolbarDelegate,
+                        mLayoutManager,
+                        /*showRegularOverviewIntent= */ null,
+                        /*isTabbedActivity=*/true);
+
+        mTabSwitcherCustomViewManagerCallbackController = new CallbackController();
+        mStartSurfaceSupplier.onAvailable(
+                mTabSwitcherCustomViewManagerCallbackController.makeCancelable((startSurface) -> {
+                    new OneShotCallback<>(startSurface.getTabSwitcherCustomViewManagerSupplier(),
+                            (tabSwitcherCustomViewManager) -> {
+                                if (incognitoReauthCoordinatorFactory
+                                                .getTabSwitcherCustomViewManager()
+                                        == null) {
+                                    incognitoReauthCoordinatorFactory
+                                            .setTabSwitcherCustomViewManager(
+                                                    tabSwitcherCustomViewManager);
+                                }
+                            });
+                }));
+
+        mTabSwitcherSupplier.onAvailable(
+                mTabSwitcherCustomViewManagerCallbackController.makeCancelable((tabSwitcher) -> {
+                    if (incognitoReauthCoordinatorFactory.getTabSwitcherCustomViewManager()
+                            == null) {
+                        incognitoReauthCoordinatorFactory.setTabSwitcherCustomViewManager(
+                                tabSwitcher.getTabSwitcherCustomViewManager());
+                    }
+                }));
+
+        return incognitoReauthCoordinatorFactory;
     }
 
     @Override
@@ -678,18 +692,20 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
         }
 
         if (!didTriggerPromo) {
-            RationaleDelegate rationaleUIDelegate;
+            Supplier<RationaleDelegate> rationaleUIDelegateSupplier;
 
             if (NotificationPermissionController.shouldUseBottomSheetRationaleUi()) {
-                rationaleUIDelegate = new NotificationPermissionRationaleBottomSheet(
-                        mActivity, getBottomSheetController());
+                rationaleUIDelegateSupplier = ()
+                        -> new NotificationPermissionRationaleBottomSheet(
+                                mActivity, getBottomSheetController());
             } else {
-                rationaleUIDelegate = new NotificationPermissionRationaleDialogController(
-                        mActivity, mModalDialogManagerSupplier.get());
+                rationaleUIDelegateSupplier = ()
+                        -> new NotificationPermissionRationaleDialogController(
+                                mActivity, mModalDialogManagerSupplier.get());
             }
 
-            mNotificationPermissionController =
-                    new NotificationPermissionController(mWindowAndroid, rationaleUIDelegate);
+            mNotificationPermissionController = new NotificationPermissionController(
+                    mWindowAndroid, rationaleUIDelegateSupplier);
 
             NotificationPermissionController.attach(
                     mWindowAndroid, mNotificationPermissionController);
@@ -731,6 +747,9 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                         getToolbarManager().getMenuButtonView(),
                         mAppMenuCoordinator.getAppMenuHandler(), R.id.manage_all_windows_menu_id);
             }
+            DesktopSiteSettingsIPHController.create(mActivity, mWindowAndroid, mActivityTabProvider,
+                    Profile.getLastUsedRegularProfile(), getToolbarManager().getMenuButtonView(),
+                    mAppMenuCoordinator.getAppMenuHandler(), getPrimaryDisplaySizeInInches());
         }
         mPromoShownOneshotSupplier.set(didTriggerPromo);
 
@@ -791,6 +810,17 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                                                    NewTabPageLaunchOrigin.WEB_FEED),
                                         TabLaunchType.FROM_CHROME_UI);
                     }, mModalDialogManagerSupplier.get(), mSnackbarManagerSupplier.get());
+        }
+
+        if (!didTriggerPromo && PageZoomCoordinator.shouldShowMenuItem()) {
+            // Page Zoom IPH should only show if the menu item is visible, and not on NTP or CCT.
+            Tab tab = mActivityTabProvider.get();
+            if (tab != null && tab.getWebContents() != null && !tab.isNativePage()) {
+                PageZoomIPHController mPageZoomIPHController = new PageZoomIPHController(mActivity,
+                        mAppMenuCoordinator.getAppMenuHandler(),
+                        mToolbarManager.getMenuButtonView());
+                mPageZoomIPHController.showColdStartIPH();
+            }
         }
     }
 

@@ -200,7 +200,7 @@ TEST_P(DisplayChangeObserverTest, GetEmptyExternalManagedDisplayModeList) {
       /*connector_index=*/0x0001, gfx::Point(), gfx::Size(),
       DISPLAY_CONNECTION_TYPE_UNKNOWN,
       /*base_connector_id=*/1u, /*path_topology=*/{}, false, false,
-      PrivacyScreenState::kNotSupported, false, false, std::string(), {},
+      PrivacyScreenState::kNotSupported, false, false, false, std::string(), {},
       nullptr, nullptr, 0, gfx::Size(), gfx::ColorSpace(),
       /*bits_per_channel=*/8u, /*hdr_static_metadata=*/{}, kVrrNotCapable,
       absl::nullopt, DrmFormatsAndModifiers());
@@ -500,7 +500,7 @@ INSTANTIATE_TEST_SUITE_P(All,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 using DisplayResolutionTest = testing::Test;
 
-TEST_F(DisplayResolutionTest, CheckEffectiveResoutionUMAIndex) {
+TEST_F(DisplayResolutionTest, CheckEffectiveResolutionUMAIndex) {
   std::map<int, gfx::Size> effective_resolutions;
   for (const auto& display_config : display_configs) {
     gfx::Size size = display_config.resolution;

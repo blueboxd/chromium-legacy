@@ -73,7 +73,6 @@ test_files = [
   "fake_system_display.js",
   "fake_user_action_recorder.js",
   "fake_users_private.js",
-  "find_shortcut_behavior_test.js",
   "fingerprint_browsertest_chromeos.js",
   "hotspot_config_dialog_tests.js",
   "hotspot_subpage_tests.js",
@@ -81,6 +80,7 @@ test_files = [
   "google_assistant_page_test.js",
   "guest_os_shared_paths_test.js",
   "guest_os_shared_usb_devices_test.js",
+  "input_device_mojo_interface_provider_test.js",
   "input_method_options_page_test.js",
   "input_page_test.js",
   "internet_config_test.js",
@@ -148,6 +148,11 @@ test_files = [
   "os_sync_controls_test.js",
   "parental_controls_page_test.js",
   "people_page_account_manager_test.js",
+  "per_device_keyboard_test.js",
+  "per_device_keyboard_subsection_test.js",
+  "per_device_mouse_subsection_test.js",
+  "per_device_pointing_stick_subsection_test.js",
+  "per_device_touchpad_subsection_test.js",
   "personalization_page_with_personalization_hub_test.js",
   "privacy_hub_subpage_tests.js",
   "quick_unlock_authenticate_browsertest_chromeos.js",
@@ -242,7 +247,6 @@ ts_library("build_ts") {
       [ "test_api.test-mojom-webui.js" ] + test_files + app_management_tests
   deps = [
     "//chrome/test/data/webui:build_ts",
-    "//ui/webui/resources:library",
     "//ui/webui/resources/cr_components/app_management:build_ts",
     "//ui/webui/resources/mojo:library",
   ]

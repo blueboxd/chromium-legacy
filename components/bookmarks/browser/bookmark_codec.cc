@@ -93,7 +93,7 @@ base::Value BookmarkCodec::Encode(
   ids_reassigned_ = false;
   guids_reassigned_ = false;
 
-  base::Value main(base::Value::Type::DICTIONARY);
+  base::Value main(base::Value::Type::DICT);
   main.SetIntKey(kVersionKey, kCurrentVersion);
 
   // Encode Sync metadata before encoding other fields to reduce peak memory
@@ -105,7 +105,7 @@ base::Value BookmarkCodec::Encode(
   }
 
   InitializeChecksum();
-  base::Value roots(base::Value::Type::DICTIONARY);
+  base::Value roots(base::Value::Type::DICT);
   roots.SetKey(kBookmarkBarFolderNameKey, EncodeNode(bookmark_bar_node));
   roots.SetKey(kOtherBookmarkFolderNameKey, EncodeNode(other_folder_node));
   roots.SetKey(kMobileBookmarkFolderNameKey, EncodeNode(mobile_folder_node));
@@ -156,7 +156,7 @@ bool BookmarkCodec::Decode(const base::Value& value,
 }
 
 base::Value BookmarkCodec::EncodeNode(const BookmarkNode* node) {
-  base::Value value(base::Value::Type::DICTIONARY);
+  base::Value value(base::Value::Type::DICT);
   std::string id = base::NumberToString(node->id());
   value.SetStringKey(kIdKey, id);
   const std::u16string& title = node->GetTitle();
@@ -198,7 +198,7 @@ base::Value BookmarkCodec::EncodeNode(const BookmarkNode* node) {
 
 base::Value BookmarkCodec::EncodeMetaInfo(
     const BookmarkNode::MetaInfoMap& meta_info_map) {
-  base::Value meta_info(base::Value::Type::DICTIONARY);
+  base::Value meta_info(base::Value::Type::DICT);
   for (const auto& item : meta_info_map)
     meta_info.SetKey(item.first, base::Value(item.second));
   return meta_info;
@@ -216,7 +216,7 @@ bool BookmarkCodec::DecodeHelper(BookmarkNode* bb_node,
   if (!version || *version != kCurrentVersion)
     return false;  // Unknown version.
 
-  const base::Value* checksum_value = value.FindKey(kChecksumKey);
+  const base::Value* checksum_value = value.GetDict().Find(kChecksumKey);
   if (checksum_value) {
     const std::string* checksum = checksum_value->GetIfString();
     if (checksum)
@@ -441,7 +441,7 @@ bool BookmarkCodec::DecodeMetaInfo(const base::Value& value,
   DCHECK(meta_info_map);
   meta_info_map->clear();
 
-  const base::Value* meta_info = value.FindKey(kMetaInfo);
+  const base::Value* meta_info = value.GetDict().Find(kMetaInfo);
   if (!meta_info)
     return true;
 
@@ -462,7 +462,7 @@ bool BookmarkCodec::DecodeMetaInfo(const base::Value& value,
   // dictionary of meta info values.
   if (!meta_info->is_dict())
     return false;
-  DecodeMetaInfoHelper(*meta_info, std::string(), meta_info_map);
+  DecodeMetaInfoHelper(meta_info->GetDict(), std::string(), meta_info_map);
 
   return true;
 }
@@ -474,30 +474,31 @@ bool BookmarkCodec::DecodeUnsyncedMetaInfo(
   DCHECK(meta_info_map);
   meta_info_map->clear();
 
-  const base::Value* meta_info = value.FindKey(kUnsyncedMetaInfo);
+  const base::Value* meta_info = value.GetDict().Find(kUnsyncedMetaInfo);
   if (!meta_info)
     return true;
   if (!meta_info->is_dict())
     return false;
 
-  DecodeMetaInfoHelper(*meta_info, std::string(), meta_info_map);
+  DecodeMetaInfoHelper(meta_info->GetDict(), std::string(), meta_info_map);
 
   return true;
 }
 
 void BookmarkCodec::DecodeMetaInfoHelper(
-    const base::Value& dict,
+    const base::Value::Dict& dict,
     const std::string& prefix,
     BookmarkNode::MetaInfoMap* meta_info_map) {
-  DCHECK(dict.is_dict());
-  for (const auto it : dict.DictItems()) {
+  for (const auto it : dict) {
     // Deprecated keys should be excluded after removing enhanced bookmarks
     // feature crrev.com/1638413003.
-    if (base::StartsWith(it.first, "stars.", base::CompareCase::SENSITIVE))
+    if (base::StartsWith(it.first, "stars.", base::CompareCase::SENSITIVE)) {
       continue;
+    }
 
     if (it.second.is_dict()) {
-      DecodeMetaInfoHelper(it.second, prefix + it.first + ".", meta_info_map);
+      DecodeMetaInfoHelper(it.second.GetDict(), prefix + it.first + ".",
+                           meta_info_map);
     } else {
       const std::string* str = it.second.GetIfString();
       if (str)

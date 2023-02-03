@@ -10,6 +10,7 @@
 #include "base/component_export.h"
 #include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/ash/components/network/hotspot_capabilities_provider.h"
 #include "chromeos/ash/components/network/hotspot_state_handler.h"
 #include "chromeos/ash/services/hotspot_config/public/mojom/cros_hotspot_config.mojom-forward.h"
 
@@ -31,15 +32,21 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) HotspotController {
   HotspotController& operator=(const HotspotController&) = delete;
   ~HotspotController();
 
-  void Init(HotspotStateHandler* hotspot_state_handler);
+  void Init(HotspotCapabilitiesProvider* hotspot_capabilities_provider,
+            HotspotStateHandler* hotspot_state_handler);
+
   // Return callback for the EnableHotspot or DisableHotspot method.
   using HotspotControlCallback = base::OnceCallback<void(
       hotspot_config::mojom::HotspotControlResult control_result)>;
+
   // Push the enable or disable hotspot request to the request queue and try to
   // execute. If another request is already being processed, the current request
   // will wait until the previous one is completed.
   void EnableHotspot(HotspotControlCallback callback);
   void DisableHotspot(HotspotControlCallback callback);
+
+  // Set whether Hotspot should be allowed/disallowed by policy.
+  void SetPolicyAllowHotspot(bool allow_hotspot);
 
  private:
   // Represents hotspot enable or disable control request parameters. Requests
@@ -57,7 +64,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) HotspotController {
   void ProcessRequestQueue();
   void CheckTetheringReadiness();
   void OnCheckTetheringReadiness(
-      HotspotStateHandler::CheckTetheringReadinessResult result);
+      HotspotCapabilitiesProvider::CheckTetheringReadinessResult result);
   void PerformSetTetheringEnabled(bool enabled);
   void OnSetTetheringEnabledSuccess(const std::string& result);
   void OnSetTetheringEnabledFailure(const std::string& error_name,
@@ -67,7 +74,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) HotspotController {
 
   std::unique_ptr<HotspotControlRequest> current_request_;
   base::queue<std::unique_ptr<HotspotControlRequest>> queued_requests_;
+  bool allow_hotspot_ = true;
+  HotspotCapabilitiesProvider* hotspot_capabilities_provider_ = nullptr;
   HotspotStateHandler* hotspot_state_handler_ = nullptr;
+
   base::WeakPtrFactory<HotspotController> weak_ptr_factory_{this};
 };
 

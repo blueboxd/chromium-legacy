@@ -25,6 +25,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "chromeos/ui/frame/caption_buttons/frame_size_button.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "content/public/test/browser_test.h"
@@ -136,6 +137,31 @@ using BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip =
     WebUiTabStripOverrideTest<false, BrowserNonClientFrameViewChromeOSTest>;
 using BrowserNonClientFrameViewChromeOSTestWithWebUiTabStrip =
     WebUiTabStripOverrideTest<true, BrowserNonClientFrameViewChromeOSTest>;
+
+class BrowserNonClientFrameViewChromeOSTestApi {
+ public:
+  explicit BrowserNonClientFrameViewChromeOSTestApi(
+      BrowserNonClientFrameViewChromeOS* frame_view)
+      : frame_view_(frame_view) {}
+  BrowserNonClientFrameViewChromeOSTestApi(
+      const BrowserNonClientFrameViewChromeOSTestApi&) = delete;
+  BrowserNonClientFrameViewChromeOSTestApi& operator=(
+      const BrowserNonClientFrameViewChromeOSTestApi&) = delete;
+  ~BrowserNonClientFrameViewChromeOSTestApi() = default;
+
+  bool GetShouldPaint() const { return frame_view_->GetShouldPaint(); }
+
+  ProfileIndicatorIcon* GetProfileIndicatorIcon() {
+    return frame_view_->profile_indicator_icon_;
+  }
+
+  chromeos::FrameHeader* GetFrameHeader() {
+    return frame_view_->frame_header_.get();
+  }
+
+ private:
+  BrowserNonClientFrameViewChromeOS* const frame_view_;
+};
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 using BrowserNonClientFrameViewChromeOSTouchTest =
@@ -446,27 +472,22 @@ IN_PROC_BROWSER_TEST_F(
 // fullscreen.
 // This test does not make sense for the webUI tabstrip, since the frame is not
 // painted in that case.
-// Disable for lacros due to flakiness. crbug.com/1292412
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#define MAYBE_NonImmersiveFullscreen DISABLED_NonImmersiveFullscreen
-#else
-#define MAYBE_NonImmersiveFullscreen NonImmersiveFullscreen
-#endif
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip,
-                       MAYBE_NonImmersiveFullscreen) {
+                       NonImmersiveFullscreen) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   content::WebContents* web_contents = browser_view->GetActiveWebContents();
   BrowserNonClientFrameViewChromeOS* frame_view =
       GetFrameViewChromeOS(browser_view);
+  BrowserNonClientFrameViewChromeOSTestApi test_api(frame_view);
 
   // Frame paints by default.
-  EXPECT_TRUE(frame_view->GetShouldPaint());
+  EXPECT_TRUE(test_api.GetShouldPaint());
 
   // No painting should occur in non-immersive fullscreen. (We enter into tab
   // fullscreen here because tab fullscreen is non-immersive even on ChromeOS).
   EnterFullscreenModeForTabAndWait(browser(), web_contents);
   EXPECT_FALSE(browser_view->immersive_mode_controller()->IsEnabled());
-  EXPECT_FALSE(frame_view->GetShouldPaint());
+  EXPECT_FALSE(test_api.GetShouldPaint());
 
   // The client view abuts top of the window.
   EXPECT_EQ(0, frame_view->GetBoundsForClientView().y());
@@ -474,10 +495,9 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip,
   // The frame should be painted again when fullscreen is exited and the caption
   // buttons should be visible.
   ToggleFullscreenModeAndWait(browser());
-  EXPECT_TRUE(frame_view->GetShouldPaint());
+  EXPECT_TRUE(test_api.GetShouldPaint());
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Tests that caption buttons are hidden when entering tab fullscreen.
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip,
                        CaptionButtonsHiddenNonImmersiveFullscreen) {
@@ -486,20 +506,21 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip,
   BrowserNonClientFrameViewChromeOS* frame_view =
       GetFrameViewChromeOS(browser_view);
 
-  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_TRUE(frame_view->caption_button_container()->GetVisible());
 
   EnterFullscreenModeForTabAndWait(browser(), web_contents);
   EXPECT_FALSE(browser_view->immersive_mode_controller()->IsEnabled());
   // Caption buttons are hidden.
-  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
 
   // The frame should be painted again when fullscreen is exited and the caption
   // buttons should be visible.
   ToggleFullscreenModeAndWait(browser());
   // Caption button container visible again.
-  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_TRUE(frame_view->caption_button_container()->GetVisible());
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Tests that Avatar icon should show on the top left corner of the teleported
 // browser window on ChromeOS.
 // TODO(http://crbug.com/1059514): This test should be made to work with the
@@ -509,10 +530,11 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip,
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   BrowserNonClientFrameViewChromeOS* frame_view =
       GetFrameViewChromeOS(browser_view);
+  BrowserNonClientFrameViewChromeOSTestApi test_api(frame_view);
   aura::Window* window = browser()->window()->GetNativeWindow();
 
   EXPECT_FALSE(MultiUserWindowManagerHelper::ShouldShowAvatar(window));
-  EXPECT_FALSE(frame_view->profile_indicator_icon_);
+  EXPECT_FALSE(test_api.GetProfileIndicatorIcon());
 
   const AccountId account_id1 =
       multi_user_util::GetAccountIdFromProfile(browser()->profile());
@@ -523,12 +545,12 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip,
   const AccountId account_id2(AccountId::FromUserEmail("user2"));
   window_manager->ShowWindowForUser(window, account_id2);
   EXPECT_TRUE(MultiUserWindowManagerHelper::ShouldShowAvatar(window));
-  EXPECT_TRUE(frame_view->profile_indicator_icon_);
+  EXPECT_TRUE(test_api.GetProfileIndicatorIcon());
 
   // Teleport the window back to owner desktop.
   window_manager->ShowWindowForUser(window, account_id1);
   EXPECT_FALSE(MultiUserWindowManagerHelper::ShouldShowAvatar(window));
-  EXPECT_FALSE(frame_view->profile_indicator_icon_);
+  EXPECT_FALSE(test_api.GetProfileIndicatorIcon());
 }
 
 // There should be no top inset when using the WebUI tab strip since the frame
@@ -560,12 +582,10 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTestWithWebUiTabStrip,
   auto* frame_view = GetFrameViewChromeOS(browser_view);
   if (ui::TouchUiController::Get()->touch_ui()) {
     EXPECT_TRUE(browser_view->webui_tab_strip());
-    EXPECT_FALSE(
-        frame_view->caption_button_container_for_testing()->GetVisible());
+    EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
   } else {
     EXPECT_FALSE(browser_view->webui_tab_strip());
-    EXPECT_TRUE(
-        frame_view->caption_button_container_for_testing()->GetVisible());
+    EXPECT_TRUE(frame_view->caption_button_container()->GetVisible());
   }
 }
 
@@ -661,7 +681,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTest,
           widget->non_client_view()->frame_view());
 
   chromeos::FrameCaptionButtonContainerView::TestApi test(
-      frame_view->caption_button_container_);
+      frame_view->caption_button_container());
   EXPECT_TRUE(test.size_button()->icon_definition_for_test());
 }
 
@@ -743,7 +763,7 @@ class WebAppNonClientFrameViewAshTest
     BrowserNonClientFrameViewChromeOS* frame_view =
         GetFrameViewChromeOS(browser_view_);
     frame_header_ = static_cast<chromeos::DefaultFrameHeader*>(
-        frame_view->frame_header_.get());
+        BrowserNonClientFrameViewChromeOSTestApi(frame_view).GetFrameHeader());
 
     web_app_frame_toolbar_ = frame_view->web_app_frame_toolbar_for_testing();
     DCHECK(web_app_frame_toolbar_);
@@ -1072,7 +1092,7 @@ IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
                        ActiveStateOfButtonMatchesWidget) {
   SetUpWebApp();
   chromeos::FrameCaptionButtonContainerView::TestApi test(
-      GetFrameViewChromeOS(browser_view_)->caption_button_container_);
+      GetFrameViewChromeOS(browser_view_)->caption_button_container());
   EXPECT_TRUE(test.size_button()->GetPaintAsActive());
   EXPECT_TRUE(GetPaintingAsActive());
 
@@ -1155,32 +1175,32 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewChromeOSTest,
 
   // Caption buttons are not supported when using the WebUI tab strip.
   if (browser_view->webui_tab_strip()) {
-    EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+    EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
   } else {
-    EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
+    EXPECT_TRUE(frame_view->caption_button_container()->GetVisible());
   }
 
   StartOverview();
-  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
   EndOverview();
 
   // Caption buttons are not supported when using the WebUI tab strip.
   if (browser_view->webui_tab_strip()) {
-    EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+    EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
   } else {
-    EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
+    EXPECT_TRUE(frame_view->caption_button_container()->GetVisible());
   }
 
   ASSERT_NO_FATAL_FAILURE(
       ash::ShellTestApi().SetTabletModeEnabledForTest(true));
-  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
   StartOverview();
-  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
   EndOverview();
-  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
   ash::SplitViewTestApi().SnapWindow(widget->GetNativeWindow(),
                                      ash::SplitViewTestApi::SnapPosition::LEFT);
-  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -1283,10 +1303,39 @@ class FloatBrowserNonClientFrameViewChromeOSTest
       chromeos::wm::features::kFloatWindow};
 };
 
+IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
+                       BrowserHeaderVisibilityInTabletModeTest) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  BrowserNonClientFrameViewChromeOS* frame_view =
+      GetFrameViewChromeOS(browser_view);
+
+  ASSERT_NO_FATAL_FAILURE(
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true));
+  EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
+
+  Widget* widget = browser_view->GetWidget();
+  auto* immersive_controller = chromeos::ImmersiveFullscreenController::Get(
+      views::Widget::GetWidgetForNativeView(widget->GetNativeWindow()));
+
+  // Snap a window. No immersive mode from regular browsers.
+  ash::SplitViewTestApi().SnapWindow(
+      widget->GetNativeWindow(), ash::SplitViewTestApi::SnapPosition::RIGHT);
+  EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
+  EXPECT_FALSE(immersive_controller->IsEnabled());
+
+  // Float the window; the title bar is visible.
+  ui::test::EventGenerator event_generator(
+      widget->GetNativeWindow()->GetRootWindow());
+  event_generator.PressAndReleaseKey(ui::VKEY_F,
+                                     ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(frame_view->caption_button_container()->GetVisible());
+  EXPECT_FALSE(immersive_controller->IsEnabled());
+}
+
 // Test that for a browser app window, its caption buttons may or may not hide
 // in tablet mode.
 IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
-                       AppHeaderVisibilityInTabletModeTest) {
+                       BrowserAppHeaderVisibilityInTabletModeTest) {
   // Create a browser app window.
   Browser::CreateParams params = Browser::CreateParams::CreateForApp(
       "test_browser_app", /*trusted_source=*/true, gfx::Rect(),
@@ -1302,18 +1351,19 @@ IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
       aura::client::kResizeBehaviorKey,
       aura::client::kResizeBehaviorCanMaximize |
           aura::client::kResizeBehaviorCanResize);
+
   StartOverview();
-  EXPECT_FALSE(frame_view2->caption_button_container_->GetVisible());
+  EXPECT_FALSE(frame_view2->caption_button_container()->GetVisible());
   EndOverview();
-  EXPECT_TRUE(frame_view2->caption_button_container_->GetVisible());
+  EXPECT_TRUE(frame_view2->caption_button_container()->GetVisible());
 
   ASSERT_NO_FATAL_FAILURE(
       ash::ShellTestApi().SetTabletModeEnabledForTest(true));
   StartOverview();
-  EXPECT_FALSE(frame_view2->caption_button_container_->GetVisible());
+  EXPECT_FALSE(frame_view2->caption_button_container()->GetVisible());
 
   EndOverview();
-  EXPECT_TRUE(frame_view2->caption_button_container_->GetVisible());
+  EXPECT_TRUE(frame_view2->caption_button_container()->GetVisible());
 
   auto* immersive_controller = chromeos::ImmersiveFullscreenController::Get(
       views::Widget::GetWidgetForNativeView(widget2->GetNativeWindow()));
@@ -1321,7 +1371,7 @@ IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
   // Snap a window. Immersive mode is enabled so its title bar is not visible.
   ash::SplitViewTestApi().SnapWindow(
       widget2->GetNativeWindow(), ash::SplitViewTestApi::SnapPosition::RIGHT);
-  EXPECT_TRUE(frame_view2->caption_button_container_->GetVisible());
+  EXPECT_TRUE(frame_view2->caption_button_container()->GetVisible());
   EXPECT_TRUE(immersive_controller->IsEnabled());
 
   // Float a window. Immersive mode is disabled so its title bar is visible.
@@ -1329,9 +1379,34 @@ IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
       widget2->GetNativeWindow()->GetRootWindow());
   event_generator.PressAndReleaseKey(ui::VKEY_F,
                                      ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
-  EXPECT_TRUE(frame_view2->caption_button_container_->GetVisible());
+  EXPECT_TRUE(frame_view2->caption_button_container()->GetVisible());
   EXPECT_FALSE(immersive_controller->IsEnabled());
 }
+
+#if BUILDFLAG(IS_CHROMEOS)
+// Tests that, with the float flag enabled, the accelerator toggles the
+// multitask menu on a browser window.
+IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
+                       ToggleMultitaskMenu) {
+  EXPECT_TRUE(chrome::IsCommandEnabled(browser(), IDC_TOGGLE_MULTITASK_MENU));
+
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  BrowserNonClientFrameViewChromeOS* frame_view =
+      GetFrameViewChromeOS(browser_view);
+  auto* size_button = static_cast<chromeos::FrameSizeButton*>(
+      frame_view->caption_button_container()->size_button());
+
+  // Pressing accelerator once should show the multitask menu.
+  ui::test::EventGenerator event_generator(
+      browser_view->GetWidget()->GetNativeWindow()->GetRootWindow());
+  event_generator.PressAndReleaseKey(ui::VKEY_Z, ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(size_button->IsMultitaskMenuShown());
+
+  // Pressing accelerator a second time should close the menu.
+  event_generator.PressAndReleaseKey(ui::VKEY_Z, ui::EF_COMMAND_DOWN);
+  ASSERT_FALSE(size_button->IsMultitaskMenuShown());
+}
+#endif
 
 namespace {
 
@@ -1365,28 +1440,28 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewChromeOSTest,
 
   // Caption buttons are not supported when using the WebUI tab strip.
   if (browser_view->webui_tab_strip()) {
-    EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+    EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
   } else {
-    EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
+    EXPECT_TRUE(frame_view->caption_button_container()->GetVisible());
   }
 
   ASSERT_NO_FATAL_FAILURE(
       ash::ShellTestApi().SetTabletModeEnabledForTest(true));
-  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
 
   StartOverview();
-  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
   EndOverview();
-  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
 
   ASSERT_NO_FATAL_FAILURE(
       ash::ShellTestApi().SetTabletModeEnabledForTest(false));
 
   // Caption buttons are not supported when using the WebUI tab strip.
   if (browser_view->webui_tab_strip()) {
-    EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+    EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
   } else {
-    EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
+    EXPECT_TRUE(frame_view->caption_button_container()->GetVisible());
   }
 }
 
@@ -1399,9 +1474,9 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewChromeOSTest,
                        CaptionButtonVisibilityForBrowserLaunchedInTabletMode) {
   ASSERT_NO_FATAL_FAILURE(
       ash::ShellTestApi().SetTabletModeEnabledForTest(true));
-  EXPECT_FALSE(GetFrameViewChromeOS(BrowserView::GetBrowserViewForBrowser(
-                                        CreateBrowser(browser()->profile())))
-                   ->caption_button_container_->GetVisible());
+  auto* frame_view = GetFrameViewChromeOS(BrowserView::GetBrowserViewForBrowser(
+      CreateBrowser(browser()->profile())));
+  EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
 }
 
 IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewChromeOSTest,
@@ -1420,22 +1495,22 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewChromeOSTest,
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   BrowserNonClientFrameViewChromeOS* frame_view =
       GetFrameViewChromeOS(browser_view);
-  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_TRUE(frame_view->caption_button_container()->GetVisible());
 
   // Tablet mode doesn't affect app's caption button's visibility.
   ASSERT_NO_FATAL_FAILURE(
       ash::ShellTestApi().SetTabletModeEnabledForTest(true));
-  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_TRUE(frame_view->caption_button_container()->GetVisible());
 
   // However, overview mode does.
   StartOverview();
-  EXPECT_FALSE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
   EndOverview();
-  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_TRUE(frame_view->caption_button_container()->GetVisible());
 
   ASSERT_NO_FATAL_FAILURE(
       ash::ShellTestApi().SetTabletModeEnabledForTest(false));
-  EXPECT_TRUE(frame_view->caption_button_container_->GetVisible());
+  EXPECT_TRUE(frame_view->caption_button_container()->GetVisible());
 }
 
 namespace {
@@ -1470,7 +1545,7 @@ IN_PROC_BROWSER_TEST_P(TabSearchFrameCaptionButtonTest,
   ASSERT_TRUE(browser()->is_type_normal());
 
   chromeos::FrameCaptionButtonContainerView::TestApi test(
-      frame_view->caption_button_container_);
+      frame_view->caption_button_container());
   EXPECT_TRUE(test.custom_button());
   EXPECT_EQ(browser_view->GetTabSearchBubbleHost()->button(),
             test.custom_button());

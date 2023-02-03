@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="Compositing.Browser.LayersUpdateTime" units="microseconds"
-    expires_after="2023-05-27">
+    expires_after="2023-07-30">
   <owner>schenney@chromium.org</owner>
   <owner>animations-dev@chromium.org</owner>
   <summary>
@@ -83,18 +83,6 @@ chromium-metrics-reviews@google.com.
     The number of render surfaces in the render surface layer list. Recorded
     each time the render surface layer list is constructed (in a browser
     process).
-  </summary>
-</histogram>
-
-<histogram name="Compositing.BufferQueue.TimeUntilBuffersRecreatedMs"
-    units="ms" expires_after="2023-09-30">
-  <owner>khaslett@chromium.org</owner>
-  <owner>petermcneeley@chromium.org</owner>
-  <summary>
-    The time since a BufferQueue's buffers were destroyed until they were
-    recreated. If this time is commonly very small, that is a problem. Recorded
-    when the buffer recreates buffers that were previously destroyed. For a
-    single BufferQueue this should be once per frame at worst.
   </summary>
 </histogram>
 
@@ -397,7 +385,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Compositing.Display.OverlayProcessorUsingStrategy.CheckOverlaySupportCallCount"
-    units="units" expires_after="2023-05-27">
+    units="units" expires_after="2023-07-30">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -1175,66 +1163,6 @@ chromium-metrics-reviews@google.com.
     frames (&gt;= 100). If there are sequences with fewer frames, then these are
     aggregated until there are enough frames to produce the metric.
   </summary>
-</histogram>
-
-<histogram name="Graphics.Smoothness.PercentDroppedFrames2.{Thread}{Sequence}"
-    units="%" expires_after="2023-03-07">
-  <owner>jonross@chromium.org</owner>
-  <owner>graphics-dev@chromium.org</owner>
-  <summary>
-    Tracks the percent of dropped frames for a particular sequence of frames.
-    This metric aggregates data {Sequence}
-
-    PercentDroppedFrames is measured by tracking the number of frames which were
-    not displayed on screen out of the total number of frames expected to be
-    produced and displayed. In other words, the lower this number is, the
-    smoother experience.
-
-    Note that this metric is reported only when there are sufficient number of
-    frames (&gt;= 100). If there are sequences with fewer frames, then these are
-    aggregated until there are enough frames to produce the metric.
-
-    This is a new implementation of the older
-    Graphics.Smoothness.PercentDroppedFrames.AllInteractions metric.
-  </summary>
-  <token key="Thread">
-    <variant name=""/>
-    <variant name="CompositorThread."/>
-    <variant name="MainThread."/>
-  </token>
-  <token key="Sequence">
-    <variant name="AllAnimations"
-        summary="reported from all types of animations (e.g. comositor-driven
-                 animations, main-thread driven animations, and raf-driven
-                 animations, etc.)."/>
-    <variant name="AllInteractions"
-        summary="reported for all supported combinations of interaction types
-                 (e.g. scrolling, pinching, etc.) and input device types
-                 (e.g. touchscreen, touchpad, mousewheel, etc.)."/>
-    <variant name="AllSequences"
-        summary="from all animations and all interactions."/>
-    <variant name="CanvasAnimation"
-        summary="reported for all canvas animations."/>
-    <variant name="CompositorAnimation"
-        summary="reported for all compositor thread driven animations."/>
-    <variant name="JSAnimation"
-        summary="reported for all JS driven animations."/>
-    <variant name="MainThreadAnimation"
-        summary="reported for all main thread driven animations."/>
-    <variant name="PinchZoom"
-        summary="reported for all pinch to zoom interctions."/>
-    <variant name="RAF" summary="reported for all raf driven animations."/>
-    <variant name="ScrollbarScroll"
-        summary="reported for all scrollbar scrolling."/>
-    <variant name="SETCompositorAnimation"
-        summary="reported for all compositor animations during a shared
-                 element transition"/>
-    <variant name="SETMainThreadAnimation"
-        summary="reported for all main thread animations during a shared
-                 element transition"/>
-    <variant name="TouchScroll" summary="reported for all touch scrolling."/>
-    <variant name="WheelScroll" summary="reported for all wheel scrolling."/>
-  </token>
 </histogram>
 
 <histogram name="Graphics.Smoothness.PercentDroppedFrames3.AllSequences"

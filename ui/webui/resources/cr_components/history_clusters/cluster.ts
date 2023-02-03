@@ -80,23 +80,6 @@ class HistoryClusterElement extends HistoryClusterElementBase {
       query: String,
 
       /**
-       * Whether the default-hidden visits are visible.
-       */
-      expanded_: {
-        type: Boolean,
-        reflectToAttribute: true,
-        value: false,
-      },
-
-      /**
-       * The default-hidden visits.
-       */
-      hiddenVisits_: {
-        type: Object,
-        computed: `computeHiddenVisits_(cluster.visits.*)`,
-      },
-
-      /**
        * The visible related searches.
        */
       relatedSearches_: {
@@ -112,14 +95,6 @@ class HistoryClusterElement extends HistoryClusterElementBase {
       unusedLabel_: {
         type: String,
         computed: 'computeLabel_(cluster.label)',
-      },
-
-      /**
-       * The always-visible visits.
-       */
-      visibleVisits_: {
-        type: Object,
-        computed: `computeVisibleVisits_(cluster.visits.*)`,
       },
 
       /**
@@ -141,12 +116,11 @@ class HistoryClusterElement extends HistoryClusterElementBase {
   index: number;
   query: string;
   private callbackRouter_: PageCallbackRouter;
-  private expanded_: boolean;
-  private hiddenVisits_: URLVisit[];
+
   private inSidePanel_: boolean;
+  private onVisitsHiddenListenerId_: number|null = null;
   private onVisitsRemovedListenerId_: number|null = null;
   private unusedLabel_: string;
-  private visibleVisits_: URLVisit[];
 
   //============================================================================
   // Overridden methods
@@ -165,13 +139,21 @@ class HistoryClusterElement extends HistoryClusterElementBase {
 
   override connectedCallback() {
     super.connectedCallback();
+    this.onVisitsHiddenListenerId_ =
+        this.callbackRouter_.onVisitsHidden.addListener(
+            this.onVisitsRemovedOrHidden_.bind(this));
     this.onVisitsRemovedListenerId_ =
         this.callbackRouter_.onVisitsRemoved.addListener(
-            this.onVisitsRemoved_.bind(this));
+            this.onVisitsRemovedOrHidden_.bind(this));
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
+
+    assert(this.onVisitsHiddenListenerId_);
+    this.callbackRouter_.removeListener(this.onVisitsHiddenListenerId_);
+    this.onVisitsHiddenListenerId_ = null;
+
     assert(this.onVisitsRemovedListenerId_);
     this.callbackRouter_.removeListener(this.onVisitsRemovedListenerId_);
     this.onVisitsRemovedListenerId_ = null;
@@ -207,15 +189,8 @@ class HistoryClusterElement extends HistoryClusterElementBase {
   }
 
   private onOpenAllVisits_() {
-    const visitsToOpen = this.visibleVisits_;
-    // Only try to open the hidden visits if the user actually has
-    // expanded the cluster by clicking "Show More".
-    if (this.expanded_) {
-      visitsToOpen.push(...this.hiddenVisits_);
-    }
-
     BrowserProxyImpl.getInstance().handler.openVisitUrlsInTabGroup(
-        visitsToOpen);
+        this.cluster.visits);
 
     MetricsProxyImpl.getInstance().recordClusterAction(
         ClusterAction.kOpenedInTabGroup, this.index);
@@ -230,9 +205,18 @@ class HistoryClusterElement extends HistoryClusterElementBase {
     }));
   }
 
+  private onHideVisit_(event: CustomEvent<URLVisit>) {
+    // The actual hiding is handled in clusters.ts. This is just a good place to
+    // record the metric.
+    const visit = event.detail;
+    MetricsProxyImpl.getInstance().recordVisitAction(
+        VisitAction.kHidden, this.getVisitIndex_(visit),
+        MetricsProxyImpl.getVisitType(visit));
+  }
+
   private onRemoveVisit_(event: CustomEvent<URLVisit>) {
-    // The actual removal is handled at in clusters.ts. This is just a good
-    // place to record the metric.
+    // The actual removal is handled in clusters.ts. This is just a good place
+    // to record the metric.
     const visit = event.detail;
     MetricsProxyImpl.getInstance().recordVisitAction(
         VisitAction.kDeleted, this.getVisitIndex_(visit),
@@ -242,32 +226,6 @@ class HistoryClusterElement extends HistoryClusterElementBase {
       bubbles: true,
       composed: true,
       detail: [visit],
-    }));
-  }
-
-  private onToggleButtonKeyDown_(e: KeyboardEvent) {
-    if (e.key !== 'Enter' && e.key !== ' ') {
-      return;
-    }
-
-    e.stopPropagation();
-    e.preventDefault();
-
-    this.onToggleButtonClick_();
-  }
-
-  private onToggleButtonClick_() {
-    this.expanded_ = !this.expanded_;
-
-    MetricsProxyImpl.getInstance().recordClusterAction(
-        ClusterAction.kRelatedVisitsVisibilityToggled, this.index);
-
-    // Dispatch an event to notify the parent elements of a resize. Note that
-    // this simple solution only works because the child iron-collapse has
-    // animations disabled. Otherwise, it gets an incorrect mid-animation size.
-    this.dispatchEvent(new CustomEvent('iron-resize', {
-      bubbles: true,
-      composed: true,
     }));
   }
 
@@ -287,12 +245,12 @@ class HistoryClusterElement extends HistoryClusterElementBase {
   }
 
   /**
-   * Called with the original remove params when the last accepted request to
-   * browser to remove visits succeeds. Since the same visit may appear in
-   * multiple Clusters, all Clusters receive this callback in order to get a
-   * chance to remove their matching visits.
+   * Called with the original remove or hide params when the last accepted
+   * request to browser to remove or hide visits succeeds. Since the same visit
+   * may appear in multiple Clusters, all Clusters receive this callback in
+   * order to get a chance to remove their matching visits.
    */
-  private onVisitsRemoved_(removedVisits: URLVisit[]) {
+  private onVisitsRemovedOrHidden_(removedVisits: URLVisit[]) {
     const visitHasBeenRemoved = (visit: URLVisit) => {
       return removedVisits.findIndex((removedVisit) => {
         if (visit.normalizedUrl.url !== removedVisit.normalizedUrl.url) {
@@ -336,12 +294,6 @@ class HistoryClusterElement extends HistoryClusterElementBase {
     }));
   }
 
-  private computeHiddenVisits_(): URLVisit[] {
-    return this.cluster.visits.filter((visit: URLVisit) => {
-      return visit.hidden;
-    });
-  }
-
   private computeLabel_(): string {
     if (!this.cluster.label) {
       // This never happens unless we misconfigured our variations config.
@@ -361,12 +313,6 @@ class HistoryClusterElement extends HistoryClusterElementBase {
         });
   }
 
-  private computeVisibleVisits_(): URLVisit[] {
-    return this.cluster.visits.filter((visit: URLVisit) => {
-      return !visit.hidden;
-    });
-  }
-
   private computeImageUrl_(): string {
     if (!this.cluster.imageUrl) {
       return '';
@@ -383,15 +329,6 @@ class HistoryClusterElement extends HistoryClusterElementBase {
     });
 
     return this.cluster.imageUrl.url;
-  }
-
-  /**
-   * Returns the label of the toggle button based on whether the default-hidden
-   * visits are visible.
-   */
-  private getToggleButtonLabel_(_expanded: boolean): string {
-    return loadTimeData.getString(
-        this.expanded_ ? 'toggleButtonLabelLess' : 'toggleButtonLabelMore');
   }
 
   /**

@@ -156,7 +156,7 @@
     "META": {"sizes": {"includes": [10],}},
     "includes": [1385],
   },
-  "chrome/browser/resources/chromeos/app_icon/app_icon_resources.grd": {
+  "chrome/browser/resources/app_icon/app_icon_resources.grd": {
     "structures": [1390],
   },
   "chrome/browser/resources/chromeos/login/oobe_conditional_resources.grd": {
@@ -320,8 +320,12 @@
     "includes": [1934],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/user_notes/resources.grd": {
-    "META": {"sizes": {"includes": [10],}},
+    "META": {"sizes": {"includes": [20],}},
     "includes": [1935],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/search_companion/resources.grd": {
+    "META": {"sizes": {"includes": [5],}},
+    "includes": [1936],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/settings/chromeos/os_settings_resources.grd": {
     "META": {"sizes": {"includes": [1000],}},
@@ -371,7 +375,7 @@
     "includes": [2140],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/password_manager/resources.grd": {
-    "META": {"sizes": {"includes": [50]}},
+    "META": {"sizes": {"includes": [60]}},
     "includes": [2150],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/omnibox_popup/resources.grd": {
@@ -452,6 +456,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/omnibox/resources.grd": {
     "META": {"sizes": {"includes": [20]}},
     "includes": [2420],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/suggest_internals/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [2430],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/quota_internals/quota_internals_resources.grd": {
     "META": {"sizes": {"includes": [20]}},
@@ -556,7 +564,7 @@
     "structures": [2800],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/test/data/webui/resources.grd": {
-    "META": {"sizes": {"includes": [1200],}},
+    "META": {"sizes": {"includes": [1400],}},
     "includes": [2810],
   },
   "chrome/test/data/webui_test_resources.grd": {
@@ -1097,7 +1105,7 @@
   "<(DEVTOOLS_GRD_PATH).grd": {
     # In debug build, devtools frontend sources are not bundled and therefore
     # includes a lot of individual resources
-    "META": {"sizes": {"includes": [2100],}},
+    "META": {"sizes": {"includes": [2200],}},
     "includes": [4940],
   },
 

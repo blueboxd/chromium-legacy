@@ -68,7 +68,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.Cold.FirstPaintOccurredPreForeground"
-    enum="Boolean" expires_after="2023-05-27">
+    enum="Boolean" expires_after="2023-07-30">
   <owner>blundell@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -270,7 +270,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.GURLEnsureMainDexInitialized" units="ms"
-    expires_after="2023-03-04">
+    expires_after="2024-03-04">
   <owner>mthiesse@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -299,6 +299,16 @@ chromium-metrics-reviews@google.com.
     Android: Records whether the last time when Chrome went to background or
     closed was logged. The histogram is recorded when onResumeWithNative() is
     called.
+  </summary>
+</histogram>
+
+<histogram name="Startup.Android.IsLastVisibleTimeLogged" enum="Boolean"
+    expires_after="2023-06-30">
+  <owner>hanxi@chromium.org</owner>
+  <owner>xinyiji@chromium.org</owner>
+  <summary>
+    Android: Records whether the last time when Chrome was showing in foreground
+    was logged. The histogram is recorded when onResumeWithNative() is called.
   </summary>
 </histogram>
 
@@ -760,7 +770,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.MobileSessionStartAction"
-    enum="MobileSessionStartAction" expires_after="2023-05-27">
+    enum="MobileSessionStartAction" expires_after="2023-07-30">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>

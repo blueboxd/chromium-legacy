@@ -18,6 +18,9 @@ sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'node'))
 import node
 import node_modules
 
+from path_mappings import GetDepToPathMappings
+from validate_tsconfig import ValidateTsconfigJson
+
 
 def _write_tsconfig_json(gen_dir, tsconfig, tsconfig_file):
   if not os.path.exists(gen_dir):
@@ -26,16 +29,6 @@ def _write_tsconfig_json(gen_dir, tsconfig, tsconfig_file):
   with open(os.path.join(gen_dir, tsconfig_file), 'w') as generated_tsconfig:
     json.dump(tsconfig, generated_tsconfig, indent=2)
   return
-
-
-def _validate_tsconfig_json(tsconfig, tsconfig_file):
-  if 'compilerOptions' in tsconfig and \
-      'composite' in tsconfig['compilerOptions']:
-    return False, f'Invalid |composite| flag detected in {tsconfig_file}.' + \
-        ' Use the dedicated |composite=true| attribute in ts_library() ' + \
-        'instead.'
-  return True, None
-
 
 def _is_sourcemap_enabled(tsconfig):
   if 'compilerOptions' in tsconfig:
@@ -52,9 +45,13 @@ def _is_sourcemap_enabled(tsconfig):
 
 def main(argv):
   parser = argparse.ArgumentParser()
+  parser.add_argument('--raw_deps', nargs='*')
   parser.add_argument('--deps', nargs='*')
   parser.add_argument('--gen_dir', required=True)
   parser.add_argument('--path_mappings', nargs='*')
+
+  parser.add_argument('--root_gen_dir', required=True)
+
   parser.add_argument('--root_dir', required=True)
   parser.add_argument('--out_dir', required=True)
   parser.add_argument('--tsconfig_base')
@@ -83,8 +80,9 @@ def main(argv):
   with io.open(tsconfig_base_file, encoding='utf-8', mode='r') as f:
     tsconfig_base = json.loads(f.read())
 
-    is_tsconfig_valid, error = _validate_tsconfig_json(tsconfig_base,
-                                                       tsconfig_base_file)
+    is_tsconfig_valid, error = ValidateTsconfigJson(tsconfig_base,
+                                                    tsconfig_base_file,
+                                                    args.tsconfig_base is None)
     if not is_tsconfig_valid:
       raise AssertionError(error)
 
@@ -134,16 +132,33 @@ def main(argv):
   if args.definitions is not None:
     tsconfig['files'].extend(args.definitions)
 
-  # Handle custom path mappings, for example chrome://resources/ URLs.
-  if args.path_mappings is not None:
-    path_mappings = collections.defaultdict(list)
-    for m in args.path_mappings:
-      mapping = m.split('|')
-      path_mappings[mapping[0]].append(os.path.join('./', mapping[1]))
-    tsconfig['compilerOptions']['paths'] = path_mappings
+  # Handle path mappings, for example chrome://resources/ URLs.
+  path_mappings = collections.defaultdict(list)
 
   if args.deps is not None:
     tsconfig['references'] = [{'path': dep} for dep in args.deps]
+
+    assert args.raw_deps is not None
+    dep_to_path_mappings = GetDepToPathMappings(args.root_gen_dir)
+
+    for dep in args.raw_deps:
+      if dep not in dep_to_path_mappings:
+        assert not (dep.startswith("//ui/webui/resources")
+                    and dep.endswith(':build_ts'))
+        # Dependencies outside of ui/webui/resources are not inferred yet.
+        continue
+
+      mappings = dep_to_path_mappings[dep]
+      for (url, dir) in mappings:
+        path_mappings[url].append(os.path.join('./', dir))
+        path_mappings['chrome:' + url].append(os.path.join('./', dir))
+
+  if args.path_mappings is not None:
+    for m in args.path_mappings:
+      mapping = m.split('|')
+      path_mappings[mapping[0]].append(os.path.join('./', mapping[1]))
+
+  tsconfig['compilerOptions']['paths'] = path_mappings
 
   tsconfig_file = f'tsconfig_{args.output_suffix}.json'
   _write_tsconfig_json(args.gen_dir, tsconfig, tsconfig_file)

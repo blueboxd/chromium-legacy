@@ -51,7 +51,6 @@
 <translation id="1874309113135274312">‏גרסת הביטא של Google Chrome‏ (mDNS-In)</translation>
 <translation id="1877026089748256423">‏Chrome אינו מעודכן</translation>
 <translation id="1919130412786645364">‏התרת כניסה אל Chrome</translation>
-<translation id="1952239763774043237">‏כדי לקבל עדכונים של Google Chrome בעתיד, צריך להשתמש ב-macOS מגרסה 10.13 ואילך. במחשב הזה מותקנת מערכת ההפעלה macOS 10.12.</translation>
 <translation id="1953553007165777902">מתבצעת הורדה… יש עוד <ph name="MINUTE" /> דק'</translation>
 <translation id="2018528049276128029">‏בכל פרופיל מאוחסנים נתוני Chrome משלו כמו סימניות, היסטוריה, סיסמאות ועוד</translation>
 <translation id="2018879682492276940">ההתקנה נכשלה. יש לנסות שוב.</translation>
@@ -184,6 +183,7 @@
 <translation id="4335235004908507846">‏Chrome עוזר להגן עליך מפני פרצות באבטחת המידע, תוספים לא תקינים ועוד</translation>
 <translation id="4343195214584226067">‏<ph name="EXTENSION_NAME" /> נוסף ל-‏Chrome</translation>
 <translation id="4384570495110188418">‏Chrome לא יכול לבדוק את הסיסמאות שלך כי לא נכנסת לחשבון</translation>
+<translation id="4393248995085527349">‏כדי לקבל עדכונים של Google Chrome בעתיד, צריך להשתמש ב-macOS מגרסה 10.15 ואילך. במחשב הזה מותקנת מערכת ההפעלה macOS 10.13.</translation>
 <translation id="4427306783828095590">עם ההגנה המשופרת, החסימה של פישינג ותוכנות זדוניות מקיפה יותר</translation>
 <translation id="4450664632294415862">‏Chrome – כניסה לרשת – <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">‏מתבצעת כרגע פעולה אחרת ב-Google Chrome. יש לנסות שוב מאוחר יותר.</translation>
@@ -213,7 +213,6 @@
 <translation id="4970880042055371251">‏גרסת ChromeOS</translation>
 <translation id="4970947549776831107">‏סוג הקובץ הזה מסוכן ולכן הקובץ נחסם על ידי Chrome</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
-<translation id="5037581483200764584">‏כדי לקבל עדכונים של Google Chrome בעתיד, צריך להשתמש ב-macOS מגרסה 10.13 ואילך. במחשב הזה פועלת מערכת ההפעלה ‎OS X 10.11.</translation>
 <translation id="5098668839038261629">‏כשההגדרה מופעלת, תתבצע יציאה גם מ-Chrome</translation>
 <translation id="5132929315877954718">‏מקום לגלות אפליקציות, משחקים, תוספים ועיצובים מעולים ל-Google Chrome.</translation>
 <translation id="5139423532931106058">‏התאמה אישית של פרופיל Chrome</translation>
@@ -251,6 +250,7 @@
 <translation id="5941711191222866238">מזעור</translation>
 <translation id="5941830788786076944">‏Google Chrome יהיה דפדפן ברירת המחדל</translation>
 <translation id="6003112304606738118">מתבצעת הורדה… יש עוד <ph name="HOURS" /> שע'</translation>
+<translation id="6010556343189461180">‏כדי לקבל עדכונים של Google Chrome בעתיד, צריך להשתמש ב-macOS מגרסה 10.15 ואילך. במחשב הזה מותקנת מערכת ההפעלה macOS 10.14.</translation>
 <translation id="6022388122721048220">{0,plural, =0{‏Chrome נסגר עכשיו.}=1{‏Chrome ייסגר בעוד שנייה.}one{‏Chrome ייסגר בעוד # שניות.}two{‏Chrome ייסגר בעוד # שניות.}other{‏Chrome ייסגר בעוד # שניות.}}</translation>
 <translation id="6040143037577758943">סגירה</translation>
 <translation id="6070348360322141662">‏לשיפור האבטחה, Google Chrome יצפין את הנתונים</translation>
@@ -413,6 +413,7 @@
 <translation id="922152298093051471">‏התאמה אישית של Chrome</translation>
 <translation id="93760716455950538">‏הפעלה מחדש של ChromeOS Flex</translation>
 <translation id="940313311831216333">‏כדי לקבל גישה אל הפריטים שלך ב-Chrome בכל המכשירים, יש להיכנס לחשבון ולהפעיל את הסנכרון.</translation>
+<translation id="943390475793766444">‏ההמלצה של Chrome היא לסרוק את הקובץ הזה כי הוא עלול להיות מסוכן.</translation>
 <translation id="989369509083708165">‏Google Chrome הוא דפדפן ברירת המחדל</translation>
 <translation id="989816563149873169">‏ניתן לעבור בין פרופילים של Chrome באמצעות <ph name="SHORTCUT" /></translation>
 </translationbundle>

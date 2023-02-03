@@ -74,6 +74,20 @@ BASE_FEATURE(kAutofillAssociateForms,
 const base::FeatureParam<base::TimeDelta> kAutofillAssociateFormsTTL{
     &kAutofillAssociateForms, "associate_forms_ttl", base::Minutes(5)};
 
+// If enabled, Autofill will not apply updates to address profiles based on data
+// extracted from submitted forms. This feature is mostly for debugging and
+// testing purposes and is not supposed to be launched.
+BASE_FEATURE(kAutofillDisableProfileUpdates,
+             "AutofillDisableProfileUpdates",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, Autofill will not apply silent updates to the structure of
+// addresses and names. This feature is mostly for debugging and testing
+// purposes and is not supposed to be launched.
+BASE_FEATURE(kAutofillDisableSilentProfileUpdates,
+             "AutofillDisableSilentProfileUpdates",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // When enabled, Autofill ignores invalid country information on import, which
 // would otherwise prevent an import. Instead, ignoring it will trigger the
 // country complemention logic.
@@ -95,7 +109,7 @@ BASE_FEATURE(kAutofillInferCountryCallingCode,
 // TODO(crbug.com/1295721): Cleanup when launched.
 BASE_FEATURE(kAutofillComplementCountryEarly,
              "AutofillComplementCountryEarly",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, label inference considers strings entirely made up of  '(', ')'
 // and '-' as valid labels.
@@ -133,14 +147,25 @@ BASE_FEATURE(kAutofillDeferSubmissionClassificationAfterAjax,
              "AutofillDeferSubmissionClassificationAfterAjax",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, we try to fill and import from fields based on available
-// heuristic or server suggestions even if the autocomplete attribute is not
-// specified by the web standard. This does not affect the moments when the UI
-// is shown.
+// If enabled, server/heuristic predictions take precedence over an unrecognized
+// autocomplete attribute. Depending on the parameters, these fields are then
+// filled or imported from. Independently of any parameters, suggestions are
+// suppressed for such fields.
+// Predicting a type for a field can influence other fields due to
+// rationalization and sectioning. This also affects metrics like
+// Autofill.FieldFillingStats, which rely on the types.
+// When only the importing part of this feature is enabled, only the importing
+// metrics are reliable.
 // TODO(crbug.com/1295728): Remove the feature when the experiment is completed.
 BASE_FEATURE(kAutofillFillAndImportFromMoreFields,
              "AutofillFillAndImportFromMoreFields",
              base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<bool> kAutofillFillAutocompleteUnrecognized{
+    &kAutofillFillAndImportFromMoreFields, "fill_unrecognized_autocomplete",
+    false};
+const base::FeatureParam<bool> kAutofillImportFromAutoccompleteUnrecognized{
+    &kAutofillFillAndImportFromMoreFields,
+    "import_from_unrecognized_autocomplete", false};
 
 // Kill switch for Autofill filling.
 BASE_FEATURE(kAutofillDisableFilling,
@@ -158,24 +183,6 @@ BASE_FEATURE(kAutofillDisableShadowHeuristics,
              "AutofillDisableShadowHeuristics",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// When enabled, autofill will use the new ranking algorithm for card and
-// profile autofill suggestions.
-BASE_FEATURE(kAutofillEnableRankingFormula,
-             "AutofillEnableRankingFormula",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-// The half life applied to the use count.
-const base::FeatureParam<int> kAutofillRankingFormulaUsageHalfLife{
-    &kAutofillEnableRankingFormula, "autofill_ranking_formula_usage_half_life",
-    20};
-// The boost factor applied to ranking virtual cards.
-const base::FeatureParam<int> kAutofillRankingFormulaVirtualCardBoost{
-    &kAutofillEnableRankingFormula,
-    "autofill_ranking_formula_virtual_card_boost", 5};
-// The half life applied to the virtual card boost.
-const base::FeatureParam<int> kAutofillRankingFormulaVirtualCardBoostHalfLife{
-    &kAutofillEnableRankingFormula,
-    "autofill_ranking_formula_virtual_card_boost_half_life", 15};
-
 // When enabled, autofill will use the new ranking algorithm for address profile
 // autofill suggestions.
 BASE_FEATURE(kAutofillEnableRankingFormulaAddressProfiles,
@@ -186,6 +193,25 @@ const base::FeatureParam<int>
     kAutofillRankingFormulaAddressProfilesUsageHalfLife{
         &kAutofillEnableRankingFormulaAddressProfiles,
         "autofill_ranking_formula_address_profiles_usage_half_life", 20};
+
+// When enabled, autofill will use the new ranking algorithm for credit card
+// autofill suggestions.
+BASE_FEATURE(kAutofillEnableRankingFormulaCreditCards,
+             "AutofillEnableRankingFormulaCreditCards",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+// The half life applied to the use count.
+const base::FeatureParam<int> kAutofillRankingFormulaCreditCardsUsageHalfLife{
+    &kAutofillEnableRankingFormulaCreditCards,
+    "autofill_ranking_formula_credit_cards_usage_half_life", 20};
+
+// The boost factor applied to ranking virtual cards.
+const base::FeatureParam<int> kAutofillRankingFormulaVirtualCardBoost{
+    &kAutofillEnableRankingFormulaCreditCards,
+    "autofill_ranking_formula_virtual_card_boost", 5};
+// The half life applied to the virtual card boost.
+const base::FeatureParam<int> kAutofillRankingFormulaVirtualCardBoostHalfLife{
+    &kAutofillEnableRankingFormulaCreditCards,
+    "autofill_ranking_formula_virtual_card_boost_half_life", 15};
 
 // Controls if the heuristic field parsing utilizes shared labels.
 // TODO(crbug.com/1165780): Remove once shared labels are launched.
@@ -330,12 +356,6 @@ BASE_FEATURE(kAutofillImprovedLabelForInference,
 // TODO(crbug/1248585): Remove when launched.
 BASE_FEATURE(kAutofillHighlightOnlyChangedValuesInPreviewMode,
              "AutofillHighlightOnlyChangedValuesInPreviewMode",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When enabled, Autofill suggestions are displayed in the keyboard accessory
-// instead of the regular popup.
-BASE_FEATURE(kAutofillKeyboardAccessory,
-             "AutofillKeyboardAccessory",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, Autofill will use new logic to strip both prefixes
@@ -537,12 +557,6 @@ BASE_FEATURE(kAutofillUseImprovedLabelDisambiguation,
              "AutofillUseImprovedLabelDisambiguation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Controls whether to use the same icon for the settings section in the popup
-// footer.
-BASE_FEATURE(kAutofillUseConsistentPopupSettingsIcons,
-             "AutofillUseConsistentPopupSettingsIcons",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Controls whether to use the combined heuristic and the autocomplete section
 // implementation for section splitting or not. See https://crbug.com/1076175.
 BASE_FEATURE(kAutofillUseNewSectioningMethod,
@@ -612,6 +626,12 @@ BASE_FEATURE(kAutofillLogUKMEventsWithSampleRate,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_ANDROID)
+// When enabled, Autofill suggestions are displayed in the keyboard accessory
+// instead of the regular popup.
+BASE_FEATURE(kAutofillKeyboardAccessory,
+             "AutofillKeyboardAccessory",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether the Autofill manual fallback for Addresses and Payments is
 // present on Android.
 BASE_FEATURE(kAutofillManualFallbackAndroid,

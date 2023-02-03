@@ -802,36 +802,52 @@ bool AXNodeObject::ComputeAccessibilityIsIgnored(
   return true;
 }
 
-// There should only be one banner/contentInfo per page. If header/footer are
-// being used within an article, aside, nave, section, blockquote, details,
-// fieldset, figure, td, or main, then it should not be exposed as whole
-// page's banner/contentInfo.
-static HashSet<QualifiedName>& GetLandmarkRolesNotAllowed() {
-  DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, landmark_roles_not_allowed, ());
-  if (landmark_roles_not_allowed.empty()) {
-    landmark_roles_not_allowed.insert(html_names::kArticleTag);
-    landmark_roles_not_allowed.insert(html_names::kAsideTag);
-    landmark_roles_not_allowed.insert(html_names::kNavTag);
-    landmark_roles_not_allowed.insert(html_names::kSectionTag);
-    landmark_roles_not_allowed.insert(html_names::kBlockquoteTag);
-    landmark_roles_not_allowed.insert(html_names::kDetailsTag);
-    landmark_roles_not_allowed.insert(html_names::kFieldsetTag);
-    landmark_roles_not_allowed.insert(html_names::kFigureTag);
-    landmark_roles_not_allowed.insert(html_names::kTdTag);
-    landmark_roles_not_allowed.insert(html_names::kMainTag);
+// The following lists are for deciding whether the tags aside,
+// header and footer can be interpreted as roles complementary, banner and
+// contentInfo or if they should be interpreted as generic. This list
+// includes all roles that correspond to the html sectioning content elements.
+static HashSet<ax::mojom::blink::Role>& GetLandmarkIsNotAllowedAncestorRoles(
+    ax::mojom::blink::Role landmark) {
+  // clang-format off
+  DEFINE_STATIC_LOCAL(
+      HashSet<ax::mojom::blink::Role>, sectioning_content_roles,
+      ({
+        ax::mojom::blink::Role::kArticle,
+        ax::mojom::blink::Role::kComplementary,
+        ax::mojom::blink::Role::kMain,
+        ax::mojom::blink::Role::kNavigation,
+        ax::mojom::blink::Role::kSection
+      }));
+  // clang-format on
+
+  DEFINE_STATIC_LOCAL(HashSet<ax::mojom::blink::Role>,
+                      aside_is_not_allowed_roles, ());
+
+  // Main can contain complementary element but not header or footer.
+  if (landmark == ax::mojom::blink::Role::kComplementary) {
+    if (aside_is_not_allowed_roles.empty()) {
+      for (const auto& role : sectioning_content_roles) {
+        if (role != ax::mojom::blink::Role::kMain) {
+          aside_is_not_allowed_roles.insert(role);
+        }
+      }
+    }
+    return aside_is_not_allowed_roles;
   }
-  return landmark_roles_not_allowed;
+  return sectioning_content_roles;
 }
 
-bool AXNodeObject::IsDescendantOfElementType(
-    HashSet<QualifiedName>& tag_names) const {
+bool AXNodeObject::IsDescendantOfLandmarkDisallowedElement() const {
   if (!GetNode())
     return false;
 
-  for (Element* parent = GetNode()->parentElement(); parent;
-       parent = parent->parentElement()) {
-    if (tag_names.Contains(parent->TagQName()))
+  auto role_names = GetLandmarkIsNotAllowedAncestorRoles(RoleValue());
+
+  for (AXObject* parent = ParentObjectUnignored(); parent;
+       parent = parent->ParentObjectUnignored()) {
+    if (role_names.Contains(parent->RoleValue())) {
       return true;
+    }
   }
   return false;
 }
@@ -1288,18 +1304,11 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (IsFrame(GetNode()))
     return ax::mojom::blink::Role::kIframe;
 
-  // There should only be one banner/contentInfo per page. If header/footer are
-  // being used within an article or section then it should not be exposed as
-  // whole page's banner/contentInfo but as a generic container role.
   if (GetNode()->HasTagName(html_names::kHeaderTag)) {
-    if (IsDescendantOfElementType(GetLandmarkRolesNotAllowed()))
-      return ax::mojom::blink::Role::kHeaderAsNonLandmark;
     return ax::mojom::blink::Role::kHeader;
   }
 
   if (GetNode()->HasTagName(html_names::kFooterTag)) {
-    if (IsDescendantOfElementType(GetLandmarkRolesNotAllowed()))
-      return ax::mojom::blink::Role::kFooterAsNonLandmark;
     return ax::mojom::blink::Role::kFooter;
   }
 
@@ -3403,7 +3412,7 @@ String AXNodeObject::TextAlternative(
       recursive, aria_label_or_description_root, visited, name_from,
       related_objects, name_sources, &found_text_alternative);
   if (found_text_alternative && !name_sources)
-    return text_alternative;
+    return MaybeAppendFileDescriptionToName(text_alternative);
 
   // Step 2D from: http://www.w3.org/TR/accname-aam-1.1  -- native markup.
   text_alternative =
@@ -3413,7 +3422,7 @@ String AXNodeObject::TextAlternative(
       !text_alternative.empty() ||
       name_from == ax::mojom::blink::NameFrom::kAttributeExplicitlyEmpty;
   if (has_text_alternative && !name_sources)
-    return text_alternative;
+    return MaybeAppendFileDescriptionToName(text_alternative);
 
   // Step 2F / 2G from: http://www.w3.org/TR/accname-aam-1.1 -- from content.
   if (aria_label_or_description_root || SupportsNameFromContents(recursive)) {
@@ -3439,7 +3448,7 @@ String AXNodeObject::TextAlternative(
           found_text_alternative = true;
           name_sources->back().text = text_alternative;
         } else {
-          return text_alternative;
+          return MaybeAppendFileDescriptionToName(text_alternative);
         }
       }
     }
@@ -5125,31 +5134,6 @@ String AXNodeObject::NativeTextAlternative(
     }
   }
 
-  // Input type=file. Not part of the spec, but Blink implements it
-  // as a single control that has both a button ("Choose file...") and
-  // some text showing the filename, and we need to concatenate both into
-  // the name of the button.
-  if (input_element && input_element->type() == input_type_names::kFile) {
-    name_from = ax::mojom::blink::NameFrom::kValue;
-
-    String displayed_file_path = GetValueForControl();
-    String upload_button_text = input_element->UploadButton()->Value();
-    if (!displayed_file_path.empty()) {
-      text_alternative = displayed_file_path + ", " + upload_button_text;
-    } else {
-      text_alternative = upload_button_text;
-    }
-    *found_text_alternative = true;
-
-    if (name_sources) {
-      name_sources->push_back(NameSource(true, kValueAttr));
-      name_sources->back().type = name_from;
-      name_sources->back().text = text_alternative;
-    } else {
-      return text_alternative;
-    }
-  }
-
   // Also check for aria-placeholder.
   if (IsTextField()) {
     name_from = ax::mojom::blink::NameFrom::kPlaceholder;
@@ -5406,6 +5390,28 @@ String AXNodeObject::NativeTextAlternative(
   }
 
   return text_alternative;
+}
+
+// This is not part of the spec, but we think it's a worthy addition: if the
+// labelled input is of type="file", we append the chosen file name to it. We do
+// this because this type of input is actually exposed as a button, and buttons
+// may not have a "value" field. An unlabelled input is manager later in this
+// function, it's named with the default text in the button, 'Choose File', plus
+// the file name.
+String AXNodeObject::MaybeAppendFileDescriptionToName(
+    const String& name) const {
+  const auto* input_element = DynamicTo<HTMLInputElement>(GetNode());
+  if (!input_element || input_element->type() != input_type_names::kFile)
+    return name;
+
+  String displayed_file_path = GetValueForControl();
+  if (!displayed_file_path.empty()) {
+    if (GetTextDirection() == ax::mojom::blink::WritingDirection::kRtl)
+      return name + " :" + displayed_file_path;
+    else
+      return name + ": " + displayed_file_path;
+  }
+  return name;
 }
 
 String AXNodeObject::Description(

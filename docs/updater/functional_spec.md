@@ -125,14 +125,16 @@ process is determined by command-line arguments:
         * The value of `installerdata` needs to be URL encoded.
         * The data will be decoded and written to a file same as in
           [installdataindex](#installdataindex).
-    *   --offlinedir=...
+    *   --offlinedir={GUID}
         *   Performs offline install, which means no update check or file
             download is performed against the server during installation.
-            All data is read from the files in the directory instead.
-        *   Files in offline directory:
+            All data is read from the files in the offline directory instead.
+        *   The following are the files in the offline directory, which is at
+            `{CURRENT_PROCESS_DIR}\Offline\{GUID}`:
             * Manifest file, named `OfflineManifest.gup` or *`<app-id>`*`.gup`.
               The file contains the update check response in XML format.
-            * App installer.
+            * {AppId}\AppInstaller.exe/msi.
+            * See the "Offline installs" section below for more information.
         *   The switch can be combined with `--handoff` above.
         *   --enterprise
             *   Suppresses transmission of pings from the offline install.
@@ -384,6 +386,18 @@ Offline installs include:
 * an offline manifest file, which contains the update check response in XML
   format.
 * app installer.
+
+Offline install command line format:
+* The offline directory is specified on the command line as a relative path in
+the format "/offlinedir {GUID}".
+* The actual offline directory is at `{CURRENT_PROCESS_DIR}\Offline\{GUID}`.
+* The offline manifest is at
+`{CURRENT_PROCESS_DIR}\Offline\{GUID}\OfflineManifest.gup`.
+* The installer is at
+`{CURRENT_PROCESS_DIR}\Offline\{GUID}\{app_id}\installer.exe`.
+  * `installer.exe` may not correspond exactly to the value of the manifest's
+  `run` attribute, so the code picks the first file it finds in the
+  directory if that is the case.
 
 For online app installs, the update server checks the compatibility between the
 application and the host OS that the install is attempted on.

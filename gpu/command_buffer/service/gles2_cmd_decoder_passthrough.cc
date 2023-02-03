@@ -35,6 +35,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "gpu/command_buffer/service/shared_image/d3d_image_backing_factory.h"
+#include "ui/gl/gl_image_d3d.h"
 #endif  // BUILDFLAG(IS_WIN)
 
 namespace gpu {
@@ -1761,6 +1762,9 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.shared_image_swap_chain =
       caps.shared_image_d3d && D3DImageBackingFactory::IsSwapChainSupported();
 #endif  // BUILDFLAG(IS_WIN)
+  if (base::FeatureList::IsEnabled(features::kPassthroughYuvRgbConversion)) {
+    caps.supports_yuv_rgb_conversion = true;
+  }
   caps.texture_npot = feature_info_->feature_flags().npot_ok;
   caps.supports_scanout_shared_images =
       SharedImageManager::SupportsScanoutImages();
@@ -2080,7 +2084,7 @@ GLES2DecoderPassthroughImpl::GetTranslator(GLenum type) {
   return nullptr;
 }
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
 void GLES2DecoderPassthroughImpl::AttachImageToTextureWithDecoderBinding(
     uint32_t client_texture_id,
     uint32_t texture_target,
@@ -2114,7 +2118,7 @@ void GLES2DecoderPassthroughImpl::BindImageInternal(uint32_t client_texture_id,
 
   // |can_bind_to_sampler| indicates that we don't need to take any action.
   // Otherwise, we do it when the texture is first used for drawing.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   CHECK(!can_bind_to_sampler);
   passthrough_texture->set_bind_pending();
 #else
@@ -2131,7 +2135,7 @@ void GLES2DecoderPassthroughImpl::BindImageInternal(uint32_t client_texture_id,
 }
 #endif
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
 void GLES2DecoderPassthroughImpl::BindOnePendingImage(
     GLenum target,
     TexturePassthrough* texture) {
@@ -2171,8 +2175,13 @@ void GLES2DecoderPassthroughImpl::BindOnePendingImage(
   GLenum texture_type = TextureTargetToTextureType(target);
   api()->glBindTextureFn(texture_type, texture->service_id());
 
+#if BUILDFLAG(IS_WIN)
   // TODO: internalformat?
-  image->BindTexImage(target);
+  auto* d3d_image = gl::GLImage::ToGLImageD3D(image);
+  if (d3d_image) {
+    d3d_image->BindTexImage(target);
+  }
+#endif
 
   // If bind fails, then we could keep the bind state the same.
   // However, for now, we only try once.
@@ -2466,19 +2475,54 @@ GLES2DecoderPassthroughImpl::PatchGetFramebufferAttachmentParameter(
   return error::kNoError;
 }
 
+// static
+std::unique_ptr<GLES2DecoderPassthroughImpl::LazySharedContextState>
+GLES2DecoderPassthroughImpl::LazySharedContextState::Create(
+    GLES2DecoderPassthroughImpl* impl) {
+  auto context =
+      std::make_unique<GLES2DecoderPassthroughImpl::LazySharedContextState>(
+          impl);
+  if (!context->Initialize()) {
+    return nullptr;
+  }
+  return context;
+}
+
 GLES2DecoderPassthroughImpl::LazySharedContextState::LazySharedContextState(
     GLES2DecoderPassthroughImpl* impl)
-    : impl_(impl) {
+    : impl_(impl) {}
+
+GLES2DecoderPassthroughImpl::LazySharedContextState::~LazySharedContextState() {
+  if (shared_context_state_) {
+    ui::ScopedMakeCurrent smc(shared_context_state_->context(),
+                              shared_context_state_->surface());
+    shared_context_state_.reset();
+  }
+}
+
+bool GLES2DecoderPassthroughImpl::LazySharedContextState::Initialize() {
   auto gl_surface = gl::init::CreateOffscreenGLSurface(
       impl_->context_->GetGLDisplayEGL(), gfx::Size());
-  DCHECK(gl_surface);
+  if (!gl_surface) {
+    impl_->InsertError(
+        GL_INVALID_OPERATION,
+        "ContextResult::kFatalFailure: Failed to create GL Surface "
+        "for SharedContextState");
+    return false;
+  }
 
   gl::GLContextAttribs attribs;
   attribs.global_texture_share_group = true;
   attribs.global_semaphore_share_group = true;
   auto gl_context = gl::init::CreateGLContext(impl_->context_->share_group(),
                                               gl_surface.get(), attribs);
-  DCHECK(gl_context);
+  if (!gl_context) {
+    impl_->InsertError(
+        GL_INVALID_OPERATION,
+        "ContextResult::kFatalFailure: Failed to create GL Context "
+        "for SharedContextState");
+    return false;
+  }
 
   // Make current context using `gl_context` and `gl_surface`
   ui::ScopedMakeCurrent smc(gl_context.get(), gl_surface.get());
@@ -2498,21 +2542,16 @@ GLES2DecoderPassthroughImpl::LazySharedContextState::LazySharedContextState(
     impl_->InsertError(GL_INVALID_OPERATION,
                        "ContextResult::kFatalFailure: Failed to Initialize GL "
                        "for SharedContextState");
-    return;
+    return false;
   }
   if (!shared_context_state_->InitializeGrContext(gpu_preferences, workarounds,
                                                   /*cache=*/nullptr)) {
     impl_->InsertError(GL_INVALID_OPERATION,
                        "ContextResult::kFatalFailure: Failed to Initialize "
                        "GrContext for SharedContextState");
-    return;
+    return false;
   }
-}
-
-GLES2DecoderPassthroughImpl::LazySharedContextState::~LazySharedContextState() {
-  ui::ScopedMakeCurrent smc(shared_context_state_->context(),
-                            shared_context_state_->surface());
-  shared_context_state_.reset();
+  return true;
 }
 
 void GLES2DecoderPassthroughImpl::InsertError(GLenum error,

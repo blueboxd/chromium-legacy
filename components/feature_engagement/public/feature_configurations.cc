@@ -1010,6 +1010,59 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
                                              Comparator(EQUAL, 0), 360, 360));
     return config;
   }
+
+  if (kIPHRequestDesktopSiteExceptionsGenericFeature.name == feature->name) {
+    // A config that allows the RDS site-level setting IPH to be shown to
+    // tablet users. This will be triggered a maximum of 2 times (once per
+    // 2 weeks), and if the user has not used the app menu to create a desktop
+    // site exception in a span of a year.
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(GREATER_THAN_OR_EQUAL, 2);
+    config->session_rate = Comparator(LESS_THAN, 1);
+    config->used = EventConfig("app_menu_desktop_site_exception_added",
+                               Comparator(EQUAL, 0), 360, 360);
+    config->trigger =
+        EventConfig("request_desktop_site_exceptions_generic_iph_trigger",
+                    Comparator(LESS_THAN, 2), 720, 720);
+    config->event_configs.insert(
+        EventConfig("request_desktop_site_exceptions_generic_iph_trigger",
+                    Comparator(EQUAL, 0), 14, 14));
+    return config;
+  }
+
+  if (kIPHRequestDesktopSiteExceptionsSpecificFeature.name == feature->name) {
+    // A config that allows the RDS site-level setting IPH to be shown on sites
+    // that are more functional in desktop mode. This will be triggered a
+    // maximum of 2 times (once per 2 weeks), and if the user has not used the
+    // app menu to create a desktop site exception in a span of a year.
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(GREATER_THAN_OR_EQUAL, 2);
+    config->session_rate = Comparator(LESS_THAN, 1);
+    config->used = EventConfig("app_menu_desktop_site_exception_added",
+                               Comparator(EQUAL, 0), 360, 360);
+    config->trigger =
+        EventConfig("request_desktop_site_exceptions_specific_iph_trigger",
+                    Comparator(LESS_THAN, 2), 720, 720);
+    config->event_configs.insert(
+        EventConfig("request_desktop_site_exceptions_specific_iph_trigger",
+                    Comparator(EQUAL, 0), 14, 14));
+    return config;
+  }
+
+  if (kIPHPageZoomFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(EQUAL, 0);
+    config->trigger =
+        EventConfig("page_zoom_iph_trigger", Comparator(EQUAL, 0), 1440, 1440);
+    config->used =
+        EventConfig("page_zoom_opened", Comparator(EQUAL, 0), 1440, 1440);
+    return config;
+  }
+
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
@@ -1090,12 +1143,14 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     // window of one week between impressions.
     absl::optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;
-    config->availability = Comparator(GREATER_THAN_OR_EQUAL, 7);
+    config->availability = Comparator(ANY, 0);
     config->session_rate = Comparator(LESS_THAN, 1);
     config->trigger = EventConfig("price_notifications_trigger",
-                                  Comparator(LESS_THAN, 3), 365, 365);
+                                  Comparator(LESS_THAN, 3), 730, 730);
     config->used =
-        EventConfig("price_notifications_used", Comparator(EQUAL, 0), 365, 365);
+        EventConfig("price_notifications_used", Comparator(EQUAL, 0), 730, 730);
+    config->event_configs.insert(EventConfig("price_notifications_trigger",
+                                             Comparator(EQUAL, 0), 7, 730));
     return config;
   }
 
@@ -1104,7 +1159,9 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     // (kIPHiOSDefaultBrowserOverflowMenuBadgeFeature and
     // kIPHiOSDefaultBrowserSettingsBadgeFeature) which will enable a blue
     // notification badge to be shown to users at two different locations to
-    // help bring their attention to the default browser settings page.
+    // help bring their attention to the default browser settings page. This FET
+    // feature is non-blocking because it is a passive promo that appears
+    // alongside the rest of the UI, and does not interrupt the user's flow.
 
     absl::optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;
@@ -1116,6 +1173,8 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
                                Comparator(GREATER_THAN_OR_EQUAL, 1), 30, 360);
     config->event_configs.insert(EventConfig("default_browser_promo_shown",
                                              Comparator(EQUAL, 0), 30, 360));
+    config->blocked_by.type = BlockedBy::Type::NONE;
+    config->blocking.type = Blocking::Type::NONE;
     return config;
   }
 
@@ -1123,7 +1182,9 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     // A config to allow a user to be shown the blue dot promo on the carousel.
     // It depends on kIPHiOSDefaultBrowserBadgeEligibilityFeature to have deemed
     // users eligible, and adds more constraints to decide when to stop showing
-    // the promo to the user.
+    // the promo to the user. This FET feature is non-blocking because it is a
+    // passive promo that appears alongside the rest of the UI, and does not
+    // interrupt the user's flow.
 
     absl::optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;
@@ -1132,12 +1193,17 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     config->used = EventConfig("blue_dot_promo_overflow_menu_dismissed",
                                Comparator(EQUAL, 0), 30, 360);
     config->trigger = EventConfig("blue_dot_promo_overflow_menu_shown",
-                                  Comparator(LESS_THAN_OR_EQUAL, 2), 360, 360);
+                                  Comparator(ANY, 0), 360, 360);
+    config->event_configs.insert(
+        EventConfig("blue_dot_promo_overflow_menu_shown_new_session",
+                    Comparator(LESS_THAN_OR_EQUAL, 2), 360, 360));
     config->event_configs.insert(
         EventConfig("blue_dot_promo_eligibility_met",
                     Comparator(GREATER_THAN_OR_EQUAL, 1), 30, 360));
     config->event_configs.insert(EventConfig("default_browser_promo_shown",
                                              Comparator(EQUAL, 0), 30, 360));
+    config->blocked_by.type = BlockedBy::Type::NONE;
+    config->blocking.type = Blocking::Type::NONE;
     return config;
   }
 
@@ -1146,7 +1212,9 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     // browser settings row item. It depends on
     // kIPHiOSDefaultBrowserBadgeEligibilityFeature to have deemed users
     // eligible, and adds more constraints to decide when to stop showing the
-    // promo.
+    // promo. This FET feature is non-blocking because it is a passive promo
+    // that appears alongside the rest of the UI, and does not interrupt the
+    // user's flow.
 
     absl::optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;
@@ -1155,12 +1223,29 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     config->used = EventConfig("blue_dot_promo_settings_dismissed",
                                Comparator(EQUAL, 0), 30, 360);
     config->trigger = EventConfig("blue_dot_promo_settings_shown",
-                                  Comparator(LESS_THAN_OR_EQUAL, 2), 360, 360);
+                                  Comparator(ANY, 0), 360, 360);
+    config->event_configs.insert(
+        EventConfig("blue_dot_promo_settings_shown_new_session",
+                    Comparator(LESS_THAN_OR_EQUAL, 2), 360, 360));
     config->event_configs.insert(
         EventConfig("blue_dot_promo_eligibility_met",
                     Comparator(GREATER_THAN_OR_EQUAL, 1), 30, 360));
     config->event_configs.insert(EventConfig("default_browser_promo_shown",
                                              Comparator(EQUAL, 0), 30, 360));
+    config->blocked_by.type = BlockedBy::Type::NONE;
+    config->blocking.type = Blocking::Type::NONE;
+    return config;
+  }
+
+  if (kIPHiOSAppStorePromoFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->used =
+        EventConfig("app_store_promo_used", Comparator(EQUAL, 0), 365, 730);
+    config->trigger =
+        EventConfig("app_store_promo_trigger", Comparator(EQUAL, 0), 365, 730);
     return config;
   }
 #endif  // BUILDFLAG(IS_IOS)

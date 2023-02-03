@@ -38,6 +38,7 @@ constexpr uint64_t kHDMIOutputId = 10020;
 constexpr uint64_t kUsbMicId = 10030;
 constexpr uint64_t kInternalMicFrontId = 10040;
 constexpr uint64_t kInternalMicRearId = 10050;
+constexpr uint64_t kInternalMicId = 10060;
 
 struct AudioNodeInfo {
   bool is_input;
@@ -72,6 +73,10 @@ constexpr AudioNodeInfo kInternalMicFront[] = {
 constexpr AudioNodeInfo kInternalMicRear[] = {
     {true, kInternalMicRearId, "Rear Mic", "REAR_MIC", "RearMic"}};
 
+constexpr AudioNodeInfo kInternalMic[] = {
+    {true, kInternalMicId, "Internal Mic", "INTERNAL_MIC", "InternalMic",
+     cras::AudioEffectType::EFFECT_TYPE_NOISE_CANCELLATION}};
+
 class FakeAudioSystemPropertiesObserver
     : public mojom::AudioSystemPropertiesObserver {
  public:
@@ -86,6 +91,21 @@ class FakeAudioSystemPropertiesObserver
       mojom::AudioSystemPropertiesPtr properties) override {
     last_audio_system_properties_ = std::move(properties);
     ++num_properties_updated_calls_;
+  }
+
+  mojom::AudioDevicePtr GetInputAudioDevice(size_t index) const {
+    DCHECK(last_audio_system_properties_.has_value());
+    DCHECK(last_audio_system_properties_.value()->input_devices.size() > index);
+
+    return last_audio_system_properties_.value()->input_devices[index].Clone();
+  }
+
+  mojom::AudioDevicePtr GetOutputAudioDevice(size_t index) const {
+    DCHECK(last_audio_system_properties_.has_value());
+    DCHECK(last_audio_system_properties_.value()->output_devices.size() >
+           index);
+
+    return last_audio_system_properties_.value()->output_devices[index].Clone();
   }
 
   absl::optional<mojom::AudioSystemPropertiesPtr> last_audio_system_properties_;
@@ -105,6 +125,8 @@ class CrosAudioConfigImplTest : public testing::Test {
     CrasAudioHandler::InitializeForTesting();
     cras_audio_handler_ = CrasAudioHandler::Get();
     audio_pref_handler_ = base::MakeRefCounted<AudioDevicesPrefHandlerStub>();
+    audio_pref_handler_->SetNoiseCancellationState(
+        /*noise_cancellation_state=*/false);
     cras_audio_handler_->SetPrefHandlerForTesting(audio_pref_handler_);
     cros_audio_config_ = std::make_unique<CrosAudioConfigImpl>();
     ui::MicrophoneMuteSwitchMonitor::Get()->SetMicrophoneMuteSwitchValue(
@@ -158,8 +180,14 @@ class CrosAudioConfigImplTest : public testing::Test {
   }
 
   void SetInputGainPercentFromFrontEnd(int gain_percent) {
-    // TODO(swifton): Replace RunUntilIdle with Run and QuitClosure.
+    // TODO(ashleydp): Replace RunUntilIdle with Run and QuitClosure.
     remote_->SetInputGainPercent(gain_percent);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SimulateSetNoiseCancellationEnabled(bool enabled) {
+    // TODO(ashleydp): Replace RunUntilIdle with Run and QuitClosure.
+    remote_->SetNoiseCancellationEnabled(enabled);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -232,6 +260,28 @@ class CrosAudioConfigImplTest : public testing::Test {
     fake_cras_audio_client_->InsertAudioNodeToList(
         GenerateAudioNode(node_info));
     base::RunLoop().RunUntilIdle();
+  }
+
+  bool GetNoiseCancellationState() {
+    return fake_cras_audio_client_->noise_cancellation_enabled();
+  }
+
+  bool GetNoiseCancellationStatePref() {
+    return audio_pref_handler_->GetNoiseCancellationState();
+  }
+
+  bool GetNoiseCancellationSupported() {
+    return cras_audio_handler_->noise_cancellation_supported();
+  }
+
+  void SetNoiseCancellationStatePref(bool enabled) {
+    audio_pref_handler_->SetNoiseCancellationState(
+        /*noise_cancellation_state=*/enabled);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SetNoiseCancellationSupported(bool supported) {
+    cras_audio_handler_->SetNoiseCancellationSupportedForTesting(supported);
   }
 
  private:
@@ -458,6 +508,49 @@ TEST_F(CrosAudioConfigImplTest, HandleOutputMuteStateMutedByPolicy) {
   EXPECT_EQ(
       mojom::MuteState::kMutedByPolicy,
       fake_observer->last_audio_system_properties_.value()->output_mute_state);
+}
+
+TEST_F(CrosAudioConfigImplTest, SetNoiseCancellationState) {
+  std::unique_ptr<FakeAudioSystemPropertiesObserver> fake_observer = Observe();
+
+  // By default noise cancellation is disabled and not supported in this test.
+  ASSERT_FALSE(GetNoiseCancellationSupported());
+  ASSERT_FALSE(GetNoiseCancellationState());
+  ASSERT_FALSE(GetNoiseCancellationStatePref());
+
+  // Simulate trying to set noise cancellation.
+  SimulateSetNoiseCancellationEnabled(/*enabled=*/true);
+
+  // Since noise cancellation is not supported, noting is set.
+  ASSERT_FALSE(GetNoiseCancellationState());
+
+  // Turn on noise cancellation support.
+  SetNoiseCancellationSupported(/*supported=*/true);
+  ASSERT_TRUE(GetNoiseCancellationSupported());
+
+  // Now turning on noise cancellation should work.
+  SimulateSetNoiseCancellationEnabled(/*enabled=*/true);
+
+  // Add input audio nodes.
+  SetAudioNodes({kInternalMic, kUsbMic});
+  SetActiveInputNodes({kInternalMicId});
+
+  ASSERT_TRUE(GetNoiseCancellationState());
+  ASSERT_TRUE(GetNoiseCancellationStatePref());
+  ASSERT_EQ(mojom::AudioEffectState::kEnabled,
+            fake_observer->GetInputAudioDevice(1)->noise_cancellation_state);
+
+  // Change active node does not change noise cancellation state.
+  SetActiveInputNodes({kUsbMicId});
+
+  ASSERT_EQ(mojom::AudioEffectState::kEnabled,
+            fake_observer->GetInputAudioDevice(1)->noise_cancellation_state);
+
+  // Turn noise cancellation off.
+  SimulateSetNoiseCancellationEnabled(/*enabled=*/false);
+
+  ASSERT_FALSE(GetNoiseCancellationState());
+  ASSERT_FALSE(GetNoiseCancellationStatePref());
 }
 
 TEST_F(CrosAudioConfigImplTest, GetOutputAudioDevices) {
@@ -792,6 +885,57 @@ TEST_F(CrosAudioConfigImplTest, StubInternalMicHandlesDualMicUpdates) {
                      .Clone();
   EXPECT_EQ(expected_display_name, internal_mic->display_name);
   EXPECT_TRUE(internal_mic->is_active);
+}
+
+TEST_F(CrosAudioConfigImplTest, NoiseCancellationAudioStateConfigured) {
+  SetNoiseCancellationSupported(true);
+  SetNoiseCancellationStatePref(false);
+  SetAudioNodes({kInternalSpeaker, kInternalMic, kUsbMic});
+  std::unique_ptr<FakeAudioSystemPropertiesObserver> fake_observer = Observe();
+
+  // Noise cancellation supported by laptop and disabled in device wide
+  // preference.
+  EXPECT_EQ(mojom::AudioEffectState::kNotSupported,
+            fake_observer->GetOutputAudioDevice(/*index=*/0)
+                ->noise_cancellation_state);
+  EXPECT_EQ(mojom::AudioEffectState::kNotEnabled,
+            fake_observer->GetInputAudioDevice(/*index=*/1)
+                ->noise_cancellation_state);
+  EXPECT_EQ(mojom::AudioEffectState::kNotSupported,
+            fake_observer->GetInputAudioDevice(/*index=*/0)
+                ->noise_cancellation_state);
+
+  // Set noise cancellation preference to enabled and force observer update
+  // using `SetAudioNodes`.
+  SetNoiseCancellationStatePref(true);
+  // TODO(b/260277007): Remove calls to `SetAudioNodes` when observer for
+  // noise cancellation state changed added available.
+  SetAudioNodes({kInternalSpeaker, kInternalMic, kUsbMic});
+
+  EXPECT_EQ(mojom::AudioEffectState::kNotSupported,
+            fake_observer->GetOutputAudioDevice(/*index=*/0)
+                ->noise_cancellation_state);
+  EXPECT_EQ(mojom::AudioEffectState::kEnabled,
+            fake_observer->GetInputAudioDevice(/*index=*/1)
+                ->noise_cancellation_state);
+  EXPECT_EQ(mojom::AudioEffectState::kNotSupported,
+            fake_observer->GetInputAudioDevice(/*index=*/0)
+                ->noise_cancellation_state);
+
+  // Change overall device to not support noise cancellation and force observer
+  // update using `SetAudioNodes`.
+  SetNoiseCancellationSupported(false);
+  SetAudioNodes({kInternalSpeaker, kInternalMic, kUsbMic});
+
+  EXPECT_EQ(mojom::AudioEffectState::kNotSupported,
+            fake_observer->GetOutputAudioDevice(/*index=*/0)
+                ->noise_cancellation_state);
+  EXPECT_EQ(mojom::AudioEffectState::kNotSupported,
+            fake_observer->GetInputAudioDevice(/*index=*/0)
+                ->noise_cancellation_state);
+  EXPECT_EQ(mojom::AudioEffectState::kNotSupported,
+            fake_observer->GetInputAudioDevice(/*index=*/1)
+                ->noise_cancellation_state);
 }
 
 }  // namespace ash::audio_config

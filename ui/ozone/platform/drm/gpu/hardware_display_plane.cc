@@ -50,12 +50,13 @@ std::string IdSetToString(const base::flat_set<uint32_t>& ids) {
 }
 
 }  // namespace
+
 HardwareDisplayPlane::Properties::Properties() = default;
 HardwareDisplayPlane::Properties::~Properties() = default;
 
 HardwareDisplayPlane::HardwareDisplayPlane(uint32_t id) : id_(id) {}
 
-HardwareDisplayPlane::~HardwareDisplayPlane() {}
+HardwareDisplayPlane::~HardwareDisplayPlane() = default;
 
 bool HardwareDisplayPlane::CanUseForCrtcId(uint32_t crtc_id) const {
   return possible_crtc_ids_.contains(crtc_id);

@@ -58,6 +58,19 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   virtual gfx::Rect GetBoundsForTabStripRegion(
       const gfx::Size& tabstrip_minimum_size) const = 0;
 
+  // Retrieves the maximum bounds in non-client view coordinates for the
+  // WebAppFrameToolbarView that contains Web App controls.
+  virtual gfx::Rect GetBoundsForWebAppFrameToolbar(
+      const gfx::Size& toolbar_preferred_size) const = 0;
+
+  // Lays out the window title for a web app within the given available space.
+  // Unlike the above GetBounds methods this is not just a method to return the
+  // bounds the title should occupy, since different implementations might also
+  // want to change other attributes of the title, such as alignment.
+  virtual void LayoutWebAppWindowTitle(
+      const gfx::Rect& available_space,
+      views::Label& window_title_label) const = 0;
+
   // Returns the inset of the topmost view in the client view from the top of
   // the non-client view. The topmost view depends on the window type. The
   // topmost view is the tab strip for tabbed browser windows, the toolbar for
@@ -105,10 +118,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // tabstrip background.
   virtual SkColor GetFrameColor(BrowserFrameActiveState active_state) const;
 
-  // Called by BrowserView to signal the frame color has changed and needs
-  // to be repainted.
-  virtual void UpdateFrameColor();
-
   // For non-transparent windows, returns the background tab image resource ID
   // if the image has been customized, directly or indirectly, by the theme.
   absl::optional<int> GetCustomBackgroundId(
@@ -124,21 +133,24 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // or disabled.
   virtual void WindowControlsOverlayEnabledChanged() {}
 
-  // Set the visibility of the window controls overlay toggle button.
-  void SetWindowControlsOverlayToggleVisible(bool visible);
-
-  // Updates the visibility of the title bar based on the visibility of the
-  // borderless mode.
-  void UpdateBorderlessModeEnabled();
-
   // views::NonClientFrameView:
   using views::NonClientFrameView::ShouldPaintAsActive;
   void Layout() override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
   int NonClientHitTest(const gfx::Point& point) override;
-  void ResetWindowControls() override;
 
   WebAppFrameToolbarView* web_app_frame_toolbar_for_testing() {
+    return web_app_frame_toolbar_;
+  }
+
+  // TODO(https://crbug.com/1407240): Remove these methods (and all other
+  // WebAppFrameToolbarView access/usage) from this class once work to refactor
+  // ownership has been completed.
+  WebAppFrameToolbarView* web_app_frame_toolbar(base::PassKey<BrowserView>) {
+    return web_app_frame_toolbar_;
+  }
+  const WebAppFrameToolbarView* web_app_frame_toolbar(
+      base::PassKey<BrowserView>) const {
     return web_app_frame_toolbar_;
   }
 

@@ -9,8 +9,9 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_consumer.h"
 
-@class PinnedTabsViewController;
 @protocol GridImageDataSource;
+@class GridTransitionLayout;
+@class PinnedTabsViewController;
 @protocol TabCollectionDragDropHandler;
 @protocol TabContextMenuProvider;
 
@@ -30,8 +31,10 @@
             (PinnedTabsViewController*)pinnedTabsViewController
               didChangeItemCount:(NSUInteger)count;
 
-// Tells the delegate that the `pinnedTabsViewController` is hidden.
-- (void)pinnedTabsViewControllerDidHide;
+// Tells the delegate that the `pinnedTabsViewController` visibility has
+// changed.
+- (void)pinnedTabsViewControllerVisibilityDidChange:
+    (PinnedTabsViewController*)pinnedTabsViewController;
 
 @end
 
@@ -63,6 +66,9 @@
 
 // Updates the view when the drop animation did end.
 - (void)dropAnimationDidEnd;
+
+// Returns the layout of the pinned tabs to be used in an animated transition.
+- (GridTransitionLayout*)transitionLayout;
 
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 

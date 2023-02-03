@@ -46,6 +46,7 @@
 #include "net/base/upload_file_element_reader.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_inclusion_status.h"
+#include "net/cookies/cookie_setting_override.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/site_for_cookies.h"
@@ -490,6 +491,7 @@ URLLoader::URLLoader(
     mojo::PendingRemote<mojom::DevToolsObserver> devtools_observer,
     mojo::PendingRemote<mojom::AcceptCHFrameObserver> accept_ch_frame_observer,
     bool third_party_cookies_enabled,
+    net::CookieSettingOverrides cookie_setting_overrides,
     const CacheTransparencySettings* cache_transparency_settings)
     : url_request_context_(context.GetUrlRequestContext()),
       network_context_client_(context.GetNetworkContextClient()),
@@ -726,6 +728,15 @@ URLLoader::URLLoader(
     url_request_->net_log().AddEventReferencingSource(
         net::NetLogEventType::CREATED_BY,
         request.net_log_reference_info.value());
+  }
+
+  for (net::CookieSettingOverride cso : cookie_setting_overrides) {
+    url_request_->cookie_setting_overrides().Put(cso);
+  }
+  if (request.is_outermost_main_frame &&
+      network::cors::IsCorsEnabledRequestMode(request_mode_)) {
+    url_request_->cookie_setting_overrides().Put(
+        net::CookieSettingOverride::kTopLevelStorageAccessGrantEligible);
   }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -1147,7 +1158,7 @@ PrivateNetworkAccessCheckResult URLLoader::PrivateNetworkAccessCheck(
 
   url_request_->net_log().AddEvent(
       net::NetLogEventType::PRIVATE_NETWORK_ACCESS_CHECK, [&] {
-        base::Value dict(base::Value::Type::DICTIONARY);
+        base::Value dict(base::Value::Type::DICT);
         dict.SetStringKey(
             "client_address_space",
             IPAddressSpaceToStringPiece(
@@ -2251,7 +2262,7 @@ bool URLLoader::DispatchOnRawResponse() {
       std::move(header_array), raw_response_headers,
       private_network_access_checker_.ResponseAddressSpace().value_or(
           mojom::IPAddressSpace::kUnknown),
-      response_headers->response_code());
+      response_headers->response_code(), url_request_->cookie_partition_key());
 
   return true;
 }

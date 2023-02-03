@@ -8,7 +8,7 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "gpu-fyi-try-mac-amd-retina-asan": {
@@ -21,7 +21,7 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "gpu-fyi-try-mac-amd-retina-dbg": {
@@ -32,7 +32,7 @@
       "is_debug": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "gpu-fyi-try-mac-amd-retina-exp": {
@@ -44,7 +44,7 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "gpu-fyi-try-mac-amd-retina-rel": {
@@ -56,7 +56,7 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "gpu-fyi-try-mac-arm64-apple-m1-exp": {
@@ -82,7 +82,7 @@
       "proprietary_codecs": true,
       "symbol_level": 1,
       "target_cpu": "arm64",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "gpu-fyi-try-mac-intel-asan": {
@@ -95,7 +95,7 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "gpu-fyi-try-mac-intel-dbg": {
@@ -118,7 +118,7 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "gpu-fyi-try-mac-intel-rel": {
@@ -130,7 +130,7 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "gpu-fyi-try-mac-nvidia-retina-exp": {
@@ -142,7 +142,7 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "gpu-fyi-try-mac-nvidia-retina-rel": {
@@ -154,7 +154,7 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "gpu-try-mac-amd-retina-dbg": {
@@ -164,7 +164,7 @@
       "is_debug": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "gpu-try-mac-intel-dbg": {
@@ -341,7 +341,7 @@
       "target_environment": "simulator",
       "target_os": "ios",
       "use_clang_coverage": true,
-      "use_remoteexec": true
+      "use_goma": true
     }
   },
   "ios-simulator-inverse-fieldtrials-fyi": {
@@ -450,7 +450,7 @@
       "is_debug": false,
       "symbol_level": 0,
       "target_cpu": "arm64",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "mac-builder-next-rel": {
@@ -463,7 +463,7 @@
       "proprietary_codecs": true,
       "symbol_level": 1,
       "target_cpu": "arm64",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "mac-code-coverage": {
@@ -512,7 +512,7 @@
       "is_debug": true,
       "proprietary_codecs": true,
       "symbol_level": 0,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "mac-perfetto-rel": {
@@ -535,7 +535,7 @@
       "proprietary_codecs": true,
       "symbol_level": 0,
       "use_clang_coverage": true,
-      "use_remoteexec": true
+      "use_goma": true
     }
   },
   "mac-rel-inverse-fyi": {
@@ -572,6 +572,15 @@
       "use_remoteexec": true
     }
   },
+  "mac11-wpt-content-shell-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 1,
+      "use_remoteexec": true
+    }
+  },
   "mac12-arm64-rel": {
     "gn_args": {
       "dcheck_always_on": true,
@@ -582,6 +591,15 @@
       "symbol_level": 0,
       "target_cpu": "arm64",
       "use_goma": true
+    }
+  },
+  "mac12-arm64-wpt-content-shell-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 1,
+      "use_remoteexec": true
     }
   },
   "mac12-tests": {
@@ -617,7 +635,7 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 0,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "mac_chromium_10.15_rel_ng": {
@@ -627,7 +645,7 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 0,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "mac_chromium_11.0_rel_ng": {
@@ -646,7 +664,7 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "mac_chromium_asan_rel_ng": {
@@ -666,7 +684,7 @@
       "is_debug": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_remoteexec": true
+      "use_goma": true
     }
   },
   "mac_chromium_compile_rel_ng": {
@@ -677,7 +695,7 @@
       "is_debug": false,
       "proprietary_codecs": true,
       "symbol_level": 0,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "mac_chromium_dbg_ng": {
@@ -687,7 +705,7 @@
       "is_debug": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "mac_optional_gpu_tests_rel": {

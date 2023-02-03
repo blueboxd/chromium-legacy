@@ -37,6 +37,7 @@
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
@@ -71,7 +72,6 @@ class KURL;
 class Resource;
 class ResourceError;
 class ResourceLoadObserver;
-class ResourceTimingInfo;
 class SubresourceWebBundle;
 class SubresourceWebBundleList;
 class WebBackForwardCacheLoaderHelper;
@@ -241,7 +241,9 @@ class PLATFORM_EXPORT ResourceFetcher
                           base::TimeTicks finish_time,
                           LoaderFinishType,
                           uint32_t inflight_keepalive_bytes,
-                          bool should_report_corb_blocking);
+                          bool should_report_corb_blocking,
+                          bool pervasive_payload_requested,
+                          int64_t bytes_fetched);
   void HandleLoaderError(Resource*,
                          base::TimeTicks finish_time,
                          const ResourceError&,
@@ -477,8 +479,25 @@ class PLATFORM_EXPORT ResourceFetcher
 
   void WarnUnusedPreloads();
 
+  // Information about a resource fetch that had started but not completed yet.
+  // Would be added to the response data when the response arrives.
+  struct PendingResourceTimingInfo {
+    base::TimeTicks start_time;
+    AtomicString initiator_type;
+    RenderBlockingBehavior render_blocking_behavior;
+    base::TimeTicks redirect_end_time;
+    bool is_null() const { return start_time.is_null(); }
+  };
+
+  // A resource fetch that was completed, scheduled to be added to the
+  // performance timeline in a batch.
+  struct ScheduledResourceTimingInfo {
+    mojom::blink::ResourceTimingInfoPtr info;
+    AtomicString initiator_type;
+  };
+
   void PopulateAndAddResourceTimingInfo(Resource* resource,
-                                        scoped_refptr<ResourceTimingInfo> info,
+                                        const PendingResourceTimingInfo& info,
                                         base::TimeTicks response_end);
   SubresourceWebBundle* GetMatchingBundle(const KURL& url) const;
 
@@ -511,11 +530,11 @@ class PLATFORM_EXPORT ResourceFetcher
 
   TaskHandle unused_preloads_timer_;
 
-  using ResourceTimingInfoMap =
-      HeapHashMap<Member<Resource>, scoped_refptr<ResourceTimingInfo>>;
-  ResourceTimingInfoMap resource_timing_info_map_;
+  using PendingResourceTimingInfoMap =
+      HeapHashMap<Member<Resource>, PendingResourceTimingInfo>;
+  PendingResourceTimingInfoMap resource_timing_info_map_;
 
-  Vector<scoped_refptr<ResourceTimingInfo>> scheduled_resource_timing_reports_;
+  Vector<ScheduledResourceTimingInfo> scheduled_resource_timing_reports_;
 
   HeapHashSet<Member<ResourceLoader>> loaders_;
   HeapHashSet<Member<ResourceLoader>> non_blocking_loaders_;
@@ -556,9 +575,13 @@ class PLATFORM_EXPORT ResourceFetcher
   // The number of sub resource loads that a service worker fetch handler
   // called respondWith. i.e. no fallback to network.
   uint32_t number_of_subresource_loads_handled_by_service_worker_ = 0;
-
-  // NOTE: This must be the last member.
-  base::WeakPtrFactory<ResourceFetcher> weak_ptr_factory_{this};
+  // Whether a pervasive payload (aka sub resource) was requested. Once this is
+  // set as true, it will be true for all future updates in a page load.
+  bool pervasive_payload_requested_ = false;
+  // Number of bytes fetched by the network for pervasive payloads on a page.
+  int64_t pervasive_bytes_fetched_ = 0;
+  // Total number of bytes fetched by the network.
+  int64_t total_bytes_fetched_ = 0;
 };
 
 class ResourceCacheValidationSuppressor {

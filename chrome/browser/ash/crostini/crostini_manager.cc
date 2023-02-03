@@ -29,6 +29,8 @@
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ash/borealis/borealis_features.h"
+#include "chrome/browser/ash/borealis/borealis_service.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_util.h"
 #include "chrome/browser/ash/crostini/ansible/ansible_management_service.h"
 #include "chrome/browser/ash/crostini/crostini_engagement_metrics_service.h"
@@ -1377,7 +1379,9 @@ void CrostiniManager::MaybeUpdateCrostiniAfterChecks() {
 
 void CrostiniManager::InstallTermina(CrostiniResultCallback callback,
                                      bool is_initial_install) {
-  if (install_termina_never_completes_) {
+  if (install_termina_never_completes_for_testing_) {
+    LOG(ERROR)
+        << "Dropping InstallTermina request. This is only used in tests.";
     return;
   }
   termina_installer_.Install(
@@ -1466,17 +1470,6 @@ void CrostiniManager::DestroyDiskImage(const std::string& vm_name,
   GetConciergeClient()->DestroyDiskImage(
       std::move(request),
       base::BindOnce(&CrostiniManager::OnDestroyDiskImage,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void CrostiniManager::ListVmDisks(ListVmDisksCallback callback) {
-  vm_tools::concierge::ListVmDisksRequest request;
-  request.set_cryptohome_id(CryptohomeIdForProfile(profile_));
-  request.set_storage_location(vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT);
-
-  GetConciergeClient()->ListVmDisks(
-      std::move(request),
-      base::BindOnce(&CrostiniManager::OnListVmDisks,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
@@ -2524,30 +2517,6 @@ void CrostiniManager::OnDestroyDiskImage(
   std::move(callback).Run(/*success=*/true);
 }
 
-void CrostiniManager::OnListVmDisks(
-    ListVmDisksCallback callback,
-    absl::optional<vm_tools::concierge::ListVmDisksResponse> response) {
-  if (!response) {
-    LOG(ERROR) << "Failed to get list of VM disks. Empty response.";
-    std::move(callback).Run(
-        CrostiniResult::LIST_VM_DISKS_FAILED,
-        profile_->GetPrefs()->GetInt64(prefs::kCrostiniLastDiskSize));
-    return;
-  }
-
-  if (!response->success()) {
-    LOG(ERROR) << "Failed to list VM disks: " << response->failure_reason();
-    std::move(callback).Run(
-        CrostiniResult::LIST_VM_DISKS_FAILED,
-        profile_->GetPrefs()->GetInt64(prefs::kCrostiniLastDiskSize));
-    return;
-  }
-
-  profile_->GetPrefs()->SetInt64(prefs::kCrostiniLastDiskSize,
-                                 response->total_size());
-  std::move(callback).Run(CrostiniResult::SUCCESS, response->total_size());
-}
-
 void CrostiniManager::OnStartTerminaVm(
     std::string vm_name,
     BoolCallback callback,
@@ -3036,7 +3005,8 @@ void CrostiniManager::OnCreateLxdContainer(
       LOG(ERROR) << "Failed to create container: "
                  << response->failure_reason();
       // Remove all create options and the existence of this container.
-      if (IsPendingCreation(container_id)) {
+      if (IsPendingCreation(container_id) &&
+          container_id != DefaultContainerId()) {
         RemoveLxdContainerFromPrefs(profile_, container_id);
         UnregisterContainer(container_id);
       }
@@ -3222,7 +3192,8 @@ void CrostiniManager::OnLxdContainerCreated(
   if (result != CrostiniResult::SUCCESS) {
     LOG(ERROR) << "Failed to create container. ID: " << container_id
                << " reason: " << signal.failure_reason();
-    if (IsPendingCreation(container_id)) {
+    if (IsPendingCreation(container_id) &&
+        container_id != DefaultContainerId()) {
       RemoveLxdContainerFromPrefs(profile_, container_id);
       UnregisterContainer(container_id);
     }

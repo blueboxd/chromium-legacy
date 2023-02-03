@@ -1272,17 +1272,7 @@ body.files-ng .thumbnail-frame > .img-container {
   position: relative;
 }
 
-#list-container.thumbnail-view .inline-status {
-  align-items: center;
-  display: none;
-  height: 16px;
-  justify-content: center;
-  position: absolute;
-  right: 4px;
-  top: 4px;
-  width: 16px;
-}
-
+#list-container.thumbnail-view .inline-status,
 #list-container.thumbnail-view .inline-status .progress,
 #list-container.thumbnail-view .inline-status xf-icon {
   display: none;
@@ -1290,8 +1280,12 @@ body.files-ng .thumbnail-frame > .img-container {
   width: 16px;
 }
 
-#list-container.thumbnail-view .inline-status xf-icon[type^=offline] {
-  --xf-icon-color: var(--cros-icon-color-secondary);
+#list-container.thumbnail-view .inline-status {
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  right: 4px;
+  top: 4px;
 }
 
 #list-container.thumbnail-view li.directory .inline-status {
@@ -1299,11 +1293,21 @@ body.files-ng .thumbnail-frame > .img-container {
   top: 0;
 }
 
-#list-container.thumbnail-view li:not([renaming]):not(.dim-offline) .inline-status:has(xf-icon[type^=offline]),
-#list-container.thumbnail-view li:not([renaming]):not(.dim-offline) .inline-status xf-icon[type^=offline],
+#list-container.thumbnail-view li.pinned:not([renaming]):not(.dim-offline) .inline-status,
+#list-container.thumbnail-view li.pinned:not([renaming]):not(.dim-offline) .inline-status xf-icon,
 #list-container.thumbnail-view li:not([renaming]):is([data-sync-status=in_progress], [data-sync-status=queued]) .inline-status,
 #list-container.thumbnail-view li:not([renaming]):is([data-sync-status=in_progress], [data-sync-status=queued]) .inline-status .progress {
   display: flex;
+}
+
+#list-container.thumbnail-view li.pinned .inline-status xf-icon[type=offline] {
+  --xf-icon-color: var(--cros-icon-color-secondary);
+}
+
+/* Only display outlines for entries with thumbnails. */
+#list-container.thumbnail-view li.pinned:has(.thumbnail) .inline-status .progress,
+#list-container.thumbnail-view li.pinned:has(.thumbnail) .inline-status xf-icon[type=offline] {
+  --xf-icon-color-outline: var(--cros-bg-color);
 }
 
 html:not(.pointer-active) body[type='full-page'] .thumbnail-frame > .img-container,
@@ -1793,8 +1797,9 @@ li[renaming=''] .filename-label {
   background-color: currentColor;
   color: var(--cros-icon-color-primary);
   height: 24px;
-  margin-inline-end: 10px;
+  margin-inline-end: 14px;
   margin-inline-start: auto;
+  padding-inline-start: 8px;
   width: 24px;
 }
 
@@ -2075,12 +2080,12 @@ html.col-resize .table-header-label .sort-icon:not(:active):hover {
   line-height: 20px;
 }
 
-body.files-ng.check-select #list-container list li[selected] .detail-thumbnail
+.check-select #list-container list li[selected] .detail-thumbnail
 > .thumbnail {
   animation: none;
 }
 
-body.files-ng #list-container list li .detail-thumbnail > .thumbnail {
+#list-container list li .detail-thumbnail > .thumbnail {
   border-radius: 50%;
   height: 24px;
   margin-inline-start: 8px;
@@ -2088,11 +2093,15 @@ body.files-ng #list-container list li .detail-thumbnail > .thumbnail {
   width: 24px;
 }
 
-body.files-ng .table-row-cell > * {
+.table-row-cell > * {
   color: var(--cros-text-color-secondary);
   padding: 0;
   padding-inline-start: 32px;
   padding-top: 0 !important;
+}
+
+.table-row-cell > .dateholder {
+  display: flex;
 }
 
 .table-header-splitter  {
@@ -2135,21 +2144,22 @@ html.col-resize .table-header-splitter .splitter-icon:not(:active):hover {
   padding-inline-start: 32px;
 }
 
-body.files-ng.check-select list:focus li[selected] .table-row-cell > * {
+.check-select list:focus li[selected] .table-row-cell > * {
   color: var(--cros-text-color-selection);
 }
 
-body.files-ng .table-row-cell:first-child > * {
+.table-row-cell:first-child > * {
   padding-inline-start: 0;
 }
 
-body.files-ng .table-row-cell .filename-label {
+.table-row-cell .filename-label {
   color: var(--cros-text-color-primary);
   flex-grow: 1;
+  margin-inline-end: 8px;
   padding-top: 0;
 }
 
-body.files-ng.check-select list:focus li[selected] .table-row-cell
+.check-select list:focus li[selected] .table-row-cell
 .filename-label {
   color: var(--cros-text-color-selection);
 }
@@ -2181,14 +2191,7 @@ body.files-ng #list-container li .detail-thumbnail {
   width: 32px;
 }
 
-#list-container .list .inline-status {
-  align-items: center;
-  display: none;
-  height: 16px;
-  justify-content: center;
-  width: 16px;
-}
-
+#list-container .list .inline-status,
 #list-container .list .inline-status .progress,
 #list-container .list .inline-status xf-icon {
   display: none;
@@ -2196,15 +2199,20 @@ body.files-ng #list-container li .detail-thumbnail {
   width: 16px;
 }
 
-#list-container .list .inline-status xf-icon[type=offline] {
-  --xf-icon-color: var(--cros-icon-color-secondary);
+#list-container .list .inline-status {
+  align-items: center;
+  justify-content: center;
 }
 
-#list-container .list li:not([renaming]):not(.dim-offline) .inline-status:has(xf-icon[type=offline]),
-#list-container .list li:not([renaming]):not(.dim-offline) .inline-status xf-icon[type=offline],
+#list-container .list li.pinned:not([renaming]):not(.dim-offline) .inline-status,
+#list-container .list li.pinned:not([renaming]):not(.dim-offline) .inline-status xf-icon,
 #list-container .list li:not([renaming]):is([data-sync-status=in_progress], [data-sync-status=queued]) .inline-status,
 #list-container .list li:not([renaming]):is([data-sync-status=in_progress], [data-sync-status=queued]) .inline-status .progress {
   display: flex;
+}
+
+#list-container .list li.pinned .inline-status xf-icon[type=offline] {
+  --xf-icon-color: var(--cros-icon-color-secondary);
 }
 
 #new-folder-button {

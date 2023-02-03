@@ -196,6 +196,7 @@
 <translation id="2713444072780614174">Weiß</translation>
 <translation id="2717139507051041123">Dunklen Farbmodus aktivieren</translation>
 <translation id="2740531572673183784">Ok</translation>
+<translation id="2744221223678373668">Freigegeben</translation>
 <translation id="2751739896257479635">EAP-Phase 2-Authentifizierung</translation>
 <translation id="2783010256799387990">BESTANDEN</translation>
 <translation id="2789486458103222910">Ok</translation>
@@ -270,6 +271,7 @@
 <translation id="3583278742022654445">Schwaches Signal. Gehe näher an die Quelle des WLAN-Signals heran.</translation>
 <translation id="3595596368722241419">Akku voll</translation>
 <translation id="3600339377155080675">Display spiegeln</translation>
+<translation id="3602290021589620013">Vorschau</translation>
 <translation id="3603829704940252505">Avatar</translation>
 <translation id="3604713164406837697">Hintergrund ändern</translation>
 <translation id="360565022852130722">Das WLAN ist mit dem schwachen Protokoll WEP 802.1x gesichert</translation>
@@ -293,6 +295,7 @@
 <translation id="385051799172605136">Zurück</translation>
 <translation id="3858860766373142691">Name</translation>
 <translation id="3862598938296403232">Gib eine Beschreibung ein</translation>
+<translation id="3865289341173661845">Hilfeinhalte sind nicht verfügbar.</translation>
 <translation id="3865414814144988605">Auflösung</translation>
 <translation id="3866249974567520381">Beschreibung</translation>
 <translation id="387301095347517405">Wie oft der Akku vollständig aufgeladen wurde</translation>
@@ -315,9 +318,11 @@
 <translation id="4044093238444069296">Gateway kann nicht kontaktiert werden</translation>
 <translation id="4046123991198612571">Nächster Titel</translation>
 <translation id="404928562651467259">Warnung</translation>
+<translation id="4054683689023980771">Bild wird heruntergeladen</translation>
 <translation id="4060260348856573701">Neuer APN</translation>
 <translation id="4093865285251893588">Profilbild</translation>
 <translation id="409427325554347132">Testdetails speichern</translation>
+<translation id="4095829376260267438">WPA2/WPA3</translation>
 <translation id="4110686435123617899">Album <ph name="TITLE" /> <ph name="DESC" /> auswählen</translation>
 <translation id="4111761024568264522">USB-Touchpad</translation>
 <translation id="4117637339509843559">Dunkler Modus</translation>
@@ -448,8 +453,6 @@
 <translation id="5168185087976003268">Akkuzustand</translation>
 <translation id="5170568018924773124">In Ordner zeigen</translation>
 <translation id="5190187232518914472">Die schönsten Erinnerungen immer vor Augen. Wenn du Alben hinzufügst oder bearbeiten möchtest, gehe zu <ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" />.</translation>
-<translation id="5212543919916444558">Ich finde nichts auf deinem Display, wobei ich dir helfen könnte.
-Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Abmelden</translation>
 <translation id="522307662484862935">E-Mail-Adresse nicht einfügen</translation>
@@ -702,6 +705,7 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="7497215489070763236">CA-Serverzertifikat</translation>
 <translation id="7502658306369382406">IPv6-Adresse</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7528507600602050979">Hilfeinhalte nicht verfügbar</translation>
 <translation id="7535791657097741517">Helles Design einschalten</translation>
 <translation id="7550715992156305117">Diagnoseroutinen</translation>
 <translation id="7551123448725492271">Das Gerät ist ein Audiogerät.</translation>
@@ -719,6 +723,7 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="7690294790491645610">Neues Passwort bestätigen</translation>
 <translation id="7701040980221191251">Keine</translation>
 <translation id="7705524343798198388">VPN</translation>
+<translation id="7716280709122323042">WPA3</translation>
 <translation id="773153675489693198">Anzahl der Ladezyklen</translation>
 <translation id="7747039790905080783">Vorinstallierter Schlüssel</translation>
 <translation id="7762130827864645708">Du hast dein Passwort geändert. Bitte verwende ab jetzt das neue Passwort.</translation>
@@ -802,6 +807,7 @@ Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="8503836310948963452">Nur noch ein paar Minuten…</translation>
 <translation id="8508640263392900755">APN-Details</translation>
 <translation id="8528615187455571738">Crosvm</translation>
+<translation id="8557447961879934694">WPA2</translation>
 <translation id="8575298406870537639">Dein Mobilfunkanbieter verlangt möglicherweise diese Option, damit du dich mit seinem Netzwerk verbinden kannst. Weitere Informationen erhältst du bei deinem Mobilfunkanbieter.</translation>
 <translation id="8576249514688522074">Noch nicht initialisiert</translation>
 <translation id="8620617069779373398">Roaming-Status</translation>

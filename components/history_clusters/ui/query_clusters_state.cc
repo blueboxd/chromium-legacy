@@ -46,8 +46,8 @@ class QueryClustersState::PostProcessor
 
     // We have to do this AFTER applying the search query, because applying the
     // search query re-scores matching visits to promote them above non-matching
-    // visits.
-    HideAndCullLowScoringVisits(clusters);
+    // visits. Show 1-visit clusters only in query mode.
+    HideAndCullLowScoringVisits(clusters, query_.empty() ? 2 : 1);
     // Do this AFTER we cull the low scoring visits, so those visits don't get
     // their related searches coalesced onto the cluster level.
     CoalesceRelatedSearches(clusters);
@@ -94,8 +94,7 @@ void QueryClustersState::LoadNextBatchOfClusters(ResultCallback callback) {
       /*begin_time=*/base::Time(), continuation_params_, recluster_,
       base::BindOnce(&QueryClustersState::OnGotRawClusters,
                      weak_factory_.GetWeakPtr(), query_start_time,
-                     std::move(callback)),
-      HistoryClustersServiceTaskGetMostRecentClusters::Source::kWebUi);
+                     std::move(callback)));
 }
 
 void QueryClustersState::OnGotRawClusters(

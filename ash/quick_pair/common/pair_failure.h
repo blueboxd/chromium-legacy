@@ -78,7 +78,12 @@ enum class PairFailure {
   // Failed to create a GATT connection in the platform layer due to a Bluetooth
   // device error.
   kBluetoothDeviceFailureCreatingGattConnection = 28,
-  kMaxValue = kBluetoothDeviceFailureCreatingGattConnection,
+  // Timed out while waiting for a response after attempt to disconnect.
+  kDisconnectResponseTimeout = 29,
+  // Failed to connect to discovered device after pairing when the device is
+  // known to the adapter.
+  kFailedToConnectAfterPairing = 30,
+  kMaxValue = kFailedToConnectAfterPairing,
 };
 
 COMPONENT_EXPORT(QUICK_PAIR_COMMON)

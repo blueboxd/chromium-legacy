@@ -123,7 +123,7 @@ SegmentSelectorImpl::SegmentSelectorImpl(
   }
 
   // Can be nullptr in tests.
-  if (field_trial_register_) {
+  if (!config_->on_demand_execution && field_trial_register_) {
     field_trial_register_->RegisterFieldTrial(trial_name, group_name);
   }
 }
@@ -354,6 +354,13 @@ void SegmentSelectorImpl::UpdateSelectedSegment(SegmentId new_selection,
 
   result_prefs_->SaveSegmentationResultToPref(config_->segmentation_key,
                                               updated_selection);
+
+  // TODO(ssid): Migrate to pref writer when implemented.
+  for (const auto& segment : config_->segments) {
+    training_data_collector_->OnDecisionTime(
+        segment.first, nullptr,
+        proto::TrainingOutputs::TriggerConfig::PERIODIC);
+  }
 }
 
 }  // namespace segmentation_platform

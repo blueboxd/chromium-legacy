@@ -45,6 +45,29 @@ bool TelemetryApiFunctionBase::IsCrosApiAvailable() {
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
+// OsTelemetryGetAudioInfoFunction ---------------------------------------------
+
+void OsTelemetryGetAudioInfoFunction::RunIfAllowed() {
+  auto cb = base::BindOnce(&OsTelemetryGetAudioInfoFunction::OnResult, this);
+
+  GetRemoteService()->ProbeTelemetryInfo(
+      {crosapi::mojom::ProbeCategoryEnum::kAudio}, std::move(cb));
+}
+
+void OsTelemetryGetAudioInfoFunction::OnResult(
+    crosapi::mojom::ProbeTelemetryInfoPtr ptr) {
+  if (!ptr || !ptr->audio_result || !ptr->audio_result->is_audio_info()) {
+    Respond(Error("API internal error"));
+    return;
+  }
+  auto& audio_info = ptr->audio_result->get_audio_info();
+
+  auto result =
+      converters::ConvertPtr<telemetry::AudioInfo>(std::move(audio_info));
+
+  Respond(ArgumentList(telemetry::GetAudioInfo::Results::Create(result)));
+}
+
 // OsTelemetryGetBatteryInfoFunction -------------------------------------------
 
 void OsTelemetryGetBatteryInfoFunction::RunIfAllowed() {
@@ -182,6 +205,36 @@ void OsTelemetryGetInternetConnectivityInfoFunction::OnResult(
 
   Respond(ArgumentList(
       telemetry::GetInternetConnectivityInfo::Results::Create(result)));
+}
+
+// OsTelemetryGetMarketingInfoFunction -----------------------------------------
+
+void OsTelemetryGetMarketingInfoFunction::RunIfAllowed() {
+  auto cb =
+      base::BindOnce(&OsTelemetryGetMarketingInfoFunction::OnResult, this);
+
+  GetRemoteService()->ProbeTelemetryInfo(
+      {crosapi::mojom::ProbeCategoryEnum::kSystem}, std::move(cb));
+}
+
+void OsTelemetryGetMarketingInfoFunction::OnResult(
+    crosapi::mojom::ProbeTelemetryInfoPtr ptr) {
+  if (!ptr || !ptr->system_result || !ptr->system_result->is_system_info()) {
+    Respond(Error("API internal error"));
+    return;
+  }
+
+  auto& system_info = ptr->system_result->get_system_info();
+
+  if (!system_info->os_info) {
+    Respond(Error("API internal error"));
+    return;
+  }
+
+  telemetry::MarketingInfo result;
+  result.marketing_name = system_info->os_info->marketing_name;
+
+  Respond(ArgumentList(telemetry::GetMarketingInfo::Results::Create(result)));
 }
 
 // OsTelemetryGetMemoryInfoFunction --------------------------------------------
@@ -331,6 +384,34 @@ void OsTelemetryGetTpmInfoFunction::OnResult(
       converters::ConvertPtr<telemetry::TpmInfo>(std::move(tpm_info));
 
   Respond(ArgumentList(telemetry::GetTpmInfo::Results::Create(result)));
+}
+
+// OsTelemetryGetUsbBusInfoFunction --------------------------------------------
+
+void OsTelemetryGetUsbBusInfoFunction::RunIfAllowed() {
+  auto cb = base::BindOnce(&OsTelemetryGetUsbBusInfoFunction::OnResult, this);
+
+  GetRemoteService()->ProbeTelemetryInfo(
+      {crosapi::mojom::ProbeCategoryEnum::kBus}, std::move(cb));
+}
+
+void OsTelemetryGetUsbBusInfoFunction::OnResult(
+    crosapi::mojom::ProbeTelemetryInfoPtr ptr) {
+  if (!ptr || !ptr->bus_result || !ptr->bus_result->is_bus_devices_info()) {
+    Respond(Error("API internal error"));
+    return;
+  }
+
+  telemetry::UsbBusDevices result;
+  auto bus_infos = std::move(ptr->bus_result->get_bus_devices_info());
+  for (auto& info : bus_infos) {
+    if (info->is_usb_bus_info()) {
+      result.devices.push_back(converters::ConvertPtr<telemetry::UsbBusInfo>(
+          std::move(info->get_usb_bus_info())));
+    }
+  }
+
+  Respond(ArgumentList(telemetry::GetUsbBusInfo::Results::Create(result)));
 }
 
 // OsTelemetryGetVpdInfoFunction -----------------------------------------------

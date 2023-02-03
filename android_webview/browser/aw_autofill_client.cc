@@ -213,7 +213,7 @@ bool AwAutofillClient::IsFastCheckoutSupported() {
 bool AwAutofillClient::TryToShowFastCheckout(
     const autofill::FormData& form,
     const autofill::FormFieldData& field,
-    autofill::AutofillDriver* driver) {
+    base::WeakPtr<autofill::AutofillManager> autofill_manager) {
   return false;
 }
 
@@ -336,10 +336,6 @@ bool AwAutofillClient::IsContextSecure() const {
          !net::IsCertStatusError(ssl_status.cert_status) &&
          !(ssl_status.content_status &
            content::SSLStatus::RAN_INSECURE_CONTENT);
-}
-
-bool AwAutofillClient::ShouldShowSigninPromo() {
-  return false;
 }
 
 void AwAutofillClient::ExecuteCommand(int id) {

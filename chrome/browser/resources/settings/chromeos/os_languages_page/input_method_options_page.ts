@@ -14,11 +14,12 @@ import './os_japanese_clear_ime_data_dialog.js';
 import './os_japanese_manage_user_dictionary_page.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {afterNextRender, DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {PrefsMixin} from '../../prefs/prefs_mixin.js';
+import {assertExhaustive} from '../assert_extras.js';
 import {routes} from '../os_route.js';
 import {OsSettingsSubpageElement} from '../os_settings_page/os_settings_subpage.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
@@ -162,7 +163,7 @@ class SettingsInputMethodOptionsPageElement extends
   /**
    * Overrides RouteObserverBehavior.
    */
-  override currentRouteChanged(route: Route): void {
+  override async currentRouteChanged(route: Route): Promise<void> {
     if (route !== routes.OS_LANGUAGES_INPUT_METHOD_OPTIONS) {
       this.id_ = '';
       // During tests, the parent node is not a <os-settings-subpage>.
@@ -174,7 +175,9 @@ class SettingsInputMethodOptionsPageElement extends
     }
 
     const queryParams = Router.getInstance().getQueryParameters();
-    this.id_ = queryParams.get('id') || '';
+    await this.languageHelper.whenReady();
+    this.id_ = queryParams.get('id') ||
+        await this.languageHelper.getCurrentInputMethod();
     const displayName = this.languageHelper.getInputMethodDisplayName(this.id_);
     // During tests, the parent node is not a <os-settings-subpage>.
     if (this.parentNode instanceof OsSettingsSubpageElement) {
@@ -183,6 +186,10 @@ class SettingsInputMethodOptionsPageElement extends
     // Safety: As this page (under normal use) can only be navigated to via
     // the inputs settings page, we should always have a valid input method ID
     // here.
+    // Note that this asserts that this input method has a name, not that this
+    // input method has options (from `generateOptions`). It is possible for
+    // an input method to have a valid display name and not have options, and
+    // an input method to have options but not a valid display name.
     assert(displayName !== '', `Input method ID '${this.id_}' is invalid`);
     this.engineId_ = getFirstPartyInputMethodEngineId(this.id_);
     this.populateOptionSections_();
@@ -246,19 +253,7 @@ class SettingsInputMethodOptionsPageElement extends
     // types will be stored in nacl_mozc_us. See:
     // https://crsrc.org/c/chrome/browser/ash/input_method/input_method_settings.cc;drc=5b784205e8043fb7d1c11e3d80521e80704947ca;l=25
     const engineId = this.getStorageEngineId_();
-    const currentSettings = engineId in inputMethodSpecificSettings ?
-        // Safety: We checked that `engineId` is a key above, and we ASSUME that
-        // we are the only writers to this pref. Therefore, as we never set
-        // `undefined` or `null` properties on `inputMethodSpecificSettings`,
-        // the property should always be non-null here.
-        // This could possibly be unsafe if our assumptions above are incorrect,
-        // or we mistakenly set `undefined` properties (which TypeScript allows
-        // us to do).
-        // TODO(b/265558129): Use `inputMethodSpecificSettings[engineId] !==
-        // undefined` above to guard against `undefined` properties if they do
-        // ever occur.
-        inputMethodSpecificSettings[engineId]! :
-        {};
+    const currentSettings = inputMethodSpecificSettings[engineId] ?? {};
     const defaultOverrides = this.getDefaultValueOverrides_(engineId);
 
     const makeOption = (option: {
@@ -268,51 +263,42 @@ class SettingsInputMethodOptionsPageElement extends
       const name = option.name;
       const uiType = getOptionUiType(name);
 
-      let value = name in currentSettings ?
-          // Safety: See the `currentSettings` safety comment above.
-          // TODO(b/265558129): Use `currentSettings[name] !== undefined` above
-          // to guard against `undefined` properties if they do ever occur.
-          currentSettings[name]! :
-          getDefaultValue(
-              // This cast is VERY unsafe, as `OPTION_DEFAULT` only contains
-              // a small subset of options as keys.
-              // TODO(b/263829863): Investigate and fix this type cast.
-              name as keyof typeof OPTION_DEFAULT, defaultOverrides);
-      if (loadTimeData.getBoolean('allowAutocorrectToggle') &&
-          name in AUTOCORRECT_OPTION_MAP_OVERRIDE) {
-        /// Safety: We checked that `name` is a key above.
-        value = AUTOCORRECT_OPTION_MAP_OVERRIDE[name as AutocorrectOptionMapKey]
-                    // Safety: All autocorrect prefs have values that are
-                    // numbers in `getOptionMenuItems` as well as
-                    // `OPTION_DEFAULT`.
-                    .mapValueForDisplay(value as number);
+      let value = currentSettings[name];
+      if (value === undefined) {
+        value = getDefaultValue(
+            // This cast is VERY unsafe, as `OPTION_DEFAULT` only contains
+            // a small subset of options as keys.
+            // TODO(b/263829863): Investigate and fix this type cast.
+            name as keyof typeof OPTION_DEFAULT, defaultOverrides);
       }
+      let needsPrefUpdate = false;
       if (!this.isSettingValueValid_(name, value)) {
         value = getDefaultValue(
             // This cast is VERY unsafe, as `OPTION_DEFAULT` only contains
             // a small subset of options as keys.
             // TODO(b/263829863): Investigate and fix this type cast.
             name as keyof typeof OPTION_DEFAULT, defaultOverrides);
-        // This function call is unsafe under these conditions:
-        // - This option is `JAPANESE_NUMBER_OF_SUGGESTIONS`, or
-        //   `allowAutocorrectToggle` is off and this option is an autocorrect
-        //   option.
-        //   In this case, `this.updatePref_` expects the value to be a string,
-        //   as the `shouldStoreAsNumber` branch is hit - but `getDefaultValue`
-        //   returns a number, not a string, in this case.
-        //   TODO(b/265557721): Fix the use of Polymer two-way native bindings
-        //   in the dropdown part of the template, and remove the
-        //   `shouldStoreAsNumber` branch.
-        //
-        // - `allowAutocorrectToggle` is on, this option is an autocorrect
-        //   option, AND `this.isSettingValueValid_` returns false.
-        //   This currently is impossible as `this.isSettingValueValid_` is true
-        //   for all toggles, but may change in the future.
-        //   In this case, `value` would be the value in the prefs store, not
-        //   the displayed value, so storing it in the prefs store may result in
-        //   errors, and may be displayed incorrectly too.
-        //   TODO(b/238031866): Map the default value to the value for display
-        //   AFTER setting it to the default value if it is invalid.
+        needsPrefUpdate = true;
+      }
+      if (loadTimeData.getBoolean('allowAutocorrectToggle') &&
+          name in AUTOCORRECT_OPTION_MAP_OVERRIDE) {
+        // Safety: We checked that `name` is a key above.
+        value = AUTOCORRECT_OPTION_MAP_OVERRIDE[name as AutocorrectOptionMapKey]
+                    // Safety: All autocorrect prefs have values that are
+                    // numbers in `getOptionMenuItems` as well as
+                    // `OPTION_DEFAULT`.
+                    .mapValueForDisplay(value as number);
+      }
+      if (needsPrefUpdate) {
+        // This function call is unsafe if this option is
+        // `JAPANESE_NUMBER_OF_SUGGESTIONS`, or `allowAutocorrectToggle` is off
+        // and this option is an autocorrect option.
+        // In this case, `this.updatePref_` expects the value to be a string, as
+        // the `shouldStoreAsNumber` branch is hit - but `getDefaultValue`
+        // returns a number, not a string, in this case.
+        // TODO(b/265557721): Fix the use of Polymer two-way native bindings in
+        // the dropdown part of the template, and remove the
+        // `shouldStoreAsNumber` branch.
         this.updatePref_(name, value);
       }
 
@@ -416,7 +402,7 @@ class SettingsInputMethodOptionsPageElement extends
    */
   private updatePref_(optionName: OptionType, newValue: OptionValue): void {
     // Get the existing settings dictionary, in order to update it later.
-    // |PrefsBehavior.setPrefValue| will update Cros Prefs only if the reference
+    // |PrefsMixin.setPrefValue| will update Cros Prefs only if the reference
     // of variable has changed, so we need to copy the current content into a
     // new variable.
     const updatedSettings: PrefsObjectType = {};
@@ -498,9 +484,7 @@ class SettingsInputMethodOptionsPageElement extends
         return this.i18n('inputMethodOptionsPrivacySectionTitle');
 
       default:
-        // Safety: `section` has type `never` here.
-        // TODO(b/265559342): Use a compile-time exhaustive check here.
-        assertNotReached();
+        assertExhaustive(section);
     }
   }
 

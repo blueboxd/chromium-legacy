@@ -139,7 +139,8 @@ class FakeAppInstance : public mojom::AppInstance {
       const gfx::Rect& dimension,
       CanHandleResolutionDeprecatedCallback callback) override;
   void UninstallPackage(const std::string& package_name) override;
-  void GetTaskInfo(int32_t task_id, GetTaskInfoCallback callback) override;
+  void GetTaskInfoDeprecated(int32_t task_id,
+                              GetTaskInfoDeprecatedCallback callback) override;
   void SetTaskActive(int32_t task_id) override;
   void CloseTask(int32_t task_id) override;
   void ShowPackageInfoDeprecated(const std::string& package_name,
@@ -192,9 +193,6 @@ class FakeAppInstance : public mojom::AppInstance {
   void SendUninstallShortcut(const std::string& package_name,
                              const std::string& intent_uri);
   void SendInstallShortcuts(const std::vector<mojom::ShortcutInfo>& shortcuts);
-  void SetTaskInfo(int32_t task_id,
-                   const std::string& package_name,
-                   const std::string& activity);
   void SendRefreshPackageList(std::vector<mojom::ArcPackageInfoPtr> packages);
   void SendPackageAdded(mojom::ArcPackageInfoPtr package);
   void SendPackageModified(mojom::ArcPackageInfoPtr package);
@@ -287,8 +285,6 @@ class FakeAppInstance : public mojom::AppInstance {
   std::vector<std::unique_ptr<IconRequest>> icon_requests_;
   // Keeps information about shortcut icon load requests.
   std::vector<std::unique_ptr<ShortcutIconRequest>> shortcut_icon_requests_;
-  // Keeps information for running tasks.
-  TaskIdToInfo task_id_to_info_;
   // Defines how to response to icon requests.
   IconResponseType icon_response_type_ =
       IconResponseType::ICON_RESPONSE_SEND_GOOD;

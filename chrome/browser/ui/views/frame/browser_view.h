@@ -87,10 +87,9 @@ class ToolbarView;
 class TopContainerLoadingBar;
 class TopContainerView;
 class TopControlsSlideControllerTest;
+class WebAppFrameToolbarView;
 class WebContentsCloseHandler;
 class WebUITabStripContainerView;
-
-class SideSearchBrowserController;
 
 namespace ui {
 class NativeTheme;
@@ -130,7 +129,12 @@ class BrowserView : public BrowserWindow,
   BrowserView& operator=(const BrowserView&) = delete;
   ~BrowserView() override;
 
-  void set_frame(BrowserFrame* frame) { frame_ = frame; }
+  void set_frame(BrowserFrame* frame) {
+    frame_ = frame;
+    paint_as_active_subscription_ =
+        frame_->RegisterPaintAsActiveChangedCallback(base::BindRepeating(
+            &BrowserView::PaintAsActiveChanged, base::Unretained(this)));
+  }
   BrowserFrame* frame() const { return frame_; }
 
   // Returns a pointer to the BrowserView* interface implementation (an
@@ -183,6 +187,12 @@ class BrowserView : public BrowserWindow,
   // incognito avatar icon.
   int GetTabStripHeight() const;
 
+  // Returns the preferred size of the Web App Frame Toolbar. Used for example
+  // to determine the height of the title bar.
+  // Returns an empty size if this browser is not for a web app, or if
+  // features::kWebAppFrameToolbarInBrowserView is disabled.
+  gfx::Size GetWebAppFrameToolbarPreferredSize() const;
+
   // Container for the tabstrip, toolbar, etc.
   TopContainerView* top_container() { return top_container_; }
 
@@ -206,10 +216,6 @@ class BrowserView : public BrowserWindow,
 
   SidePanelCoordinator* side_panel_coordinator() {
     return side_panel_coordinator_.get();
-  }
-
-  SideSearchBrowserController* side_search_controller() {
-    return side_search_controller_.get();
   }
 
   void set_contents_border_widget(views::Widget* contents_border_widget) {
@@ -420,6 +426,8 @@ class BrowserView : public BrowserWindow,
   // settings page.
   void UpdateSidePanelHorizontalAlignment();
 
+  void UpdateWebAppStatusIconsVisiblity();
+
   // BrowserWindow:
   void Show() override;
   void ShowInactive() override;
@@ -447,7 +455,6 @@ class BrowserView : public BrowserWindow,
   void SetTopControlsGestureScrollInProgress(bool in_progress) override;
   StatusBubble* GetStatusBubble() override;
   void UpdateTitleBar() override;
-  void UpdateFrameColor() override;
   void BookmarkBarStateChanged(
       BookmarkBar::AnimateChangeType change_type) override;
   void UpdateDevTools() override;
@@ -541,6 +548,7 @@ class BrowserView : public BrowserWindow,
       bool show_signin_button) override;
 #if BUILDFLAG(IS_CHROMEOS)
   views::Button* GetSharingHubIconButton() override;
+  void ToggleMultitaskMenu() const override;
 #else
   sharing_hub::SharingHubBubbleView* ShowSharingHubBubble(
       share::ShareAttempt attempt) override;
@@ -768,10 +776,6 @@ class BrowserView : public BrowserWindow,
   // side panel being closed.
   bool CloseOpenRightAlignedSidePanel(bool exclude_side_search = false);
 
-  // Clobbers all right aligned side search side panels if
-  // kClobberAllSideSearchSidePanels is enabled.
-  void MaybeClobberAllSideSearchSidePanels();
-
   bool should_show_window_controls_overlay_toggle() const {
     return should_show_window_controls_overlay_toggle_;
   }
@@ -952,6 +956,11 @@ class BrowserView : public BrowserWindow,
   // Updates whether the web app is an isolated web app.
   void UpdateIsIsolatedWebApp();
 
+  WebAppFrameToolbarView* web_app_frame_toolbar();
+  const WebAppFrameToolbarView* web_app_frame_toolbar() const;
+
+  void PaintAsActiveChanged();
+
   // The BrowserFrame that hosts this view.
   raw_ptr<BrowserFrame, DanglingUntriaged> frame_ = nullptr;
 
@@ -963,6 +972,8 @@ class BrowserView : public BrowserWindow,
   // --------------------------------------------------------------------
   // | TopContainerView (top_container_)                                |
   // |  --------------------------------------------------------------  |
+  // |  | Web App toolbar and title (web_app_frame_toolbar_)         |  |
+  // |  |------------------------------------------------------------|  |
   // |  | Tabs (tabstrip_)                                           |  |
   // |  |------------------------------------------------------------|  |
   // |  | Navigation buttons, address bar, menu (toolbar_)           |  |
@@ -986,6 +997,16 @@ class BrowserView : public BrowserWindow,
   // bar. Stacked top in the view hiearachy so it can be used to slide out
   // the top views in immersive fullscreen.
   raw_ptr<TopContainerView, DanglingUntriaged> top_container_ = nullptr;
+
+  // Menu button and page status icons. Only used by web-app windows.
+  raw_ptr<WebAppFrameToolbarView, DanglingUntriaged> web_app_frame_toolbar_ =
+      nullptr;
+
+  // Normally the BrowserNonClientFrameView is responsible for rendering the
+  // title of a window when appropriate. However for web applications the title
+  // needs to be more integrated with other UI components part of BrowserView,
+  // so have a title Label for them here.
+  raw_ptr<views::Label, DanglingUntriaged> web_app_window_title_ = nullptr;
 
   // The view that contains the tabstrip, new tab button, and grab handle space.
   raw_ptr<TabStripRegionView, DanglingUntriaged> tab_strip_region_view_ =
@@ -1080,9 +1101,6 @@ class BrowserView : public BrowserWindow,
   // the contextual panel interacts as expected with the global panels.
   std::unique_ptr<SidePanelVisibilityController>
       side_panel_visibility_controller_;
-
-  // Controls the browser window's side panel for the Side Search feature.
-  std::unique_ptr<SideSearchBrowserController> side_search_controller_;
 
   // Provides access to the toolbar buttons this browser view uses. Buttons may
   // appear in a hosted app frame or in a tabbed UI toolbar.
@@ -1206,6 +1224,8 @@ class BrowserView : public BrowserWindow,
   bool is_isolated_web_app_ = false;
   absl::optional<content::PermissionController::SubscriptionId>
       window_management_subscription_id_;
+
+  base::CallbackListSubscription paint_as_active_subscription_;
 
   mutable base::WeakPtrFactory<BrowserView> weak_ptr_factory_{this};
 };

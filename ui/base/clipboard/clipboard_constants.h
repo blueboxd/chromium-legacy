@@ -84,10 +84,12 @@ extern NSString* const kUTTypeConfidentialData;
 
 #endif  // BUILDFLAG(IS_APPLE)
 
-#if BUILDFLAG(IS_ANDROID)
+// ----- ANDROID MIME TYPES -----
+
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
 extern const char kMimeTypeImageURI[];
-#endif  // BUILDFLAG(IS_ANDROID)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
 // Max number of custom formats which can be registered per write operation.
 // Windows / X11 clipboards enter an unrecoverable state after registering

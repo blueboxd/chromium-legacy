@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {MultiDeviceBrowserProxyImpl, MultiDeviceFeature, MultiDeviceFeatureState, MultiDevicePageContentData, MultiDeviceSettingsMode, Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
+import {MultiDeviceBrowserProxyImpl, MultiDeviceFeature, MultiDeviceFeatureState, MultiDeviceSettingsMode, Router, routes} from 'chrome://os-settings/chromeos/os_settings.js';
 import {webUIListenerCallback} from 'chrome://resources/ash/common/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 import {createFakePageContentData, TestMultideviceBrowserProxy} from './test_multidevice_browser_proxy.js';
@@ -82,7 +81,7 @@ suite('Multidevice', function() {
    *     verified.
    * @private
    */
-  function simulateFeatureStateChangeRequest(enabled) {
+  async function simulateFeatureStateChangeRequest(enabled) {
     const token = 'token1';
     smartLockItem.authToken =
         /** @type{chrome.quickUnlockPrivate} */ {
@@ -92,20 +91,23 @@ suite('Multidevice', function() {
 
     // When the user requets a feature state change, an event with the relevant
     // details is handled.
-    smartLockItem.fire(
-        'feature-toggle-clicked',
-        {feature: MultiDeviceFeature.SMART_LOCK, enabled: enabled});
+    const featureToggleClickedEvent =
+        new CustomEvent('feature-toggle-clicked', {
+          bubbles: true,
+          composed: true,
+          detail: {feature: MultiDeviceFeature.SMART_LOCK, enabled},
+        });
+    smartLockItem.dispatchEvent(featureToggleClickedEvent);
     flush();
 
-    return browserProxy.whenCalled('setFeatureEnabledState').then(params => {
-      assertEquals(MultiDeviceFeature.SMART_LOCK, params[0]);
-      assertEquals(enabled, params[1]);
-      assertEquals(token, params[2]);
+    const params = await browserProxy.whenCalled('setFeatureEnabledState');
+    assertEquals(MultiDeviceFeature.SMART_LOCK, params[0]);
+    assertEquals(enabled, params[1]);
+    assertEquals(token, params[2]);
 
-      // Reset the resolver so that setFeatureEnabledState() can be called
-      // multiple times in a test.
-      browserProxy.resetResolver('setFeatureEnabledState');
-    });
+    // Reset the resolver so that setFeatureEnabledState() can be called
+    // multiple times in a test.
+    browserProxy.resetResolver('setFeatureEnabledState');
   }
 
   /**
@@ -193,14 +195,13 @@ suite('Multidevice', function() {
         assertFalse(!!featureItem);
       });
 
-  test('feature toggle click event handled', function() {
+  test('feature toggle click event handled', async function() {
     initializeElement();
-    simulateFeatureStateChangeRequest(false).then(function() {
-      simulateFeatureStateChangeRequest(true);
-    });
+    await simulateFeatureStateChangeRequest(false);
+    await simulateFeatureStateChangeRequest(true);
   });
 
-  test('SmartLockSignInRemoved flag removes subpage', function() {
+  test('SmartLockSignInRemoved flag removes subpage', async function() {
     initializeElement(/*isSmartLockSignInRemoved=*/ true);
     const featureItem =
         smartLockItem.shadowRoot.querySelector('#smartLockItem');

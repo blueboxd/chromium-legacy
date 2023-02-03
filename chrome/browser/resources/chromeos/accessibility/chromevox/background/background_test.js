@@ -66,6 +66,8 @@ ChromeVoxBackgroundTest = class extends ChromeVoxE2ETest {
     await importModule('CursorRange', '/common/cursors/range.js');
     await importModule('EventGenerator', '/common/event_generator.js');
     await importModule('KeyCode', '/common/key_code.js');
+    await importModule(
+        'SettingsManager', '/chromevox/common/settings_manager.js');
     await importModule('LocalStorage', '/common/local_storage.js');
 
     globalThis.simulateHitTestResult = this.simulateHitTestResult;
@@ -1785,9 +1787,7 @@ AX_TEST_F(
       await mockFeedback.replay();
     });
 
-// crbug.com/1356181 Disable due to flaky.
-AX_TEST_F('ChromeVoxBackgroundTest',
-          'DISABLED_aGestureGranularity', async function() {
+AX_TEST_F('ChromeVoxBackgroundTest', 'GestureGranularity', async function() {
   const mockFeedback = this.createMockFeedback();
   const site = `
     <p>This is a test</p>
@@ -2518,14 +2518,37 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'ToggleScreen', async function() {
   await mockFeedback.replay();
 });
 
+// Tests the behavior of ChromeVox when Talkback is disabled and there is no
+// current focus. We set no focus by modifying the internal ChromeVox state.
 AX_TEST_F(
-    'ChromeVoxBackgroundTest', 'NoFocusTalkBackDisabled', async function() {
+    'ChromeVoxBackgroundTest', 'NoFocusTalkBackDisabledInternalState',
+    async function() {
       // Fire onCustomSpokenFeedbackEnabled event to communicate that Talkback
       // is off for the current app.
       this.dispatchOnCustomSpokenFeedbackToggledEvent(false);
       const mockFeedback = this.createMockFeedback();
       await this.runWithLoadedTree('<p>Test document</p>');
       ChromeVoxRange.set(null);
+      mockFeedback.call(doCmd('nextObject'))
+          .expectSpeech(
+              'No current ChromeVox focus. Press Alt+Shift+L to go to the ' +
+              'launcher.')
+          .call(doCmd('previousObject'))
+          .expectSpeech(
+              'No current ChromeVox focus. Press Alt+Shift+L to go to the ' +
+              'launcher.');
+      await mockFeedback.replay();
+    });
+
+// Tests the behavior of ChromeVox when Talkback is disabled and there is no
+// current focus. We set no focus by modifying the automation API.
+AX_TEST_F(
+    'ChromeVoxBackgroundTest', 'NoFocusTalkBackDisabledAutomation',
+    async function() {
+      this.dispatchOnCustomSpokenFeedbackToggledEvent(false);
+      const mockFeedback = this.createMockFeedback();
+      await this.runWithLoadedTree('<p>Test document</p>');
+      chrome.automation.getFocus = (callback) => callback(null);
       mockFeedback.call(doCmd('nextObject'))
           .expectSpeech(
               'No current ChromeVox focus. Press Alt+Shift+L to go to the ' +
@@ -3637,7 +3660,7 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'DetailsChanged', async function() {
 
   // Make sure we're not testing reading of the hint from the button's output
   // below.
-  LocalStorage.set('useVerboseMode', false);
+  SettingsManager.set('useVerboseMode', false);
   const site = `
     <button id="click">ok</button>
     <p id="details">hello</p>
@@ -4065,9 +4088,10 @@ AX_TEST_F(
 
           .call(() => {
             // Link the two "windows" with next/previous focus.
-            Object.defineProperty(window1, 'nextFocus', {get: () => window2});
             Object.defineProperty(
-                window2, 'previousFocus', {get: () => window1});
+                window1, 'nextWindowFocus', {get: () => window2});
+            Object.defineProperty(
+                window2, 'previousWindowFocus', {get: () => window1});
           })
 
           // window1 -> window2.
@@ -4082,8 +4106,9 @@ AX_TEST_F(
             // Link the two "windows" with next/previous focus in a slightly
             // different way.
             Object.defineProperty(
-                window1, 'previousFocus', {get: () => window2});
-            Object.defineProperty(window2, 'nextFocus', {get: () => window1});
+                window1, 'previousWindowFocus', {get: () => window2});
+            Object.defineProperty(
+                window2, 'nextWindowFocus', {get: () => window1});
           })
 
           .call(doCmd('previousObject'))

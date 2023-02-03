@@ -13,6 +13,7 @@
 #import "base/time/default_clock.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/keyed_service/ios/browser_state_dependency_manager.h"
+#import "components/segmentation_platform/embedder/default_model/device_switcher_result_dispatcher.h"
 #import "components/segmentation_platform/embedder/model_provider_factory_impl.h"
 #import "components/segmentation_platform/internal/dummy_ukm_data_manager.h"
 #import "components/segmentation_platform/internal/segmentation_platform_service_impl.h"
@@ -29,6 +30,7 @@
 #import "ios/chrome/browser/segmentation_platform/otr_web_state_observer.h"
 #import "ios/chrome/browser/segmentation_platform/segmentation_platform_config.h"
 #import "ios/chrome/browser/sync/device_info_sync_service_factory.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -42,10 +44,27 @@ const base::FilePath::CharType kSegmentationPlatformStorageDirName[] =
 
 const char kSegmentationPlatformProfileObserverKey[] =
     "segmentation_platform_profile_observer";
+const char kSegmentationDeviceSwitcherUserDataKey[] =
+    "segmentation_device_switcher_data";
 
 UkmDataManager* GetUkmDataManager() {
   static base::NoDestructor<DummyUkmDataManager> instance;
   return instance.get();
+}
+
+std::unique_ptr<processing::InputDelegateHolder> SetUpInputDelegates(
+    std::vector<std::unique_ptr<Config>>& configs) {
+  auto input_delegate_holder =
+      std::make_unique<processing::InputDelegateHolder>();
+  for (auto& config : configs) {
+    for (auto& id : config->input_delegates) {
+      input_delegate_holder->SetDelegate(id.first, std::move(id.second));
+    }
+  }
+
+  // Add shareable input delegates here.
+
+  return input_delegate_holder;
 }
 
 // Observes existance of Incognito tabs in the application.
@@ -111,11 +130,13 @@ std::unique_ptr<KeyedService> BuildSegmentationPlatformService(
   params->model_provider = std::make_unique<ModelProviderFactoryImpl>(
       optimization_guide, params->configs, params->task_runner);
   params->field_trial_register = std::make_unique<IOSFieldTrialRegisterImpl>();
+  auto* field_trial_register = params->field_trial_register.get();
   // Guaranteed to outlive the SegmentationPlatformService, which depends on the
   // DeviceInfoSynceService.
   params->device_info_tracker =
       DeviceInfoSyncServiceFactory::GetForBrowserState(chrome_browser_state)
           ->GetDeviceInfoTracker();
+  params->input_delegate_holder = SetUpInputDelegates(params->configs);
   auto service =
       std::make_unique<SegmentationPlatformServiceImpl>(std::move(params));
 
@@ -127,6 +148,12 @@ std::unique_ptr<KeyedService> BuildSegmentationPlatformService(
         kSegmentationPlatformProfileObserverKey,
         std::make_unique<IncognitoObserver>(service.get(), otr_observer));
   }
+  service->SetUserData(
+      kSegmentationDeviceSwitcherUserDataKey,
+      std::make_unique<DeviceSwitcherResultDispatcher>(
+          service.get(),
+          SyncServiceFactory::GetForBrowserState(chrome_browser_state),
+          chrome_browser_state->GetPrefs(), field_trial_register));
   return service;
 }
 
@@ -157,6 +184,7 @@ SegmentationPlatformServiceFactory::SegmentationPlatformServiceFactory()
   DependsOn(OptimizationGuideServiceFactory::GetInstance());
   DependsOn(ios::HistoryServiceFactory::GetInstance());
   DependsOn(DeviceInfoSyncServiceFactory::GetInstance());
+  DependsOn(SyncServiceFactory::GetInstance());
 }
 
 SegmentationPlatformServiceFactory::~SegmentationPlatformServiceFactory() =

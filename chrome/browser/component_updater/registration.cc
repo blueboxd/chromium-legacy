@@ -6,9 +6,12 @@
 
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
+#include "base/task/thread_pool.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -20,6 +23,7 @@
 #include "chrome/browser/component_updater/commerce_heuristics_component_installer.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/crowd_deny_component_installer.h"
+#include "chrome/browser/component_updater/desktop_sharing_hub_component_remover.h"
 #include "chrome/browser/component_updater/file_type_policies_component_installer.h"
 #include "chrome/browser/component_updater/first_party_sets_component_installer.h"
 #include "chrome/browser/component_updater/hyphenation_component_installer.h"
@@ -60,12 +64,10 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/component_updater/crow_domain_list_component_installer.h"
-#include "chrome/browser/component_updater/desktop_sharing_hub_component_remover.h"
 #include "chrome/browser/component_updater/real_time_url_checks_allowlist_component_installer.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/component_updater/desktop_sharing_hub_component_installer.h"
 #include "chrome/browser/component_updater/zxcvbn_data_component_installer.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "media/base/media_switches.h"
@@ -145,10 +147,17 @@ void RegisterComponentsForUpdate() {
 
     component_updater::DeleteUrlParamFilter(path);
 
-#if BUILDFLAG(IS_ANDROID)
-    // Clean up any desktop sharing hubs that were installed on Android.
+    // Clean up any remaining desktop sharing hub state.
     component_updater::DeleteDesktopSharingHub(path);
-#endif  // BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_WIN)
+    // TODO(crbug/1407233): Remove this call once it has rolled out for a few
+    // milestones
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+        base::GetDeleteFileCallback(
+            path.Append(FILE_PATH_LITERAL("SwReporter"))));
+#endif  // BUILDFLAG(IS_WIN)
   }
   RegisterSSLErrorAssistantComponent(cus);
 
@@ -169,16 +178,9 @@ void RegisterComponentsForUpdate() {
   RegisterOriginTrialsComponent(cus);
   RegisterMediaEngagementPreloadComponent(cus, base::OnceClosure());
 
-#if BUILDFLAG(IS_WIN)
-  // SwReporter is only needed for official builds.  However, to enable testing
-  // on chromium build bots, it is always registered here and
-  // RegisterSwReporterComponent() has support for running only in official
-  // builds or tests.
-  RegisterSwReporterComponent(cus, g_browser_process->local_state());
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   RegisterThirdPartyModuleListComponent(cus);
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#endif  // BUILDFLAG(IS_WIN)
+#endif  // BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   MaybeRegisterPKIMetadataComponent(cus);
 
@@ -195,7 +197,6 @@ void RegisterComponentsForUpdate() {
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
-  RegisterDesktopSharingHubComponent(cus);
   RegisterZxcvbnDataComponent(cus);
 #endif  // !BUILDFLAG(IS_ANDROID)
 

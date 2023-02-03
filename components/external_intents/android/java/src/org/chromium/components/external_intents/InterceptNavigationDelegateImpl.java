@@ -24,6 +24,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.content_public.browser.Visibility;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ConsoleMessageLevel;
 import org.chromium.content_public.common.Referrer;
@@ -126,25 +127,6 @@ public class InterceptNavigationDelegateImpl extends InterceptNavigationDelegate
         InterceptNavigationDelegateImplJni.get().associateWithWebContents(this, mWebContents);
     }
 
-    public boolean shouldIgnoreNewTab(
-            GURL url, boolean incognito, boolean isRendererInitiated, Origin initiatorOrigin) {
-        ExternalNavigationParams params = new ExternalNavigationParams.Builder(url, incognito)
-                                                  .setOpenInNewTab(true)
-                                                  .setIsRendererInitiated(isRendererInitiated)
-                                                  .setInitiatorOrigin(initiatorOrigin)
-                                                  .setIsMainFrame(true)
-                                                  .build();
-        OverrideUrlLoadingResult result = mExternalNavHandler.shouldOverrideUrlLoading(params);
-        if (mResultCallbackForTesting != null) {
-            mResultCallbackForTesting.onResult(Pair.create(url, result));
-        }
-
-        RecordHistogram.recordEnumeratedHistogram("Android.Intent.ShouldIgnoreNewTabResult",
-                result.getResultType(), OverrideUrlLoadingResultType.NUM_ENTRIES);
-        return result.getResultType()
-                != ExternalNavigationHandler.OverrideUrlLoadingResultType.NO_OVERRIDE;
-    }
-
     @Override
     public boolean shouldIgnoreNavigation(NavigationHandle navigationHandle, GURL escapedUrl) {
         // We should never get here for non-main-frame navigations.
@@ -215,7 +197,8 @@ public class InterceptNavigationDelegateImpl extends InterceptNavigationDelegate
                     return null;
                 }
             case OverrideUrlLoadingResultType.OVERRIDE_WITH_ASYNC_ACTION:
-                return null;
+                // Empty GURL indicates a pending async action.
+                return GURL.emptyGURL();
             case OverrideUrlLoadingResultType.NO_OVERRIDE:
             default:
                 logBlockedNavigationToDevToolsConsole(escapedUrl);
@@ -237,8 +220,8 @@ public class InterceptNavigationDelegateImpl extends InterceptNavigationDelegate
         // to open any outgoing intents that come back to Chrome in a new tab as the existing one
         // may have been closed.
         boolean onInitialNavigationChain = isTabOnInitialNavigationChain();
-        boolean isInitialTabLaunchInBackground =
-                mClient.wasTabLaunchedFromLongPressInBackground() && onInitialNavigationChain;
+        boolean isWebContentsVisible =
+                mClient.getWebContents().getVisibility() == Visibility.VISIBLE;
         ExternalNavigationParams params =
                 new ExternalNavigationParams
                         .Builder(escapedUrl, mClient.isIncognito(), referrerUrl, pageTransition,
@@ -246,8 +229,7 @@ public class InterceptNavigationDelegateImpl extends InterceptNavigationDelegate
                         .setApplicationMustBeInForeground(true)
                         .setRedirectHandler(redirectHandler)
                         .setOpenInNewTab(onInitialNavigationChain)
-                        .setIsBackgroundTabNavigation(
-                                mClient.isHidden() && !isInitialTabLaunchInBackground)
+                        .setIsBackgroundTabNavigation(!isWebContentsVisible)
                         .setIntentLaunchesAllowedInBackgroundTabs(
                                 areIntentLaunchesAllowedInHiddenTabsForNavigation)
                         .setIsMainFrame(isInPrimaryMainFrame)
@@ -343,7 +325,12 @@ public class InterceptNavigationDelegateImpl extends InterceptNavigationDelegate
     }
 
     private void onDidAsyncActionInSubFrame(AsyncActionTakenParams params) {
-        // TODO(https://crbug.com/1365100): Implement navigate action.
+        GURL redirectUrl =
+                (params.actionType == AsyncActionTakenParams.AsyncActionTakenType.NAVIGATE)
+                ? params.targetUrl
+                : null;
+        InterceptNavigationDelegateImplJni.get().onSubframeAsyncActionTaken(
+                mWebContents, redirectUrl);
     }
 
     private void onDidFinishMainFrameIntentLaunch(boolean canCloseTab, GURL escapedUrl) {
@@ -461,5 +448,6 @@ public class InterceptNavigationDelegateImpl extends InterceptNavigationDelegate
         void associateWithWebContents(
                 InterceptNavigationDelegateImpl nativeInterceptNavigationDelegateImpl,
                 WebContents webContents);
+        void onSubframeAsyncActionTaken(WebContents webContents, GURL url);
     }
 }

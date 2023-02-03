@@ -125,6 +125,10 @@ BASE_FEATURE(kPermuteTLSExtensions,
              "PermuteTLSExtensions",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kPostQuantumKyber,
+             "PostQuantumKyber",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kPostQuantumCECPQ2,
              "PostQuantumCECPQ2",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -281,22 +285,6 @@ BASE_FEATURE(kBlockSetCookieHeader,
 BASE_FEATURE(kOptimisticBlockfileWrite,
              "OptimisticBlockfileWrite",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kStorageAccessAPI,
-             "StorageAccessAPI",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-constexpr int kStorageAccessAPIDefaultImplicitGrantLimit = 5;
-const base::FeatureParam<int> kStorageAccessAPIImplicitGrantLimit{
-    &kStorageAccessAPI, "storage-access-api-implicit-grant-limit",
-    kStorageAccessAPIDefaultImplicitGrantLimit};
-const base::FeatureParam<bool> kStorageAccessAPIGrantsUnpartitionedStorage(
-    &kStorageAccessAPI,
-    "storage-access-api-grants-unpartitioned-storage",
-    false);
-const base::FeatureParam<bool> kStorageAccessAPIAutoGrantInFPS{
-    &kStorageAccessAPI, "storage_access_api_auto_grant_in_fps", true};
-const base::FeatureParam<bool> kStorageAccessAPIAutoDenyOutsideFPS{
-    &kStorageAccessAPI, "storage_access_api_auto_deny_outside_fps", true};
 
 // Enables partitioning of third party storage (IndexedDB, CacheStorage, etc.)
 // by the top level site to reduce fingerprinting.

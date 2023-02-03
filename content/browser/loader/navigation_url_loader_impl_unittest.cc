@@ -123,7 +123,7 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
         mojo::NullRemote() /* url_loader_network_observer */,
         /*devtools_observer=*/mojo::NullRemote(),
         /*accept_ch_frame_observer=*/mojo::NullRemote(),
-        /*third_party_cookies_enabled=*/true,
+        /*third_party_cookies_enabled=*/true, net::CookieSettingOverrides(),
         /*cache_transparency_settings=*/nullptr);
   }
 
@@ -224,6 +224,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
             blink::mojom::MixedContentContextType::kBlockable,
             false /* is_form_submission */,
             false /* was_initiated_by_link_click */,
+            blink::mojom::ForceHistoryPush::kNo,
             GURL() /* searchable_form_url */,
             std::string() /* searchable_form_encoding */,
             GURL() /* client_side_redirect_url */,

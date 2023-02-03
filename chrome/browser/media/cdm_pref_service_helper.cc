@@ -46,7 +46,7 @@ bool TimeIsBetween(const base::Time& time,
 //     more origin_string map...
 // }
 base::Value ToDictValue(const CdmPrefData& pref_data) {
-  base::Value dict(base::Value::Type::DICTIONARY);
+  base::Value dict(base::Value::Type::DICT);
 
   // Origin ID
   dict.SetKey(kOriginId, base::UnguessableTokenToValue(pref_data.origin_id()));
@@ -298,7 +298,8 @@ std::map<std::string, url::Origin> CdmPrefServiceHelper::GetOriginIdMapping(
       user_prefs->GetDict(prefs::kMediaCdmOriginData);
 
   for (auto key_value : dict) {
-    const base::Value* origin_id_value = key_value.second.FindKey(kOriginId);
+    const base::Value* origin_id_value =
+        key_value.second.GetDict().Find(kOriginId);
     if (!origin_id_value)
       continue;
 

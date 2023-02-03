@@ -9,18 +9,15 @@
 
 #include "base/functional/callback_forward.h"
 #include "content/common/content_export.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 namespace content {
 
 class CONTENT_EXPORT AttributionDataModel {
  public:
-  class DataKey {
+  class CONTENT_EXPORT DataKey {
    public:
-    DataKey(url::Origin reporting_origin,
-            absl::optional<url::Origin> source_origin,
-            absl::optional<url::Origin> destination_origin);
+    explicit DataKey(url::Origin reporting_origin);
 
     DataKey(const DataKey&);
     DataKey(DataKey&&);
@@ -32,22 +29,12 @@ class CONTENT_EXPORT AttributionDataModel {
 
     const url::Origin& reporting_origin() const { return reporting_origin_; }
 
-    const absl::optional<url::Origin>& source_origin() const {
-      return source_origin_;
-    }
-
-    const absl::optional<url::Origin>& destination_origin() const {
-      return destination_origin_;
-    }
-
     bool operator<(const DataKey&) const;
+
+    bool operator==(const DataKey&) const;
 
    private:
     url::Origin reporting_origin_;
-
-    absl::optional<url::Origin> source_origin_;
-
-    absl::optional<url::Origin> destination_origin_;
   };
 
   virtual ~AttributionDataModel() = default;

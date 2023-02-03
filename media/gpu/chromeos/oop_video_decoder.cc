@@ -81,6 +81,139 @@ namespace {
 // The maximum size is chosen to be the same as in the VaapiVideoDecoder.
 constexpr size_t kTimestampCacheSize = 128;
 
+// A singleton helper class that makes it easy to manage requests to wait until
+// the supported video decoder configurations are known and cache those
+// configurations.
+//
+// All public methods are thread- and sequence-safe.
+class OOPVideoDecoderSupportedConfigsManager {
+ public:
+  static OOPVideoDecoderSupportedConfigsManager& Instance() {
+    static base::NoDestructor<OOPVideoDecoderSupportedConfigsManager> instance;
+    return *instance;
+  }
+
+  absl::optional<SupportedVideoDecoderConfigs> Get() {
+    base::AutoLock lock(lock_);
+    return configs_;
+  }
+
+  void NotifySupportKnown(
+      mojo::PendingRemote<stable::mojom::StableVideoDecoder> oop_video_decoder,
+      base::OnceCallback<
+          void(mojo::PendingRemote<stable::mojom::StableVideoDecoder>)> cb) {
+    base::ReleasableAutoLock lock(&lock_);
+    if (configs_) {
+      // The supported configurations are already known. We can call |cb|
+      // immediately.
+      //
+      // We release the lock in case the |waiting_callback|.cb wants to re-enter
+      // OOPVideoDecoderSupportedConfigsManager by reaching
+      // OOPVideoDecoderSupportedConfigsManager::Get() in the callback.
+      lock.Release();
+      std::move(cb).Run(std::move(oop_video_decoder));
+      return;
+    } else if (!waiting_callbacks_.empty()) {
+      // There is a query in progress. We need to queue |cb| to call it later
+      // when the supported configurations are known.
+      waiting_callbacks_.emplace(
+          std::move(oop_video_decoder), std::move(cb),
+          base::SequencedTaskRunner::GetCurrentDefault());
+      return;
+    }
+
+    // The supported configurations are not known. We need to use
+    // |oop_video_decoder| to query them.
+    //
+    // Note: base::Unretained(this) is safe because the
+    // OOPVideoDecoderSupportedConfigsManager never gets destroyed.
+    oop_video_decoder_.Bind(std::move(oop_video_decoder));
+    oop_video_decoder_.set_disconnect_handler(base::BindOnce(
+        &OOPVideoDecoderSupportedConfigsManager::OnGetSupportedConfigs,
+        base::Unretained(this), SupportedVideoDecoderConfigs(),
+        VideoDecoderType::kUnknown));
+    oop_video_decoder_->GetSupportedConfigs(base::BindOnce(
+        &OOPVideoDecoderSupportedConfigsManager::OnGetSupportedConfigs,
+        base::Unretained(this)));
+
+    // Eventually, we need to call |cb|. We can't store |oop_video_decoder| here
+    // because it's been taken over by the |oop_video_decoder_|. For now, we'll
+    // store a default-constructed PendingRemote. Later, when we have to call
+    // |cb|, we can pass |oop_video_decoder_|.Unbind().
+    waiting_callbacks_.emplace(
+        mojo::PendingRemote<stable::mojom::StableVideoDecoder>(), std::move(cb),
+        base::SequencedTaskRunner::GetCurrentDefault());
+  }
+
+ private:
+  friend class base::NoDestructor<OOPVideoDecoderSupportedConfigsManager>;
+
+  OOPVideoDecoderSupportedConfigsManager() = default;
+  ~OOPVideoDecoderSupportedConfigsManager() = default;
+
+  void OnGetSupportedConfigs(const SupportedVideoDecoderConfigs& configs,
+                             VideoDecoderType /*decoder_type*/) {
+    base::AutoLock lock(lock_);
+    DCHECK(!configs_);
+    configs_ = configs;
+
+    while (!waiting_callbacks_.empty()) {
+      WaitingCallbackContext waiting_callback =
+          std::move(waiting_callbacks_.front());
+      waiting_callbacks_.pop();
+
+      mojo::PendingRemote<stable::mojom::StableVideoDecoder> oop_video_decoder =
+          waiting_callback.oop_video_decoder
+              ? std::move(waiting_callback.oop_video_decoder)
+              : oop_video_decoder_.Unbind();
+
+      if (waiting_callback.cb_task_runner->RunsTasksInCurrentSequence()) {
+        // Release the lock in case the |waiting_callback|.cb wants to re-enter
+        // OOPVideoDecoderSupportedConfigsManager by reaching
+        // OOPVideoDecoderSupportedConfigsManager::Get() in the callback.
+        base::AutoUnlock unlock(lock_);
+        std::move(waiting_callback.cb).Run(std::move(oop_video_decoder));
+      } else {
+        waiting_callback.cb_task_runner->PostTask(
+            FROM_HERE, base::BindOnce(std::move(waiting_callback.cb),
+                                      std::move(oop_video_decoder)));
+      }
+    }
+  }
+
+  base::Lock lock_;
+
+  // The first PendingRemote that NotifySupportKnown() is called with is bound
+  // to |oop_video_decoder_| and we use it to query the supported configurations
+  // of the out-of-process video decoder. |oop_video_decoder_| will get unbound
+  // once the supported configurations are known.
+  mojo::Remote<stable::mojom::StableVideoDecoder> oop_video_decoder_;
+
+  // The cached supported video decoder configurations.
+  absl::optional<SupportedVideoDecoderConfigs> configs_ GUARDED_BY(lock_);
+
+  // This tracks everything that's needed to call a callback passed to
+  // NotifySupportKnown() that had to be queued because there was a query in
+  // progress.
+  struct WaitingCallbackContext {
+    WaitingCallbackContext(
+        mojo::PendingRemote<stable::mojom::StableVideoDecoder>
+            oop_video_decoder,
+        base::OnceCallback<
+            void(mojo::PendingRemote<stable::mojom::StableVideoDecoder>)> cb,
+        scoped_refptr<base::SequencedTaskRunner> cb_task_runner)
+        : oop_video_decoder(std::move(oop_video_decoder)),
+          cb(std::move(cb)),
+          cb_task_runner(std::move(cb_task_runner)) {}
+    mojo::PendingRemote<stable::mojom::StableVideoDecoder> oop_video_decoder;
+    base::OnceCallback<void(
+        mojo::PendingRemote<stable::mojom::StableVideoDecoder>)>
+        cb;
+    scoped_refptr<base::SequencedTaskRunner> cb_task_runner;
+  };
+  base::queue<WaitingCallbackContext> waiting_callbacks_ GUARDED_BY(lock_);
+};
+
 }  // namespace
 
 // static
@@ -96,6 +229,21 @@ std::unique_ptr<VideoDecoderMixin> OOPVideoDecoder::Create(
   return base::WrapUnique<VideoDecoderMixin>(new OOPVideoDecoder(
       std::move(media_log), std::move(decoder_task_runner), std::move(client),
       std::move(pending_remote_decoder)));
+}
+
+// static
+void OOPVideoDecoder::NotifySupportKnown(
+    mojo::PendingRemote<stable::mojom::StableVideoDecoder> oop_video_decoder,
+    base::OnceCallback<
+        void(mojo::PendingRemote<stable::mojom::StableVideoDecoder>)> cb) {
+  OOPVideoDecoderSupportedConfigsManager::Instance().NotifySupportKnown(
+      std::move(oop_video_decoder), std::move(cb));
+}
+
+// static
+absl::optional<SupportedVideoDecoderConfigs>
+OOPVideoDecoder::GetSupportedConfigs() {
+  return OOPVideoDecoderSupportedConfigsManager::Instance().Get();
 }
 
 OOPVideoDecoder::OOPVideoDecoder(
@@ -250,12 +398,12 @@ void OOPVideoDecoder::OnInitializeDone(const DecoderStatus& status,
       (decoder_type != VideoDecoderType::kVda &&
        decoder_type != VideoDecoderType::kVaapi &&
        decoder_type != VideoDecoderType::kV4L2) ||
-      (decoder_type_ != VideoDecoderType::kUnknown &&
-       decoder_type_ != decoder_type)) {
+      (remote_decoder_type_ != VideoDecoderType::kUnknown &&
+       remote_decoder_type_ != decoder_type)) {
     Stop();
     return;
   }
-  decoder_type_ = decoder_type;
+  remote_decoder_type_ = decoder_type;
   std::move(init_cb_).Run(status);
 }
 
@@ -267,7 +415,7 @@ void OOPVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   CHECK(!init_cb_);
   CHECK(!reset_cb_);
 
-  if (has_error_ || decoder_type_ == VideoDecoderType::kUnknown) {
+  if (has_error_ || remote_decoder_type_ == VideoDecoderType::kUnknown) {
     decoder_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(decode_cb),
                                   DecoderStatus::Codes::kNotInitialized));
@@ -365,7 +513,7 @@ void OOPVideoDecoder::Reset(base::OnceClosure reset_cb) {
   CHECK(!init_cb_);
   CHECK(!reset_cb_);
 
-  if (has_error_ || decoder_type_ == VideoDecoderType::kUnknown) {
+  if (has_error_ || remote_decoder_type_ == VideoDecoderType::kUnknown) {
     std::move(reset_cb).Run();
     return;
   }
@@ -468,7 +616,7 @@ int OOPVideoDecoder::GetMaxDecodeRequests() const {
 
 VideoDecoderType OOPVideoDecoder::GetDecoderType() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return decoder_type_;
+  return VideoDecoderType::kOutOfProcess;
 }
 
 bool OOPVideoDecoder::IsPlatformDecoder() const {

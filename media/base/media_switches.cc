@@ -533,6 +533,12 @@ BASE_FEATURE(kOpenscreenCastStreamingSession,
              "OpenscreenCastStreamingSession",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls whether the Mirroring Service will fetch, analyze, and store
+// information on the quality of the session using RTCP logs.
+BASE_FEATURE(kEnableRtcpReporting,
+             "EnableRtcpReporting",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Approach original pre-REC MSE object URL autorevoking behavior, though await
 // actual attempt to use the object URL for attachment to perform revocation.
 // This will hopefully reduce runtime memory bloat for pages that do not
@@ -595,11 +601,6 @@ BASE_FEATURE(kGlobalMediaControlsAutoDismiss,
 BASE_FEATURE(kGlobalMediaControlsCrOSUpdatedUI,
              "GlobalMediaControlsCrOSUpdatedUI",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Show Cast sessions in Global Media Controls.
-BASE_FEATURE(kGlobalMediaControlsForCast,
-             "GlobalMediaControlsForCast",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -1030,6 +1031,11 @@ BASE_FEATURE(kLimitConcurrentDecoderInstances,
              "LimitConcurrentDecoderInstances",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Use SequencedTaskRunner for VideoEncodeAccelerator
+BASE_FEATURE(kUSeSequencedTaskRunnerForVEA,
+             "UseSequencedTaskRunnerForVEA",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 #if defined(ARCH_CPU_ARM_FAMILY)
 // Experimental support for GL based image processing. On some architectures,
 // the hardware accelerated video decoder outputs frames in a format not
@@ -1078,7 +1084,7 @@ BASE_FEATURE(kMediaFoundationVideoCapture,
 // please use IsMediaFoundationD3D11VideoCaptureEnabled() instead.
 BASE_FEATURE(kMediaFoundationD3D11VideoCapture,
              "MediaFoundationD3D11VideoCapture",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables VP8 decode acceleration for Windows.
 const base::Feature MEDIA_EXPORT kMediaFoundationVP8Decoding{
@@ -1108,6 +1114,11 @@ const base::Feature MEDIA_EXPORT kUseFakeAudioCaptureTimestamps{
 // Enable VP9 kSVC decoding with HW decoder for webrtc use case on Windows.
 BASE_FEATURE(kD3D11Vp9kSVCHWDecoding,
              "D3D11Vp9kSVCHWDecoding",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether the DXVA video decoder is enabled on Windows.
+BASE_FEATURE(kDXVAVideoDecoding,
+             "DXVAVideoDecoding",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // The Media Foundation Rendering Strategy determines which presentation mode
@@ -1194,6 +1205,16 @@ const base::Feature MEDIA_EXPORT kUseOutOfProcessVideoEncoding{
 const base::Feature MEDIA_EXPORT kUseMojoVideoDecoderForPepper{
     "UseMojoVideoDecoderForPepper", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Use SequencedTaskRunner for MediaService.
+BASE_FEATURE(kUseSequencedTaskRunnerForMediaService,
+             "UseSequencedTaskRunnerForMediaService",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Use SequencedTaskRunner for MojoVideoEncodeAcceleratorProvider.
+BASE_FEATURE(kUseSequencedTaskRunnerForMojoVEAProvider,
+             "UseSequencedTaskRunnerForMojoVEAProvider",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 std::string GetEffectiveAutoplayPolicy(const base::CommandLine& command_line) {
   // Return the autoplay policy set in the command line, if any.
   if (command_line.HasSwitch(switches::kAutoplayPolicy))
@@ -1220,6 +1241,12 @@ BASE_FEATURE(kRecordMediaEngagementScores,
 BASE_FEATURE(kRecordWebAudioEngagement,
              "RecordWebAudioEngagement",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables reporting "smpteSt2086" HDR Metadata as supported in the
+// MediaCapabilities API.
+BASE_FEATURE(kSupportSmpteSt2086HdrMetadata,
+             "SupportSmpteSt2086HdrMetadata",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // The following Media Engagement flags are not enabled on mobile platforms:
 // - MediaEngagementBypassAutoplayPolicies: enables the Media Engagement Index

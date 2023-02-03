@@ -15,6 +15,7 @@ import android.app.Activity;
 import android.os.Looper;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 
 import org.junit.After;
 import org.junit.Before;
@@ -37,6 +38,7 @@ import org.chromium.chrome.browser.omnibox.LocationBarCoordinator;
 import org.chromium.chrome.browser.omnibox.LocationBarCoordinatorTablet;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.status.StatusCoordinator;
+import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
@@ -62,8 +64,14 @@ public final class ToolbarTabletUnitTest {
     private MenuButtonCoordinator mMenuButtonCoordinator;
     @Mock
     private View mContainerView;
+
     private Activity mActivity;
     private ToolbarTablet mToolbarTablet;
+    private LinearLayout mToolbarTabletLayout;
+    private HomeButton mHomeButton;
+    private ImageButton mReloadingButton;
+    private ImageButton mBackButton;
+    private ImageButton mForwardButton;
 
     @Before
     public void setUp() {
@@ -77,11 +85,45 @@ public final class ToolbarTabletUnitTest {
         LocationBarLayout locationBarLayout = mToolbarTablet.findViewById(R.id.location_bar);
         locationBarLayout.setStatusCoordinatorForTesting(mStatusCoordinator);
         mToolbarTablet.setMenuButtonCoordinatorForTesting(mMenuButtonCoordinator);
+        mToolbarTabletLayout =
+                (LinearLayout) mToolbarTablet.findViewById(R.id.toolbar_tablet_layout);
+        mHomeButton = mToolbarTablet.findViewById(R.id.home_button);
+        mBackButton = mToolbarTablet.findViewById(R.id.back_button);
+        mForwardButton = mToolbarTablet.findViewById(R.id.forward_button);
+        mReloadingButton = mToolbarTablet.findViewById(R.id.refresh_button);
     }
 
     @After
     public void tearDown() {
         disableGridTabSwitcher();
+    }
+
+    @Test
+    @DisableFeatures(ChromeFeatureList.TAB_STRIP_REDESIGN)
+    public void testButtonPosition() {
+        mToolbarTablet.onFinishInflate();
+        assertEquals("Home button position is not as expected", mHomeButton,
+                mToolbarTabletLayout.getChildAt(0));
+        assertEquals("Back button position is not as expected", mBackButton,
+                mToolbarTabletLayout.getChildAt(1));
+        assertEquals("Forward button position is not as expected", mForwardButton,
+                mToolbarTabletLayout.getChildAt(2));
+        assertEquals("Reloading button position is not as expected", mReloadingButton,
+                mToolbarTabletLayout.getChildAt(3));
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.TAB_STRIP_REDESIGN)
+    public void testButtonPositionForTSR() {
+        mToolbarTablet.onFinishInflate();
+        assertEquals("Back button position is not as expected for Tab Strip Redesign", mBackButton,
+                mToolbarTabletLayout.getChildAt(0));
+        assertEquals("Forward button position is not as expected for Tab Strip Redesign",
+                mForwardButton, mToolbarTabletLayout.getChildAt(1));
+        assertEquals("Reloading button position is not as expected for Tab Strip Redesign",
+                mReloadingButton, mToolbarTabletLayout.getChildAt(2));
+        assertEquals("Home button position is not as expected for Tab Strip Redesign", mHomeButton,
+                mToolbarTabletLayout.getChildAt(3));
     }
 
     @Test
@@ -150,49 +192,6 @@ public final class ToolbarTabletUnitTest {
 
     @EnableFeatures(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS)
     @Test
-    public void testSetTabSwitcherModeOn_hidesToolbar() {
-        assertEquals("Initial Toolbar visibility is not as expected", View.VISIBLE,
-                mToolbarTablet.getVisibility());
-        // Call
-        mToolbarTablet.setTabSwitcherMode(true, false, false, mMenuButtonCoordinator);
-        mToolbarTablet.getTabSwitcherModeAnimation().end();
-        assertEquals(
-                "Toolbar visibility is not as expected", View.GONE, mToolbarTablet.getVisibility());
-        verify(mLocationBar).setUrlBarFocusable(false);
-    }
-
-    @EnableFeatures(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS)
-    @Test
-    public void testSetTabSwitcherModeOn_tabSwitcherButtonDisabledInGTSMode() {
-        assertEquals("Initial Toolbar visibility is not as expected", View.VISIBLE,
-                mToolbarTablet.getVisibility());
-        // Call to enter GTS Mode
-        mToolbarTablet.setTabSwitcherMode(true, false, false, mMenuButtonCoordinator);
-        mToolbarTablet.getTabSwitcherModeAnimation().end();
-        assertFalse("Button should not be enabled in GTS Mode",
-                mToolbarTablet.findViewById(R.id.tab_switcher_button).isClickable());
-
-        // Leave GTS Mode
-        mToolbarTablet.setTabSwitcherMode(false, false, false, mMenuButtonCoordinator);
-        assertTrue("Button should be re-enabled after leaving GTS Mode",
-                mToolbarTablet.findViewById(R.id.tab_switcher_button).isClickable());
-    }
-
-    @EnableFeatures(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS)
-    @Test
-    public void testSetTabSwitcherModeOff_showsToolbar() {
-        // Hide toolbar as initial state.
-        mToolbarTablet.setVisibility(View.GONE);
-        // Call
-        mToolbarTablet.setTabSwitcherMode(false, false, false, mMenuButtonCoordinator);
-        mToolbarTablet.getTabSwitcherModeAnimation().end();
-        assertEquals("Toolbar visibility is not as expected", View.VISIBLE,
-                mToolbarTablet.getVisibility());
-        verify(mLocationBar).setUrlBarFocusable(true);
-    }
-
-    @EnableFeatures(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS)
-    @Test
     public void testSetTabSwitcherPolishModeOff_toolbarStillVisible() {
         enableGridTabSwitcher(true);
         assertEquals("Initial Toolbar visibility is not as expected", View.VISIBLE,
@@ -215,40 +214,6 @@ public final class ToolbarTabletUnitTest {
         assertEquals("Toolbar visibility is not as expected", View.VISIBLE,
                 mToolbarTablet.getVisibility());
         verify(mLocationBar).setUrlBarFocusable(false);
-    }
-
-    @DisableFeatures(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS)
-    @Test
-    public void testSetTabSwitcherOnGTSDisabled_hidesViews() {
-        // Enable tab stack button when GTS is disabled
-        mToolbarTablet.enableTabStackButton(true);
-        when(mLocationBar.getContainerView()).thenReturn(mContainerView);
-        assertEquals("Initial Toolbar visibility is not as expected", View.VISIBLE,
-                mToolbarTablet.getVisibility());
-        // Call
-        mToolbarTablet.setTabSwitcherMode(true, false, false, mMenuButtonCoordinator);
-        assertFalse("Button should not be enabled",
-                mToolbarTablet.findViewById(R.id.back_button).isEnabled());
-        assertFalse("Button should not be enabled",
-                mToolbarTablet.findViewById(R.id.forward_button).isEnabled());
-        assertFalse("Button should not be enabled",
-                mToolbarTablet.findViewById(R.id.refresh_button).isEnabled());
-        verify(mContainerView).setVisibility(View.INVISIBLE);
-        verify(mMenuButtonCoordinator).setAppMenuUpdateBadgeSuppressed(true);
-    }
-
-    @DisableFeatures(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS)
-    @Test
-    public void testSetTabSwitcherOffGTSDisabled_showsViews() {
-        // Enable tab stack button when GTS is disabled
-        mToolbarTablet.enableTabStackButton(true);
-        when(mLocationBar.getContainerView()).thenReturn(mContainerView);
-        assertEquals("Initial Toolbar visibility is not as expected", View.VISIBLE,
-                mToolbarTablet.getVisibility());
-        // Call
-        mToolbarTablet.setTabSwitcherMode(false, false, false, mMenuButtonCoordinator);
-        verify(mContainerView).setVisibility(View.VISIBLE);
-        verify(mMenuButtonCoordinator).setAppMenuUpdateBadgeSuppressed(false);
     }
 
     @Test

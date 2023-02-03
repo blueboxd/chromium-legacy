@@ -76,9 +76,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) ChromeOSAuthenticator
   void GetAssertion(CtapGetAssertionRequest request,
                     CtapGetAssertionOptions options,
                     GetAssertionCallback callback) override;
-  void GetNextAssertion(GetAssertionCallback callback) override {}
   void GetCredentialInformationForRequest(
       const CtapGetAssertionRequest& request,
+      const CtapGetAssertionOptions& options,
       GetCredentialInformationForRequestCallback callback) override;
   void Cancel() override;
   Type GetType() const override;

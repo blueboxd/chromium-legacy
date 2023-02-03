@@ -93,7 +93,8 @@ class DirectSocketsUdpBrowserTest : public ContentBrowserTest {
     ContentBrowserTest::SetUp();
   }
 
-  std::pair<net::IPEndPoint, network::test::UDPSocketTestHelper>
+  std::pair<net::IPEndPoint,
+            std::unique_ptr<network::test::UDPSocketTestHelper>>
   CreateUDPServerSocket(mojo::PendingRemote<network::mojom::UDPSocketListener>
                             listener_receiver_remote) {
     GetNetworkContext()->CreateUDPSocket(
@@ -104,12 +105,11 @@ class DirectSocketsUdpBrowserTest : public ContentBrowserTest {
         base::BindLambdaForTesting([]() { NOTREACHED(); }));
 
     net::IPEndPoint server_addr(net::IPAddress::IPv4Localhost(), 0);
-    network::test::UDPSocketTestHelper server_helper(&server_socket_);
-
-    int result = server_helper.BindSync(server_addr, nullptr, &server_addr);
+    auto server_helper =
+        std::make_unique<network::test::UDPSocketTestHelper>(&server_socket_);
+    int result = server_helper->BindSync(server_addr, nullptr, &server_addr);
     DCHECK_EQ(net::OK, result);
-
-    return {server_addr, server_helper};
+    return {server_addr, std::move(server_helper)};
   }
 
   mojo::Remote<network::mojom::UDPSocket>& GetUDPServerSocket() {
@@ -234,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsUdpBrowserTest, ReadUdp) {
       byte = bytesSent % 256;
       bytesSent++;
     }
-    EXPECT_EQ(net::OK, server_helper.SendToSync(client_addr, message));
+    EXPECT_EQ(net::OK, server_helper->SendToSync(client_addr, message));
   }
 
   // Blocks until script execution is complete and returns the resulting
@@ -358,6 +358,112 @@ IN_PROC_BROWSER_TEST_F(DirectSocketsUdpBrowserTest, ReadWriteUdpOnSocketError) {
 
   EXPECT_THAT(future->Get(),
               ::testing::HasSubstr("readWriteUdpOnError succeeded"));
+}
+
+IN_PROC_BROWSER_TEST_F(DirectSocketsUdpBrowserTest, ExchangeUdp) {
+  ASSERT_THAT(EvalJs(shell(), "exchangeSingleUdpPacketBetweenClientAndServer()")
+                  .ExtractString(),
+              testing::HasSubstr("succeeded"));
+}
+
+IN_PROC_BROWSER_TEST_F(DirectSocketsUdpBrowserTest, UdpMessageConfigurations) {
+  {
+    const std::string script = R"(
+      testUdpMessageConfiguration({
+        localAddress: '127.0.0.1',
+      }, {})
+    )";
+    ASSERT_THAT(EvalJs(shell(), script).ExtractString(),
+                testing::HasSubstr("UDPMessage: missing 'data' field"));
+  }
+
+  {
+    const std::string script = R"(
+      testUdpMessageConfiguration({
+        localAddress: '127.0.0.1',
+      }, {
+        data: (new TextEncoder()).encode("meow"),
+        remoteAddress: '127.0.0.1',
+      })
+    )";
+    ASSERT_THAT(EvalJs(shell(), script).ExtractString(),
+                testing::HasSubstr("UDPMessage: either none or both "
+                                   "'remoteAddress' and 'remotePort'"));
+  }
+
+  {
+    const std::string script = R"(
+      testUdpMessageConfiguration({
+        localAddress: '127.0.0.1',
+      }, {
+        data: (new TextEncoder()).encode("meow"),
+        remotePort: 53,
+      })
+    )";
+    ASSERT_THAT(EvalJs(shell(), script).ExtractString(),
+                testing::HasSubstr("UDPMessage: either none or both "
+                                   "'remoteAddress' and 'remotePort'"));
+  }
+
+  {
+    const std::string script = R"(
+      testUdpMessageConfiguration({
+        localAddress: '127.0.0.1',
+      }, {
+        data: (new TextEncoder()).encode("meow"),
+      })
+    )";
+    ASSERT_THAT(
+        EvalJs(shell(), script).ExtractString(),
+        testing::HasSubstr(
+            "UDPMessage: 'remoteAddress' and 'remotePort' must be specified"));
+  }
+
+  {
+    const std::string script = R"(
+      testUdpMessageConfiguration({
+        localAddress: '127.0.0.1',
+      }, {
+        data: (new TextEncoder()).encode("meow"),
+        remoteAddress: 'direct-sockets.com',
+        remotePort: 53,
+      })
+    )";
+    ASSERT_THAT(
+        EvalJs(shell(), script).ExtractString(),
+        testing::HasSubstr("UDPMessage: 'remoteAddress' must be a valid IP"));
+  }
+
+  {
+    const std::string script = R"(
+      testUdpMessageConfiguration({
+        localAddress: '127.0.0.1',
+      }, {
+        data: (new TextEncoder()).encode("meow"),
+      })
+    )";
+    ASSERT_THAT(
+        EvalJs(shell(), script).ExtractString(),
+        testing::HasSubstr("UDPMessage: 'remoteAddress' and 'remotePort' must "
+                           "be specified in 'bound'"));
+  }
+
+  {
+    const std::string script = R"(
+      testUdpMessageConfiguration({
+        remoteAddress: '127.0.0.1',
+        remotePort: 53,
+      }, {
+        data: (new TextEncoder()).encode("meow"),
+        remoteAddress: '127.0.0.1',
+        remotePort: 53,
+      })
+    )";
+    ASSERT_THAT(EvalJs(shell(), script).ExtractString(),
+                testing::HasSubstr(
+                    "UDPMessage: 'remoteAddress' and "
+                    "'remotePort' must not be specified in 'connected'"));
+  }
 }
 
 }  // namespace content

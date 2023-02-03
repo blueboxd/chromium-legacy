@@ -2725,12 +2725,9 @@ bool AXTree::HasPaginationSupport() const {
   return has_pagination_support_;
 }
 
-void AXTree::NotifyTreeManagerWillBeRemoved(AXTreeID previous_tree_id) {
-  if (previous_tree_id == AXTreeIDUnknown())
-    return;
-
+void AXTree::NotifyTreeManagerWillBeRemoved() {
   for (AXTreeObserver& observer : observers_)
-    observer.OnTreeManagerWillBeRemoved(previous_tree_id);
+    observer.OnTreeManagerWillBeRemoved(this);
 }
 
 void AXTree::RecordError(const AXTreeUpdateState& update_state,

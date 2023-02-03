@@ -84,6 +84,12 @@ BASE_FEATURE(kEsbIphBubbleAndCollapseSettings,
              "EsbIphBubbleAndCollapseSettings",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+const base::FeatureParam<bool> kEsbIphBubbleAndCollapseSettingsEnableIph{
+    &kEsbIphBubbleAndCollapseSettings, "EnableEsbIphBubble", false};
+
+const base::FeatureParam<bool> kEsbIphBubbleAndCollapseSettingsEnableCollapse{
+    &kEsbIphBubbleAndCollapseSettings, "EnableEsbSettingCollapse", false};
+
 BASE_FEATURE(kExtensionTelemetry,
              "SafeBrowsingExtensionTelemetry",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -154,7 +160,7 @@ BASE_FEATURE(kRealTimeUrlFilteringForEnterprise,
 
 BASE_FEATURE(kRealTimeUrlLookupForEnterpriseAllowlistBypass,
              "SafeBrowsingRealTimeUrlLookupForEnterpriseAllowlistBypass",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSafeBrowsingCsbrrNewDownloadTrigger,
              "SafeBrowsingCsbrrNewDownloadTrigger",
@@ -171,6 +177,10 @@ BASE_FEATURE(kSafeBrowsingDisableConsumerCsdForEnterprise,
 BASE_FEATURE(kSafeBrowsingEnterpriseCsd,
              "SafeBrowsingEnterpriseCsd",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSafeBrowsingLookupMechanismExperiment,
+             "SafeBrowsingLookupMechanismExperiment",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSafeBrowsingRemoveCookiesInAuthRequests,
              "SafeBrowsingRemoveCookiesInAuthRequests",
@@ -253,6 +263,7 @@ constexpr struct {
     {&kSafeBrowsingCsbrrWithToken, true},
     {&kSafeBrowsingDisableConsumerCsdForEnterprise, true},
     {&kSafeBrowsingEnterpriseCsd, true},
+    {&kSafeBrowsingLookupMechanismExperiment, true},
     {&kSafeBrowsingRemoveCookiesInAuthRequests, true},
     {&kSevenZipEvaluationEnabled, true},
     {&kSimplifiedUrlDisplay, true},
@@ -281,8 +292,9 @@ void AddFeatureAndAvailability(const base::Feature* exp_feature,
 base::Value::List GetFeatureStatusList() {
   base::Value::List param_list;
   for (const auto& feature_status : kExperimentalFeatures) {
-    if (feature_status.show_state)
+    if (feature_status.show_state) {
       AddFeatureAndAvailability(feature_status.feature, &param_list);
+    }
   }
 
   // Manually add experimental features that we want param values for.

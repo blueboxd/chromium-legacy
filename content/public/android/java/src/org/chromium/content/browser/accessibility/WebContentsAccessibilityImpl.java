@@ -631,7 +631,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
 
             // Update the AXMode based on screen reader status.
             WebContentsAccessibilityImplJni.get().setAXMode(mNativeObj,
-                    AccessibilityState.screenReaderMode(),
+                    AccessibilityState.isScreenReaderEnabled(),
                     /* isAccessibilityEnabled= */ true);
 
             // Update the state of how passwords are exposed based on user settings.
@@ -642,7 +642,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
             // Update the state of enabling/disabling the image descriptions feature. To enable the
             // feature, this instance must be a candidate and a screen reader must be enabled.
             WebContentsAccessibilityImplJni.get().setAllowImageDescriptions(mNativeObj,
-                    mIsImageDescriptionsCandidate && AccessibilityState.screenReaderMode());
+                    mIsImageDescriptionsCandidate && AccessibilityState.isScreenReaderEnabled());
         }
     }
 
@@ -679,7 +679,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
             onNativeInit();
         }
         if (!isEnabled()) {
-            boolean screenReaderMode = AccessibilityState.screenReaderMode();
+            boolean screenReaderMode = AccessibilityState.isScreenReaderEnabled();
             WebContentsAccessibilityImplJni.get().enable(mNativeObj, screenReaderMode);
             return null;
         }
@@ -880,18 +880,6 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
     @Override
     public void setIsImageDescriptionsCandidate(boolean isImageDescriptionsCandidate) {
         mIsImageDescriptionsCandidate = isImageDescriptionsCandidate;
-    }
-
-    @Override
-    public boolean supportsAction(int action) {
-        // TODO(dmazzoni): implement this.
-        return false;
-    }
-
-    @Override
-    public boolean performAction(int action, Bundle arguments) {
-        // TODO(dmazzoni): implement this.
-        return false;
     }
 
     @Override
@@ -1144,7 +1132,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
         if (!isNativeInitialized()) return;
         // Update the AXMode based on screen reader status.
         WebContentsAccessibilityImplJni.get().setAXMode(
-                mNativeObj, AccessibilityState.screenReaderMode(), isAccessibilityEnabled());
+                mNativeObj, AccessibilityState.isScreenReaderEnabled(), isAccessibilityEnabled());
     }
 
     // Returns true if the hover event is to be consumed by accessibility feature.
@@ -1383,16 +1371,21 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProviderCompa
     }
 
     private void scrollToMakeNodeVisible(int virtualViewId) {
-        if (mDelegate.scrollToMakeNodeVisible(getAbsolutePositionForNode(virtualViewId))) return;
-
-        mPendingScrollToMakeNodeVisible = true;
-        WebContentsAccessibilityImplJni.get().scrollToMakeNodeVisible(mNativeObj, virtualViewId);
+        if (mDelegate.getNativeAXTree() != 0) {
+            mDelegate.scrollToMakeNodeVisible(getAbsolutePositionForNode(virtualViewId));
+        } else {
+            mPendingScrollToMakeNodeVisible = true;
+            WebContentsAccessibilityImplJni.get().scrollToMakeNodeVisible(
+                    mNativeObj, virtualViewId);
+        }
     }
 
     private void performClick(int virtualViewId) {
-        if (mDelegate.performClick(getAbsolutePositionForNode(virtualViewId))) return;
-
-        WebContentsAccessibilityImplJni.get().click(mNativeObj, virtualViewId);
+        if (mDelegate.getNativeAXTree() != 0) {
+            mDelegate.performClick(getAbsolutePositionForNode(virtualViewId));
+        } else {
+            WebContentsAccessibilityImplJni.get().click(mNativeObj, virtualViewId);
+        }
     }
 
     private void setSelection(AccessibilityEvent selectionEvent) {

@@ -273,8 +273,8 @@ enum SourceRestriction {
   native_source
 };
 
-// Recent file types to filter results from getRecentFiles().
-enum RecentFileType {
+// File categories to filter results from getRecentFiles().
+enum FileCategory {
   all,
   audio,
   image,
@@ -361,6 +361,8 @@ enum SyncStatus {
   queued,
   // File is currently being synced.
   in_progress,
+  // File is done syncing.
+  completed,
   // There was an error syncing the file.
   error
 };
@@ -694,19 +696,16 @@ dictionary FileTransferStatus {
   boolean hideWhenZeroJobs;
 };
 
-// Information about the transfer status of an individual file.
-dictionary IndividualFileTransferStatus {
-  // File that is being transferred.
-  [instanceOf=Entry] object entry;
+// Information about the syncing state of an individual file.
+dictionary SyncState {
+  // URL of file that is being transferred.
+  DOMString fileUrl;
 
   // File transfer progress state.
-  TransferState transferState;
+  SyncStatus syncStatus;
 
-  // Number of bytes transferred so far.
-  double processed;
-
-  // Total size of the file in bytes.
-  double total;
+  // Transfer progress so far. Ranges from 0 to 1.
+  double progress;
 };
 
 // Error during the drive sync.
@@ -1005,6 +1004,31 @@ dictionary IOTaskParams {
   boolean? showNotification;
 };
 
+// IO task state::PAUSED parameters, see file_manager::io_task::PauseParams.
+dictionary PauseParams {
+  // The conflict file name.
+  DOMString? conflictName;
+
+  // True if the conflict file name is a directory.
+  boolean? conflictIsDirectory;
+
+  // Set true if there are potentially multiple conflicted file names.
+  boolean? conflictMultiple;
+
+  // The conflict copy or move target URL.
+  DOMString? conflictTargetUrl;
+};
+
+// Resume IO Task parameters, see file_manager::io_task::ResumeParams.
+dictionary ResumeParams {
+  // How to resolve a CopyOrMoveIOTask file name conflict: either 'keepboth'
+  // or 'replace'.
+  DOMString? conflictResolve;
+
+  // Set true if conflictResolve should apply to future file name conflicts.
+  boolean? conflictApplyToAll;
+};
+
 // IO Task Progress status, see file_manager::io_task::ProgressStatus.
 dictionary ProgressStatus {
 
@@ -1044,6 +1068,9 @@ dictionary ProgressStatus {
 
   // The name of the last error that happened.
   DOMString errorName;
+
+  // I/O task state::PAUSED parameters.
+  PauseParams? pauseParams;
 
   // The files affected by the IOTask. Currently only returned for TrashIOTask.
   [instanceOf=Entry] object[]? outputs;
@@ -1308,7 +1335,8 @@ interface Functions {
 
   // Gets the list of tasks that can be performed over selected files.
   // |entries| Array of selected entries
-  // |dlpSourceUrls| Array of source URLs corresponding to the entries, used to check Data Leak Prevention (DLP) restrictions
+  // |dlpSourceUrls| Array of source URLs corresponding to the entries, used to
+  // check Data Leak Prevention (DLP) restrictions
   // |callback|
   [nocompile]
   static void getFileTasks([instanceof=Entry] object[] entries,
@@ -1654,7 +1682,7 @@ interface Functions {
   // |callback|
   [nocompile]
   static void getRecentFiles(SourceRestriction restriction,
-                             RecentFileType fileType,
+                             FileCategory fileCategory,
                              boolean invalidateCache,
                              GetRecentFilesCallback callback);
 
@@ -1757,10 +1785,13 @@ interface Functions {
   // Invoke Sharesheet for selected files.
   // |entries| Array of selected entries.
   // |launchSource| Source from which sharesheet was invoked.
+  // |dlpSourceUrls| Array of source URLs corresponding to the entries, used to
+  // check Data Leak Prevention (DLP) restrictions
   // |callback|
   [nocompile]
   static void invokeSharesheet([instanceof=Entry] object[] entries,
                                SharesheetLaunchSource launchSource,
+                               DOMString[] dlpSourceUrls,
                                SimpleCallback callback);
 
   // Adds or removes a list of entries to temporary holding space. Any entries
@@ -1808,6 +1839,10 @@ interface Functions {
   // each I/O task's progress status.
   static void cancelIOTask(long taskId);
 
+  // Resumes an I/O task by id. Task ids are communicated to the Files App in
+  // each I/O task's progress status.
+  static void resumeIOTask(long taskId, ResumeParams params);
+
   // Lists mountable Guest OSs.
   static void listMountableGuests(ListMountableGuestsCallback callback);
 
@@ -1837,9 +1872,7 @@ interface Events {
 
   static void onPinTransfersUpdated(FileTransferStatus event);
 
-  static void onIndividualFileTransfersUpdated(IndividualFileTransferStatus[] event);
-
-  static void onIndividualPinTransfersUpdated(IndividualFileTransferStatus[] event);
+  static void onIndividualFileTransfersUpdated(SyncState[] event);
 
   static void onDirectoryChanged(FileWatchEvent event);
 

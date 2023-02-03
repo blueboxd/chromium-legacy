@@ -46,4 +46,7 @@ CREATE INDEX aggregate_trigger_time_idx ON aggregatable_report_metadata(trigger_
 
 CREATE INDEX aggregate_report_time_idx ON aggregatable_report_metadata(report_time);
 
+INSERT INTO rate_limits VALUES(3,0,5,'a','b','c','d','e',6,7);
+INSERT INTO rate_limits VALUES(4,1,8,'f','g','h','i','j',9,10);
+
 COMMIT;

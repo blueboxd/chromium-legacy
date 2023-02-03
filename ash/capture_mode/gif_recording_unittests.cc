@@ -6,10 +6,12 @@
 #include "ash/capture_mode/capture_label_view.h"
 #include "ash/capture_mode/capture_mode_bar_view.h"
 #include "ash/capture_mode/capture_mode_controller.h"
+#include "ash/capture_mode/capture_mode_metrics.h"
 #include "ash/capture_mode/capture_mode_session_test_api.h"
 #include "ash/capture_mode/capture_mode_test_util.h"
 #include "ash/capture_mode/capture_mode_types.h"
 #include "ash/capture_mode/recording_type_menu_view.h"
+#include "ash/capture_mode/test_capture_mode_delegate.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/capture_mode/capture_mode_test_api.h"
 #include "ash/style/icon_button.h"
@@ -56,6 +58,12 @@ class GifRecordingTest : public AshTestBase {
     return label_view->capture_button_container()->capture_button();
   }
 
+  views::ImageButton* GetRecordingTypeDropDownButton() {
+    auto* label_view = GetCaptureLabelView();
+    EXPECT_TRUE(label_view->IsRecordingTypeDropDownButtonVisible());
+    return label_view->capture_button_container()->drop_down_button();
+  }
+
   views::Widget* GetRecordingTypeMenuWidget() {
     return CaptureModeSessionTestApi().GetRecordingTypeMenuWidget();
   }
@@ -65,11 +73,7 @@ class GifRecordingTest : public AshTestBase {
   }
 
   void ClickOnDropDownButton() {
-    auto* label_view = GetCaptureLabelView();
-    ASSERT_TRUE(label_view->IsRecordingTypeDropDownButtonVisible());
-    CaptureButtonView* capture_button_container =
-        label_view->capture_button_container();
-    LeftClickOn(capture_button_container->drop_down_button());
+    LeftClickOn(GetRecordingTypeDropDownButton());
   }
 
   void ClickOnSettingsButton() {
@@ -249,6 +253,181 @@ TEST_F(GifRecordingTest, FutureCaptureSessionsAffected) {
   ClickOnDropDownButton();
   EXPECT_TRUE(
       GetRecordingTypeMenuView()->IsOptionChecked(ToInt(RecordingType::kGif)));
+}
+
+TEST_F(GifRecordingTest, TabNavigation) {
+  auto* controller = StartRegionVideoCapture();
+
+  // Tab 15 times until we reach the capture button.
+  auto* event_generator = GetEventGenerator();
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/15);
+  using FocusGroup = CaptureModeSessionFocusCycler::FocusGroup;
+  CaptureModeSessionTestApi test_api(controller->capture_mode_session());
+  EXPECT_EQ(FocusGroup::kCaptureButton, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+  EXPECT_EQ(GetCaptureButton(), test_api.GetCurrentFocusedView()->GetView());
+
+  // Tab one more time to get to the drop down button.
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(1u, test_api.GetCurrentFocusIndex());
+  EXPECT_EQ(GetRecordingTypeDropDownButton(),
+            test_api.GetCurrentFocusedView()->GetView());
+
+  // Pressing the spacebar should open the menu, and we should be in the
+  // `kPendingRecordingType` focus group.
+  SendKey(ui::VKEY_SPACE, event_generator);
+  EXPECT_TRUE(GetRecordingTypeMenuWidget());
+  EXPECT_EQ(FocusGroup::kPendingRecordingType, test_api.GetCurrentFocusGroup());
+
+  // The next tab will move the focus inside the menu.
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(FocusGroup::kRecordingTypeMenu, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+  // And the WebM option will be focused.
+  auto* recording_type_menu_view = GetRecordingTypeMenuView();
+  EXPECT_EQ(recording_type_menu_view->GetWebMOptionForTesting(),
+            test_api.GetCurrentFocusedView()->GetView());
+
+  // Tabbing again will focus on the GIF option.
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(1u, test_api.GetCurrentFocusIndex());
+  EXPECT_EQ(recording_type_menu_view->GetGifOptionForTesting(),
+            test_api.GetCurrentFocusedView()->GetView());
+
+  // The next tab will focus on the settings button, but the recording type menu
+  // stays open.
+  SendKey(ui::VKEY_TAB, event_generator);
+  EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(0u, test_api.GetCurrentFocusIndex());
+  EXPECT_EQ(test_api.GetCaptureModeBarView()->settings_button(),
+            test_api.GetCurrentFocusedView()->GetView());
+
+  // Reverse tabbing should get us back to the GIF option.
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_SHIFT_DOWN);
+  EXPECT_EQ(FocusGroup::kRecordingTypeMenu, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(1u, test_api.GetCurrentFocusIndex());
+  EXPECT_EQ(recording_type_menu_view->GetGifOptionForTesting(),
+            test_api.GetCurrentFocusedView()->GetView());
+
+  // Pressing the spacebar should select GIF, and close the menu.
+  SendKey(ui::VKEY_SPACE, event_generator);
+  EXPECT_FALSE(GetRecordingTypeMenuWidget());
+  EXPECT_EQ(RecordingType::kGif, controller->recording_type());
+
+  // The focus is moved back to the drop down button.
+  EXPECT_EQ(FocusGroup::kCaptureButton, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(1u, test_api.GetCurrentFocusIndex());
+  EXPECT_EQ(GetRecordingTypeDropDownButton(),
+            test_api.GetCurrentFocusedView()->GetView());
+}
+
+TEST_F(GifRecordingTest, CloseRecordingMenuWhileFocusIsSomewhereElse) {
+  auto* controller = StartRegionVideoCapture();
+
+  // Tab 16 times until we reach the drop down button.
+  auto* event_generator = GetEventGenerator();
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/16);
+  using FocusGroup = CaptureModeSessionFocusCycler::FocusGroup;
+  CaptureModeSessionTestApi test_api(controller->capture_mode_session());
+  EXPECT_EQ(FocusGroup::kCaptureButton, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(1u, test_api.GetCurrentFocusIndex());
+  EXPECT_EQ(GetRecordingTypeDropDownButton(),
+            test_api.GetCurrentFocusedView()->GetView());
+
+  // Pressing the spacebar should open the menu, and we should be in the
+  // `kPendingRecordingType` focus group.
+  SendKey(ui::VKEY_SPACE, event_generator);
+  EXPECT_TRUE(GetRecordingTypeMenuWidget());
+  EXPECT_EQ(FocusGroup::kPendingRecordingType, test_api.GetCurrentFocusGroup());
+
+  // Now tab 4 times to put the focus on the close button.
+  SendKey(ui::VKEY_TAB, event_generator, ui::EF_NONE, /*count=*/4);
+  EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(1u, test_api.GetCurrentFocusIndex());
+  EXPECT_EQ(test_api.GetCaptureModeBarView()->close_button(),
+            test_api.GetCurrentFocusedView()->GetView());
+
+  // Press the escape key, the menu should close, but the focus should not
+  // change, since focus was not in or about to be in the menu.
+  SendKey(ui::VKEY_ESCAPE, event_generator);
+  EXPECT_FALSE(GetRecordingTypeMenuWidget());
+  EXPECT_EQ(FocusGroup::kSettingsClose, test_api.GetCurrentFocusGroup());
+  EXPECT_EQ(1u, test_api.GetCurrentFocusIndex());
+  EXPECT_EQ(test_api.GetCaptureModeBarView()->close_button(),
+            test_api.GetCurrentFocusedView()->GetView());
+}
+
+TEST_F(GifRecordingTest, RecordingTypeIsRespected) {
+  auto* controller = StartRegionVideoCapture();
+  controller->SetRecordingType(RecordingType::kGif);
+
+  // Even though audio recording is enabled, when performing a GIF recording,
+  // the recording service should not be asked to connect to the audio streaming
+  // factory and should not be doing any audio recording.
+  controller->EnableAudioRecording(true);
+  StartVideoRecordingImmediately();
+  WaitForRecordingToStart();
+  EXPECT_TRUE(controller->is_recording_in_progress());
+  auto* test_delegate =
+      static_cast<TestCaptureModeDelegate*>(controller->delegate_for_testing());
+  CaptureModeTestApi().FlushRecordingServiceForTesting();
+  EXPECT_FALSE(test_delegate->IsDoingAudioRecording());
+  controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
+
+  // The resulting file should have a ".gif" extension.
+  const auto file = WaitForCaptureFileToBeSaved();
+  EXPECT_TRUE(file.MatchesExtension(".gif"));
+}
+
+class ProjectorGifRecordingTest : public GifRecordingTest {
+ public:
+  ProjectorGifRecordingTest() = default;
+  ~ProjectorGifRecordingTest() override = default;
+
+  // ProjectorGifRecordingTest:
+  void SetUp() override {
+    GifRecordingTest::SetUp();
+    projector_helper_.SetUp();
+  }
+
+  void StartProjectorModeSession() {
+    projector_helper_.StartProjectorModeSession();
+  }
+
+ private:
+  ProjectorCaptureModeIntegrationHelper projector_helper_;
+};
+
+TEST_F(ProjectorGifRecordingTest, ProjectorRecordingType) {
+  // Start a normal session and enable GIF recording.
+  auto* controller = StartRegionVideoCapture();
+  controller->SetRecordingType(RecordingType::kGif);
+
+  // Exit this session and start a new projector-initiated session. The active
+  // recording type should be `kWebM`.
+  controller->Stop();
+  StartProjectorModeSession();
+  EXPECT_TRUE(controller->IsActive());
+  EXPECT_EQ(controller->recording_type(), RecordingType::kWebM);
+
+  // By default, the capture source is fullscreen in projector sessions. Switch
+  // to `kRegion` and expect that the capture button will show the correct text.
+  controller->SetSource(CaptureModeSource::kRegion);
+  EXPECT_EQ(GetCaptureButton()->GetText(), u"Record video");
+
+  // The drop-down button should not be created in this case.
+  EXPECT_FALSE(
+      GetCaptureLabelView()->capture_button_container()->drop_down_button());
+
+  // Exit this session and start a new normal session with the most recent
+  // values and expect that the pre-projector-session recording type was
+  // restored.
+  controller->Stop();
+  controller->Start(CaptureModeEntryType::kQuickSettings);
+  EXPECT_EQ(controller->recording_type(), RecordingType::kGif);
+  EXPECT_EQ(GetCaptureButton()->GetText(), u"Record GIF");
+  EXPECT_TRUE(
+      GetCaptureLabelView()->capture_button_container()->drop_down_button());
 }
 
 }  // namespace ash

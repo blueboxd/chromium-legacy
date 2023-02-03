@@ -309,6 +309,8 @@ public class TabGroupModelFilter extends TabModelFilter {
         int destinationGroupId = getRootId(destinationTab);
         List<Tab> tabsToMerge = getRelatedTabList(sourceTabId);
         int destinationIndexInTabModel = getTabModelDestinationIndex(destinationTab);
+        List<Integer> originalIndexes = new ArrayList<>();
+        List<Integer> originalRootIds = new ArrayList<>();
 
         if (skipUpdateTabModel || !needToUpdateTabModel(tabsToMerge, destinationIndexInTabModel)) {
             for (Observer observer : mGroupFilterObserver) {
@@ -316,7 +318,17 @@ public class TabGroupModelFilter extends TabModelFilter {
                         tabsToMerge.get(tabsToMerge.size() - 1), destinationGroupId);
             }
             for (int i = 0; i < tabsToMerge.size(); i++) {
-                setRootId(tabsToMerge.get(i), destinationGroupId);
+                Tab tab = tabsToMerge.get(i);
+
+                // Skip unnecessary work of populating the lists if logic is skipped below.
+                if (!skipUpdateTabModel) {
+                    int index = TabModelUtils.getTabIndexById(getTabModel(), tab.getId());
+                    assert index != TabModel.INVALID_TAB_INDEX;
+                    originalIndexes.add(index);
+                    originalRootIds.add(getRootId(tab));
+                }
+
+                setRootId(tab, destinationGroupId);
             }
             resetFilterState();
 
@@ -325,12 +337,16 @@ public class TabGroupModelFilter extends TabModelFilter {
             for (Observer observer : mGroupFilterObserver) {
                 observer.didMergeTabToGroup(
                         tabsToMerge.get(tabsToMerge.size() - 1), group.getLastShownTabId());
+                // Since the undo group merge logic is unsupported when called from the tab strip,
+                // skip notifying the UndoGroupSnackbarController observer which shows the snackbar.
+                if (!skipUpdateTabModel) {
+                    observer.didCreateGroup(tabsToMerge, originalIndexes, originalRootIds);
+                }
             }
         } else {
-            mergeListOfTabsToGroup(tabsToMerge, destinationTab, true, false);
+            // For non adjacent tabs, the same logic as above applies regarding the tab strip skip.
+            mergeListOfTabsToGroup(tabsToMerge, destinationTab, true, !skipUpdateTabModel);
         }
-        // TODO(978508): Send didCreateGroup signal to activate the
-        // {@link UndoGroupSnackbarController}.
     }
 
     /**

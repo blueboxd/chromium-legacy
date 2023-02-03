@@ -21,8 +21,7 @@
 #include "ui/display/util/display_util.h"
 #include "ui/ozone/public/ozone_switches.h"
 
-namespace display {
-namespace test {
+namespace display::test {
 
 namespace {
 
@@ -242,11 +241,9 @@ class DisplayConfiguratorTest : public testing::Test {
     scoped_feature_list_.InitAndEnableFeature(
         features::kEnableHardwareMirrorMode);
 
-    // Force system compositor mode to simulate on-device configurator behavior.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ::switches::kEnableRunningAsSystemCompositor);
-
     native_display_delegate_ = new TestNativeDisplayDelegate(log_.get());
+    // Force configuring displays to simulate on-device configurator behavior.
+    configurator_.SetConfigureDisplays(true);
     configurator_.SetDelegateForTesting(
         std::unique_ptr<NativeDisplayDelegate>(native_display_delegate_));
 
@@ -259,7 +256,7 @@ class DisplayConfiguratorTest : public testing::Test {
                       .SetCurrentMode(small_mode_.Clone())
                       .SetType(DISPLAY_CONNECTION_TYPE_INTERNAL)
                       .SetBaseConnectorId(kEdpConnectorId)
-                      .SetIsAspectPerservingScaling(true)
+                      .SetIsAspectPreservingScaling(true)
                       .Build();
 
     outputs_[1] = FakeDisplaySnapshot::Builder()
@@ -269,7 +266,7 @@ class DisplayConfiguratorTest : public testing::Test {
                       .AddMode(small_mode_.Clone())
                       .SetType(DISPLAY_CONNECTION_TYPE_HDMI)
                       .SetBaseConnectorId(kSecondConnectorId)
-                      .SetIsAspectPerservingScaling(true)
+                      .SetIsAspectPreservingScaling(true)
                       .Build();
 
     outputs_[2] = FakeDisplaySnapshot::Builder()
@@ -278,7 +275,7 @@ class DisplayConfiguratorTest : public testing::Test {
                       .SetCurrentMode(small_mode_.Clone())
                       .SetType(DISPLAY_CONNECTION_TYPE_HDMI)
                       .SetBaseConnectorId(kThirdConnectorId)
-                      .SetIsAspectPerservingScaling(true)
+                      .SetIsAspectPreservingScaling(true)
                       .Build();
 
     UpdateOutputs(2, false);
@@ -514,7 +511,7 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
                     .SetNativeMode(big_mode_.Clone())
                     .SetCurrentMode(big_mode_.Clone())
                     .SetType(DISPLAY_CONNECTION_TYPE_HDMI)
-                    .SetIsAspectPerservingScaling(true)
+                    .SetIsAspectPreservingScaling(true)
                     .Build();
 
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
@@ -650,7 +647,7 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
                     .SetNativeMode(big_mode_.Clone())
                     .SetCurrentMode(big_mode_.Clone())
                     .SetType(DISPLAY_CONNECTION_TYPE_HDMI)
-                    .SetIsAspectPerservingScaling(true)
+                    .SetIsAspectPreservingScaling(true)
                     .Build();
 
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_MULTI_MIRROR);
@@ -890,7 +887,7 @@ TEST_F(DisplayConfiguratorTest, Headless) {
                     .SetCurrentMode(big_mode_.Clone())
                     .AddMode(small_mode_.Clone())
                     .SetType(DISPLAY_CONNECTION_TYPE_INTERNAL)
-                    .SetIsAspectPerservingScaling(true)
+                    .SetIsAspectPreservingScaling(true)
                     .Build();
 
   UpdateOutputs(1, true);
@@ -1161,7 +1158,7 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
                     .AddMode(modes[4]->Clone())
                     .SetType(DISPLAY_CONNECTION_TYPE_INTERNAL)
                     .SetBaseConnectorId(kEdpConnectorId)
-                    .SetIsAspectPerservingScaling(true)
+                    .SetIsAspectPreservingScaling(true)
                     .Build();
 
   // Since Chrome restricts the internal display to its native mode it should
@@ -1198,7 +1195,7 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
                     .AddMode(modes[4]->Clone())
                     .SetType(DISPLAY_CONNECTION_TYPE_DISPLAYPORT)
                     .SetBaseConnectorId(kEdpConnectorId)
-                    .SetIsAspectPerservingScaling(true)
+                    .SetIsAspectPreservingScaling(true)
                     .Build();
 
   // This test simply fails in MULTIPLE_DISPLAY_STATE_SINGLE mode for an
@@ -1251,7 +1248,7 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
                     .AddMode(modes[4]->Clone())
                     .SetType(DISPLAY_CONNECTION_TYPE_INTERNAL)
                     .SetBaseConnectorId(kEdpConnectorId)
-                    .SetIsAspectPerservingScaling(true)
+                    .SetIsAspectPreservingScaling(true)
                     .Build();
 
   outputs_[1] = FakeDisplaySnapshot::Builder()
@@ -1264,7 +1261,7 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
                     .AddMode(modes[4]->Clone())
                     .SetType(DISPLAY_CONNECTION_TYPE_HDMI)
                     .SetBaseConnectorId(kSecondConnectorId)
-                    .SetIsAspectPerservingScaling(true)
+                    .SetIsAspectPreservingScaling(true)
                     .Build();
 
   // This test should attempt to configure a mirror mode that will not succeed
@@ -2145,5 +2142,4 @@ TEST_F(DisplayConfiguratorMultiMirroringTest,
   TestHardwareMirrorModeNotExist();
 }
 
-}  // namespace test
-}  // namespace display
+}  // namespace display::test

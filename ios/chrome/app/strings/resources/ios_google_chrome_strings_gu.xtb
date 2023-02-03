@@ -3,6 +3,7 @@
 <translationbundle lang="gu">
 <translation id="1143896152279775643">તમારો પાસવર્ડ <ph name="EMAIL" /> માટેના Google પાસવર્ડ મેનેજરમાં સાચવવામાં આવશે.</translation>
 <translation id="1282031177488366470">Chromeની સુવિધાઓ અને કાર્યપ્રદર્શનને સુધારવામાં સહાય કરો</translation>
+<translation id="1352919863522755794">Google Password Manager તમારા પાસવર્ડ ચેક કરી શક્યું નથી. તમારું ઇન્ટરનેટ કનેક્શન ચેક કરવાનો પ્રયાસ કરો.</translation>
 <translation id="1462727070346936664">Chromeનો સૌથી વધુ લાભ મેળવવા માટે સાઇન ઇન કરો.</translation>
 <translation id="1479202195792305274">જ્યારે તમે તમારા Google એકાઉન્ટ વડે સાઇન ઇન કરો, ત્યારે Chrome તમારા પાસવર્ડ ચેક કરી શકે છે.</translation>
 <translation id="1493827051843127077">તમારા બધા ડિવાઇસ પર તમારી ટૅબ, પાસવર્ડ અને ચુકવણી સંબંધિત માહિતી સિંક કરવા માટે, Chromeને ડિફૉલ્ટ તરીકે સેટ કરો</translation>
@@ -12,12 +13,10 @@
 <translation id="1682483655351012182">તમારા Chrome ડેટાને સિંક કરો</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1917964099031477364">આ ડિવાઇસ પરની Chrome અને અન્ય Google ઍપમાંથી આ એકાઉન્ટ અને સાચવવામાં ન આવ્યો હોય એવો કોઈપણ ડેટા કાઢી નાખવામાં આવશે.</translation>
-<translation id="1968388653333775699">Chrome વડે વધુ કાર્યો કરો</translation>
 <translation id="2009224836393115614">Chrome તમારા પાસવર્ડ ચેક કરી શક્યું નથી. તમારું ઇન્ટરનેટ કનેક્શન ચેક કરવાનો પ્રયાસ કરો.</translation>
 <translation id="2056123005618757196">Google Chromeના સરળ, સુરક્ષિત અને અત્યાર સુધીના સૌથી ઝડપી વર્ઝન વડે વધુ કાર્યો પૂર્ણ કરો.</translation>
 <translation id="2147651015520127414">Chrome એ ચકાસણી કરી છે કે <ph name="ISSUER" /> એ આ વેબસાઇટનું પ્રમાણપત્ર ઇસ્યુ કર્યું છે.</translation>
 <translation id="2199719347983604670">Chrome સિંકમાંનો ડેટા</translation>
-<translation id="2313070403598893276">Google Chrome હવે પહેલાં કરતાં વધુ સરળ, સુરક્ષિત અને ઝડપી છે</translation>
 <translation id="2339201583852607431">તમારો પાસવર્ડ તમારા Google એકાઉન્ટ (<ph name="EMAIL" />)માં સાચવવામાં આવશે.</translation>
 <translation id="2342919707875585281">Chrome તમે મંજૂરી આપો છો તે સાઇટ સાથે તમારા સ્થાનની માહિતી શેર કરે છે.</translation>
 <translation id="2347208864470321755">જ્યારે આ સુવિધા ચાલુ કરી હોય, ત્યારે Chrome, Google Translateનો ઉપયોગ કરીને અન્ય ભાષાઓમાં લખેલા પેજના અનુવાદ ઑફર કરશે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
@@ -31,6 +30,7 @@
 <translation id="2689064829982324496">બધી વેબસાઇટ પર તમારા Google એકાઉન્ટમાંથી સાઇન આઉટ કરવા માટે, <ph name="BEGIN_LINK" />Chromeમાંથી સાઇન આઉટ કરો<ph name="END_LINK" />.</translation>
 <translation id="2695886661449553974">Chrome અપડેટ ચેક કરી શક્યું નથી. થોડા સમય પછી ફરી પ્રયાસ કરો.</translation>
 <translation id="2732745070297234559">Chrome બધા પાસવર્ડ ચેક કરી શક્યું નથી. આવતી કાલે ફરી પ્રયાસ કરો.</translation>
+<translation id="2767464022270041271">કોઈ સાચવેલો પાસવર્ડ નથી. જ્યારે તમે તમારા પાસવર્ડ સાચવો, ત્યારે Google Password Manager તેને ચેક કરી શકે છે.</translation>
 <translation id="2869959624320573933">Chromeમાં સાઇન ઇન કરો</translation>
 <translation id="2957447865124070833"><ph name="BEGIN_BOLD" />Chrome <ph name="END_BOLD" />પસંદ કરો</translation>
 <translation id="3030414234702425231">કારણ કે તમે <ph name="SIGNOUT_MANAGED_DOMAIN" /> દ્વારા મેનેજ કરવામાં આવેલ એકાઉન્ટમાંથી સાઇન આઉટ કરી રહ્યાં છો, આ ડિવાઇસમાંથી તમારા Chrome ડેટા ડિલીટ થઈ જશે. તમારો ડેટા તમારા Google એકાઉન્ટમાં જળવાઈ રહેશે.</translation>
@@ -50,7 +50,6 @@
 <translation id="3984746313391923992">તમારી સંસ્થા માટે જરૂરી છે કે તમે Chromeમાં સાઇન આઉટ કરીને રાખો.</translation>
 <translation id="3988789688219830639">Google Chromeને તમારા ફોટા અથવા વીડિયોનો ઍક્સેસ નથી. iOS સેટિંગ &gt; પ્રાઇવસી &gt; ફોટામાં ઍક્સેસને ચાલુ કરો.</translation>
 <translation id="417201473131094001">Chrome Canary પર સપોર્ટ કરવામાં આવતી નથી</translation>
-<translation id="4192781968753717021">આ પાસવર્ડ કોઈ ડેટા ઉલ્લંઘનમાં જોવા મળ્યો હતો. Google Password Manager હમણાં જ તમારો પાસવર્ડ બદલવાનો સુઝાવ આપે છે.</translation>
 <translation id="4233521129555661685"><ph name="USER_EMAIL1" /> Chromeનો ઉપયોગ કરી રહ્યાં હતા અને તેઓ આ ડિવાઇસ પર બુકમાર્ક, પાસવર્ડ અને અન્ય સેટિંગ છોડી ગયા છે.</translation>
 <translation id="424864128008805179">Chromeમાંથી સાઇન આઉટ કરીએ?</translation>
 <translation id="4249068189593983585">Chrome ટિપ. ટૅબના વધુ વિકલ્પો માટે, તમારી સ્ક્રીનના તળિયે અથવા ટોચે આવેલા ટૂલબારમાંના 'ટૅબ બતાવો' બટનને ટચ કરીને થોડીવાર દબાવી રાખો.</translation>
@@ -60,6 +59,7 @@
 <translation id="4698415050768537821">Chrome બધા પાસવર્ડ ચેક કરી શક્યું નથી. આવતી કાલે ફરી પ્રયાસ કરજો અથવા <ph name="BEGIN_LINK" />તમારા Google એકાઉન્ટમાં પાસવર્ડ ચેક કરો.<ph name="END_LINK" /></translation>
 <translation id="4819268619367838612">ઍપને બહેતર બનાવવામાં સહાય કરવા માટે, Chrome વપરાશ અને ક્રૅશ થવા સંબંધિત ડેટા Googleને મોકલે છે. <ph name="BEGIN_LINK" />મેનેજ કરો<ph name="END_LINK" /></translation>
 <translation id="484033449593719797">Chrome બીટા પર સપોર્ટ કરવામાં આવતી નથી</translation>
+<translation id="4840404732697892756">જ્યારે તમે તમારા Google એકાઉન્ટ વડે સાઇન ઇન કરો, ત્યારે Google Password Manager તમારા પાસવર્ડ ચેક કરી શકે છે.</translation>
 <translation id="5030102366287574140">ડેટા ઉલ્લંઘનો, અસુરક્ષિત વેબસાઇટ જેવી બીજી ઘણી બાબતોથી તમને સુરક્ષિત રાખવામાં Chrome તમારી સહાય કરી શકે છે.</translation>
 <translation id="5108659628347594808">Chromeને બહેતર બનાવો</translation>
 <translation id="5119391094379141756">Chrome પસંદ કરો</translation>
@@ -69,6 +69,7 @@
 <translation id="5552137475244467770">Chrome તમારા પાસવર્ડને ઑનલાઇન પ્રકાશિત કરવામાં આવેલી સૂચિઓ સામે સમય સમય પર ચેક કરે છે. આમ કરતી વખતે તમારા પાસવર્ડ અને વપરાશકર્તા નામ એન્ક્રિપ્ટેડ હોય છે, જેથી Google સહિત, કોઈપણ તેને વાંચી શકતું નથી.</translation>
 <translation id="5639704535586432836">સેટિંગ &gt; પ્રાઇવસી &gt; કૅમેરા &gt; Google Chrome ખોલો અને કૅમેરા ચાલુ કરો.</translation>
 <translation id="5642200033778930880">Google Chrome, વિભાજિત વ્યૂ મોડમાં તમારા કૅમેરાનો ઉપયોગ કરી શકતુંં નથી</translation>
+<translation id="5661521615548540542">Google Password Manager બધા પાસવર્ડ ચેક કરી શક્યું નથી. થોડા સમય પછી ફરી પ્રયાસ કરો.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">ઑનલાઇન, Chrome અપડેટ ચેક કરી શકતાં નથી</translation>
 <translation id="5716154293141027663">કોઈપણ સમયે તમે અન્ય ઍપમાં લિંક પર ટૅપ કરો ત્યારે Chrome ખૂલશે</translation>
@@ -82,10 +83,10 @@
 <translation id="6412673304250309937">URLsને Chromeમાં સ્ટોર કરેલી અસુરક્ષિત સાઇટની સૂચિ સાથે ચેક કરે છે. જો કોઈ સાઇટ તમારો પાસવર્ડ ચોરી કરવાનો પ્રયાસ કરે અથવા તમે કોઈ નુકસાનકારક ફાઇલ ડાઉનલોડ કરો, ત્યારે Chrome પેજ કન્ટેન્ટના બિટની સાથોસાથ URLs પણ Safe Browsingને મોકલી શકે છે.</translation>
 <translation id="6427126399757991875">તમારી સંસ્થા Chromeનું સેટઅપ કરી રહી છે…</translation>
 <translation id="6600954340915313787">Chrome માં કોપી કરાયું</translation>
-<translation id="6632661856876686289">Chrome વડે બીજું ઘણું કરો</translation>
 <translation id="6634107063912726160">તમે સાઇન આઉટ કરશો, ત્યારે Chrome કોઈપણ નવા ડેટાને તમારા Google એકાઉન્ટ સાથે સિંક કરશે નહીં. અગાઉ સિંક કરેલો ડેટા એકાઉન્ટમાં રહે છે.</translation>
 <translation id="6648150602980899529">તમે <ph name="DOMAIN" /> દ્વારા મેનેજ એકાઉન્ટમાં સાઇન ઇન કરી રહ્યાં છો અને તમારા Chrome ડેટા પર એનું એડમિન નિયંત્રણ આપી રહ્યાં છો. તમારો ડેટા આ એકાઉન્ટ સાથે કાયમીરૂપે જોડાયેલું રહેશે. Chromeમાંથી સાઇન આઉટ કરવાનું આ ડિવાઇસ પરથી તમારો ડેટા ડિલીટ કરશે, પરંતુ એ તમારા Google એકાઉન્ટમાં સ્ટોર રહેશે.</translation>
 <translation id="6676840375528380067">આ ડિવાઇસમાંથી તમારા Chrome ડેટાને સાફ કરીએ?</translation>
+<translation id="6709398533399187136">ડેટા ઉલ્લંઘનમાં તમારો પાસવર્ડ જાહેર થઈ ગયો હતો. Google પાસવર્ડ મેનેજર હમણાં જ તેને ચેક કરવાનો સુઝાવ આપે છે.</translation>
 <translation id="6822673484890854830">Chrome બધા પાસવર્ડ ચેક કરી શક્યું નથી. થોડા સમય પછી ફરી પ્રયાસ કરો.</translation>
 <translation id="6964931465519938134">હવે તમે મેસેજ, દસ્તાવેજો અને અન્ય ઍપમાં લિંક પર કોઈપણ સમયે ટૅપ કરીને Chromeનો ઉપયોગ કરી શકશો.</translation>
 <translation id="701356708427365932">નવા Chrome મેનૂ વિશે જાણો</translation>
@@ -102,7 +103,6 @@
 <translation id="7400722733683201933">Google Chrome વિશે</translation>
 <translation id="7501046334262221972">Chromeને તમારું ડિફૉલ્ટ બ્રાઉઝર બનાવવા માટે, સેટિંગ ખોલો. ડિફૉલ્ટ બ્રાઉઝર ઍપ પર ટૅપ કરો અને પછી Chromeને પસંદ કરો.</translation>
 <translation id="756809126120519699">Chrome ડેટા સાફ કર્યો</translation>
-<translation id="7626032353295482388">Chrome પર આપનું સ્વાગત છે</translation>
 <translation id="7662994914830945754">તમે જ્યાંથી Chromeનો ઉપયોગ કરો ત્યાંથી તમારી ટૅબ જોવા માટે, સાઇન ઇન કરો અને સિંક કરવાનું ચાલુ કરો</translation>
 <translation id="7693590760643069321">હવે તમે જ્યારે પણ મેસેજ, દસ્તાવેજો અને અન્ય ઍપમાં લિંક પર ટૅપ કરો, ત્યારે Chromeનો ઉપયોગ કરી શકશો.</translation>
 <translation id="7698568245838009292">Chromeને કૅમેરાનો ઍક્સેસ જોઈશે</translation>
@@ -122,9 +122,11 @@
   2. ડિફૉલ્ટ બ્રાઉઝર ઍપ પર ટૅપ કરો
   3. Chrome પસંદ કરો.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8603022514504485810">Google Password Manager બધા પાસવર્ડ ચેક કરી શક્યું નથી. આવતી કાલે ફરી પ્રયાસ કરજો અથવા <ph name="BEGIN_LINK" />તમારા Google એકાઉન્ટમાં પાસવર્ડ ચેક કરો.<ph name="END_LINK" /></translation>
 <translation id="8736550665979974340">Google Chromeનો ઉપયોગ કરીને સલામત રહો</translation>
 <translation id="8772179140489533211">Chromeમાં સાઇન ઇન કરવા માટે સંકેતો બતાવો.</translation>
 <translation id="8788269841521769222">તમારે આ પાસવર્ડ યાદ રાખવાની જરૂર રહેશે નહીં. તે <ph name="EMAIL" /> માટેના Google પાસવર્ડ મેનેજરમાં સાચવવામાં આવશે</translation>
+<translation id="8857676124663337448">Google Password Manager બધા પાસવર્ડ ચેક કરી શક્યું નથી. આવતી કાલે ફરી પ્રયાસ કરો.</translation>
 <translation id="8897749957032330183">પાસવર્ડ આ ડિવાઇસના Google Password Managerમાં સાચવવામાં આવે છે</translation>
 <translation id="8969290730818637510">જ્યારે ચાલુ હોય:
 <ph name="BEGIN_INDENT" />  • તમે જે રીતે કરો છો, તે રીતે Chromeનો ઉપયોગ કરતા લોકો માટે તેને બહેતર બનાવવામાં સહાય કરો.<ph name="END_INDENT" />

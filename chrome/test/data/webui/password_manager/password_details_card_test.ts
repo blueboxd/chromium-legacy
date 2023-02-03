@@ -4,11 +4,11 @@
 
 import 'chrome://password-manager/password_manager.js';
 
-import {CrInputElement, Page, PasswordDetailsCardElement, PasswordManagerImpl, Router} from 'chrome://password-manager/password_manager.js';
+import {CrInputElement, EditPasswordDialogElement, Page, PasswordDetailsCardElement, PasswordManagerImpl, Router} from 'chrome://password-manager/password_manager.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
-import {isVisible} from 'chrome://webui-test/test_util.js';
+import {eventToPromise, isVisible} from 'chrome://webui-test/test_util.js';
 
 import {TestPasswordManagerProxy} from './test_password_manager_proxy.js';
 import {createPasswordEntry} from './test_util.js';
@@ -166,5 +166,48 @@ suite('PasswordDetailsCardTest', function() {
     assertTrue(card.$.showPasswordButton.hasAttribute('class'));
     assertEquals(
         'icon-visibility-off', card.$.showPasswordButton.getAttribute('class'));
+  });
+
+  test('clicking edit button opens an edit dialog', async function() {
+    const password = createPasswordEntry(
+        {id: 1, url: 'test.com', username: 'vik', password: 'password69'});
+    password.affiliatedDomains = [{name: 'test.com', url: 'https://test.com/'}];
+
+    const card = document.createElement('password-details-card');
+    card.password = password;
+    document.body.appendChild(card);
+    await flushTasks();
+
+    card.$.editButton.click();
+    await eventToPromise('cr-dialog-open', card);
+    await flushTasks();
+
+    const editDialog =
+        card.shadowRoot!.querySelector<EditPasswordDialogElement>(
+            'edit-password-dialog');
+    assertTrue(!!editDialog);
+    assertTrue(editDialog.$.dialog.open);
+  });
+
+
+  test('delete password', async function() {
+    const password = createPasswordEntry({
+      url: 'test.com',
+      username: 'vik',
+      id: 0,
+    });
+
+    const card = document.createElement('password-details-card');
+    card.password = password;
+    document.body.appendChild(card);
+    await flushTasks();
+
+    assertTrue(isVisible(card.$.deleteButton));
+
+    card.$.deleteButton.click();
+
+    const params = await passwordManager.whenCalled('removeSavedPassword');
+    assertEquals(params.id, password.id);
+    assertEquals(params.fromStores, password.storedIn);
   });
 });

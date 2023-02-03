@@ -10,10 +10,6 @@
 typedef unsigned int GLuint;
 typedef unsigned int GLenum;
 
-namespace gl {
-class GLImage;
-}
-
 namespace ui {
 
 // A binding maintained between NativePixmap and GL Texture in Ozone.
@@ -23,23 +19,7 @@ class COMPONENT_EXPORT(OZONE_BASE) NativePixmapGLBinding {
   virtual ~NativePixmapGLBinding();
 
   virtual GLuint GetInternalFormat() = 0;
-  virtual GLenum GetDataFormat() = 0;
   virtual GLenum GetDataType() = 0;
-
- protected:
-  // Helper method that first binds |texture_id| and subsequently |image| to
-  // |target|.
-  // NOTE: GLImageNativePixmap::BindTexImage and
-  // GLImageNativePixmap::Initialize will be merged to NativePixmapEGLBinding
-  // and corresponding code for GLImageEGLPixmap will move to
-  // NativePixmapEGLX11Binding leading to the deletion of BindTexture here.
-  static bool BindTexture(gl::GLImage* image, GLenum target, GLuint texture_id);
-
-  // Converts a value that is aligned with glTexImage{2|3}D's |internalformat|
-  // parameter to the value that is correspondingly aligned with
-  // glTexImage{2|3}D's |format| parameter. The returned enum is based on ES2
-  // contexts and is mostly ES3 compatible, except for GL_HALF_FLOAT_OES.
-  static unsigned GetDataFormatFromInternalFormat(unsigned internalformat);
 };
 
 }  // namespace ui

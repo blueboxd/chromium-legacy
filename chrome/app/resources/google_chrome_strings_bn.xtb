@@ -53,7 +53,6 @@
 <translation id="1874309113135274312">Google Chrome বিটা (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome পুরানো হয়ে গেছে</translation>
 <translation id="1919130412786645364">Chrome-এ সাইন-ইন করতে দিন</translation>
-<translation id="1952239763774043237">ভবিষ্যতে Google Chrome আপডেট পেতে হলে, আপনার macOS 10.13 বা এর পরবর্তী ভার্সন থাকতে হবে। এই কম্পিউটারে macOS 10.12 ভার্সন ব্যবহার করা হচ্ছে।</translation>
 <translation id="1953553007165777902">ডাউনলোড হচ্ছে... <ph name="MINUTE" /> মিনিট বাকি আছে</translation>
 <translation id="2018528049276128029">প্রতিটি প্রোফাইলে বুকমার্ক, ইতিহাস, পাসওয়ার্ড ও আরও অনেক কিছুর মতো তার নিজস্ব Chrome তথ্য আছে</translation>
 <translation id="2018879682492276940">ইনস্টল করা যায়নি। আবার চেষ্টা করুন।</translation>
@@ -186,6 +185,7 @@
 <translation id="4335235004908507846">ডেটার নিরাপত্তা লঙ্ঘন, এক্সটেনশন এবং আরও অনেক কিছুর থেকে Chrome আপনাকে সুরক্ষিত রাখতে সাহায্য করে</translation>
 <translation id="4343195214584226067">Chrome-এ <ph name="EXTENSION_NAME" /> যোগ করা হয়েছে</translation>
 <translation id="4384570495110188418">সাইন-ইন করে না থাকার কারণে Chrome আপনার পাসওয়ার্ড চেক করতে পারছে না</translation>
+<translation id="4393248995085527349">ভবিষ্যতে Google Chrome আপডেট পেতে হলে, আপনার macOS 10.15 বা এর পরবর্তী ভার্সন থাকতে হবে। এই কম্পিউটারে macOS 10.13 ভার্সন ব্যবহার করা হচ্ছে।</translation>
 <translation id="4427306783828095590">ফিশিং ও ম্যালওয়্যার ব্লক করার ব্যাপারে উন্নত সুরক্ষা আরও সাহায্য করে</translation>
 <translation id="4450664632294415862">Chrome - নেটওয়ার্ক সাইন-ইন - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Google Chrome এ আরেকটি ক্রিয়াকলাপ প্রক্রিয়ায় আছে। দয়া করে পরে আবার চেষ্টা করুন৷</translation>
@@ -215,7 +215,6 @@
 <translation id="4970880042055371251">ChromeOS ভার্সন</translation>
 <translation id="4970947549776831107">এই ধরনের ফাইল বিপজ্জনক বলে Chrome এটি ব্লক করেছে</translation>
 <translation id="4990567037958725628">Google Chrome  ক্যানারি</translation>
-<translation id="5037581483200764584">ভবিষ্যতে Google Chrome আপডেট পেতে হলে, আপনার macOS 10.13 বা এর পরবর্তী ভার্সন থাকতে হবে। এই কম্পিউটারে OS X 10.11 ভার্সন ব্যবহার করা হচ্ছে।</translation>
 <translation id="5098668839038261629">চালু হলে, আপনি Chrome থেকেও সাইন-আউট হয়ে যাবেন</translation>
 <translation id="5132929315877954718">Google Chrome-এর দুর্দান্ত অ্যাপ্লিকেশান, গেম, এক্সটেনশান এবং থিম আবিষ্কার করুন৷</translation>
 <translation id="5139423532931106058">আপনার Chrome প্রোফাইল কাস্টমাইজ করুন</translation>
@@ -255,6 +254,7 @@
 <translation id="5941711191222866238">ছোট করুন</translation>
 <translation id="5941830788786076944">Google Chrome-কে ডিফল্ট ব্রাউজার করুন</translation>
 <translation id="6003112304606738118">ডাউনলোড হচ্ছে... <ph name="HOURS" /> ঘণ্টা বাকি আছে</translation>
+<translation id="6010556343189461180">ভবিষ্যতে Google Chrome আপডেট পেতে হলে, আপনার macOS 10.15 বা এর পরবর্তী ভার্সন থাকতে হবে। এই কম্পিউটারে macOS 10.14 ভার্সন ব্যবহার করা হচ্ছে।</translation>
 <translation id="6022388122721048220">{0,plural, =0{Chrome এখন বন্ধ হবে।}=1{Chrome ১ সেকেন্ডের মধ্যে বন্ধ হয়ে যাবে।}one{Chrome # সেকেন্ডের মধ্যে বন্ধ হয়ে যাবে।}other{Chrome # সেকেন্ডের মধ্যে বন্ধ হয়ে যাবে।}}</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6070348360322141662">অতিরিক্ত নিরাপত্তার জন্য, Google Chrome আপনার ডেটা এনক্রিপ্ট করবে</translation>
@@ -417,6 +417,7 @@
 <translation id="922152298093051471">Chrome কাস্টমাইজ করুন</translation>
 <translation id="93760716455950538">ChromeOS Flex রিস্টার্ট করুন</translation>
 <translation id="940313311831216333">সব ডিভাইস জুড়ে Chrome-এ থাকা ডেটা অ্যাক্সেস করতে, প্রথমে সাইন-ইন করে সিঙ্ক চালু করুন।</translation>
+<translation id="943390475793766444">ফাইলটি বিপজ্জনক হতে পারে বলে Chrome এটি স্ক্যান করার সাজেশন দেয়।</translation>
 <translation id="989369509083708165">Google Chrome আপনার ডিফল্ট ব্রাউজার</translation>
 <translation id="989816563149873169"><ph name="SHORTCUT" /> ব্যবহার করে একটি Chrome প্রোফাইল থেকে আরেকটিতে পাল্টানো যায়</translation>
 </translationbundle>

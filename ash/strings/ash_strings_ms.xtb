@@ -162,10 +162,8 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="1771761307086386028">Tatal ke kanan</translation>
 <translation id="1774796056689732716">Kalendar, <ph name="CURRENT_MONTH_YEAR" />, pada masa ini <ph name="DATE" /> dipilih.</translation>
 <translation id="1787955149152357925">Mati</translation>
-<translation id="1797271123677381264">Terlupa kata laluan</translation>
 <translation id="1807246157184219062">Cahaya</translation>
 <translation id="181103072419391116">Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />, Diurus oleh Pentadbir anda</translation>
-<translation id="1812997170047690955">Apakah yang terdapat pada skrin saya?</translation>
 <translation id="1816896987747843206">Ini membenarkan akses kamera untuk semua apl dan laman web dengan kebenaran kamera</translation>
 <translation id="1823280932251546115">Dulang status, masa <ph name="TIME" />,
         <ph name="BATTERY" />
@@ -291,6 +289,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="2501920221385095727">Kekunci lekit</translation>
 <translation id="2509468283778169019">Kekunci CAPS LOCK dihidupkan</translation>
 <translation id="2515586267016047495">Alt</translation>
+<translation id="2526581474998477112">Buka kunci tetingkap</translation>
 <translation id="2542089167727451762">Ketik imej profil anda</translation>
 <translation id="255671100581129685">Google Assistant tidak tersedia dalam sesi awam.</translation>
 <translation id="256712445991462162">penggadang yang didokkan</translation>
@@ -320,6 +319,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="2704781753052663061">Sertai rangkaian Wi-Fi yang lain</translation>
 <translation id="2705001408393684014">Togol Mikrofon. <ph name="STATE_TEXT" /></translation>
 <translation id="2706462751667573066">Atas</translation>
+<translation id="2710984741481549981">Kunci tetingkap</translation>
 <translation id="2718395828230677721">Cahaya Malam</translation>
 <translation id="2726420622004325180">Telefon anda mestilah mempunyai data mudah alih untuk menyediakan tempat liputan</translation>
 <translation id="2727175239389218057">Balas</translation>
@@ -420,9 +420,11 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="3289674678944039601">Mengecas melalui penyesuai</translation>
 <translation id="3290356915286466215">Tidak selamat</translation>
 <translation id="3294437725009624529">Tetamu</translation>
+<translation id="3298690094479023523">PIN atau kata laluan anda masih tidak dapat disahkan. Cuba lagi.</translation>
 <translation id="3307642347673023554">Bertukar kepada mod komputer riba</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> masih dapat log masuk nanti.</translation>
 <translation id="3321628682574733415">Kod ibu bapa salah</translation>
+<translation id="332827762492701193">Pemberitahuan disembunyikan</translation>
 <translation id="3339826665088060472">Tangkapan skrin, alatan untuk mengambil tangkapan skrin dan rakaman skrin</translation>
 <translation id="3340978935015468852">tetapan</translation>
 <translation id="3341303451326249809">Tangkapan skrin ditangkap</translation>
@@ -560,6 +562,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4017989525502048489">Penuding laser</translation>
 <translation id="401993194061514265">Penanda tidak tersedia. Buka semula Screencast.</translation>
 <translation id="4021716437419160885">Tatal ke bawah</translation>
+<translation id="4024840464866786680">Jika anda terlupa PIN dan kata laluan anda atau menukar kata laluan Google Account anda baru-baru ini, cuba pulihkan pengguna ini.</translation>
 <translation id="4028481283645788203">Kata laluan diperlukan untuk meningkatkan keselamatan</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Anda berkongsi skrin anda</translation>
@@ -578,10 +581,12 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4130035430755296270">Teruskan menuding untuk mendapatkan lagi pilihan reka letak</translation>
 <translation id="4136724716305260864">Dihidupkan sehingga matahari terbit</translation>
 <translation id="4146833061457621061">Mainkan muzik</translation>
+<translation id="4150201353443180367">Paparan</translation>
 <translation id="4165275524535002941">Kabel mungkin tidak menyokong paparan</translation>
 <translation id="4177913004758410636">{0,plural, =1{Kemas kini peranti dalam masa sehari}other{Kemas kini peranti dalam masa # hari}}</translation>
 <translation id="4181841719683918333">Bahasa</translation>
 <translation id="4192112279662688596">Atau</translation>
+<translation id="4193857202545160520">Tunjukkan klik dan kekunci</translation>
 <translation id="4195814663415092787">Sambung semula dari tempat anda berhenti</translation>
 <translation id="4195877955194704651">Mengklik butang secara automatik</translation>
 <translation id="4197790712631116042">Dimatikan</translation>
@@ -698,10 +703,12 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4735944890391795473">Meja 12</translation>
 <translation id="473775607612524610">Kemas kini</translation>
 <translation id="4740516757091333363">Padamkan meja yang disimpan?</translation>
+<translation id="4747410141429390146">Sila buka kunci untuk melihat pemberitahuan</translation>
 <translation id="4752784485658729358">6 meja sahaja dibenarkan. Alih keluar satu meja untuk menyimpan meja baharu.</translation>
 <translation id="4759238208242260848">Muat turun</translation>
 <translation id="4762573482154983647">Sembunyikan apl</translation>
 <translation id="4774338217796918551">Datang semula esok pada <ph name="COME_BACK_TIME" />.</translation>
+<translation id="4776584068981882959">Kata laluan anda masih tidak dapat disahkan. Cuba lagi.</translation>
 <translation id="4776917500594043016">Kata laluan untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Gedung Play</translation>
 <translation id="4778095205580009397">Google Assistant tidak tersedia dalam sesi tunjuk cara.</translation>
@@ -731,6 +738,8 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4919841137949306064"><ph name="APP_NAME" /> sedang menggunakan kamera anda pada masa ini</translation>
 <translation id="492453977506755176">Kekunci mod tangkap</translation>
 <translation id="4925542575807923399">Pentadbir akaun ini memerlukan akaun ini menjadi akaun dilog masuk yang pertama dalam sesi berbilang log masuk.</translation>
+<translation id="4929163402621253029">Adakah anda sedang bercakap? Mikrofon diredam. Ketahui lebih lanjut</translation>
+<translation id="4936329710968938986">Semua orang, dimatikan</translation>
 <translation id="4938176435186993759">Sembunyikan semua cadangan</translation>
 <translation id="4945196315133970626">Matikan pemberitahuan</translation>
 <translation id="4946376291507881335">Tangkap</translation>
@@ -764,6 +773,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="5107522548814527560">Web</translation>
 <translation id="5111318697104479778"><ph name="DESC" />, <ph name="STRENGTH" /></translation>
 <translation id="5117590920725113268">Tunjukkan bulan seterusnya</translation>
+<translation id="5127986747308934633">Pentadbir anda mengawal peranti anda</translation>
 <translation id="5136175204352732067">Papan kekunci lain disambungkan</translation>
 <translation id="5147567197700016471">Tidak berkunci</translation>
 <translation id="5150070631291639005">Tetapan privasi</translation>
@@ -838,6 +848,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="5536723544185013515">Apl Terbaharu, navigasi dengan anak panah ke kiri atau ke kanan untuk mengakses semua apl terbaharu</translation>
 <translation id="553675580533261935">Keluar daripada sesi</translation>
 <translation id="5537725057119320332">Cast</translation>
+<translation id="5546397813406633847">Pulihkan pengguna</translation>
 <translation id="554893713779400387">Togol pengimlakan</translation>
 <translation id="5558091555391176027">Togol keterlihatan tinggi Kongsi Berdekatan</translation>
 <translation id="5560420195677022218">Lihat apl telefon anda pada <ph name="DEVICE_TYPE" /> anda</translation>
@@ -854,6 +865,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="5618148318840095371">Kami telah menukar anda kepada rangkaian yang lebih baik</translation>
 <translation id="5619862035903135339">Dasar pentadbir melumpuhkan tangkapan skrin</translation>
 <translation id="5625955975703555628">LTE+</translation>
+<translation id="5627392655516693966">Identiti anda tidak dapat disahkan. Cuba lagi.</translation>
 <translation id="5648021990716966815">Bicu mikrofon</translation>
 <translation id="5652575806481723716"><ph name="FOCUSED_APP_NAME" /> meminta perhatian anda.</translation>
 <translation id="5662075790140998213">Meja 10</translation>
@@ -872,7 +884,9 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="5707775774148071965">Peranti anda menyokong kadar data yang lebih tinggi daripada kabel anda. Prestasi peranti mungkin terhad.</translation>
 <translation id="5710450975648804523">Jangan Ganggu dihidupkan</translation>
 <translation id="571295407079589142">Data mudah alih dimatikan</translation>
+<translation id="5727460725221669831">Jika anda terlupa kata laluan anda atau menukar kata laluan Google Account anda baru-baru ini, cuba pulihkan pengguna ini.</translation>
 <translation id="573413375004481890">Peranti ini tidak dapat menyokong semua paparan anda, oleh itu, satu paparan telah diputuskan sambungan</translation>
+<translation id="5740328398383587084">Kongsi Berdekatan</translation>
 <translation id="574392208103952083">Sederhana</translation>
 <translation id="5744083938413354016">Penyeretan ketik</translation>
 <translation id="5745612484876805746">Cahaya Malam akan dihidupkan secara automatik pada waktu matahari terbenam</translation>
@@ -992,6 +1006,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="639644700271529076">Kekunci CAPS LOCK dimatikan</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6417265370957905582">Google Assistant</translation>
+<translation id="641867537956679916">Pentadbir anda telah log masuk untuk meneliti isu. Anda boleh terus menggunakan peranti selepas pentadbir memberikan kawalan kembali kepada anda.</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Kosongkan semua pemberitahuan</translation>
 <translation id="643147933154517414">Selesai</translation>
@@ -1280,6 +1295,7 @@ Pemasangan baharu</translation>
 <translation id="79341161159229895">Akaun diurus oleh <ph name="FIRST_PARENT_EMAIL" /> dan <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Tekan <ph name="SHORTCUT_KEY_NAME" /> + V untuk melihat papan keratan anda. 5 item terakhir yang telah anda salin disimpan pada papan keratan anda.</translation>
 <translation id="7942349550061667556">Merah</translation>
+<translation id="7944023924886109030">Lihat semua peristiwa hari ini</translation>
 <translation id="7963992254934562106">Daripada <ph name="PHONE_NAME" /></translation>
 <translation id="7968693143708939792">Pilih folder...</translation>
 <translation id="7977927628060636163">Mencari rangkaian mudah alih...</translation>
@@ -1381,6 +1397,7 @@ Pemasangan baharu</translation>
 <translation id="8477270416194247200">Tekan Alt+Search atau Shift untuk membatalkan.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> tidak menyokong <ph name="SPECIFIED_RESOLUTION" />. Peleraian telah ditukar kepada <ph name="FALLBACK_RESOLUTION" />. Klik sahkan untuk menyimpan perubahan. Tetapan terdahulu akan dipulihkan dalam masa <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8496402167048257517">Paparkan tetapan Kongsi Berdekatan</translation>
+<translation id="8507563469658346379">Semua orang, <ph name="REMAINING_TIME" /></translation>
 <translation id="85123341071060231">Bluetooth Chromebook anda dimatikan. Untuk membuka kunci Chromebook anda, masukkan kata laluan.</translation>
 <translation id="8513108775083588393">Autoputar</translation>
 <translation id="851458219935658693">Tunjukkan tetingkap daripada meja semasa, butang radio dipilih</translation>

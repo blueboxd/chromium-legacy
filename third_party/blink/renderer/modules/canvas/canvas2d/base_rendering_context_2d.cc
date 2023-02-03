@@ -70,7 +70,6 @@ const char BaseRenderingContext2D::kAllPetiteVariantString[] =
     "all-petite-caps";
 const char BaseRenderingContext2D::kUnicaseVariantString[] = "unicase";
 const char BaseRenderingContext2D::kTitlingCapsVariantString[] = "titling-caps";
-const double BaseRenderingContext2D::kCDeviceScaleFactor = 1.0;
 const char BaseRenderingContext2D::kAutoRendering[] = "auto";
 const char BaseRenderingContext2D::kOptimizeSpeedRendering[] = "optimizespeed";
 const char BaseRenderingContext2D::kOptimizeLegibilityRendering[] =
@@ -215,7 +214,7 @@ void BaseRenderingContext2D::beginLayer() {
     max_state_stack_depth_ =
         std::max(state_stack_.size(), max_state_stack_depth_);
 
-    if (GetState().ShouldDrawShadows()) {
+    if (StateHasFilter() && GetState().ShouldDrawShadows()) {
       cc::PaintFlags extra_flags;
       extra_flags.setAlphaf(static_cast<float>(globalAlpha()));
       extra_flags.setImageFilter(StateGetFilter());
@@ -227,10 +226,15 @@ void BaseRenderingContext2D::beginLayer() {
              GetState().GlobalComposite() != SkBlendMode::kSrcOver) {
     cc::PaintFlags flags;
     flags.setBlendMode(GetState().GlobalComposite());
-    // This ComposePaintFilter will work always, whether there is only
-    // shadows, or filters, both of them, or none of them.
-    flags.setImageFilter(sk_make_sp<ComposePaintFilter>(
-        GetState().ShadowAndForegroundImageFilter(), StateGetFilter()));
+
+    if (StateHasFilter() && GetState().ShouldDrawShadows()) {
+      flags.setImageFilter(sk_make_sp<ComposePaintFilter>(
+          GetState().ShadowAndForegroundImageFilter(), StateGetFilter()));
+    } else if (GetState().ShouldDrawShadows()) {
+      flags.setImageFilter(GetState().ShadowAndForegroundImageFilter());
+    } else if (StateHasFilter()) {
+      flags.setImageFilter(StateGetFilter());
+    }
     flags.setAlphaf(static_cast<float>(globalAlpha()));
     canvas->saveLayer(flags);
   } else {
@@ -1467,7 +1471,7 @@ bool BaseRenderingContext2D::ShouldDrawImageAntialiased(
     const gfx::RectF& dest_rect) const {
   if (!GetState().ShouldAntialias())
     return false;
-  cc::PaintCanvas* c = GetPaintCanvas();
+  const cc::PaintCanvas* c = GetPaintCanvas();
   DCHECK(c);
 
   const SkMatrix& ctm = c->getLocalToDevice().asM33();

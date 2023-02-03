@@ -10,6 +10,7 @@
 
 #include "base/strings/string_util.h"
 #include "ui/base/models/image_model.h"
+#include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
 class GURL;
@@ -35,6 +36,7 @@ namespace ash {
 class NotificationCenterBubble;
 class NotificationListView;
 class NotificationCenterTray;
+class NotificationCenterView;
 
 // Utility class to facilitate easier testing of the notification center.
 class NotificationCenterTestApi {
@@ -61,7 +63,9 @@ class NotificationCenterTestApi {
       const std::u16string& display_source = base::EmptyString16(),
       const GURL& url = GURL(),
       const message_center::NotifierId& notifier_id =
-          message_center::NotifierId());
+          message_center::NotifierId(),
+      const message_center::NotificationPriority =
+          message_center::NotificationPriority::DEFAULT_PRIORITY);
 
   // Adds a notification and returns the associated id.
   std::string AddNotification();
@@ -69,6 +73,10 @@ class NotificationCenterTestApi {
   // Adds a notification with the source url and notifier id corresponding to
   // the provided url as a string. Useful for testing notification grouping.
   std::string AddNotificationWithSourceUrl(const std::string& url);
+
+  // Adds a notification with the system component notifier and system priority
+  // level.
+  std::string AddSystemNotification();
 
   // Removes the notification associated with the provided id.
   void RemoveNotification(const std::string& id);
@@ -117,7 +125,13 @@ class NotificationCenterTestApi {
   NotificationCenterBubble* GetBubble();
 
   // Returns the top level view for the notification center.
-  views::View* GetNotificationCenterView();
+  NotificationCenterView* GetNotificationCenterView();
+
+  // Returns the parent view for all notification views.
+  NotificationListView* GetNotificationListView();
+
+  // Completes all animations that may be running in `NotificationListView`.
+  void CompleteNotificationListAnimation();
 
   // Returns the clear all button in the bottom right corner of the notification
   // center UI.
@@ -130,8 +144,6 @@ class NotificationCenterTestApi {
 
  private:
   std::string GenerateNotificationId();
-
-  NotificationListView* GetNotificationListView();
 
   NotificationListView* GetNotificationListViewOnDisplay(int64_t display_id);
 

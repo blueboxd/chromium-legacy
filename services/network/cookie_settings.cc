@@ -243,16 +243,18 @@ CookieSettings::GetCookieSettingWithMetadata(
     // setting to `CONTENT_SETTING_BLOCK` so as not to accidentally change the
     // setting from `CONTENT_SETTING_SESSION_ONLY` to `CONTENT_SETTING_ALLOW` or
     // vice versa.
+
+    // TODO(https://crbug.com/1401089): don't consider Storage Access API grants
+    // unless kHasStorageAccess is present in `overrides`.
     if (ShouldConsiderStorageAccessGrants(query_reason) &&
         IsAllowedByStorageAccessGrant(url, first_party_url)) {
       storage_access_result = net::cookie_util::StorageAccessResult::
           ACCESS_ALLOWED_STORAGE_ACCESS_GRANT;
-    } else if (ShouldConsiderTopLevelStorageAccessGrants(query_reason) &&
+    } else if (ShouldConsiderTopLevelStorageAccessGrants(query_reason,
+                                                         overrides) &&
                IsAllowedByTopLevelStorageAccessGrant(url, first_party_url)) {
-      // TODO(crbug.com/1385156): Separate metrics between StorageAccessAPI
-      // and the page-level variant.
       storage_access_result = net::cookie_util::StorageAccessResult::
-          ACCESS_ALLOWED_STORAGE_ACCESS_GRANT;
+          ACCESS_ALLOWED_TOP_LEVEL_STORAGE_ACCESS_GRANT;
     } else if (overrides.Has(
                    net::CookieSettingOverride::kForceThirdPartyByUser)) {
       storage_access_result =

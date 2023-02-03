@@ -66,13 +66,7 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
 
   // Get colors used throughout various popup UIs, based on the current native
   // theme.
-  SkColor GetBackgroundColor() const;
-  SkColor GetForegroundColor() const;
-  SkColor GetSelectedBackgroundColor() const;
-  SkColor GetSelectedForegroundColor() const;
-  SkColor GetFooterBackgroundColor() const;
   ui::ColorId GetSeparatorColorId() const;
-  SkColor GetWarningColor() const;
 
   base::TimeDelta time_delta_since_popup_shown() const {
     return base::Time::Now() - show_time_;

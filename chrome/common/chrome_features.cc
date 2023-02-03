@@ -204,15 +204,6 @@ BASE_FEATURE(kDataLeakPreventionFilesRestriction,
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// When enabled, newly installed ARC apps will not capture links clicked in the
-// browser by default. Users can still enable link capturing for apps through
-// the intent picker or settings.
-BASE_FEATURE(kDefaultLinkCapturingInBrowser,
-             "DefaultLinkCapturingInBrowser",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables passing additional user authentication in requests to DMServer
 // (policy fetch, status report upload).
 BASE_FEATURE(kDMServerOAuthForChildUser,
@@ -381,7 +372,7 @@ BASE_FEATURE(kEnableRestrictedWebApis,
 // Enable WebHID on extension service workers.
 BASE_FEATURE(kEnableWebHidOnExtensionServiceWorker,
              "EnableWebHidOnExtensionServiceWorker",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 // Enable WebUSB on extension service workers.
@@ -659,7 +650,7 @@ BASE_FEATURE(kIncompatibleApplicationsWarning,
 // When enabled, users will see a warning when downloading from Incognito.
 BASE_FEATURE(kIncognitoDownloadsWarning,
              "IncognitoDownloadsWarning",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 // When enabled, users will see updated UI in Incognito NTP
@@ -730,11 +721,6 @@ BASE_FEATURE(kKAnonymityServiceOHTTPRequests,
 BASE_FEATURE(kKAnonymityServiceStorage,
              "KAnonymityServiceStorage",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When enabled, removes any entry points to the history UI from Incognito mode.
-BASE_FEATURE(kUpdateHistoryEntryPointsInIncognito,
-             "UpdateHistoryEntryPointsInIncognito",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
 BASE_FEATURE(kLinuxLowMemoryMonitor,
@@ -1143,6 +1129,22 @@ const base::FeatureParam<double>
     kTrustSafetySentimentSurveyPrivacySandbox3NoticeLearnMoreProbability{
         &kTrustSafetySentimentSurvey,
         "privacy-sandbox-3-notice-learn-more-probability", 0.2};
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyPrivacySandbox4ConsentAcceptProbability{
+        &kTrustSafetySentimentSurvey,
+        "privacy-sandbox-4-consent-accept-probability", 0.0};
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyPrivacySandbox4ConsentDeclineProbability{
+        &kTrustSafetySentimentSurvey,
+        "privacy-sandbox-4-consent-decline-probability", 0.0};
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyPrivacySandbox4NoticeOkProbability{
+        &kTrustSafetySentimentSurvey, "privacy-sandbox-4-notice-ok-probability",
+        0.0};
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyPrivacySandbox4NoticeSettingsProbability{
+        &kTrustSafetySentimentSurvey,
+        "privacy-sandbox-4-notice-settings-probability", 0.0};
 // The HaTS trigger IDs, which determine which survey is delivered from the HaTS
 // backend.
 const base::FeatureParam<std::string>
@@ -1178,6 +1180,22 @@ extern const base::FeatureParam<std::string>
     kTrustSafetySentimentSurveyPrivacySandbox3NoticeLearnMoreTriggerId{
         &kTrustSafetySentimentSurvey,
         "privacy-sandbox-3-notice-learn-more-trigger-id", ""};
+extern const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyPrivacySandbox4ConsentAcceptTriggerId{
+        &kTrustSafetySentimentSurvey,
+        "privacy-sandbox-4-consent-accept-trigger-id", ""};
+extern const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyPrivacySandbox4ConsentDeclineTriggerId{
+        &kTrustSafetySentimentSurvey,
+        "privacy-sandbox-4-consent-decline-trigger-id", ""};
+extern const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyPrivacySandbox4NoticeOkTriggerId{
+        &kTrustSafetySentimentSurvey, "privacy-sandbox-4-notice-ok-trigger-id",
+        ""};
+extern const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyPrivacySandbox4NoticeSettingsTriggerId{
+        &kTrustSafetySentimentSurvey,
+        "privacy-sandbox-4-notice-settings-trigger-id", ""};
 // The time the user must remain on settings after interacting with a privacy
 // setting to be considered.
 const base::FeatureParam<base::TimeDelta>
@@ -1248,6 +1266,22 @@ const base::FeatureParam<double>
 const base::FeatureParam<double>
     kTrustSafetySentimentSurveyV2PrivacyGuideProbability{
         &kTrustSafetySentimentSurveyV2, "privacy-guide-probability", 0.0};
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2PrivacySandbox4ConsentAcceptProbability{
+        &kTrustSafetySentimentSurveyV2,
+        "privacy-sandbox-4-consent-accept-probability", 0.0};
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2PrivacySandbox4ConsentDeclineProbability{
+        &kTrustSafetySentimentSurveyV2,
+        "privacy-sandbox-4-consent-decline-probability", 0.0};
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2PrivacySandbox4NoticeOkProbability{
+        &kTrustSafetySentimentSurveyV2,
+        "privacy-sandbox-4-notice-ok-probability", 0.0};
+const base::FeatureParam<double>
+    kTrustSafetySentimentSurveyV2PrivacySandbox4NoticeSettingsProbability{
+        &kTrustSafetySentimentSurveyV2,
+        "privacy-sandbox-4-notice-settings-probability", 0.0};
 // The HaTS trigger IDs, which determine which survey is delivered from the HaTS
 // backend.
 const base::FeatureParam<std::string>
@@ -1268,6 +1302,22 @@ const base::FeatureParam<std::string>
 const base::FeatureParam<std::string>
     kTrustSafetySentimentSurveyV2PrivacyGuideTriggerId{
         &kTrustSafetySentimentSurveyV2, "privacy-guide-trigger-id", ""};
+extern const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2PrivacySandbox4ConsentAcceptTriggerId{
+        &kTrustSafetySentimentSurveyV2,
+        "privacy-sandbox-4-consent-accept-trigger-id", ""};
+extern const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2PrivacySandbox4ConsentDeclineTriggerId{
+        &kTrustSafetySentimentSurveyV2,
+        "privacy-sandbox-4-consent-decline-trigger-id", ""};
+extern const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2PrivacySandbox4NoticeOkTriggerId{
+        &kTrustSafetySentimentSurveyV2,
+        "privacy-sandbox-4-notice-ok-trigger-id", ""};
+extern const base::FeatureParam<std::string>
+    kTrustSafetySentimentSurveyV2PrivacySandbox4NoticeSettingsTriggerId{
+        &kTrustSafetySentimentSurveyV2,
+        "privacy-sandbox-4-notice-settings-trigger-id", ""};
 // The time the user must have the Trusted Surface bubble open to be considered.
 // Alternatively the user can interact with the bubble, in which case this time
 // is irrelevant.
@@ -1297,6 +1347,13 @@ BASE_FEATURE(kUserActivityEventLogging,
              "UserActivityEventLogging",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
+
+// When this feature is enabled, the toolbar for Web App windows will be hosted
+// inside the BrowserView, rather than in the BrowserNonClientFrameView. This
+// makes Web App windows work more similarly to regular browser windows.
+BASE_FEATURE(kWebAppFrameToolbarInBrowserView,
+             "WebAppFrameToolbarInBrowserView",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if !BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kWebAppManifestIconUpdating,

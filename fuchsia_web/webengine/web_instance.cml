@@ -47,6 +47,7 @@
       directory: "config-data",
       rights: [ "r*" ],
       path: "/config/data",
+      availability: "optional",
     },
     // fuchsia.web/CreateContextParams.data_directory.
     {
@@ -60,6 +61,7 @@
       directory: "root-ssl-certificates",
       rights: [ "r*" ],
       path: "/config/ssl",
+      availability: "optional",
     },
     // fuchsia.web/CreateContextParams.content_directories.
     {
@@ -73,13 +75,6 @@
       directory: "command-line-config",
       rights: [ "r*" ],
       path: "/config/command-line",
-      availability: "optional",
-    },
-    // Temporary directory specified by WebInstanceHost.set_tmp_dir.
-    {
-      directory: "tmp",
-      path: "/tmp",
-      rights: [ "rw*" ],
       availability: "optional",
     },
     {
@@ -158,6 +153,11 @@
         // Required by Frame.SetPreferredTheme(DEFAULT).
         "fuchsia.settings.Display",
       ],
+      availability: "optional",
+    },
+    {
+      storage: "cache",
+      path: "/cache",
       availability: "optional",
     },
   ]

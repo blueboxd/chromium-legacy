@@ -103,7 +103,11 @@ class PLATFORM_EXPORT AudioDestination final
   void Pause();
   void Resume();
 
-  // Starts the destination with the AudioWorklet support.
+  // Sets the destination for worklet operation, but does not start rendering.
+  void SetWorkletTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> worklet_task_runner);
+
+  // Starts rendering in the AudioWorklet mode.
   void StartWithWorkletTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> worklet_task_runner);
 
@@ -118,8 +122,8 @@ class PLATFORM_EXPORT AudioDestination final
   // hardware.
   int FramesPerBuffer() const;
 
-  // The information from the actual audio hardware. (via Platform::Current)
-  static uint32_t MaxChannelCount();
+  // The maximum channel count of the current audio sink device.
+  uint32_t MaxChannelCount();
 
   // Sets the detect silence flag for `web_audio_device_`.
   void SetDetectSilence(bool detect_silence);

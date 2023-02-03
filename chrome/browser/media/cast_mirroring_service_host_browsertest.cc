@@ -12,6 +12,7 @@
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -180,7 +181,7 @@ class CastMirroringServiceHostBrowserTest
     session_params->source_id = "SourceID";
     host_->Start(std::move(session_params), std::move(observer),
                  std::move(outbound_channel),
-                 inbound_channel_.BindNewPipeAndPassReceiver());
+                 inbound_channel_.BindNewPipeAndPassReceiver(), "Sink Name");
   }
 
   void EnableAccessCodeCast() {
@@ -389,8 +390,8 @@ class CastMirroringServiceHostBrowserTestTabSwitcher
                                       media::kOpenscreenCastStreamingSession},
                                      {});
     } else {
-      feature_list_.InitAndEnableFeature(
-          features::kAccessCodeCastTabSwitchingUI);
+      feature_list_.InitWithFeatures({features::kAccessCodeCastTabSwitchingUI},
+                                     {media::kOpenscreenCastStreamingSession});
     }
   }
 

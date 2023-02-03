@@ -65,6 +65,7 @@ class AutocompleteHistoryManager;
 class AutofillAblationStudy;
 class AutofillDriver;
 struct AutofillErrorDialogContext;
+class AutofillManager;
 class AutofillOfferData;
 class AutofillOfferManager;
 class AutofillPopupDelegate;
@@ -74,7 +75,7 @@ struct CardUnmaskChallengeOption;
 class CardUnmaskDelegate;
 struct CardUnmaskPromptOptions;
 class CreditCard;
-class CreditCardCVCAuthenticator;
+class CreditCardCvcAuthenticator;
 enum class CreditCardFetchResult;
 class CreditCardOtpAuthenticator;
 class FormDataImporter;
@@ -361,7 +362,7 @@ class AutofillClient : public RiskDataLoader {
   virtual MerchantPromoCodeManager* GetMerchantPromoCodeManager();
 
   // Can be null on unsupported platforms.
-  virtual CreditCardCVCAuthenticator* GetCVCAuthenticator();
+  virtual CreditCardCvcAuthenticator* GetCvcAuthenticator();
   virtual CreditCardOtpAuthenticator* GetOtpAuthenticator();
 
   // Creates and returns a SingleFieldFormFillRouter using the
@@ -638,9 +639,10 @@ class AutofillClient : public RiskDataLoader {
   // extensive than `IsFastCheckoutSupported()`.
   // If it is, shows the FastCheckout surface (for autofilling information
   // during the checkout flow) and returns `true` on success.
-  virtual bool TryToShowFastCheckout(const FormData& form,
-                                     const FormFieldData& field,
-                                     AutofillDriver* driver) = 0;
+  virtual bool TryToShowFastCheckout(
+      const FormData& form,
+      const FormFieldData& field,
+      base::WeakPtr<AutofillManager> autofill_manager) = 0;
 
   // Hides the Fast Checkout surface (for autofilling information during the
   // checkout flow) if one is currently shown.
@@ -760,9 +762,6 @@ class AutofillClient : public RiskDataLoader {
 
   // If the context is secure.
   virtual bool IsContextSecure() const = 0;
-
-  // Whether it is appropriate to show a signin promo for this user.
-  virtual bool ShouldShowSigninPromo() = 0;
 
   // Handles simple actions for the autofill popups.
   virtual void ExecuteCommand(int id) = 0;

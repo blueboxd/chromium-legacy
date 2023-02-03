@@ -512,6 +512,7 @@ void LocalFrameClientImpl::BeginNavigation(
     WebNavigationType type,
     NavigationPolicy policy,
     WebFrameLoadType frame_load_type,
+    mojom::blink::ForceHistoryPush force_history_push,
     bool is_client_redirect,
     bool is_unfenced_top_navigation,
     mojom::blink::TriggeringEventInfo triggering_event_info,
@@ -538,6 +539,7 @@ void LocalFrameClientImpl::BeginNavigation(
   navigation_info->url_request.CopyFrom(WrappedResourceRequest(request));
   navigation_info->requestor_base_url = requestor_base_url;
   navigation_info->frame_type = frame_type;
+  navigation_info->force_history_push = force_history_push;
   navigation_info->navigation_type = type;
   navigation_info->navigation_policy = static_cast<WebNavigationPolicy>(policy);
   navigation_info->has_transient_user_activation = request.HasUserGesture();
@@ -746,11 +748,16 @@ void LocalFrameClientImpl::DidObserveLoadingBehavior(
 
 void LocalFrameClientImpl::DidObserveSubresourceLoad(
     uint32_t number_of_subresources_loaded,
-    uint32_t number_of_subresource_loads_handled_by_service_worker) {
+    uint32_t number_of_subresource_loads_handled_by_service_worker,
+    bool pervasive_payload_requested,
+    int64_t pervasive_bytes_fetched,
+    int64_t total_bytes_fetched) {
   if (web_frame_->Client()) {
     web_frame_->Client()->DidObserveSubresourceLoad(
         number_of_subresources_loaded,
-        number_of_subresource_loads_handled_by_service_worker);
+        number_of_subresource_loads_handled_by_service_worker,
+        pervasive_payload_requested, pervasive_bytes_fetched,
+        total_bytes_fetched);
   }
 }
 

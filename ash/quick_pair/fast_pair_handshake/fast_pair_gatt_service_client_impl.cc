@@ -44,6 +44,7 @@ constexpr base::TimeDelta kGattOperationTimeout = base::Seconds(15);
 constexpr int kMaxNumGattConnectionAttempts = 3;
 constexpr base::TimeDelta kCoolOffPeriodBeforeGattConnectionAfterDisconnect =
     base::Seconds(2);
+constexpr base::TimeDelta kDisconnectResponseTimeout = base::Seconds(5);
 
 constexpr const char* ToString(
     device::BluetoothGattService::GattErrorCode error_code) {
@@ -197,6 +198,14 @@ void FastPairGattServiceClientImpl::AttemptGattConnection() {
   // is no connection established, we call `Disconnect` regardless.
   QP_LOG(INFO) << __func__
                << ": Disconnecting any previous connections before attempt";
+
+  // Start a timer so if we don't get a response from the disconnect call, we
+  // still proceed with GATT connection attempts.
+  gatt_disconnect_timer_.Start(
+      FROM_HERE, kDisconnectResponseTimeout,
+      base::BindOnce(&FastPairGattServiceClientImpl::OnDisconnectTimeout,
+                     weak_ptr_factory_.GetWeakPtr()));
+
   device->Disconnect(
       base::BindOnce(
           &FastPairGattServiceClientImpl::CoolOffBeforeCreateGattConnection,
@@ -209,6 +218,16 @@ void FastPairGattServiceClientImpl::AttemptGattConnection() {
 void FastPairGattServiceClientImpl::CoolOffBeforeCreateGattConnection() {
   QP_LOG(INFO) << __func__;
 
+  if (!gatt_disconnect_timer_.IsRunning()) {
+    // The disconnect has already timed out so return early here.
+    QP_LOG(INFO) << __func__
+                 << ": Returning early due to prior disconnect timeout.";
+    return;
+  }
+
+  // A response to the disconnect call was received, stop the associated timer.
+  gatt_disconnect_timer_.Stop();
+
   // In order for the Disconnect to propagate into the platform code, we need
   // a cool off period before we attempt to create a GATT connection in the case
   // we did disconnect an active GATT connection.
@@ -216,6 +235,18 @@ void FastPairGattServiceClientImpl::CoolOffBeforeCreateGattConnection() {
       FROM_HERE, kCoolOffPeriodBeforeGattConnectionAfterDisconnect,
       base::BindOnce(&FastPairGattServiceClientImpl::CreateGattConnection,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void FastPairGattServiceClientImpl::OnDisconnectTimeout() {
+  // This PairFailure is not surfaced to consumers on the
+  // `on_initialized_callback_` because we retry the GATT connection. We don't
+  // want the consumers to retry a FastPairHandshake before retries are
+  // complete so we log the failure here and continue with the retry if we
+  // haven't maxed out yet.
+  QP_LOG(INFO) << __func__ << ": reattempting after GATT disconnect timeout: "
+               << PairFailure::kDisconnectResponseTimeout;
+  RecordGattRetryFailureReason(PairFailure::kDisconnectResponseTimeout);
+  AttemptGattConnection();
 }
 
 void FastPairGattServiceClientImpl::CreateGattConnection() {
@@ -229,7 +260,7 @@ void FastPairGattServiceClientImpl::CreateGattConnection() {
         PairFailure::kPairingDeviceLostBetweenGattConnectionAttempts);
     return;
   }
-
+  gatt_service_discovery_start_time_ = base::TimeTicks::Now();
   gatt_service_discovery_timer_.Start(
       FROM_HERE, kGattOperationTimeout,
       base::BindOnce(
@@ -297,6 +328,7 @@ void FastPairGattServiceClientImpl::ClearCurrentState() {
   key_based_characteristic_ = nullptr;
   passkey_characteristic_ = nullptr;
   gatt_service_discovery_timer_.Stop();
+  gatt_disconnect_timer_.Stop();
   passkey_notify_session_timer_.Stop();
   keybased_notify_session_timer_.Stop();
   passkey_write_request_timer_.Stop();
@@ -362,6 +394,8 @@ void FastPairGattServiceClientImpl::GattDiscoveryCompleteForService(
   // Verify that the discovered service and device are the ones we care about.
   if (service->GetUUID() == kFastPairBluetoothUuid &&
       service->GetDevice()->GetAddress() == device_address_) {
+    RecordGattServiceDiscoveryTime(base::TimeTicks::Now() -
+                                   gatt_service_discovery_start_time_);
     gatt_service_discovery_timer_.Stop();
     QP_LOG(INFO) << __func__
                  << ": Completed discovery for Fast Pair GATT service";
@@ -434,6 +468,8 @@ FastPairGattServiceClientImpl::SetGattCharacteristics() {
 void FastPairGattServiceClientImpl::OnKeyBasedRequestNotifySession(
     const std::vector<uint8_t>& request_data,
     std::unique_ptr<device::BluetoothGattNotifySession> session) {
+  RecordKeyBasedNotifyTime(base::TimeTicks::Now() -
+                           keybased_notify_session_start_time_);
   keybased_notify_session_timer_.Stop();
   notify_keybased_start_time_ = base::TimeTicks::Now();
 
@@ -441,6 +477,7 @@ void FastPairGattServiceClientImpl::OnKeyBasedRequestNotifySession(
   // scope and being destroyed.
   key_based_notify_session_ = std::move(session);
 
+  key_based_write_request_start_time_ = base::TimeTicks::Now();
   key_based_write_request_timer_.Start(
       FROM_HERE, kGattOperationTimeout,
       base::BindOnce(&FastPairGattServiceClientImpl::NotifyWriteRequestError,
@@ -459,6 +496,8 @@ void FastPairGattServiceClientImpl::OnKeyBasedRequestNotifySession(
 void FastPairGattServiceClientImpl::OnPasskeyNotifySession(
     const std::vector<uint8_t>& passkey_data,
     std::unique_ptr<device::BluetoothGattNotifySession> session) {
+  RecordPasskeyNotifyTime(base::TimeTicks::Now() -
+                          passkey_notify_session_start_time_);
   passkey_notify_session_timer_.Stop();
   notify_passkey_start_time_ = base::TimeTicks::Now();
 
@@ -469,6 +508,7 @@ void FastPairGattServiceClientImpl::OnPasskeyNotifySession(
   RecordGattInitializationStep(
       FastPairGattConnectionSteps::kNotifiationsEnabledForKeybasedPairing);
 
+  passkey_write_request_start_time_ = base::TimeTicks::Now();
   passkey_write_request_timer_.Start(
       FROM_HERE, kGattOperationTimeout,
       base::BindOnce(&FastPairGattServiceClientImpl::NotifyWritePasskeyError,
@@ -589,6 +629,7 @@ void FastPairGattServiceClientImpl::WriteRequestAsync(
                              public_key_vec.end());
   }
 
+  keybased_notify_session_start_time_ = base::TimeTicks::Now();
   keybased_notify_session_timer_.Start(
       FROM_HERE, kGattOperationTimeout,
       base::BindOnce(
@@ -614,9 +655,10 @@ void FastPairGattServiceClientImpl::WritePasskeyAsync(
   DCHECK(is_initialized_);
   DCHECK(message_type == kSeekerPasskey);
 
-  // The passkey should only ever be written once; if the notify
-  // session has already been set, something has gone wrong.
-  DCHECK(!passkey_notify_session_);
+  // |passkey_notify_session| might already exist since it happens after the
+  // handshake completes, meaning a reused handshake may already have a
+  // |passkey_notify_session|. Therefore, do not DCHECK that it doesn't exist.
+
   passkey_write_response_callback_ = std::move(write_response_callback);
 
   const std::array<uint8_t, kBlockSizeBytes> data_to_write =
@@ -625,6 +667,7 @@ void FastPairGattServiceClientImpl::WritePasskeyAsync(
   std::vector<uint8_t> data_to_write_vec(data_to_write.begin(),
                                          data_to_write.end());
 
+  passkey_notify_session_start_time_ = base::TimeTicks::Now();
   passkey_notify_session_timer_.Start(
       FROM_HERE, kGattOperationTimeout,
       base::BindOnce(&FastPairGattServiceClientImpl::NotifyWritePasskeyError,
@@ -680,6 +723,8 @@ void FastPairGattServiceClientImpl::GattCharacteristicValueChanged(
   // we get response bytes here.
   if (characteristic == key_based_characteristic_ &&
       key_based_write_response_callback_) {
+    RecordKeyBasedWriteRequestTime(base::TimeTicks::Now() -
+                                   key_based_write_request_start_time_);
     key_based_write_request_timer_.Stop();
     std::move(key_based_write_response_callback_)
         .Run(value, /*failure=*/absl::nullopt);
@@ -687,6 +732,8 @@ void FastPairGattServiceClientImpl::GattCharacteristicValueChanged(
                                            notify_keybased_start_time_);
   } else if (characteristic == passkey_characteristic_ &&
              passkey_write_response_callback_) {
+    RecordPasskeyWriteRequestTime(base::TimeTicks::Now() -
+                                  passkey_write_request_start_time_);
     passkey_write_request_timer_.Stop();
     RecordNotifyPasskeyCharacteristicTime(base::TimeTicks::Now() -
                                           notify_passkey_start_time_);

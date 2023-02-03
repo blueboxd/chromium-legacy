@@ -25,6 +25,11 @@ using WeakMember = cppgc::WeakMember<T>;
 template <typename T>
 using UntracedMember = cppgc::UntracedMember<T>;
 
+namespace subtle {
+template <typename T>
+using UncompressedMember = cppgc::subtle::UncompressedMember<T>;
+}
+
 template <typename T>
 inline bool IsHashTableDeletedValue(const Member<T>& m) {
   return m == cppgc::kSentinelPointer;
@@ -90,7 +95,11 @@ struct BaseMemberHashTraits : SimpleClassHashTraits<MemberType> {
   // Member. Prefer compressing raw pointers instead of decompressing Members,
   // assuming the former is cheaper.
   static unsigned GetHash(const T* key) {
-    cppgc::internal::MemberBase::RawStorage st(key);
+#if defined(CPPGC_POINTER_COMPRESSION)
+    cppgc::internal::CompressedPointer st(key);
+#else
+    cppgc::internal::RawPointer st(key);
+#endif
     return WTF::GetHash(st.GetAsInteger());
   }
   template <typename Member,
@@ -109,11 +118,6 @@ struct BaseMemberHashTraits : SimpleClassHashTraits<MemberType> {
   using IteratorConstReferenceType = const MemberType&;
 
   static PeekOutType Peek(const MemberType& value) { return value; }
-
-  template <typename U>
-  static void Store(const U& value, MemberType& storage) {
-    storage = value;
-  }
 
   static void ConstructDeletedValue(MemberType& slot) {
     slot = cppgc::kSentinelPointer;

@@ -131,7 +131,7 @@ const displayInfocard = (() => {
       const elements = [];
 
       // srcPath is set only for leaf nodes.
-      if (typeof node.srcPath !== 'undefined') {
+      if (node.srcPath !== undefined) {
         const add_field = (title, text) => {
           const div = document.createElement('div');
           div.appendChild(dom.textElement('span', title, 'symbol-name-info'));
@@ -371,8 +371,8 @@ const displayInfocard = (() => {
      *   the total size of the symbols in the artifact.
      */
     _updateBreakdownRow(row, stats, percentage) {
-      if (stats == null || stats.size === 0) {
-        if (row.parentElement != null) {
+      if (!stats?.size) {  // Subsumes |size| === 0.
+        if (row.parentElement) {
           this._tableBody.removeChild(row);
         }
         return;
@@ -389,7 +389,7 @@ const displayInfocard = (() => {
       const sizeString = formatNumber(stats.size, 2, 2);
       const percentString = formatPercent(percentage, 2, 2);
 
-      const diffMode = state.has('diff_mode');
+      const diffMode = state.getDiffMode();
       if (diffMode && stats.added !== undefined) {
         addedColumn.removeAttribute('hidden');
         removedColumn.removeAttribute('hidden');
@@ -422,7 +422,7 @@ const displayInfocard = (() => {
       const statsEntries = Object.entries(artifactNode.childStats).sort(
         (a, b) => b[1].size - a[1].size
       );
-      const diffMode = state.has('diff_mode');
+      const diffMode = state.getDiffMode();
       let totalSize = 0;
       for (const [, stats] of statsEntries) {
         totalSize += Math.abs(stats.size);

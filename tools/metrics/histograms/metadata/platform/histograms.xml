@@ -193,7 +193,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Chaps.TokenManager.UnloadToken"
-    enum="TokenManagerStatus" expires_after="2023-04-25">
+    enum="TokenManagerStatus" expires_after="2023-07-30">
   <owner>chenyian@google.com</owner>
   <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
@@ -1098,7 +1098,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Platform.Memory.ARC" units="MiB" expires_after="2023-05-27">
+<histogram name="Platform.Memory.ARC" units="MiB" expires_after="2023-07-30">
 <!-- Name completed by histogram_suffixes name="ProcessMemoryType" -->
 
   <owner>bgeffon@chromium.org</owner>
@@ -1325,6 +1325,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Platform.Missive.StorageQueueGenerationIdReset" enum="Boolean"
+    expires_after="2024-01-31">
+  <owner>vshenvi@google.com</owner>
+  <owner>cros-reporting-team@google.com</owner>
+  <summary>
+    Would only be true. Recorded whenever the generation id is reset in the
+    storage queue. The generation id is set up once during storage queue
+    initialization using the metadata file that matches the last sequencing id
+    used to track, deduplicate and confirm delivery by the server. The
+    generation id is reset when this file is missing or corrupted and the
+    sequencing is irreparably broken.
+  </summary>
+</histogram>
+
 <histogram name="Platform.Missive.StorageUsage" units="MiB"
     expires_after="2023-07-02">
   <owner>xuhong@chromium.org</owner>
@@ -1334,6 +1348,17 @@ chromium-metrics-reviews@google.com.
     The amount of disk storage that the Missive daemon has been using for
     storing encrypted records. This is reported once every hour and only if the
     Missive daemon is running.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Missive.UnusualEnqueueTimestamp" enum="Boolean"
+    expires_after="2024-01-30">
+  <owner>xuhong@chromium.org</owner>
+  <owner>lbaraz@chromium.org</owner>
+  <owner>cros-reporting-team@google.com</owner>
+  <summary>
+    Would only be true. Recorded whenever an unusual timestamp is encountered
+    when enqueuing a record, which will be rejected.
   </summary>
 </histogram>
 
@@ -1360,7 +1385,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.Modemfwd.DlcUninstallResult"
-    enum="ModemfwdDlcUninstallResult" expires_after="2023-04-15">
+    enum="ModemfwdDlcUninstallResult" expires_after="2023-07-30">
   <owner>andrewlassalle@google.com</owner>
   <owner>cros-connectivity@google.com</owner>
   <summary>
@@ -1790,7 +1815,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.FirmwareUpdate.Result"
-    enum="TPMFirmwareUpdateResult" expires_after="2023-05-27">
+    enum="TPMFirmwareUpdateResult" expires_after="2023-07-30">
   <owner>mnissler@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>Status of a complete TPM firmware update attempt.</summary>
@@ -1934,6 +1959,17 @@ chromium-metrics-reviews@google.com.
   <summary>System uptime when first timeout writing TPM command occurs</summary>
 </histogram>
 
+<histogram name="Platform.Trunks.RecoverableWriteErrorNo" enum="PopularOSErrno"
+    expires_after="2023-08-01">
+  <owner>cylai@google.com</owner>
+  <owner>chingkang@chromium.org</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    The write errno recovered after rebinding the TPM driver; recorded only once
+    when trunks notices the write errno is gone after restart.
+  </summary>
+</histogram>
+
 <histogram name="Platform.Trunks.TpmErrorCode" enum="TPMResponseCode"
     expires_after="2023-06-04">
   <owner>yich@google.com</owner>
@@ -1941,6 +1977,28 @@ chromium-metrics-reviews@google.com.
   <summary>
     Each sample is the result code of a TPM command issued through trunks. For
     the error codes, see src/platform2/trunks/tpm_generated.h.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Trunks.TransitionedWriteErrorNo"
+    enum="PopularOSErrno" expires_after="2023-08-01">
+  <owner>cylai@google.com</owner>
+  <owner>chingkang@chromium.org</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    The write errno changed after rebinding the TPM driver; recorded only once
+    when trunks notices the write errno has changed after restart.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Trunks.UnrecoverableWriteErrorNo"
+    enum="PopularOSErrno" expires_after="2023-08-01">
+  <owner>cylai@google.com</owner>
+  <owner>chingkang@chromium.org</owner>
+  <owner>cros-hwsec+uma@chromium.org</owner>
+  <summary>
+    The sticky write errno after rebinding the TPM driver; recorded only once
+    when trunks notices the write errno isn't changed after restart.
   </summary>
 </histogram>
 

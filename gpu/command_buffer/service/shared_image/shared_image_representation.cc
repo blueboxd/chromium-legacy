@@ -81,10 +81,6 @@ gpu::TextureBase* GLTextureImageRepresentationBase::GetTextureBase() {
   return GetTextureBase(0);
 }
 
-bool GLTextureImageRepresentationBase::BeginAccess(GLenum mode) {
-  return true;
-}
-
 bool GLTextureImageRepresentationBase::SupportsMultipleConcurrentReadAccess() {
   return false;
 }
@@ -363,7 +359,7 @@ OverlayImageRepresentation::GetDCLayerOverlayImage() {
   NOTREACHED();
   return absl::nullopt;
 }
-#elif BUILDFLAG(IS_MAC)
+#elif BUILDFLAG(IS_APPLE)
 gfx::ScopedIOSurface OverlayImageRepresentation::GetIOSurface() const {
   return gfx::ScopedIOSurface();
 }

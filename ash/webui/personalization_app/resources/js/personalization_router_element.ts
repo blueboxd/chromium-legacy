@@ -10,10 +10,11 @@
 import 'chrome://resources/polymer/v3_0/iron-location/iron-location.js';
 import 'chrome://resources/polymer/v3_0/iron-location/iron-query-params.js';
 
-import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {assert} from 'chrome://resources/ash/common/assert.js';
+import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {isAmbientModeAllowed} from './load_time_booleans.js';
 import {GooglePhotosAlbum, TopicSource, WallpaperCollection} from './personalization_app.mojom-webui.js';
 import {logPersonalizationPathUMA} from './personalization_metrics_logger.js';
 import {getTemplate} from './personalization_router_element.html.js';
@@ -27,10 +28,6 @@ export enum Paths {
   LOCAL_COLLECTION = '/wallpaper/local',
   ROOT = '/',
   USER = '/user',
-}
-
-export function isAmbientModeAllowed(): boolean {
-  return loadTimeData.getBoolean('isAmbientModeAllowed');
 }
 
 export function isPathValid(path: string|null): boolean {
@@ -76,8 +73,12 @@ export class PersonalizationRouter extends PolymerElement {
   }
   private path_: string;
   private query_: string;
-  private queryParams_:
-      {id?: string, googlePhotosAlbumId?: string, topicSource?: string};
+  private queryParams_: {
+    id?: string,
+    googlePhotosAlbumId?: string,
+    googlePhotosAlbumIsShared?: string,
+    topicSource?: string,
+  };
 
   static instance(): PersonalizationRouter {
     return document.querySelector(PersonalizationRouter.is) as
@@ -124,8 +125,10 @@ export class PersonalizationRouter extends PolymerElement {
 
   /** Navigate to a specific album in the Google Photos collection page. */
   selectGooglePhotosAlbum(album: GooglePhotosAlbum) {
-    this.goToRoute(
-        Paths.GOOGLE_PHOTOS_COLLECTION, {googlePhotosAlbumId: album.id});
+    this.goToRoute(Paths.GOOGLE_PHOTOS_COLLECTION, {
+      googlePhotosAlbumId: album.id,
+      googlePhotosAlbumIsShared: album.isShared,
+    });
   }
 
   /** Navigate to albums subpage of specific topic source. */

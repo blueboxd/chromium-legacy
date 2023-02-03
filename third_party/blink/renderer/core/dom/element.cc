@@ -142,6 +142,8 @@
 #include "third_party/blink/renderer/core/html/forms/html_options_collection.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_menu_element.h"
+#include "third_party/blink/renderer/core/html/html_anchor_element.h"
+#include "third_party/blink/renderer/core/html/html_area_element.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
@@ -183,6 +185,7 @@
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
+#include "third_party/blink/renderer/core/speculation_rules/document_speculation_rules.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/toggle_root_list.h"
 #include "third_party/blink/renderer/core/svg/svg_a_element.h"
@@ -199,6 +202,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_dom_activity_logger.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -2432,7 +2436,7 @@ void Element::AttributeChanged(const AttributeModificationParams& params) {
     // TODO(tkent): We should avoid updating style.  We'd like to check only
     // DOM-level focusability here.
     GetDocument().UpdateStyleAndLayoutTreeForNode(this);
-    if (!SupportsFocus()) {
+    if (!SupportsFocus() && !GetFocusableArea()) {
       blur();
     }
   }
@@ -2640,9 +2644,13 @@ const AtomicString Element::ImageSourceURL() const {
   return FastGetAttribute(html_names::kSrcAttr);
 }
 
-bool Element::LayoutObjectIsNeeded(const ComputedStyle& style) const {
+bool Element::LayoutObjectIsNeeded(const DisplayStyle& style) const {
   return style.Display() != EDisplay::kNone &&
          style.Display() != EDisplay::kContents;
+}
+
+bool Element::LayoutObjectIsNeeded(const ComputedStyle& style) const {
+  return LayoutObjectIsNeeded(style.GetDisplayStyle());
 }
 
 LayoutObject* Element::CreateLayoutObject(const ComputedStyle& style,
@@ -2783,7 +2791,7 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
 
   if (IsInTopLayer()) {
     Fullscreen::ElementRemoved(*this);
-    GetDocument().RemoveFromTopLayer(this);
+    GetDocument().RemoveFromTopLayerImmediately(this);
   }
 
   ClearElementFlag(ElementFlags::kIsInCanvasSubtree);
@@ -3080,6 +3088,7 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
     // necessary if the animated property flipped back to the old style with no
     // change as the result.
     DCHECK(GetDocument().GetStyleEngine().InContainerQueryStyleRecalc() ||
+           GetDocument().PendingTopLayerUpdate() ||
            element_animations->CssAnimations().PendingUpdate().IsEmpty());
     element_animations->CssAnimations().ClearPendingUpdate();
   }
@@ -3764,6 +3773,8 @@ StyleRecalcChange Element::RecalcOwnStyle(
     }
     child_change = ApplyComputedStyleDiff(child_change, diff);
     UpdateCallbackSelectors(old_style.get(), new_style.get());
+    NotifyIfMatchedDocumentRulesSelectorsChanged(old_style.get(),
+                                                 new_style.get());
   }
 
   if (auto* context = GetDisplayLockContext()) {
@@ -4027,6 +4038,38 @@ void Element::UpdateCallbackSelectors(const ComputedStyle* old_style,
   if (old_callback_selectors != new_callback_selectors) {
     CSSSelectorWatch::From(GetDocument())
         .UpdateSelectorMatches(old_callback_selectors, new_callback_selectors);
+  }
+}
+
+void Element::NotifyIfMatchedDocumentRulesSelectorsChanged(
+    const ComputedStyle* old_style,
+    const ComputedStyle* new_style) {
+  if (!IsLink() ||
+      !(HasTagName(html_names::kATag) || HasTagName(html_names::kAreaTag))) {
+    return;
+  }
+  auto get_selectors_from_computed_style = [](const ComputedStyle* style) {
+    HeapHashSet<WeakMember<StyleRule>> empty_set;
+    if (!style || !style->DocumentRulesSelectors()) {
+      return empty_set;
+    }
+    return *style->DocumentRulesSelectors();
+  };
+
+  const HeapHashSet<WeakMember<StyleRule>>& old_document_rules_selectors =
+      get_selectors_from_computed_style(old_style);
+  const HeapHashSet<WeakMember<StyleRule>>& new_document_rules_selectors =
+      get_selectors_from_computed_style(new_style);
+  if (old_document_rules_selectors.empty() &&
+      new_document_rules_selectors.empty()) {
+    return;
+  }
+  if (old_document_rules_selectors != new_document_rules_selectors) {
+    HTMLAnchorElement* link = HasTagName(html_names::kATag)
+                                  ? To<HTMLAnchorElement>(this)
+                                  : To<HTMLAreaElement>(this);
+    DocumentSpeculationRules::From(GetDocument())
+        .LinkMatchedSelectorsUpdated(link);
   }
 }
 
@@ -4945,7 +4988,12 @@ bool Element::DelegatesFocus() const {
 
 // https://html.spec.whatwg.org/C/#get-the-focusable-area
 Element* Element::GetFocusableArea(bool in_descendant_traversal) const {
-  DCHECK(!IsFocusable());
+  // GetFocusableArea should only be called as a fallback on elements which
+  // aren't focusable, unless we are looking for an initial focus candidate for
+  // a dialog element in which case we are looking for a keyboard focusable
+  // element and will be calling this for mouse focusable elements.
+  DCHECK(!IsFocusable() || FocusController::AdjustedTabIndex(*this) < 0);
+
   // TODO(crbug.com/1018619): Support AREA -> IMG delegation.
   if (!DelegatesFocus()) {
     return nullptr;
@@ -4988,7 +5036,11 @@ Element* Element::GetFocusDelegate(bool autofocus_only,
   }
 
   for (Element& descendant : ElementTraversal::DescendantsOf(*where_to_look)) {
-    if (descendant.IsFocusable()) {
+    // Dialog elements should only initially focus keyboard focusable elements,
+    // not mouse focusable elements.
+    if (descendant.IsFocusable() &&
+        (!IsA<HTMLDialogElement>(this) ||
+         FocusController::AdjustedTabIndex(descendant) >= 0)) {
       return &descendant;
     }
     if (Element* focusable_area =
@@ -7176,6 +7228,9 @@ void Element::SetIsInTopLayer(bool in_top_layer) {
   }
   if (!GetDocument().InStyleRecalc()) {
     SetForceReattachLayoutTree();
+    // Needs a style recalc to update the ForcesStackingContext flag.
+    SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
+                                               style_change_reason::kTopLayer));
   }
 }
 

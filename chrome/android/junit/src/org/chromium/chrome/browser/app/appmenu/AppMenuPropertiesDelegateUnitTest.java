@@ -54,6 +54,7 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.app.appmenu.AppMenuPropertiesDelegateImpl.MenuGroup;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.PowerBookmarkUtils;
+import org.chromium.chrome.browser.commerce.ShoppingFeatures;
 import org.chromium.chrome.browser.commerce.ShoppingServiceFactory;
 import org.chromium.chrome.browser.device.DeviceConditions;
 import org.chromium.chrome.browser.device.ShadowDeviceConditions;
@@ -69,8 +70,6 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.read_later.ReadingListUtils;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
-import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
-import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -101,7 +100,6 @@ import org.chromium.components.webapps.AppBannerManager;
 import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.ConnectionType;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
@@ -166,8 +164,6 @@ public class AppMenuPropertiesDelegateUnitTest {
     private IdentityManager mIdentityManagerMock;
     @Mock
     private IdentityServicesProvider mIdentityServicesProviderMock;
-    @Mock
-    private SyncService mSyncServiceMock;
     @Mock
     private ManagedBrowserUtils.Natives mManagedBrowserUtilsJniMock;
     @Mock
@@ -235,9 +231,18 @@ public class AppMenuPropertiesDelegateUnitTest {
         ShoppingServiceFactory.setShoppingServiceForTesting(mShoppingService);
     }
 
+    @After
+    public void tearDown() {
+        ThreadUtils.setThreadAssertsDisabledForTesting(false);
+        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(false);
+        ChromeAccessibilityUtil.get().setTouchExplorationEnabledForTesting(false);
+        ReadingListUtils.setReadingListSupportedForTesting(null);
+        ChromeFeatureList.sTabSelectionEditorV2.setForTesting(null);
+        ShoppingFeatures.setShoppingListEligibleForTesting(null);
+    }
+
     private void setupFeatureDefaults() {
         setBookmarkItemRowEnabled(false);
-        setReadingListItemRowEnabled(false);
         setShoppingListItemRowEnabled(false);
         setDesktopSiteExceptionsEnabled(false);
         setTabSelectionEditorV2Enabled(false);
@@ -246,32 +251,17 @@ public class AppMenuPropertiesDelegateUnitTest {
     }
 
     private void setBookmarkItemRowEnabled(boolean enabled) {
+        ShoppingFeatures.setShoppingListEligibleForTesting(enabled);
         mTestValues.addFeatureFlagOverride(ChromeFeatureList.BOOKMARKS_REFRESH, enabled);
-        mTestValues.addFieldTrialParamOverride(
-                ChromeFeatureList.BOOKMARKS_REFRESH, "bookmark_in_app_menu", "true");
-    }
-
-    private void setReadingListItemRowEnabled(boolean enabled) {
-        ReadingListUtils.setReadingListSupportedForTesting(true);
-        mTestValues.addFeatureFlagOverride(ChromeFeatureList.READ_LATER, enabled);
-        mTestValues.addFieldTrialParamOverride(
-                ChromeFeatureList.READ_LATER, "reading_list_in_app_menu", "true");
         FeatureList.setTestValues(mTestValues);
     }
 
     private void setShoppingListItemRowEnabled(boolean enabled) {
-        IdentityServicesProvider.setInstanceForTests(mIdentityServicesProviderMock);
-        when(mIdentityServicesProviderMock.getIdentityManager(any(Profile.class)))
-                .thenReturn(mIdentityManagerMock);
-        TestThreadUtils.runOnUiThreadBlocking(() -> SyncService.overrideForTests(mSyncServiceMock));
-        when(mIdentityManagerMock.hasPrimaryAccount(anyInt())).thenReturn(enabled);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabledForTesting(
-                    enabled);
-        });
-        mTestValues.addFeatureFlagOverride(ChromeFeatureList.SHOPPING_LIST, enabled);
+        ShoppingFeatures.setShoppingListEligibleForTesting(enabled);
         when(mPrefService.getBoolean(Pref.WEB_AND_APP_ACTIVITY_ENABLED_FOR_SHOPPING))
                 .thenReturn(true);
+        mTestValues.addFeatureFlagOverride(ChromeFeatureList.BOOKMARKS_REFRESH, enabled);
+        FeatureList.setTestValues(mTestValues);
     }
 
     private void setDesktopSiteExceptionsEnabled(boolean enabled) {
@@ -286,15 +276,6 @@ public class AppMenuPropertiesDelegateUnitTest {
 
     private void setWebApkUniqueIdEnabled(boolean enabled) {
         mTestValues.addFeatureFlagOverride(ChromeFeatureList.WEB_APK_UNIQUE_ID, enabled);
-    }
-
-    @After
-    public void tearDown() {
-        ThreadUtils.setThreadAssertsDisabledForTesting(false);
-        ChromeAccessibilityUtil.get().setAccessibilityEnabledForTesting(false);
-        ChromeAccessibilityUtil.get().setTouchExplorationEnabledForTesting(false);
-        ReadingListUtils.setReadingListSupportedForTesting(null);
-        ChromeFeatureList.sTabSelectionEditorV2.setForTesting(null);
     }
 
     @Test
@@ -438,8 +419,8 @@ public class AppMenuPropertiesDelegateUnitTest {
                                .withShowTranslate()
                                .withShowAddToHomeScreen()
                                .withAutoDarkEnabled());
-        doReturn(new AppBannerManager.InstallStringPair(R.string.menu_add_to_homescreen_install,
-                         R.string.menu_add_to_homescreen_install))
+        doReturn(new AppBannerManager.InstallStringPair(
+                         R.string.menu_install_webapp, R.string.app_banner_install))
                 .when(mAppMenuPropertiesDelegate)
                 .getAddToHomeScreenTitle(mTab);
 
@@ -451,13 +432,13 @@ public class AppMenuPropertiesDelegateUnitTest {
                 R.id.new_incognito_tab_menu_id, R.id.divider_line_id, R.id.open_history_menu_id,
                 R.id.downloads_menu_id, R.id.all_bookmarks_menu_id, R.id.recent_tabs_menu_id,
                 R.id.divider_line_id, R.id.translate_id, R.id.share_row_menu_id,
-                R.id.find_in_page_id, R.id.add_to_homescreen_id,
-                R.id.request_desktop_site_row_menu_id, R.id.auto_dark_web_contents_row_menu_id,
-                R.id.divider_line_id, R.id.preferences_id, R.id.help_id};
+                R.id.find_in_page_id, R.id.install_webapp_id, R.id.request_desktop_site_row_menu_id,
+                R.id.auto_dark_web_contents_row_menu_id, R.id.divider_line_id, R.id.preferences_id,
+                R.id.help_id};
         Integer[] expectedTitles = {0, R.string.menu_new_tab, R.string.menu_new_incognito_tab, 0,
                 R.string.menu_history, R.string.menu_downloads, R.string.menu_bookmarks,
                 R.string.menu_recent_tabs, 0, 0, R.string.menu_find_in_page,
-                R.string.menu_translate, R.string.menu_add_to_homescreen_install, 0, 0, 0,
+                R.string.menu_translate, R.string.menu_install_webapp, 0, 0, 0,
                 R.string.menu_settings, R.string.menu_help};
         Integer[] expectedActionBarItems = {R.id.forward_menu_id, R.id.bookmark_this_page_id,
                 R.id.offline_page_id, R.id.info_menu_id, R.id.reload_menu_id};
@@ -688,38 +669,6 @@ public class AppMenuPropertiesDelegateUnitTest {
     }
 
     @Test
-    public void updateBookmarkMenuItemRow_WithShoppingAndReadingList() {
-        setBookmarkItemRowEnabled(true);
-        setShoppingListItemRowEnabled(true);
-        PowerBookmarkUtils.setPriceTrackingEligibleForTesting(true);
-        setReadingListItemRowEnabled(true);
-        doReturn(true).when(mBookmarkModel).isEditBookmarksEnabled();
-
-        MenuItem bookmarkMenuItemAdd = mock(MenuItem.class);
-        MenuItem bookmarkMenuItemEdit = mock(MenuItem.class);
-        mAppMenuPropertiesDelegate.updateBookmarkMenuItemRow(
-                bookmarkMenuItemAdd, bookmarkMenuItemEdit, mTab);
-        verify(bookmarkMenuItemAdd).setVisible(true);
-        verify(bookmarkMenuItemAdd).setEnabled(true);
-
-        MenuItem startPriceTrackingMenuItem = mock(MenuItem.class);
-        MenuItem stopPriceTrackingMenuItem = mock(MenuItem.class);
-        mAppMenuPropertiesDelegate.updatePriceTrackingMenuItemRow(
-                startPriceTrackingMenuItem, stopPriceTrackingMenuItem, mTab);
-        // TODO(crbug.com/1264685): Add menu visibility asserts here once the code is checked in.
-
-        // Price-tracking takes priority and the reading list option won't be shown.
-        MenuItem readingListMenuItemAdd = mock(MenuItem.class);
-        MenuItem readingListMenuItemDelete = mock(MenuItem.class);
-        mAppMenuPropertiesDelegate.updateReadingListMenuItemRow(
-                readingListMenuItemAdd, readingListMenuItemDelete, mTab);
-        verify(readingListMenuItemAdd).setVisible(false);
-        verify(readingListMenuItemDelete).setVisible(false);
-
-        PowerBookmarkUtils.setPriceTrackingEligibleForTesting(false);
-    }
-
-    @Test
     public void updateBookmarkMenuItemRow_NullTab() {
         setBookmarkItemRowEnabled(true);
 
@@ -742,44 +691,6 @@ public class AppMenuPropertiesDelegateUnitTest {
                 bookmarkMenuItemAdd, bookmarkMenuItemEdit, null);
         verify(bookmarkMenuItemAdd).setVisible(false);
         verify(bookmarkMenuItemEdit).setVisible(false);
-    }
-
-    @Test
-    public void updateReadingListMenuItemRow() {
-        setReadingListItemRowEnabled(true);
-        doReturn(true).when(mBookmarkModel).isEditBookmarksEnabled();
-
-        MenuItem readingListMenuItemAdd = mock(MenuItem.class);
-        MenuItem readingListMenuItemDelete = mock(MenuItem.class);
-        mAppMenuPropertiesDelegate.updateReadingListMenuItemRow(
-                readingListMenuItemAdd, readingListMenuItemDelete, mTab);
-        verify(readingListMenuItemAdd).setVisible(true);
-        verify(readingListMenuItemDelete).setEnabled(true);
-    }
-
-    @Test
-    public void updateReadingListMenuItemRow_NullTab() {
-        setReadingListItemRowEnabled(true);
-
-        MenuItem readingListMenuItemAdd = mock(MenuItem.class);
-        MenuItem readingListMenuItemDelete = mock(MenuItem.class);
-        mAppMenuPropertiesDelegate.updateReadingListMenuItemRow(
-                readingListMenuItemAdd, readingListMenuItemDelete, null);
-        verify(readingListMenuItemAdd).setVisible(false);
-        verify(readingListMenuItemDelete).setVisible(false);
-    }
-
-    @Test
-    public void updateReadingListMenuItemRow_NullBookmarkModel() {
-        setReadingListItemRowEnabled(true);
-        mBookmarkModelSupplier.set(null);
-
-        MenuItem readingListMenuItemAdd = mock(MenuItem.class);
-        MenuItem readingListMenuItemDelete = mock(MenuItem.class);
-        mAppMenuPropertiesDelegate.updateReadingListMenuItemRow(
-                readingListMenuItemAdd, readingListMenuItemDelete, null);
-        verify(readingListMenuItemAdd).setVisible(false);
-        verify(readingListMenuItemDelete).setVisible(false);
     }
 
     @Test

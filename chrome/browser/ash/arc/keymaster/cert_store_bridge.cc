@@ -38,6 +38,10 @@ void CertStoreBridge::UpdatePlaceholderKeysInKeymaster(
   }
 }
 
+bool CertStoreBridge::IsProxyBound() const {
+  return cert_store_proxy_.is_bound();
+}
+
 void CertStoreBridge::BindToInvitation(mojo::OutgoingInvitation* invitation) {
   VLOG(2) << "CertStoreBridge::BootstrapMojoConnection";
 

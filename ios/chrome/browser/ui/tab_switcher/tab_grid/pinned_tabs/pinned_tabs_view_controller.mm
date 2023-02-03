@@ -8,15 +8,18 @@
 #import "base/ios/block_types.h"
 #import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
+#import "base/metrics/histogram_functions.h"
 #import "base/notreached.h"
 #import "base/numerics/safe_conversions.h"
+#import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_handler.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_metrics.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_image_data_source.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_layout.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_context_menu_provider.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/grid_transition_layout.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher_item.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -74,6 +77,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   // Tracks if a drag action is in progress.
   BOOL _dragActionInProgress;
+
+  // YES if the dragged tab moved to a new index.
+  BOOL _dragEndAtNewIndex;
 }
 
 - (instancetype)init {
@@ -163,6 +169,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (void)dropAnimationDidEnd {
   _dropAnimationInProgress = NO;
   [self dragSessionEnabled:NO];
+}
+
+- (GridTransitionLayout*)transitionLayout {
+  // TODO(crbug.com/1406524): Implement this.
+  return nil;
 }
 
 #pragma mark - TabCollectionConsumer
@@ -362,11 +373,20 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (void)collectionView:(UICollectionView*)collectionView
     dragSessionWillBegin:(id<UIDragSession>)session {
+  _dragEndAtNewIndex = NO;
+  base::UmaHistogramEnumeration(kUmaPinnedViewDragDropTabs,
+                                DragDropTabs::kDragBegin);
+
   [self dragSessionEnabled:YES];
 }
 
 - (void)collectionView:(UICollectionView*)collectionView
      dragSessionDidEnd:(id<UIDragSession>)session {
+  DragDropTabs dragEvent = _dragEndAtNewIndex
+                               ? DragDropTabs::kDragEndAtNewIndex
+                               : DragDropTabs::kDragEndAtSameIndex;
+  base::UmaHistogramEnumeration(kUmaPinnedViewDragDropTabs, dragEvent);
+
   [self.dragDropHandler dragSessionDidEnd];
   [self dragSessionEnabled:NO];
 }
@@ -441,6 +461,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
       destinationIndex =
           base::checked_cast<NSUInteger>(coordinator.destinationIndexPath.item);
     }
+    _dragEndAtNewIndex = YES;
 
     NSIndexPath* dropIndexPath = CreateIndexPath(destinationIndex);
     // Drop synchronously if local object is available.
@@ -645,8 +666,15 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   _visible = visible;
   if (!visible) {
     self.view.hidden = YES;
-    [self.delegate pinnedTabsViewControllerDidHide];
   }
+
+  // Don't call the delegate if the pinned view is hidden after a tab grid page
+  // change.
+  if (!visible && _items.count > 0) {
+    return;
+  }
+
+  [self.delegate pinnedTabsViewControllerVisibilityDidChange:self];
 }
 
 // Hides `_emptyCollectionViewLabel` when the collection view is not empty.

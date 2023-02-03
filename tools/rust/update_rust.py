@@ -29,8 +29,7 @@ sys.path.append(
 
 # These fields are written by //tools/clang/scripts/upload_revision.py, and
 # should not be changed manually.
-RUST_REVISION_TAG = '2'
-RUST_REVISION = '20230117'
+RUST_REVISION = '7919ef0ec5776c72dace7fec1c68551a617505ad'
 RUST_SUB_REVISION = 1
 
 # Trunk on 2022-10-15.
@@ -38,6 +37,9 @@ RUST_SUB_REVISION = 1
 # The revision specified below should typically be the same as the
 # `crubit_revision` specified in the //DEPS file.  More details and roll
 # instructions can be found in tools/rust/README.md.
+#
+# TODO(danakj): This should be included in --print-rust-revision when we want
+# code to depend on using crubit rs_to_cc_bindings.
 CRUBIT_REVISION = 'f5cbdf4b54b0e6b9f63a4464a2c901c82e0f0209'
 CRUBIT_SUB_REVISION = 1
 
@@ -60,7 +62,7 @@ CRUBIT_SUB_REVISION = 1
 # TODO(lukasza): Include CRUBIT_REVISION and CRUBIT_SUB_REVISION once we
 # include Crubit binaries in the generated package.  See also a TODO comment
 # in BuildCrubit in package_rust.py.
-FALLBACK_REVISION = '20221209-1-llvmorg-16-init-13328-g110fe4f4-1'
+FALLBACK_REVISION = '7919ef0ec5776c72dace7fec1c68551a617505ad-1-llvmorg-16-init-17653-g39da55e8-2'
 
 # Hash of src/stage0.json, which itself contains the stage0 toolchain hashes.
 # We trust the Rust build system checks, but to ensure it is not tampered with
@@ -80,7 +82,7 @@ VERSION_STAMP_PATH = os.path.join(RUST_TOOLCHAIN_OUT_DIR, 'VERSION')
 def GetPackageVersionForBuild():
     from update import (CLANG_REVISION, CLANG_SUB_REVISION)
     return (f'{RUST_REVISION}-{RUST_SUB_REVISION}'
-            '-{CLANG_REVISION}-{CLANG_SUB_REVISION}')
+            f'-{CLANG_REVISION}-{CLANG_SUB_REVISION}')
 
 
 # Package version for download. Ideally this is the latest Clang+Rust roll,
@@ -98,8 +100,7 @@ def GetStampVersion():
     if os.path.exists(RUST_TOOLCHAIN_OUT_DIR):
         with open(VERSION_STAMP_PATH) as version_file:
             existing_stamp = version_file.readline().rstrip()
-        version_re = re.compile(
-            r'rustc [0-9.]+-nightly \([0-9a-f -]+\) \((.+?) chromium\)')
+        version_re = re.compile(r'rustc [0-9.]+ [0-9a-f]+ \((.+?) chromium\)')
         match = version_re.fullmatch(existing_stamp)
         if match is None:
             return None

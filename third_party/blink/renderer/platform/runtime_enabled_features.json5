@@ -122,7 +122,7 @@
     //
     // The default value of the base::Feature instance is:
     //  base::FEATURE_ENABLED_BY_DEFAULT if 'status' field is 'stable", and
-    //  base::FEATURE_DISABLED_BY_DEFAULT otheriwse.
+    //  base::FEATURE_DISABLED_BY_DEFAULT otherwise.
     // It can be overridden by 'base_feature_status' field.
     //
     // If the flag should be associated with a feature not in blink::features,
@@ -283,6 +283,13 @@
     },
     {
       name: "AllowContentInitiatedDataUrlNavigations",
+    },
+    {
+      // TODO(crbug.com/1393662): Remove this flag once Android supports
+      // creating discoverable credentials with the 'payment' extension.
+      name: "AllowDiscoverableCredentialsForSecurePaymentConfirmation",
+      base_feature: "AllowDiscoverableCredentialsForSecurePaymentConfirmation",
+      status: {"Android": "", "default": "stable"},
     },
     {
       name: "AndroidDownloadableFontsMatching",
@@ -654,7 +661,8 @@
       // Support for CSS Color Module Level 4
       // https://www.w3.org/TR/css-color-4/
       name: "CSSColor4",
-      status:  "experimental",
+      status:  "stable",
+      base_feature: "CSSColor4",
     },
     {
       name: "CSSColorContrast",
@@ -794,7 +802,7 @@
       //
       // https://csswg.sesse.net/css-nesting-1/
       name: "CSSNesting",
-      status: "experimental"
+      status: "stable"
     },
     {
       name: "CSSNewRootFontUnits",
@@ -905,9 +913,19 @@
       name: "CSSStyleQueries",
       status: "stable"
     },
+    {
+      name: "CSSSystemAccentColor",
+      status: "experimental",
+    },
     // Support for CSS Toggles, https://tabatkins.github.io/css-toggle/
     {
       name: "CSSToggles",
+      status: "experimental",
+    },
+    {
+      // Support for CSS top-layer property for being able to transition
+      // See: https://github.com/w3c/csswg-drafts/issues/8189
+      name: "CSSTopLayerForTransitions",
       status: "experimental",
     },
     {
@@ -954,6 +972,11 @@
     {
       name: "Database",
       public: true,
+      status: "stable",
+    },
+    {
+      name: "DateInputInlineBlock",
+      base_feature: "DateInputInlineBlock",
       status: "stable",
     },
     {
@@ -1070,6 +1093,8 @@
     {
       name: "DisableThirdPartySessionStoragePartitioningAfterGeneralPartitioning",
       origin_trial_feature_name: "DisableThirdPartySessionStoragePartitioningAfterGeneralPartitioning",
+      origin_trial_type: "deprecation",
+      origin_trial_allows_insecure: true,
       status: "experimental",
     },
     // This feature will represent the deprecation trial that allows first
@@ -1077,6 +1102,9 @@
     // on their site.
     {
       name: "DisableThirdPartyStoragePartitioning",
+      origin_trial_feature_name: "DisableThirdPartyStoragePartitioning",
+      origin_trial_type: "deprecation",
+      origin_trial_allows_insecure: true,
       status: "experimental",
       browser_process_read_write_access: true,
     },
@@ -1107,6 +1135,8 @@
     },
     {
       name: "DocumentPictureInPictureAPI",
+      origin_trial_feature_name: "DocumentPictureInPictureAPI",
+      origin_trial_os: ["win", "mac", "linux", "chromeos"],
       status: {
         "Android": "",
         "ChromeOS_Lacros": "",
@@ -1618,6 +1648,7 @@
     },
     {
       name: "KeyboardFocusableScrollers",
+      base_feature: "KeyboardFocusableScrollers",
       status: "experimental",
     },
     {
@@ -1637,6 +1668,11 @@
       base_feature: "LayoutMediaNGContainer",
     },
     {
+      name: "LayoutMediaNoInlineChildren",
+      base_feature: "LayoutMediaNoInlineChildren",
+      status: "stable",  // Since M112.
+    },
+    {
       // A kill-switch for a fix of crbug.com/1366268.
       name: "LayoutNGDelayScrollOffsetClamping",
       base_feature: "LayoutNGDelayScrollOffsetClamping",
@@ -1646,7 +1682,7 @@
       // crbug.com/1353190
       name: "LayoutNGNoCopyBack",
       depends_on: ["LayoutMediaNGContainer", "LayoutNGReplacedNoBoxSetters"],
-      status: "stable",
+      status: "test",
       base_feature: "LayoutNGNoCopyBack",
     },
     {
@@ -1757,6 +1793,11 @@
     {
       name: "MediaCaptureBackgroundBlur",
       status: "experimental",
+    },
+    {
+      name: "MediaCaptureConfigurationChange",
+      status: "experimental",
+      implied_by: ["MediaCaptureBackgroundBlur"],
     },
     // Set to reflect the MediaCastOverlayButton feature.
     {
@@ -1967,6 +2008,13 @@
     },
     // As above. Do not change this flag to stable, as it exists solely to
     // generate code used by the origin trials sample API implementation.
+    {
+      name: "OriginTrialsSampleAPIBrowserReadWrite",
+      origin_trial_feature_name: "FrobulateBrowserReadWrite",
+      browser_process_read_write_access: true,
+    },
+    // As above. Do not change this flag to stable, as it exists solely to
+    // generate code used by the origin trials sample API implementation.
     // TODO(yashard): Add tests for this feature.
     {
       name: "OriginTrialsSampleAPIDependent",
@@ -2083,7 +2131,6 @@
     {
       name: "PaymentInstruments",
       depends_on: ["PaymentApp"],
-      status: "stable",
     },
     {
       name: "PaymentMethodChangeEvent",
@@ -2424,12 +2471,6 @@
       base_feature: "SanitizerAPI",
     },
     {
-      name: "SanitizerAPIv0",
-      status: "stable",
-      implied_by: ["SanitizerAPI"],
-      base_feature: "SanitizerAPIv0",
-    },
-    {
       // https://wicg.github.io/webcomponents/proposals/Scoped-Custom-Element-Registries
       name: "ScopedCustomElementRegistry",
       status: "test",
@@ -2461,6 +2502,11 @@
     {
       name: "ScrollEndEvents",
       status: "experimental",
+    },
+    {
+      name: "ScrollOverlapOptimization",
+      status: "experimental",
+      base_feature: "ScrollOverlapOptimization",
     },
     {
       name: "ScrollTimeline",
@@ -2700,12 +2746,14 @@
       // Enabled when blink::features::kStorageAccessAPI is enabled.
       name: "StorageAccessAPI",
       status: "experimental",
+      base_feature: "StorageAccessAPI",
       implied_by: ["FirstPartySets"],
     },
     {
       name: "StorageAccessAPIForOriginExtension",
       public: true,
       status: "test",
+      depends_on: ["StorageAccessAPI"],
       base_feature: "StorageAccessAPIForOriginExtension",
     },
     {
@@ -2721,7 +2769,7 @@
     },
     {
       name: "StreamingDeclarativeShadowDOM",
-      status: "experimental",
+      status: "stable",
       base_feature: "StreamingDeclarativeShadowDOM",
     },
     {
@@ -2813,6 +2861,11 @@
     {
       name: "TextFragmentTapOpensContextMenu",
       status: {"Android": "stable"},
+    },
+    {
+      name: "ThirdPartyCookiesUserBypass",
+      status: "experimental",
+      browser_process_read_write_access: true,
     },
     // To enable the deprecation trial, use the
     // `DisableThirdPartyStoragePartitioning` feature instead.
@@ -3005,6 +3058,7 @@
       // View transitions.
       // See https://www.w3.org/TR/css-view-transitions-1/
       name: "ViewTransition",
+      status: "stable",
       base_feature: "ViewTransition",
       implied_by: ["ViewTransitionOnNavigation"],
     },

@@ -167,11 +167,15 @@ class WPTResultsProcessor:
         _log.info('Recreated artifacts directory (%s)', self.artifacts_dir)
 
     def _copy_results_viewer(self):
-        source = self.path_finder.path_from_blink_tools(
-            'blinkpy', 'web_tests', 'results.html')
-        destination = self.fs.join(self.artifacts_dir, 'results.html')
-        self.fs.copyfile(source, destination)
-        _log.info('Copied results viewer (%s -> %s)', source, destination)
+        files_to_copy = ['results.html', 'results.html.version']
+        for file in files_to_copy:
+            source = self.path_finder.path_from_blink_tools(
+                'blinkpy', 'web_tests', file)
+            destination = self.fs.join(self.artifacts_dir, file)
+            self.fs.copyfile(source, destination)
+            if file == 'results.html':
+                _log.info('Copied results viewer (%s -> %s)', source,
+                          destination)
 
     def process_wpt_results(self,
                             raw_results_path,
@@ -309,11 +313,11 @@ class WPTResultsProcessor:
         if not test_file_subpath:
             raise ValueError('test ID did not resolve to a file')
         manifest = manifestexpected.get_manifest(metadata_root,
-                                                 test_file_subpath, '/',
+                                                 test_file_subpath,
                                                  self.run_info)
         if not manifest:
             raise ValueError('unable to read ".ini" file from disk')
-        test_manifest = manifest.get_test('/' + test_name)
+        test_manifest = manifest.get_test(test_name.rpartition('/')[-1])
         if not test_manifest:
             raise ValueError('test ID does not exist')
         update_with_static_expectations(test_manifest)

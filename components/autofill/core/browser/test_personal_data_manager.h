@@ -15,7 +15,8 @@
 #include "components/autofill/core/browser/data_model/iban.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/test_inmemory_strike_database.h"
+#include "components/autofill/core/browser/strike_databases/autofill_profile_migration_strike_database.h"
+#include "components/autofill/core/browser/strike_databases/test_inmemory_strike_database.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -76,6 +77,8 @@ class TestPersonalDataManager : public PersonalDataManager {
   bool IsDataLoaded() const override;
   bool IsSyncFeatureEnabled() const override;
   CoreAccountInfo GetAccountInfoForPaymentsServer() const override;
+  const AutofillProfileMigrationStrikeDatabase*
+  GetProfileMigrationStrikeDatabase() const override;
   const AutofillProfileSaveStrikeDatabase* GetProfileSaveStrikeDatabase()
       const override;
   const AutofillProfileUpdateStrikeDatabase* GetProfileUpdateStrikeDatabase()
@@ -179,6 +182,8 @@ class TestPersonalDataManager : public PersonalDataManager {
   CoreAccountInfo account_info_;
 
   TestInMemoryStrikeDatabase inmemory_strike_database_;
+  AutofillProfileMigrationStrikeDatabase
+      inmemory_profile_migration_strike_database_{&inmemory_strike_database_};
   AutofillProfileSaveStrikeDatabase inmemory_profile_save_strike_database_{
       &inmemory_strike_database_};
   AutofillProfileUpdateStrikeDatabase inmemory_profile_update_strike_database_{

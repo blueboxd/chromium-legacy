@@ -10,6 +10,7 @@ import {LocalStorage} from '../../common/local_storage.js';
 import {BridgeConstants} from '../common/bridge_constants.js';
 import {BridgeHelper} from '../common/bridge_helper.js';
 import {Msgs} from '../common/msgs.js';
+import {SettingsManager} from '../common/settings_manager.js';
 import {Personality} from '../common/tts_types.js';
 
 import {ChromeVox} from './chromevox.js';
@@ -48,7 +49,6 @@ export class ChromeVoxPrefs {
         LocalStorage.set(pref, ChromeVoxPrefs.DEFAULT_PREFS[pref]);
       }
     }
-    ChromeVoxPrefs.instance.enableOrDisableLogUrlWatcher_();
 
     BridgeHelper.registerHandler(
         TARGET, Action.GET_PREFS, () => ChromeVoxPrefs.instance.getPrefs());
@@ -65,12 +65,15 @@ export class ChromeVoxPrefs {
   /**
    * Get the prefs (not including keys).
    * @return {Object<string, *>} A map of all prefs except the key map from
-   *     LocalStorage.
+   *     LocalStorage and SettingsManager.
    */
   getPrefs() {
     const prefs = {};
     for (const pref in ChromeVoxPrefs.DEFAULT_PREFS) {
       prefs[pref] = LocalStorage.get(pref);
+    }
+    for (const pref of SettingsManager.PREFS) {
+      prefs[pref] = SettingsManager.get(pref);
     }
     return prefs;
   }
@@ -81,6 +84,10 @@ export class ChromeVoxPrefs {
    * @param {Object|string|number|boolean} value The new value of the pref.
    */
   setPref(key, value) {
+    if (SettingsManager.PREFS.includes(key)) {
+      SettingsManager.set(key, value);
+      return;
+    }
     if (LocalStorage.get(key) !== value) {
       LocalStorage.set(key, value);
     }
@@ -92,7 +99,7 @@ export class ChromeVoxPrefs {
    * @param {boolean} value The new value of the pref.
    */
   setLoggingPrefs(key, value) {
-    LocalStorage.set(key, value);
+    SettingsManager.set(key, value);
     if (key === 'enableSpeechLogging') {
       TtsBackground.console.setEnabled(value);
     } else if (key === 'enableEventStreamLogging') {
@@ -143,7 +150,7 @@ export class ChromeVoxPrefs {
 
   enableOrDisableLogUrlWatcher_() {
     for (const pref of Object.values(ChromeVoxPrefs.loggingPrefs)) {
-      if (LocalStorage.get(pref)) {
+      if (SettingsManager.getBoolean(pref)) {
         LogUrlWatcher.create();
         return;
       }
@@ -154,40 +161,17 @@ export class ChromeVoxPrefs {
 
 
 /**
- * The default value of all preferences except the key map.
+ * The default value of all preferences in LocalStorage except the key map.
+ *
+ * TODO(b/262786141): Move each of these to SettingsManager.
  * @const
  * @type {Object<Object>}
  */
 ChromeVoxPrefs.DEFAULT_PREFS = {
-  'announceDownloadNotifications': true,
-  'announceRichTextAttributes': true,
-  'audioStrategy': 'audioNormal',
-  'autoRead': false,
   'brailleCaptions': false,
-  'brailleSideBySide': true,
-  'brailleTableType': 'brailleTable8',
-  'brailleTable6': 'en-UEB-g2',
-  'brailleTable8': 'en-nabcc',
-  'capitalStrategy': 'increasePitch',
-  'cvoxKey': '',
-  'enableBrailleLogging': false,
-  'enableEarconLogging': false,
-  'enableSpeechLogging': false,
   'earcons': true,
-  'enableEventStreamLogging': false,
-  'focusFollowsMouse': false,
-  'granularity': undefined,
-  'languageSwitching': false,
-  'menuBrailleCommands': false,
-  'numberReadingStyle': 'asWords',
-  'position': {},
-  'smartStickyMode': true,
-  'speakTextUnderMouse': false,
   'sticky': false,
   'typingEcho': 0,
-  'useClassic': false,
-  'usePitchChanges': true,
-  'useVerboseMode': true,
 
   // eventStreamFilters
   'activedescendantchanged': true,
@@ -216,7 +200,7 @@ ChromeVoxPrefs.DEFAULT_PREFS = {
   'mediaStartedPlaying': true,
   'mediaStoppedPlaying': true,
   'menuEnd': true,
-  'menuListItemSelected': true,
+  'menuItemSelected': true,
   'menuListValueChanged': true,
   'menuPopupEnd': true,
   'menuPopupStart': true,

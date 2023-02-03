@@ -149,8 +149,8 @@ Refer to README.md for content description and update process.
  <item id="omnibox_documentsuggest" added_in_milestone="69" content_hash_code="07917541" os_list="linux,windows,chromeos,android" file_path="components/omnibox/browser/document_suggestions_service.cc" />
  <item id="omnibox_navigation_observer" added_in_milestone="62" content_hash_code="043a7a2f" os_list="linux,windows,chromeos" file_path="chrome/browser/ui/omnibox/chrome_omnibox_navigation_observer.cc" />
  <item id="omnibox_result_change" added_in_milestone="62" content_hash_code="017a7557" os_list="linux,windows,chromeos,android" file_path="chrome/browser/bitmap_fetcher/bitmap_fetcher_service.cc" />
- <item id="omnibox_suggest" added_in_milestone="62" content_hash_code="0524cc7e" os_list="linux,windows,chromeos,android" file_path="components/omnibox/browser/search_provider.cc" />
- <item id="omnibox_suggest_deletion" added_in_milestone="62" content_hash_code="017d302e" os_list="linux,windows,chromeos,android" file_path="components/omnibox/browser/base_search_provider.cc" />
+ <item id="omnibox_suggest" added_in_milestone="62" content_hash_code="0524cc7e" os_list="linux,windows,chromeos,android" file_path="components/omnibox/browser/remote_suggestions_service.cc" />
+ <item id="omnibox_suggest_deletion" added_in_milestone="62" content_hash_code="017d302e" os_list="linux,windows,chromeos,android" file_path="components/omnibox/browser/remote_suggestions_service.cc" />
  <item id="omnibox_zerosuggest" added_in_milestone="62" content_hash_code="071e32e9" os_list="linux,windows,chromeos,android" file_path="components/omnibox/browser/remote_suggestions_service.cc" />
  <item id="one_google_bar_service" added_in_milestone="62" content_hash_code="02c5f314" os_list="linux,windows,chromeos" file_path="chrome/browser/new_tab_page/one_google_bar/one_google_bar_loader_impl.cc" />
  <item id="open_search" added_in_milestone="62" content_hash_code="04f2de86" os_list="linux,windows,chromeos,android" file_path="components/search_engines/template_url_fetcher.cc" />
@@ -284,7 +284,7 @@ Refer to README.md for content description and update process.
  <item id="image_downloader" added_in_milestone="98" content_hash_code="05b52680" os_list="chromeos" file_path="ash/assistant/assistant_controller_impl.cc" />
  <item id="fast_pair_footprints_request" added_in_milestone="102" type="partial" second_id="oauth2_api_call_flow" content_hash_code="01d3d58d" os_list="chromeos" semantics_fields="1,2,3,4,5" policy_fields="-1,3,4" file_path="ash/quick_pair/repository/fast_pair/footprints_fetcher_impl.cc" />
  <item id="kiosk_app_icon" added_in_milestone="98" content_hash_code="04f02fef" os_list="chromeos" file_path="chrome/browser/ash/app_mode/web_app/web_kiosk_app_data.cc" />
- <item id="arc_auth_code_fetcher" added_in_milestone="98" content_hash_code="057519ca" os_list="chromeos" file_path="chrome/browser/ash/arc/auth/arc_background_auth_code_fetcher.cc" />
+ <item id="arc_auth_code_fetcher" added_in_milestone="98" content_hash_code="021af0fe" os_list="chromeos" file_path="chrome/browser/ash/arc/auth/arc_background_auth_code_fetcher.cc" />
  <item id="customization_wallpaper_downloader" added_in_milestone="98" content_hash_code="03ee8364" os_list="chromeos" file_path="chrome/browser/ash/customization/customization_wallpaper_downloader.cc" />
  <item id="ime_url_downloader" added_in_milestone="98" content_hash_code="00f13105" os_list="chromeos" file_path="chrome/browser/ash/input_method/ime_service_connector.cc" />
  <item id="chromebook_mail_api" added_in_milestone="98" content_hash_code="01bfcf72" os_list="chromeos" file_path="chrome/browser/ash/login/marketing_backend_connector.cc" />
@@ -300,7 +300,6 @@ Refer to README.md for content description and update process.
  <item id="launcher_item_suggest" added_in_milestone="98" content_hash_code="04a4041e" os_list="chromeos" file_path="chrome/browser/ash/file_suggest/item_suggest_cache.cc" />
  <item id="ambient_client" added_in_milestone="98" content_hash_code="062d821f" os_list="chromeos" file_path="chrome/browser/ui/ash/ambient/ambient_client_impl.cc" />
  <item id="calendar_get_events" added_in_milestone="98" content_hash_code="0603f52a" os_list="chromeos" file_path="chrome/browser/ui/ash/calendar/calendar_keyed_service.cc" />
- <item id="side_search_availability_test" added_in_milestone="98" content_hash_code="04b1ffa5" os_list="chromeos,linux,windows" file_path="chrome/browser/ui/side_search/side_search_tab_contents_helper.cc" />
  <item id="edu_account_login_profile_image_fetcher" added_in_milestone="98" content_hash_code="0689301c" os_list="chromeos" file_path="chrome/browser/ui/webui/ash/edu_account_login_handler.cc" />
  <item id="management_ui_customer_logo" added_in_milestone="98" content_hash_code="01a17a58" os_list="chromeos" file_path="chrome/browser/ui/webui/management/management_ui_handler_chromeos.cc" />
  <item id="gaia_reauth_token_fetcher" added_in_milestone="98" content_hash_code="04ff463d" os_list="chromeos" file_path="chrome/browser/ash/login/gaia_reauth_token_fetcher.cc" />
@@ -327,7 +326,7 @@ Refer to README.md for content description and update process.
  <item id="wallpaper_backdrop_images_info" added_in_milestone="99" content_hash_code="0010428c" os_list="chromeos" file_path="chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.cc" />
  <item id="wallpaper_backdrop_surprise_me_image" added_in_milestone="99" content_hash_code="0383b9db" os_list="chromeos" file_path="chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.cc" />
  <item id="nearby_connections_wifi_lan" added_in_milestone="99" content_hash_code="06b30010" os_list="chromeos" file_path="chrome/services/sharing/nearby/platform/wifi_lan_medium.cc" />
- <item id="timezone_lookup" added_in_milestone="98" content_hash_code="01e64e71" os_list="chromeos" file_path="chromeos/ash/components/timezone/timezone_request.cc" />
+ <item id="timezone_lookup" added_in_milestone="98" content_hash_code="0477d6fe" os_list="chromeos" file_path="chromeos/ash/components/timezone/timezone_request.cc" />
  <item id="oma_download_handler_android" added_in_milestone="99" content_hash_code="03226fe2" os_list="android" file_path="chrome/android/java/src/org/chromium/chrome/browser/download/OMADownloadHandler.java" />
  <item id="wallpaper_google_photos_albums" added_in_milestone="99" content_hash_code="02f721fe" os_list="chromeos" file_path="chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.cc" />
  <item id="webapk_create" added_in_milestone="99" content_hash_code="07b8fd35" os_list="android" file_path="chrome/browser/android/webapk/webapk_installer.cc" />
@@ -362,7 +361,7 @@ Refer to README.md for content description and update process.
  <item id="pending_beacon_api" added_in_milestone="105" content_hash_code="02288864" os_list="linux,windows,android,chromeos" file_path="content/browser/renderer_host/pending_beacon_service.cc" />
  <item id="printing_server_printers_query" added_in_milestone="106" content_hash_code="06f4759c" os_list="chromeos" file_path="chrome/browser/ash/printing/server_printers_fetcher.cc" />
  <item id="download_bubble_retry_download" added_in_milestone="105" content_hash_code="000b1439" os_list="linux,windows,chromeos" file_path="chrome/browser/download/bubble/download_bubble_controller.cc" />
- <item id="wilco_dtc_supportd" added_in_milestone="108" content_hash_code="02299cc6" os_list="chromeos" file_path="chrome/browser/ash/wilco_dtc_supportd/wilco_dtc_supportd_web_request_service.cc" />
+ <item id="wilco_dtc_supportd" added_in_milestone="108" content_hash_code="01050d07" os_list="chromeos" file_path="chrome/browser/ash/wilco_dtc_supportd/wilco_dtc_supportd_web_request_service.cc" />
  <item id="quick_answers_loader" added_in_milestone="105" content_hash_code="070b3239" os_list="chromeos" file_path="chromeos/components/quick_answers/result_loader.cc" />
  <item id="chrome_search_suggest_service" added_in_milestone="105" content_hash_code="04d973c6" os_list="linux,windows,android,chromeos" file_path="components/search/start_suggest_service.cc" />
  <item id="coupon_persisted_tab_data" added_in_milestone="105" content_hash_code="006dcd97" os_list="android" file_path="chrome/browser/tab/java/src/org/chromium/chrome/browser/tab/state/CouponPersistedTabData.java" />
@@ -399,8 +398,8 @@ Refer to README.md for content description and update process.
  <item id="customization_document" added_in_milestone="110" content_hash_code="007a3dda" os_list="chromeos" file_path="chrome/browser/ash/customization/customization_document.cc" />
  <item id="nearby_webrtc_connection" added_in_milestone="110" content_hash_code="070e1f72" os_list="chromeos" file_path="chrome/services/sharing/nearby/platform/webrtc.cc" />
  <item id="wallpaper_online_downloader" added_in_milestone="110" content_hash_code="060d5790" os_list="chromeos" file_path="ash/wallpaper/wallpaper_controller_impl.cc" />
- <item id="fenced_frame_reporting_beacon" added_in_milestone="110" content_hash_code="03cebf59" os_list="linux,windows,android,chromeos" file_path="content/browser/renderer_host/render_frame_host_impl.cc" />
- <item id="password_sync_token_fetcher" added_in_milestone="110" content_hash_code="0451c1ff" os_list="chromeos" file_path="chrome/browser/ash/login/saml/password_sync_token_fetcher.cc" />
+ <item id="fenced_frame_reporting_beacon" added_in_milestone="110" content_hash_code="03fd07f7" os_list="linux,windows,android,chromeos" file_path="content/browser/fenced_frame/fenced_frame_reporter.cc" />
+ <item id="password_sync_token_fetcher" added_in_milestone="110" content_hash_code="0268c983" os_list="chromeos" file_path="chrome/browser/ash/login/saml/password_sync_token_fetcher.cc" />
  <item id="projector_xhr_loader" added_in_milestone="110" content_hash_code="071c4ac5" os_list="chromeos" file_path="ash/webui/projector_app/projector_xhr_sender.cc" />
  <item id="cloud_speech_recognition" added_in_milestone="110" content_hash_code="00d56fd8" os_list="linux,windows,chromeos" file_path="components/live_caption/live_translate_controller.cc" />
  <item id="bruschetta_installer_download" added_in_milestone="110" content_hash_code="073f0263" os_list="chromeos" file_path="chrome/browser/ash/bruschetta/bruschetta_installer_impl.cc" />
@@ -421,5 +420,5 @@ Refer to README.md for content description and update process.
  <item id="network_portal_detector" added_in_milestone="111" content_hash_code="023cdc21" os_list="chromeos" file_path="chrome/browser/ash/net/network_portal_detector_impl.cc" />
  <item id="safe_browsing_hashprefix_realtime_lookup" added_in_milestone="111" content_hash_code="07b1dc5e" os_list="linux,windows,chromeos,android" file_path="components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_service.cc" />
  <item id="android_feedback_connectivity_checker" added_in_milestone="111" content_hash_code="0011753d" os_list="android" file_path="chrome/android/java/src/org/chromium/chrome/browser/feedback/ConnectivityChecker.java" />
- <item id="printer_config_fetch" added_in_milestone="111" content_hash_code="078c2ad0" os_list="chromeos" file_path="chromeos/printing/printer_config_cache.cc" />
+ <item id="printer_config_fetch" added_in_milestone="111" content_hash_code="042f8883" os_list="chromeos" file_path="chromeos/printing/printer_config_cache.cc" />
 </annotations>

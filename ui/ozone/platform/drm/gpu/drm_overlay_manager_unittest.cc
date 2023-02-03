@@ -11,6 +11,7 @@
 #include "ui/ozone/public/overlay_surface_candidate.h"
 
 namespace ui {
+
 namespace {
 
 constexpr gfx::AcceleratedWidget kPrimaryWidget = 1;
@@ -40,8 +41,8 @@ class TestDrmOverlayManager : public DrmOverlayManager {
   }
   void GetHardwareCapabilities(
       gfx::AcceleratedWidget widget,
-      ui::HardwareCapabilitiesCallback& receive_callback) override {
-    ui::HardwareCapabilities hardware_capabilities;
+      HardwareCapabilitiesCallback& receive_callback) override {
+    HardwareCapabilities hardware_capabilities;
     hardware_capabilities.num_overlay_capable_planes = num_planes_response_;
     // Immediately respond to the callback.
     receive_callback.Run(hardware_capabilities);
@@ -55,7 +56,7 @@ class TestDrmOverlayManager : public DrmOverlayManager {
 
 OverlaySurfaceCandidate CreateCandidate(const gfx::Rect& rect,
                                         int plane_z_order) {
-  ui::OverlaySurfaceCandidate candidate;
+  OverlaySurfaceCandidate candidate;
   candidate.transform = gfx::OVERLAY_TRANSFORM_NONE;
   candidate.format = gfx::BufferFormat::YUV_420_BIPLANAR;
   candidate.plane_z_order = plane_z_order;

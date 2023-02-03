@@ -62,7 +62,6 @@
 #import "ios/chrome/browser/ui/main/layout_guide_util.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
-#import "ios/chrome/browser/ui/main/scene_state_observer.h"
 #import "ios/chrome/browser/ui/ntp/discover_feed_constants.h"
 #import "ios/chrome/browser/ui/ntp/discover_feed_preview_delegate.h"
 #import "ios/chrome/browser/ui/ntp/feed_control_delegate.h"
@@ -91,6 +90,7 @@
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/util_swift.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/ui_utils/ui_utils_api.h"
@@ -103,6 +103,16 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+bool IsNTPActiveForWebState(web::WebState* web_state) {
+  if (!web_state) {
+    return false;
+  }
+  NewTabPageTabHelper* helper = NewTabPageTabHelper::FromWebState(web_state);
+  return helper && helper->IsActive();
+}
+}  // namespace
 
 @interface NewTabPageCoordinator () <AppStateObserver,
                                      BooleanObserver,
@@ -133,6 +143,9 @@
 
   // Observes changes in the DiscoverFeed.
   std::unique_ptr<DiscoverFeedObserverBridge> _discoverFeedObserverBridge;
+
+  // Bridges C++ WebStateListObserver methods to this NewTabPageMediator.
+  std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
 }
 
 // Coordinator for the ContentSuggestions.
@@ -157,7 +170,8 @@
 
 // Tracks the visibility of the NTP to report NTP usage metrics.
 // True if the NTP view is currently displayed to the user.
-@property(nonatomic, assign) BOOL visible;
+// Redefined to readwrite.
+@property(nonatomic, assign, readwrite) BOOL visible;
 
 // Whether the view is new tab view is currently presented (possibly in
 // background). Used to report NTP usage metrics.
@@ -226,6 +240,9 @@
 // Currently selected feed. Redefined to readwrite.
 @property(nonatomic, assign, readwrite) FeedType selectedFeed;
 
+// The Webstate associated with this coordinator.
+@property(nonatomic, assign) web::WebState* webState;
+
 @end
 
 @implementation NewTabPageCoordinator
@@ -251,10 +268,22 @@
   }
 
   DCHECK(self.browser);
-  DCHECK(self.webState);
   DCHECK(self.toolbarDelegate);
   DCHECK(!self.contentSuggestionsCoordinator);
 
+  self.webState = self.browser->GetWebStateList()->GetActiveWebState();
+  DCHECK(self.webState);
+
+  // Start observing WebStateList changes.
+  _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
+  self.browser->GetWebStateList()->AddObserver(_webStateListObserver.get());
+
+  // Start observing SceneState changes.
+  SceneState* sceneState =
+      SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
+  [sceneState addObserver:self];
+  self.sceneInForeground =
+      sceneState.activationLevel >= SceneActivationLevelForegroundInactive;
   // Configures incognito NTP if user is in incognito mode.
   if (self.browser->GetBrowserState()->IsOffTheRecord()) {
     DCHECK(!self.incognitoViewController);
@@ -263,12 +292,24 @@
     self.incognitoViewController =
         [[IncognitoViewController alloc] initWithUrlLoader:URLLoader];
     self.started = YES;
+    [self ntpDidChangeVisibility:YES];
     return;
   }
+
+  // NOTE: anything that executes below WILL NOT execute for OffTheRecord
+  // browsers!
 
   [self initializeServices];
   [self initializeNTPComponents];
   [self startObservers];
+
+  // Do not focus on omnibox for voice over if there are other screens to
+  // show.
+  AppState* appState = sceneState.appState;
+  [appState addObserver:self];
+  if (appState.initStage < InitStageFinal) {
+    self.NTPViewController.focusAccessibilityOmniboxWhenViewAppears = NO;
+  }
 
   // Updates feed asynchronously if the account is subject to parental controls.
   [self updateFeedVisibilityForSupervision];
@@ -284,23 +325,36 @@
   [self configureNTPViewController];
 
   self.started = YES;
+  [self ntpDidChangeVisibility:YES];
 }
 
 - (void)stop {
   if (!self.started)
     return;
 
-  if (self.browser->GetBrowserState()->IsOffTheRecord()) {
-    self.incognitoViewController = nil;
-    self.started = NO;
-    return;
-  }
-  self.viewPresented = NO;
-  [self updateVisible];
+  self.browser->GetWebStateList()->RemoveObserver(_webStateListObserver.get());
+  _webStateListObserver.reset();
+  _webState = nullptr;
 
   SceneState* sceneState =
       SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
   [sceneState removeObserver:self];
+
+  if (self.browser->GetBrowserState()->IsOffTheRecord()) {
+    self.incognitoViewController = nil;
+    self.started = NO;
+    self.viewPresented = NO;
+    [self updateVisible];
+    return;
+  }
+
+  // NOTE: anything that executes below WILL NOT execute for OffTheRecord
+  // browsers!
+
+  [sceneState.appState removeObserver:self];
+
+  self.viewPresented = NO;
+  [self updateVisible];
 
   [self.feedManagementCoordinator stop];
   self.feedManagementCoordinator = nil;
@@ -355,6 +409,20 @@
 }
 
 #pragma mark - Public
+
+- (void)stopIfNeeded {
+  WebStateList* webStateList = self.browser->GetWebStateList();
+  for (int i = 0; i < webStateList->count(); i++) {
+    NewTabPageTabHelper* iterNtpHelper =
+        NewTabPageTabHelper::FromWebState(webStateList->GetWebStateAt(i));
+    if (iterNtpHelper->IsActive()) {
+      return;
+    }
+  }
+
+  // No active NTPs were found.
+  [self stop];
+}
 
 - (void)stopScrolling {
   if (!self.contentSuggestionsCoordinator) {
@@ -421,50 +489,21 @@
   }
   // When the visible feed has been updated, recalculate the minimum NTP height.
   if (feedType == self.selectedFeed) {
-    [self.NTPViewController updateFeedInsetsForMinimumHeight];
-    [self.NTPViewController updateStickyElements];
+    [self.NTPViewController feedLayoutDidEndUpdates];
   }
 }
 
-- (void)ntpDidChangeVisibility:(BOOL)visible {
-  if (!self.browser->GetBrowserState()->IsOffTheRecord()) {
-    [self updateStartForVisibilityChange:visible];
-    if (visible && self.started) {
-      if ([self isFollowingFeedAvailable]) {
-        self.NTPViewController.shouldScrollIntoFeed = self.shouldScrollIntoFeed;
-        self.shouldScrollIntoFeed = NO;
-        // Reassign the sort type in case it changed in another tab.
-        self.feedHeaderViewController.followingFeedSortType =
-            self.followingFeedSortType;
-        // Update the header so that it's synced with the currently selected
-        // feed, which could have been changed when a new web state was
-        // inserted.
-        [self.feedHeaderViewController updateForSelectedFeed];
-        self.feedMetricsRecorder.feedControlDelegate = self;
-        self.feedMetricsRecorder.followDelegate = self;
-      }
-    }
-    if (!visible) {
-      // Unfocus omnibox, to prevent it from lingering when it should be
-      // dismissed (for example, when navigating away or when changing feed
-      // visibility). Do this after the MVC classes are deallocated so no reset
-      // animations are fired in response to this cancel.
-      id<OmniboxCommands> omniboxCommandHandler = HandlerForProtocol(
-          self.browser->GetCommandDispatcher(), OmniboxCommands);
-      [omniboxCommandHandler cancelOmniboxEdit];
-    }
-    // Check if feed is visible before reporting NTP visibility as the feed
-    // needs to be visible in order to use for metrics.
-    // TODO(crbug.com/1373650) Move isFeedVisible check to the metrics recorder
-    if (IsGoodVisitsMetricEnabled()) {
-      if (self.started && [self isFeedVisible]) {
-        [self.feedMetricsRecorder recordNTPDidChangeVisibility:visible];
-      }
-    }
+- (void)didNavigateToNTP {
+  if (self.started) {
+    self.webState = self.browser->GetWebStateList()->GetActiveWebState();
+    [self ntpDidChangeVisibility:YES];
   }
+}
 
-  self.viewPresented = visible;
-  [self updateVisible];
+- (void)didNavigateAwayFromNTP {
+  [self ntpDidChangeVisibility:NO];
+  self.webState = nullptr;
+  [self stopIfNeeded];
 }
 
 #pragma mark - Setters
@@ -476,15 +515,6 @@
   // Tell Metrics Recorder the feed has changed.
   [self.feedMetricsRecorder recordFeedTypeChangedFromFeed:_selectedFeed];
   _selectedFeed = selectedFeed;
-}
-
-- (void)setWebState:(web::WebState*)webState {
-  if (_webState == webState) {
-    return;
-  }
-  self.contentSuggestionsCoordinator.webState = webState;
-  self.ntpMediator.webState = webState;
-  _webState = webState;
 }
 
 #pragma mark - Initializers
@@ -537,21 +567,6 @@
   // Start observing DiscoverFeedService.
   _discoverFeedObserverBridge = std::make_unique<DiscoverFeedObserverBridge>(
       self, self.discoverFeedService);
-
-  SceneState* sceneState =
-      SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
-  [sceneState addObserver:self];
-  self.sceneInForeground =
-      sceneState.activationLevel >= SceneActivationLevelForegroundInactive;
-
-  AppState* appState = sceneState.appState;
-  [appState addObserver:self];
-
-  // Do not focus on omnibox for voice over if there are other screens to
-  // show.
-  if (appState.initStage < InitStageFinal) {
-    self.NTPViewController.focusAccessibilityOmniboxWhenViewAppears = NO;
-  }
 }
 
 // Creates all the NTP components.
@@ -962,11 +977,6 @@
   [self updateFeedLayout];
 }
 
-- (void)returnToRecentTabWasAdded {
-  [self updateFeedLayout];
-  [self setContentOffsetToTop];
-}
-
 #pragma mark - FeedManagementNavigationDelegate
 
 - (void)handleNavigateToActivity {
@@ -1044,6 +1054,12 @@
   [fakeboxFocuserHandler onFakeboxBlur];
 }
 
+- (void)focusOmnibox {
+  id<FakeboxFocuser> fakeboxFocuserHandler =
+      HandlerForProtocol(self.browser->GetCommandDispatcher(), FakeboxFocuser);
+  [fakeboxFocuserHandler fakeboxFocused];
+}
+
 #pragma mark - NewTabPageDelegate
 
 - (void)updateFeedLayout {
@@ -1052,6 +1068,9 @@
   if (!self.started) {
     return;
   }
+  // TODO(crbug.com/1406940): Investigate why this order is correct. Intuition
+  // would be that the layout update should happen before telling UIKit to
+  // relayout.
   [self.containedViewController.view setNeedsLayout];
   [self.containedViewController.view layoutIfNeeded];
   [self.NTPViewController updateNTPLayout];
@@ -1259,6 +1278,29 @@
     transitionedToActivationLevel:(SceneActivationLevel)level {
   self.sceneInForeground = level >= SceneActivationLevelForegroundInactive;
   [self updateVisible];
+}
+
+#pragma mark - WebStateListObserving methods
+
+- (void)webStateList:(WebStateList*)webStateList
+    didChangeActiveWebState:(web::WebState*)newWebState
+                oldWebState:(web::WebState*)oldWebState
+                    atIndex:(int)atIndex
+                     reason:(ActiveWebStateChangeReason)reason {
+  if (self.webState == newWebState) {
+    return;
+  }
+
+  if (IsNTPActiveForWebState(self.webState)) {
+    [self ntpDidChangeVisibility:NO];
+  }
+
+  bool active = IsNTPActiveForWebState(newWebState);
+  self.webState = active ? newWebState : nullptr;
+
+  if (active) {
+    [self ntpDidChangeVisibility:YES];
+  }
 }
 
 #pragma mark - Private
@@ -1526,6 +1568,66 @@
   [self updateNTPForFeed];
   [self setContentOffsetToTop];
   [self.feedHeaderViewController updateForFeedVisibilityChanged];
+}
+
+// Private setter for the `webState` property.
+- (void)setWebState:(web::WebState*)webState {
+  if (_webState == webState) {
+    return;
+  }
+
+  _webState = webState;
+  self.ntpMediator.webState = _webState;
+  self.contentSuggestionsCoordinator.webState = _webState;
+}
+
+// Called when the NTP changes visibility, either when the user navigates to
+// or away from the NTP, or when the active WebState changes.
+- (void)ntpDidChangeVisibility:(BOOL)visible {
+  DCHECK(self.started);
+  DCHECK(self.webState);
+
+  if (!self.browser->GetBrowserState()->IsOffTheRecord()) {
+    [self updateStartForVisibilityChange:visible];
+
+    if (visible) {
+      if ([self isFollowingFeedAvailable]) {
+        self.NTPViewController.shouldScrollIntoFeed = self.shouldScrollIntoFeed;
+        // Reassign the sort type in case it changed in another tab.
+        self.feedHeaderViewController.followingFeedSortType =
+            self.followingFeedSortType;
+        // Update the header so that it's synced with the currently selected
+        // feed, which could have been changed when a new web state was
+        // inserted.
+        [self.feedHeaderViewController updateForSelectedFeed];
+        self.feedMetricsRecorder.feedControlDelegate = self;
+        self.feedMetricsRecorder.followDelegate = self;
+      }
+      NewTabPageTabHelper* helper =
+          NewTabPageTabHelper::FromWebState(self.webState);
+      self.shouldScrollIntoFeed = helper->GetNextNTPScrolledToFeed();
+      [self selectFeedType:helper->GetNextNTPFeedType()];
+    } else {
+      // Unfocus omnibox, to prevent it from lingering when it should be
+      // dismissed (for example, when navigating away or when changing feed
+      // visibility). Do this after the MVC classes are deallocated so no reset
+      // animations are fired in response to this cancel.
+      id<OmniboxCommands> omniboxCommandHandler = HandlerForProtocol(
+          self.browser->GetCommandDispatcher(), OmniboxCommands);
+      [omniboxCommandHandler cancelOmniboxEdit];
+    }
+    // Check if feed is visible before reporting NTP visibility as the feed
+    // needs to be visible in order to use for metrics.
+    // TODO(crbug.com/1373650) Move isFeedVisible check to the metrics recorder
+    if (IsGoodVisitsMetricEnabled()) {
+      if ([self isFeedVisible]) {
+        [self.feedMetricsRecorder recordNTPDidChangeVisibility:visible];
+      }
+    }
+  }
+
+  self.viewPresented = visible;
+  [self updateVisible];
 }
 
 #pragma mark - Getters

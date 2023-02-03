@@ -291,7 +291,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     private StartSurface.StateObserver mStartSurfaceStateObserver;
     private AppBarLayout.OnOffsetChangedListener mStartSurfaceHeaderOffsetChangeListener;
 
-    private OneshotSupplier<ToolbarIntentMetadata> mIntentMetadataOneshotSupplier;
     private OneshotSupplier<Boolean> mPromoShownOneshotSupplier;
     private OverlayPanelManagerObserver mOverlayPanelManagerObserver;
     private ObservableSupplierImpl<Boolean> mOverlayPanelVisibilitySupplier =
@@ -402,7 +401,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
      * @param tabModelSelectorSupplier Supplier of the {@link TabModelSelector}.
      * @param startSurfaceSupplier Supplier of the StartSurface.
      * @param omniboxFocusStateSupplier Supplier to access the focus state of the omnibox.
-     * @param intentMetadataOneshotSupplier Supplier with info about the launching intent.
      * @param promoShownOneshotSupplier Supplier for whether a promo was shown on startup.
      * @param windowAndroid The {@link WindowAndroid} associated with the ToolbarManager.
      * @param isInOverviewModeSupplier Supplies whether the app is currently in overview mode.
@@ -441,7 +439,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             ObservableSupplier<TabModelSelector> tabModelSelectorSupplier,
             OneshotSupplier<StartSurface> startSurfaceSupplier,
             ObservableSupplier<Boolean> omniboxFocusStateSupplier,
-            OneshotSupplier<ToolbarIntentMetadata> intentMetadataOneshotSupplier,
             OneshotSupplier<Boolean> promoShownOneshotSupplier, WindowAndroid windowAndroid,
             Supplier<Boolean> isInOverviewModeSupplier,
             Supplier<ModalDialogManager> modalDialogManagerSupplier,
@@ -471,7 +468,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         mScrimCoordinator = scrimCoordinator;
         mTabModelSelectorSupplier = tabModelSelectorSupplier;
         mOmniboxFocusStateSupplier = omniboxFocusStateSupplier;
-        mIntentMetadataOneshotSupplier = intentMetadataOneshotSupplier;
         mPromoShownOneshotSupplier = promoShownOneshotSupplier;
         mAppMenuDelegate = appMenuDelegate;
         mStatusBarColorController = statusBarColorController;
@@ -559,7 +555,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                     return profile != null ? TrackerFactory.getTrackerForProfile(profile) : null;
                 },
                 mBottomControlsCoordinatorSupplier, ToolbarManager::homepageUrl,
-                this::updateButtonStatus);
+                this::updateButtonStatus, mActivityTabProvider);
         // clang-format on
         if (backPressManager != null && BackPressManager.isEnabled()) {
             backPressManager.addHandler(this, BackPressHandler.Type.TAB_HISTORY);
@@ -645,8 +641,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 LoadUrlParams params =
                         new LoadUrlParams(url, transition | PageTransition.FROM_ADDRESS_BAR);
                 params.setInputStartTimestamp(inputStart);
-                return ReturnToChromeUtil.handleLoadUrlWithPostDataFromStartSurface(
-                        new LoadUrlParams(url, transition | PageTransition.FROM_ADDRESS_BAR),
+                return ReturnToChromeUtil.handleLoadUrlWithPostDataFromStartSurface(params,
                         postDataType, postData, incognito, startSurfaceParentTabSupplier.get());
             };
             ChromePageInfo toolbarPageInfo = new ChromePageInfo(modalDialogManagerSupplier, null,
@@ -709,6 +704,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 // the tab is non-interactive (e.g. when entering the TabSwitcher or Start surface).
                 // In those cases we actually still want to use the most recently selected tab, but
                 // will update the URL.
+                onBackPressStateChanged();
                 if (tab == null) {
                     mLocationBarModel.notifyUrlChanged();
                     return;
@@ -1403,9 +1399,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         View homeButton = mControlContainer.findViewById(R.id.home_button);
         mHomeButtonCoordinator = new HomeButtonCoordinator(mActivity, homeButton,
                 userEducationHelper, mIncognitoStateProvider::isIncognitoSelected,
-                mIntentMetadataOneshotSupplier, mPromoShownOneshotSupplier,
-                HomepageManager::isHomepageNonNtp, FeedFeatures::isFeedEnabled,
-                mActivityTabProvider);
+                mPromoShownOneshotSupplier, HomepageManager::isHomepageNonNtp,
+                FeedFeatures::isFeedEnabled, mActivityTabProvider);
         ToggleTabStackButton toggleTabStackButton =
                 mControlContainer.findViewById(R.id.tab_switcher_button);
         mToggleTabStackButtonCoordinator =
@@ -2121,19 +2116,24 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     }
 
     private void onBackPressStateChanged() {
-        mBackPressStateSupplier.set(mToolbarTabController.canGoBack());
+        Tab tab = mActivityTabProvider.get();
+        mBackPressStateSupplier.set(tab != null && mToolbarTabController.canGoBack());
     }
 
     @Override
     public void handleBackPress() {
         boolean ret = back();
         if (!ret) {
-            var bc = mBottomControlsCoordinatorSupplier.get();
+            var bc = mBottomControlsCoordinatorSupplier != null
+                    ? mBottomControlsCoordinatorSupplier.get()
+                    : null;
             var tab = mActivityTabProvider.get();
+            var t2 = mTabModelSelector != null ? mTabModelSelector.getCurrentTab() : null;
             var msg = String.format(
-                    "Bottom control %s, back press state %s; tab %s, back press state %s", bc,
+                    "BottomCtrl %s %s; actTab %s, urlBarTab %s, sTab %s, init %s, destroy %s", bc,
                     bc != null && Boolean.TRUE.equals(bc.getHandleBackPressChangedSupplier().get()),
-                    tab, mBackPressStateSupplier.get());
+                    tab, mLocationBarModel.getTab(), t2, tab != null && tab.isInitialized(),
+                    tab != null && tab.isDestroyed());
             assert false : msg;
         }
     }

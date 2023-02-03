@@ -65,6 +65,9 @@
 #define IDC_MAXIMIZE_WINDOW             34047
 #define IDC_ALL_WINDOWS_FRONT           34048
 #define IDC_NAME_WINDOW                 34049
+#if BUILDFLAG(IS_CHROMEOS)
+#define IDC_TOGGLE_MULTITASK_MENU       34050
+#endif
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch of lacros-chrome is complete.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -123,6 +126,7 @@
 #define IDC_VIRTUAL_CARD_ENROLL         35032
 #define IDC_FOLLOW                      35033
 #define IDC_UNFOLLOW                    35034
+#define IDC_SAVE_IBAN_FOR_PAGE          35035
 
 // Page-manipulation commands that target a specified tab, which may not be the
 // active one.
@@ -297,6 +301,8 @@
 #define IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB 50115
 #define IDC_CONTENT_CONTEXT_LOAD_IMAGE 50116
 #define IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE 50117
+#define IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHWEB 50118
+#define IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS 50119
 // Audio/video items.
 #define IDC_CONTENT_CONTEXT_SAVEAVAS 50120
 #define IDC_CONTENT_CONTEXT_COPYAVLOCATION 50121

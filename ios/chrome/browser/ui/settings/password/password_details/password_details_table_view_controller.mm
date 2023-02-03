@@ -227,6 +227,10 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
       IsPasswordGroupingEnabled() ? IDS_IOS_SHOW_PASSWORD_VIEW_SITES
                                   : IDS_IOS_SHOW_PASSWORD_VIEW_SITE);
   item.detailTexts = passwordDetails.websites;
+  if (IsPasswordGroupingEnabled()) {
+    item.detailTextColor = [UIColor colorNamed:kTextSecondaryColor];
+    item.accessibilityTraits = UIAccessibilityTraitNotEnabled;
+  }
 
   return item;
 }
@@ -242,7 +246,7 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
   // If password is missing (federated credential) don't allow to edit username.
   if (passwordDetails.credentialType != CredentialTypeFederation) {
     item.textFieldEnabled = self.tableView.editing;
-    item.hideIcon = !self.tableView.editing;
+    item.hideIcon = !self.tableView.editing || IsPasswordGroupingEnabled();
     item.autoCapitalizationType = UITextAutocapitalizationTypeNone;
     item.delegate = self;
   } else {
@@ -251,6 +255,9 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
   }
   item.textFieldPlaceholder = l10n_util::GetNSString(
       IDS_IOS_PASSWORD_SETTINGS_USERNAME_PLACEHOLDER_TEXT);
+  if (IsPasswordGroupingEnabled() && !self.tableView.editing) {
+    item.textFieldTextColor = [UIColor colorNamed:kTextSecondaryColor];
+  }
   return item;
 }
 
@@ -265,7 +272,7 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
                             ? passwordDetails.password
                             : kMaskedPassword;
   item.textFieldEnabled = self.tableView.editing;
-  item.hideIcon = !self.tableView.editing;
+  item.hideIcon = !self.tableView.editing || IsPasswordGroupingEnabled();
   item.autoCapitalizationType = UITextAutocapitalizationTypeNone;
   item.keyboardType = UIKeyboardTypeURL;
   item.returnKeyType = UIReturnKeyDone;
@@ -292,6 +299,9 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
     item.identifyingIconAccessibilityLabel = l10n_util::GetNSString(
         [self isPasswordShown] ? IDS_IOS_SETTINGS_PASSWORD_HIDE_BUTTON
                                : IDS_IOS_SETTINGS_PASSWORD_SHOW_BUTTON);
+  }
+  if (IsPasswordGroupingEnabled() && !self.tableView.editing) {
+    item.textFieldTextColor = [UIColor colorNamed:kTextSecondaryColor];
   }
   return item;
 }
@@ -336,7 +346,9 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
     (PasswordDetails*)passwordDetails {
   TableViewTextButtonItem* item = [[TableViewTextButtonItem alloc]
       initWithType:PasswordDetailsItemTypeDeleteButton];
-  item.buttonText = l10n_util::GetNSString(IDS_IOS_SETTINGS_TOOLBAR_DELETE);
+  item.buttonText = l10n_util::GetNSString(IDS_IOS_CONFIRM_PASSWORD_DELETION);
+  item.buttonContentHorizontalAlignment =
+      UIControlContentHorizontalAlignmentLeft;
   item.boldButtonText = NO;
   item.disableButtonIntrinsicWidth = YES;
   item.buttonTextColor = [UIColor colorNamed:kRedColor];
@@ -573,7 +585,7 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
     // sense only in this case.
     if ([self.passwords[0].password length]) {
       [self.handler
-          showPasswordDeleteDialogWithOrigin:self.passwords[0].origin
+          showPasswordDeleteDialogWithOrigin:self.passwords[0].origins[0]
                          compromisedPassword:self.passwords[0].isCompromised];
     } else {
       [self.handler showPasswordDeleteDialogWithOrigin:nil
@@ -841,7 +853,7 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
 // Updates the title displayed in the navigation bar.
 - (void)updateNavigationTitle {
   if (!self.pageTitle || self.pageTitle.length == 0) {
-    self.pageTitle = self.passwords[0].origin;
+    self.pageTitle = self.passwords[0].origins[0];
   }
   _titleLabel.text = self.pageTitle;
 }

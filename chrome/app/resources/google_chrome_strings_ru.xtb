@@ -50,7 +50,6 @@
 <translation id="1874309113135274312">Google Chrome (бета, mDNS-In)</translation>
 <translation id="1877026089748256423">Версия Chrome устарела</translation>
 <translation id="1919130412786645364">Разрешить вход в Chrome</translation>
-<translation id="1952239763774043237">Чтобы обновлять Google Chrome, нужна macOS 10.13 или более поздней версии. У вас установлена macOS 10.12.</translation>
 <translation id="1953553007165777902">Скачивание… Осталось: <ph name="MINUTE" /> мин.</translation>
 <translation id="2018528049276128029">В каждом профиле отдельно хранятся данные пользователей Chrome, такие как закладки, история просмотров и пароли.</translation>
 <translation id="2018879682492276940">Ошибка установки. Повторите попытку.</translation>
@@ -183,6 +182,7 @@
 <translation id="4335235004908507846">Chrome поможет защитить вас от утечки данных, ненадежных расширений и других проблем с безопасностью.</translation>
 <translation id="4343195214584226067">Расширение "<ph name="EXTENSION_NAME" />" установлено</translation>
 <translation id="4384570495110188418">Не удается запустить проверку паролей в Chrome, поскольку вы не вошли в аккаунт.</translation>
+<translation id="4393248995085527349">На вашем компьютере используется macOS 10.13. Чтобы получать обновления Google Chrome, установите на устройство macOS 10.15 или более поздней версии.</translation>
 <translation id="4427306783828095590">В режиме "Улучшенная защита" фишинговые атаки и вредоносное ПО блокируются ещё эффективнее.</translation>
 <translation id="4450664632294415862">Chrome – вход в сеть – "<ph name="PAGE_TITLE" />"</translation>
 <translation id="4458462641685292929">Google Chrome выполняет другую операцию. Повторите попытку позже.</translation>
@@ -212,7 +212,6 @@
 <translation id="4970880042055371251">Версия Chrome OS</translation>
 <translation id="4970947549776831107">Chrome заблокировал файл с опасным расширением.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
-<translation id="5037581483200764584">Чтобы обновлять Google Chrome, нужна macOS 10.13 или более поздней версии. У вас установлена OS X 10.11.</translation>
 <translation id="5098668839038261629">Также выполняется выход из Chrome</translation>
 <translation id="5132929315877954718">Широкий выбор приложений, игр, расширений и тем для Google Chrome.</translation>
 <translation id="5139423532931106058">Настройте профиль Chrome</translation>
@@ -250,6 +249,7 @@
 <translation id="5941711191222866238">Свернуть</translation>
 <translation id="5941830788786076944">Назначить Google Chrome браузером по умолчанию</translation>
 <translation id="6003112304606738118">Скачивание… Осталось: <ph name="HOURS" /> ч.</translation>
+<translation id="6010556343189461180">На вашем компьютере используется macOS 10.14. Чтобы получать обновления Google Chrome, установите на устройство macOS 10.15 или более поздней версии.</translation>
 <translation id="6022388122721048220">{0,plural, =0{Браузер Chrome будет закрыт.}=1{Браузер Chrome будет закрыт через 1 секунду.}one{Браузер Chrome будет закрыт через # секунду.}few{Браузер Chrome будет закрыт через # секунды.}many{Браузер Chrome будет закрыт через # секунд.}other{Браузер Chrome будет закрыт через # секунды.}}</translation>
 <translation id="6040143037577758943">Закрыть</translation>
 <translation id="6070348360322141662">В целях повышения безопасности Google Chrome шифрует ваши данные</translation>
@@ -270,7 +270,7 @@
 <translation id="6418662306461808273">Переключиться на существующий профиль Chrome?</translation>
 <translation id="6506909944137591434">Для создания 3D-карты места, в котором вы находитесь, браузеру Chrome требуется доступ к камере.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome для разработчиков</translation>
-<translation id="659498884637196217">В Менеджере паролей Google на этом устройстве</translation>
+<translation id="659498884637196217">В Google Менеджере паролей на этом устройстве</translation>
 <translation id="6632473616050862500">Chrome OS Flex работает благодаря дополнительному <ph name="BEGIN_LINK_CROS_OSS" />программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6676384891291319759">Доступ в Интернет</translation>
 <translation id="6679975945624592337">Разрешить Google Chrome работать в фоновом режиме</translation>
@@ -345,7 +345,7 @@
 <translation id="7951272445806340501">Чтобы установить обновление, перезапустите Chrome OS Flex.</translation>
 <translation id="7962368738413920945">Скорее всего, сайты продолжат работать привычным образом, но данные о ваших действиях будут удаляться после закрытия всех окон браузера Chrome</translation>
 <translation id="7962410387636238736">Google Chrome больше не будет обновляться на этом компьютере, так как поддержка Windows XP и Windows Vista прекращена.</translation>
-<translation id="8005666035647241369">В Менеджере паролей Google на этом устройстве</translation>
+<translation id="8005666035647241369">В Google Менеджере паролей на этом устройстве</translation>
 <translation id="8008534537613507642">Переустановить Chrome</translation>
 <translation id="8013993649590906847">Если у изображения нет понятного описания, Chrome попытается его найти. Для создания описаний изображения отправляются в Google.</translation>
 <translation id="80471789339884597">Спасибо, что установили <ph name="BUNDLE_NAME" />. Чтобы изменения вступили в силу, перезапустите все открытые браузеры.</translation>
@@ -412,6 +412,7 @@
 <translation id="922152298093051471">Настроить Chrome</translation>
 <translation id="93760716455950538">Перезапуск Chrome OS Flex</translation>
 <translation id="940313311831216333">Чтобы получить доступ к данным в Chrome на всех своих устройствах, войдите в аккаунт и включите синхронизацию.</translation>
+<translation id="943390475793766444">Chrome рекомендует просканировать этот потенциально вредоносный файл.</translation>
 <translation id="989369509083708165">Google Chrome используется как браузер по умолчанию</translation>
 <translation id="989816563149873169">Переключиться на другой профиль Chrome можно с помощью сочетания клавиш <ph name="SHORTCUT" /></translation>
 </translationbundle>

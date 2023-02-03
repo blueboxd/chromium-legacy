@@ -3,6 +3,11 @@
 <title>Layout Tests</title>
 <!--
 Displays web_tests results.
+Version control:
+This file is version controlled by results.html.version.
+Please do NOT bump up the version number while you are still
+testing your changes. Bump up the version number when your
+change is ready, and it will be uploaded to GCS after that.
 -->
 <style>
 body {
@@ -2350,7 +2355,14 @@ class ImageResultsViewer {
       let imgTile = document.createElement("div");
       imgTile.classList.add("image-viewer-tile");
       imgTile.classList.add("hidden");
-      imgTile.innerHTML = `<img src="${info.src}" title="${info.title}">`;
+      let img = document.createElement("img");
+      img.src = info.src;
+      img.title = info.title;
+      if (info.src.startsWith("https://")) {
+        // Allow canvas access to CORS images.
+        img.setAttribute("crossorigin", "anonymous");
+      }
+      imgTile.appendChild(img);
       imgTile.addEventListener("scroll", this.boundTileScrollHandler, {passive: true});
       imgTile.addEventListener("wheel", this.boundWheelHandler);
       this.viewer.appendChild(imgTile);

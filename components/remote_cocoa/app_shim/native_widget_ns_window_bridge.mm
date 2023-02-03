@@ -32,7 +32,6 @@
 #import "components/remote_cocoa/app_shim/native_widget_ns_window_host_helper.h"
 #include "components/remote_cocoa/app_shim/select_file_dialog_bridge.h"
 #import "components/remote_cocoa/app_shim/views_nswindow_delegate.h"
-#import "components/remote_cocoa/app_shim/window_controls_overlay_nsview.h"
 #import "components/remote_cocoa/app_shim/window_move_loop.h"
 #include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -665,11 +664,23 @@ void NativeWidgetNSWindowBridge::SetVisibilityState(
   // In headless mode the platform window is always hidden, so instead of
   // changing its visibility state just maintain a local flag to track the
   // expected visibility state and lie to the upper layer pretending the
-  // window did change its visibility state.
+  // window did change its visibility and activation state.
   if (headless_mode_window_) {
     headless_mode_window_->visibility_state =
         new_state != WindowVisibilityState::kHideWindow;
     host_->OnVisibilityChanged(headless_mode_window_->visibility_state);
+    if (new_state == WindowVisibilityState::kShowAndActivateWindow) {
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              [](WeakPtrNSObject* handle) {
+                if (auto* bridge = ui::WeakPtrNSObjectFactory<
+                        NativeWidgetNSWindowBridge>::Get(handle)) {
+                  bridge->OnWindowKeyStatusChangedTo(/*is_key*/ true);
+                }
+              },
+              ns_weak_factory_.handle()));
+    }
     return;
   }
 
@@ -914,6 +925,12 @@ void NativeWidgetNSWindowBridge::EnableImmersiveFullscreen(
       ns_window(), GetFromId(fullscreen_overlay_widget_id)->ns_window(),
       std::move(callback));
   immersive_mode_controller_->Enable();
+
+  // Reveal locks can outlive immersive_mode_controller_, re-establish any
+  // outstanding locks.
+  for (int i = 0; i < immersive_fullscreen_reveal_lock_count_; ++i) {
+    immersive_mode_controller_->RevealLock();
+  }
 }
 
 void NativeWidgetNSWindowBridge::DisableImmersiveFullscreen() {
@@ -935,12 +952,15 @@ void NativeWidgetNSWindowBridge::OnTopContainerViewBoundsChanged(
 }
 
 void NativeWidgetNSWindowBridge::ImmersiveFullscreenRevealLock() {
+  ++immersive_fullscreen_reveal_lock_count_;
   if (immersive_mode_controller_) {
     immersive_mode_controller_->RevealLock();
   }
 }
 
 void NativeWidgetNSWindowBridge::ImmersiveFullscreenRevealUnlock() {
+  --immersive_fullscreen_reveal_lock_count_;
+  DCHECK(immersive_fullscreen_reveal_lock_count_ >= 0);
   if (immersive_mode_controller_) {
     immersive_mode_controller_->RevealUnlock();
   }
@@ -1159,49 +1179,6 @@ bool NativeWidgetNSWindowBridge::ShouldRunCustomAnimationFor(
 
 bool NativeWidgetNSWindowBridge::RedispatchKeyEvent(NSEvent* event) {
   return [[window_ commandDispatcher] redispatchKeyEvent:event];
-}
-
-void NativeWidgetNSWindowBridge::CreateWindowControlsOverlayNSView(
-    const mojom::WindowControlsOverlayNSViewType overlay_type) {
-  switch (overlay_type) {
-    case mojom::WindowControlsOverlayNSViewType::kCaptionButtonContainer:
-      caption_buttons_overlay_nsview_.reset(
-          [[WindowControlsOverlayNSView alloc] initWithBridge:this]);
-      [bridged_view_ addSubview:caption_buttons_overlay_nsview_];
-      break;
-    case mojom::WindowControlsOverlayNSViewType::kWebAppFrameToolbar:
-      web_app_frame_toolbar_overlay_nsview_.reset(
-          [[WindowControlsOverlayNSView alloc] initWithBridge:this]);
-      [bridged_view_ addSubview:web_app_frame_toolbar_overlay_nsview_];
-      break;
-  }
-}
-
-void NativeWidgetNSWindowBridge::UpdateWindowControlsOverlayNSView(
-    const gfx::Rect& bounds,
-    const mojom::WindowControlsOverlayNSViewType overlay_type) {
-  switch (overlay_type) {
-    case mojom::WindowControlsOverlayNSViewType::kCaptionButtonContainer:
-      [caption_buttons_overlay_nsview_ updateBounds:bounds];
-      break;
-    case mojom::WindowControlsOverlayNSViewType::kWebAppFrameToolbar:
-      [web_app_frame_toolbar_overlay_nsview_ updateBounds:bounds];
-      break;
-  }
-}
-
-void NativeWidgetNSWindowBridge::RemoveWindowControlsOverlayNSView(
-    const mojom::WindowControlsOverlayNSViewType overlay_type) {
-  switch (overlay_type) {
-    case mojom::WindowControlsOverlayNSViewType::kCaptionButtonContainer:
-      [caption_buttons_overlay_nsview_ removeFromSuperview];
-      caption_buttons_overlay_nsview_.reset();
-      break;
-    case mojom::WindowControlsOverlayNSViewType::kWebAppFrameToolbar:
-      [web_app_frame_toolbar_overlay_nsview_ removeFromSuperview];
-      web_app_frame_toolbar_overlay_nsview_.reset();
-      break;
-  }
 }
 
 NSWindow* NativeWidgetNSWindowBridge::ns_window() {

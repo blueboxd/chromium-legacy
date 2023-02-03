@@ -484,49 +484,6 @@
       },
     },
 
-    # TODO(crbug/1239300): Remove when persistent_shell experiment is over.
-    'chrome_persistent_shell_tests': {
-      'chrome_public_persistent_shell_test_apk': {
-        'args': [
-          '--use-persistent-shell',
-        ],
-        'ci_only': True,
-        'test': 'chrome_public_test_apk',
-        'experiment_percentage': 100,
-        'swarming': {
-          'shards': 19,
-        },
-        'mixins': [
-          'skia_gold_test',
-        ],
-      },
-      'chrome_public_persistent_shell_unit_test_apk': {
-        'args': [
-          '--use-persistent-shell',
-        ],
-        'ci_only': True,
-        'test': 'chrome_public_unit_test_apk',
-        'experiment_percentage': 100,
-        'swarming': {
-          'shards': 2,
-        },
-        'mixins': [
-          'skia_gold_test',
-        ],
-      },
-      'content_browsertests_persistent_shell': {
-        'args': [
-          '--use-persistent-shell',
-        ],
-        'ci_only': True,
-        'test': 'content_browsertests',
-        'experiment_percentage': 100,
-        'swarming': {
-          'shards': 20,
-        },
-      },
-    },
-
     'chrome_public_tests': {
       'chrome_public_test_apk': {
         'swarming': {
@@ -1232,6 +1189,18 @@
         'use_isolated_scripts_api': True,
       },
       'junit_unit_tests': {
+        'mixins': [
+          'x86-64',
+          'linux-bionic',
+          'junit-swarming',
+        ],
+        'remove_mixins': [
+          'emulator-4-cores',
+          'nougat-x86-emulator',
+        ],
+        'use_isolated_scripts_api': True,
+      },
+      'keyboard_accessory_junit_tests': {
         'mixins': [
           'x86-64',
           'linux-bionic',
@@ -2895,57 +2864,6 @@
         'linux_args': [ '--no-xvfb' ],
         'test': 'browser_tests',
       },
-    },
-
-    'gpu_fuchsia_common_telemetry_tests': {
-      'info_collection': {
-        'args': [
-          '--expected-vendor-id',
-          '${gpu_vendor_id}',
-          '$$MAGIC_SUBSTITUTION_GPUExpectedDeviceId',
-        ],
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-      },
-      'pixel_skia_validating': {
-        'name': 'pixel_skia_gold_validating_test',
-        'args': [
-          '--dont-restore-color-profile-after-test',
-          '--test-machine-name',
-          '${buildername}',
-          '--extra-browser-args=--use-cmd-decoder=validating',
-        ],
-        'mixins': [
-          'skia_gold_test',
-          'has_native_resultdb_integration',
-        ],
-        'telemetry_test_name': 'pixel',
-      },
-      'screenshot_sync_validating': {
-        'name': 'screenshot_sync_validating_tests',
-        'telemetry_test_name': 'screenshot_sync',
-        'args': [
-          '--dont-restore-color-profile-after-test',
-          '--extra-browser-args=--use-cmd-decoder=validating',
-         ],
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-      },
-      'trace_test': {
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-      },
-      'webgl1_conformance': {
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-        'swarming': {
-          'shards': 18,
-        },
-      }
     },
 
     'gpu_fyi_and_optional_non_linux_gtests': {
@@ -5018,12 +4936,6 @@
       },
     },
 
-    # TODO(crbug.com/1381588): remove this test definition once
-    # crbug.com/1394839 is resolved.
-    'updater_gtests_mac_user': {
-      'updater_tests': {},
-    },
-
     'updater_gtests_win': {
       'updater_tests': {},
       'updater_tests_system': {
@@ -5302,6 +5214,24 @@
             }
           ]
         },
+      },
+    },
+
+    'webview_trichrome_64_cts_tests_no_field_trial': {
+      'webview_trichrome_64_cts_tests_no_field_trial': {
+        'args': [
+          '--disable-field-trial-config',
+        ],
+        'swarming': {
+          'cipd_packages': [
+            {
+              "cipd_package": 'chromium/android_webview/tools/cts_archive',
+              'location': 'android_webview/tools/cts_archive',
+              'revision': 'C4m9-gZKvvtS0-KQ9cMRi6wEfZH_TeWSiXEgsgtGtsMC',
+            }
+          ]
+        },
+        'test': 'webview_trichrome_64_cts_tests',
       },
     },
 
@@ -5619,7 +5549,6 @@
       'android_smoke_tests',
       'android_specific_chromium_gtests',  # Already includes gl_gtests.
       'android_wpr_record_replay_tests',
-      'chrome_persistent_shell_tests',
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'linux_flavor_specific_chromium_gtests',
@@ -5728,7 +5657,6 @@
 
     'chromeos_vm_gtests': [
       'chromeos_browser_all_tast_tests',
-      'chromeos_browser_finch_tests',
       'chromeos_browser_integration_tests',
       'chromeos_system_friendly_gtests',
     ],
@@ -6134,11 +6062,6 @@
       'gpu_desktop_specific_gtests',
     ],
 
-    'gpu_fuchsia_telemetry_experimental_tests': [
-      'gpu_fuchsia_common_telemetry_tests',
-      'gpu_mediapipe_validating_telemetry_tests',
-    ],
-
     'gpu_fuchsia_telemetry_tests': [
       'gpu_validating_telemetry_tests',
     ],
@@ -6487,6 +6410,11 @@
       'webview_ui_instrumentation_tests_no_field_trial',
     ],
 
+    'webview_trichrome_64_cts_gtests': [
+      'webview_trichrome_64_cts_tests',
+      'webview_trichrome_64_cts_tests_no_field_trial',
+    ],
+
     'win_specific_isolated_scripts_and_sizes': [
       'chrome_sizes',
       'win_specific_isolated_scripts',
@@ -6523,11 +6451,7 @@
       'webview_ui_instrumentation_tests': {},
     },
 
-    'android_12_emulator_fyi_gtests': {
-      'oop_network_service_tests': {},
-    },
-
-    'android_12_emulator_gtests': {
+    'android_12_13_emulator_gtests': {
       'android_emulator_specific_chrome_public_tests': {},
       'android_monochrome_smoke_tests': {},
       'android_smoke_tests': {},
@@ -6543,6 +6467,10 @@
         ]
       },
       'webview_ui_instrumentation_tests': {},
+    },
+
+    'android_12_emulator_fyi_gtests': {
+      'oop_network_service_tests': {},
     },
 
     'android_12l_emulator_gtests': {

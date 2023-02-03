@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_util.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_sharing/tab_sharing_ui.h"
 #include "components/access_code_cast/common/access_code_cast_metrics.h"
 #include "components/mirroring/browser/single_client_video_capture_host.h"
@@ -209,7 +211,8 @@ void CastMirroringServiceHost::Start(
     mojom::SessionParametersPtr session_params,
     mojo::PendingRemote<mojom::SessionObserver> observer,
     mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel,
-    mojo::PendingReceiver<mojom::CastMessageChannel> inbound_channel) {
+    mojo::PendingReceiver<mojom::CastMessageChannel> inbound_channel,
+    const std::string& sink_name) {
   // Start() should not be called in the middle of a mirroring session.
   if (mirroring_service_) {
     LOG(WARNING) << "Unexpected Start() call during an active"
@@ -244,6 +247,8 @@ void CastMirroringServiceHost::Start(
       std::move(observer), std::move(provider), std::move(outbound_channel),
       std::move(inbound_channel));
 
+  sink_name_ = base::UTF8ToUTF16(
+      base::TrimWhitespaceASCII(sink_name, base::TrimPositions::TRIM_ALL));
   ShowCaptureIndicator();
 }
 
@@ -525,7 +530,7 @@ void CastMirroringServiceHost::ShowTabSharingUI(
       web_contents()->GetPrimaryMainFrame()->GetGlobalId();
 
   std::unique_ptr<MediaStreamUI> notification_ui =
-      TabSharingUI::Create(capturer_id, source_media_id_, std::u16string(),
+      TabSharingUI::Create(capturer_id, source_media_id_, sink_name_,
                            /*favicons_used_for_switch_to_tab_button=*/false,
                            /*app_preferred_current_tab=*/false,
                            TabSharingInfoBarDelegate::TabShareType::CAST);

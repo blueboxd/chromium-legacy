@@ -33,6 +33,26 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="StartSurface.Module.Click" enum="ModuleTypeOnStartAndNTP"
+    expires_after="2023-07-09">
+  <owner>hanxi@chromium.org</owner>
+  <owner>xinyiji@chromium.org</owner>
+  <summary>
+    Record the total count of clicks on different modules of the Start surface
+    page. For most visited tiles: is recorded when 1) user clicks on most
+    visited tiles; 2) long press on most visited tiles to open in a new tab or a
+    new incognito tab or to download the link. This is consistent with
+    MobileNTPMostVisited. For feeds: is recorded when 1) user clicks on feeds;
+    2) long press on feeds to open in a new tab or open in a new incognito tab
+    or check about this source and topic; 3) click the learn more button on the
+    top of the feeds section. For omnibox: is recorded every time when user uses
+    Omnibox or voice search on Omnibox to navigate. This is consistent with
+    MobileOmniboxUse. For single tab card: is recorded every time when user
+    clicks on the single tab card. The histogram is logged on Start surface and
+    is Android-only.
+  </summary>
+</histogram>
+
 <histogram name="StartSurface.Show.State" enum="StartSurfaceState"
     expires_after="2023-07-12">
   <owner>hanxi@chromium.org</owner>

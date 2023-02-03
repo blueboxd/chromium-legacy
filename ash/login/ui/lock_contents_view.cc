@@ -47,6 +47,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/model/enterprise_domain_model.h"
 #include "ash/system/model/system_tray_model.h"
@@ -59,6 +60,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/logging.h"
+#include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/ash/components/login/auth/auth_metrics_recorder.h"
 #include "chromeos/ash/components/proximity_auth/public/mojom/auth_type.mojom.h"
@@ -338,15 +340,21 @@ class UserAddingScreenIndicator : public views::View {
 
     info_icon_ = AddChildView(std::make_unique<views::ImageView>());
     info_icon_->SetPreferredSize(gfx::Size(kInfoIconSizeDp, kInfoIconSizeDp));
+    info_icon_->SetImage(ui::ImageModel::FromVectorIcon(
+        views::kInfoIcon, kColorAshIconColorPrimary));
 
     std::u16string message =
         l10n_util::GetStringUTF16(IDS_ASH_LOGIN_USER_ADDING_BANNER);
-    label_ = AddChildView(login_views_utils::CreateBubbleLabel(message, this));
+    label_ =
+        AddChildView(login_views_utils::CreateThemedBubbleLabel(message, this));
     label_->SetText(message);
 
     SetPaintToLayer();
     layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
     layer()->SetFillsBoundsOpaquely(false);
+
+    SetBackground(views::CreateThemedRoundedRectBackground(
+        kColorAshShieldAndBase80, kBubbleBorderRadius));
   }
 
   UserAddingScreenIndicator(const UserAddingScreenIndicator&) = delete;
@@ -358,23 +366,6 @@ class UserAddingScreenIndicator : public views::View {
   gfx::Size CalculatePreferredSize() const override {
     return gfx::Size(kUserAddingScreenIndicatorWidth,
                      GetHeightForWidth(kUserAddingScreenIndicatorWidth));
-  }
-
-  // views::View:
-  void OnThemeChanged() override {
-    views::View::OnThemeChanged();
-    info_icon_->SetImage(gfx::CreateVectorIcon(
-        views::kInfoIcon,
-        AshColorProvider::Get()->GetContentLayerColor(
-            AshColorProvider::ContentLayerType::kIconColorPrimary)));
-
-    label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextColorPrimary));
-
-    SkColor background_color = AshColorProvider::Get()->GetBaseLayerColor(
-        AshColorProvider::BaseLayerType::kTransparent80);
-    SetBackground(views::CreateRoundedRectBackground(background_color,
-                                                     kBubbleBorderRadius));
   }
 
  private:
@@ -2388,11 +2379,12 @@ void LockContentsView::ShowAuthErrorMessage() {
   const AccountId account_id =
       big_view->GetCurrentUser().basic_user_info.account_id;
   int unlock_attempt = unlock_attempt_by_user_[account_id];
+  UserState* user_state = FindStateForUser(account_id);
 
   // Show gaia signin if this is login and the user has failed too many times.
   // Do not show on secondary login screen – even though it has type kLogin – as
   // there is no OOBE there.
-  if (!ash::features::IsCryptohomeRecoveryFlowEnabled()) {
+  if (!ash::features::IsCryptohomeRecoveryEnabled()) {
     // Pin login attempt does not trigger Gaia dialog. Pin auth method will be
     // disabled after 5 failed attempts.
     int pin_unlock_attempt = pin_unlock_attempt_by_user_[account_id];
@@ -2407,13 +2399,28 @@ void LockContentsView::ShowAuthErrorMessage() {
     }
   }
 
-  std::u16string error_text = l10n_util::GetStringUTF16(
-      unlock_attempt > 1 ? IDS_ASH_LOGIN_ERROR_AUTHENTICATING_2ND_TIME
-                         : IDS_ASH_LOGIN_ERROR_AUTHENTICATING);
+  std::u16string error_text;
+  if (ash::features::IsCryptohomeRecoveryEnabled()) {
+    if (user_state->show_pin) {
+      error_text += l10n_util::GetStringUTF16(
+          unlock_attempt > 1 ? IDS_ASH_LOGIN_ERROR_AUTHENTICATING_2ND_TIME_NEW
+                             : IDS_ASH_LOGIN_ERROR_AUTHENTICATING);
+    } else {
+      error_text += l10n_util::GetStringUTF16(
+          unlock_attempt > 1 ? IDS_ASH_LOGIN_ERROR_AUTHENTICATING_PWD_2ND_TIME
+                             : IDS_ASH_LOGIN_ERROR_AUTHENTICATING_PWD);
+    }
+  } else {
+    error_text += l10n_util::GetStringUTF16(
+        unlock_attempt > 1 ? IDS_ASH_LOGIN_ERROR_AUTHENTICATING_2ND_TIME
+                           : IDS_ASH_LOGIN_ERROR_AUTHENTICATING);
+  }
+
   ImeControllerImpl* ime_controller = Shell::Get()->ime_controller();
   if (ime_controller->IsCapsLockEnabled()) {
-    error_text +=
-        u" " + l10n_util::GetStringUTF16(IDS_ASH_LOGIN_ERROR_CAPS_LOCK_HINT);
+    base::StrAppend(
+        &error_text,
+        {u" ", l10n_util::GetStringUTF16(IDS_ASH_LOGIN_ERROR_CAPS_LOCK_HINT)});
   }
 
   absl::optional<int> bold_start;
@@ -2432,6 +2439,14 @@ void LockContentsView::ShowAuthErrorMessage() {
         l10n_util::GetStringFUTF16(IDS_ASH_LOGIN_ERROR_KEYBOARD_SWITCH_HINT,
                                    shortcut, &shortcut_offset_in_string);
     *bold_start += shortcut_offset_in_string;
+  }
+
+  if (ash::features::IsCryptohomeRecoveryEnabled() && unlock_attempt > 1) {
+    base::StrAppend(&error_text,
+                    {u"\n\n", l10n_util::GetStringUTF16(
+                                  user_state->show_pin
+                                      ? IDS_ASH_LOGIN_ERROR_RECOVER_USER
+                                      : IDS_ASH_LOGIN_ERROR_RECOVER_USER_PWD)});
   }
 
   auto label = std::make_unique<views::StyledLabel>();
@@ -2454,19 +2469,19 @@ void LockContentsView::ShowAuthErrorMessage() {
   container->AddChildView(std::move(label));
   container->AddChildView(std::move(learn_more_button));
 
-  if (ash::features::IsCryptohomeRecoveryFlowEnabled()) {
-    // The forgot password flow is only accessible from the login screen but
+  if (ash::features::IsCryptohomeRecoveryEnabled()) {
+    // The recover user flow is only accessible from the login screen but
     // not from the lock screen.
     if (screen_type_ == LockScreen::ScreenType::kLogin &&
         Shell::Get()->session_controller()->GetSessionState() !=
             session_manager::SessionState::LOGIN_SECONDARY) {
-      auto forgot_password_button = std::make_unique<SystemLabelButton>(
-          base::BindRepeating(&LockContentsView::ForgotPasswordButtonPressed,
+      auto recover_user_button = std::make_unique<SystemLabelButton>(
+          base::BindRepeating(&LockContentsView::RecoverUserButtonPressed,
                               base::Unretained(this)),
-          l10n_util::GetStringUTF16(IDS_ASH_LOGIN_FORGOT_PASSWORD),
+          l10n_util::GetStringUTF16(IDS_ASH_LOGIN_RECOVER_USER_BUTTON),
           /*multiline=*/true);
 
-      container->AddChildView(std::move(forgot_password_button));
+      container->AddChildView(std::move(recover_user_button));
     }
   }
 
@@ -2573,10 +2588,10 @@ void LockContentsView::LearnMoreButtonPressed() {
   HideAuthErrorMessage();
 }
 
-void LockContentsView::ForgotPasswordButtonPressed() {
+void LockContentsView::RecoverUserButtonPressed() {
   LoginBigUserView* big_view = CurrentBigUserView();
   if (!big_view->auth_user()) {
-    LOG(ERROR) << "Forgot password button pressed without focused user";
+    LOG(ERROR) << "Recover user button pressed without focused user";
     return;
   }
 

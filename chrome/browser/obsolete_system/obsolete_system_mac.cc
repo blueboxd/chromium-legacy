@@ -13,8 +13,8 @@
 namespace {
 
 enum class Obsoleteness {
-  MacOS1011Obsolete,
-  MacOS1012Obsolete,
+  MacOS1013Obsolete,
+  MacOS1014Obsolete,
   NotObsolete,
 };
 
@@ -24,29 +24,30 @@ Obsoleteness OsObsoleteness() {
 
 }  // namespace
 
-// static
-bool ObsoleteSystem::IsObsoleteNowOrSoon() {
+namespace ObsoleteSystem {
+
+bool IsObsoleteNowOrSoon() {
   return OsObsoleteness() != Obsoleteness::NotObsolete;
 }
 
-// static
-std::u16string ObsoleteSystem::LocalizedObsoleteString() {
+std::u16string LocalizedObsoleteString() {
   switch (OsObsoleteness()) {
-    case Obsoleteness::MacOS1011Obsolete:
-      return l10n_util::GetStringUTF16(IDS_MAC_10_11_OBSOLETE);
-    case Obsoleteness::MacOS1012Obsolete:
-      return l10n_util::GetStringUTF16(IDS_MAC_10_12_OBSOLETE);
+    case Obsoleteness::MacOS1013Obsolete:
+      return l10n_util::GetStringUTF16(IDS_MAC_10_13_OBSOLETE);
+    case Obsoleteness::MacOS1014Obsolete:
+      return l10n_util::GetStringUTF16(IDS_MAC_10_14_OBSOLETE);
     default:
       return std::u16string();
   }
 }
 
-// static
-bool ObsoleteSystem::IsEndOfTheLine() {
-  return CHROME_VERSION_MAJOR >= 103;
+bool IsEndOfTheLine() {
+  // M116 is the last milestone supporting macOS 10.13 and macOS 10.14.
+  return CHROME_VERSION_MAJOR >= 116;
 }
 
-// static
-const char* ObsoleteSystem::GetLinkURL() {
+const char* GetLinkURL() {
   return chrome::kMacOsObsoleteURL;
 }
+
+}  // namespace ObsoleteSystem

@@ -23,6 +23,7 @@ import {LocaleOutputHelper} from '../common/locale_output_helper.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
 import {ALL_PANEL_MENU_NODE_DATA, PanelNodeMenuData, PanelNodeMenuId, PanelNodeMenuItemData} from '../common/panel_menu_data.js';
+import {SettingsManager} from '../common/settings_manager.js';
 import {QueueMode} from '../common/tts_types.js';
 
 import {ISearchUI} from './i_search_ui.js';
@@ -127,6 +128,7 @@ export class Panel extends PanelInterface {
     }
 
     await LocalStorage.init();
+    await SettingsManager.init();
     LocaleOutputHelper.init();
 
     Panel.instance = new Panel();
@@ -373,7 +375,11 @@ export class Panel extends PanelInterface {
         binding.keySeq = await KeyUtil.keySequenceToString(keySeq, true);
         const titleMsgId = CommandStore.messageForCommand(command);
         if (!titleMsgId) {
-          console.error('No localization for: ' + command);
+          // Title messages are intentionally missing for some keyboard
+          // shortcuts.
+          if (!(command in COMMANDS_WITH_NO_MSG_ID)) {
+            console.error('No localization for: ' + command);
+          }
           binding.title = '';
           continue;
         }
@@ -564,7 +570,7 @@ export class Panel extends PanelInterface {
     const groups = data.groups;
     const cols = data.cols;
     const rows = data.rows;
-    const sideBySide = LocalStorage.get('brailleSideBySide');
+    const sideBySide = SettingsManager.get('brailleSideBySide');
 
     const addBorders = event => {
       const cell = event.target;
@@ -1304,6 +1310,21 @@ Panel.ACTION_TO_MSG_ID = {
   showContextMenu: 'show_context_menu',
   longClick: 'force_long_click_on_current_item',
 };
+
+const COMMANDS_WITH_NO_MSG_ID = [
+  'nativeNextCharacter',
+  'nativePreviousCharacter',
+  'nativeNextWord',
+  'nativePreviousWord',
+  'enableLogging',
+  'disableLogging',
+  'dumpTree',
+  'showActionsMenu',
+  'enableChromeVoxArcSupportForCurrentApp',
+  'disableChromeVoxArcSupportForCurrentApp',
+  'showTalkBackKeyboardShortcuts',
+  'copy',
+];
 
 window.addEventListener('load', async () => await Panel.init(), false);
 

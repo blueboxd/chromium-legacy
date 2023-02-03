@@ -42,8 +42,7 @@ class FakeTaskRunner : public base::SingleThreadTaskRunner {
 
 namespace user_manager {
 
-FakeUserManager::FakeUserManager()
-    : UserManagerBase(new FakeTaskRunner()), primary_user_(nullptr) {}
+FakeUserManager::FakeUserManager() : UserManagerBase(new FakeTaskRunner()) {}
 
 FakeUserManager::~FakeUserManager() {
 }
@@ -139,6 +138,9 @@ void FakeUserManager::UpdateUserAccountData(
 void FakeUserManager::LogoutAllUsers() {
   primary_user_ = nullptr;
   active_user_ = nullptr;
+
+  logged_in_users_.clear();
+  lru_logged_in_users_.clear();
 }
 
 void FakeUserManager::SetUserNonCryptohomeDataEphemeral(
@@ -249,10 +251,6 @@ const User* FakeUserManager::FindUser(const AccountId& account_id) const {
 
 User* FakeUserManager::FindUserAndModify(const AccountId& account_id) {
   return nullptr;
-}
-
-const User* FakeUserManager::GetPrimaryUser() const {
-  return primary_user_;
 }
 
 std::u16string FakeUserManager::GetUserDisplayName(

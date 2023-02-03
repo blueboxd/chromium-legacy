@@ -1615,6 +1615,10 @@ component("platform") {
     ]
   }
 
+  if (is_ios) {
+    sources += [ "fonts/ios/font_cache_ios.mm" ]
+  }
+
   if (is_linux || is_chromeos) {
     sources += [
       "fonts/linux/font_cache_linux.cc",
@@ -1800,8 +1804,8 @@ component("platform") {
       "text/hyphenation/hyphenator_aosp.cc",
       "text/hyphenation/hyphenator_aosp.h",
     ]
-  } else if (is_mac) {
-    sources += [ "text/mac/hyphenation_mac.cc" ]
+  } else if (is_apple) {
+    sources += [ "text/apple/hyphenation_apple.cc" ]
   } else {
     sources += [ "text/hyphenation/hyphenation_null.cc" ]
   }
@@ -2156,7 +2160,6 @@ source_set("blink_platform_unittests_sources") {
     "mojo/string16_mojom_traits_test.cc",
     "p2p/filtering_network_manager_test.cc",
     "p2p/ipc_network_manager_test.cc",
-    "peerconnection/bridge_ice_controller_test.cc",
     "peerconnection/coalesced_tasks_test.cc",
     "peerconnection/linear_histogram_test.cc",
     "peerconnection/low_precision_timer_test.cc",
@@ -2311,12 +2314,33 @@ source_set("blink_platform_unittests_sources") {
     "//url/mojom:test_url_mojom_gurl_blink",
   ]
 
+  deps += [ ":bridge_ice_controller_tests" ]
+
   data_deps = [ ":blink_platform_unittests_data" ]
 
   defines = [ "INSIDE_BLINK" ]
   if (use_minikin_hyphenation) {
     defines += [ "USE_MINIKIN_HYPHENATION" ]
   }
+}
+
+source_set("bridge_ice_controller_tests") {
+  visibility = []  # Allow re-assignment of list.
+  visibility = [ ":*" ]
+  testonly = true
+
+  sources = [
+    "peerconnection/bridge_ice_controller_test.cc",
+    "peerconnection/fake_connection_factory_test.cc",
+    "peerconnection/webrtc_connection_matchers.h",
+  ]
+
+  deps = [
+    ":test_support",
+    "//components/webrtc:thread_wrapper",
+    "//third_party/webrtc_overrides:ice_controller_test_utils",
+    "//third_party/webrtc_overrides:webrtc_component",
+  ]
 }
 
 executable("image_decode_bench") {

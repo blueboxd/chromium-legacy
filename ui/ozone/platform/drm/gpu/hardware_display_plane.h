@@ -10,6 +10,7 @@
 
 #include <xf86drmMode.h>
 
+#include <cstdint>
 #include <vector>
 
 #include "base/containers/flat_set.h"
@@ -21,7 +22,7 @@ namespace ui {
 
 class HardwareDisplayPlane {
  public:
-  HardwareDisplayPlane(uint32_t id);
+  explicit HardwareDisplayPlane(uint32_t id);
 
   HardwareDisplayPlane(const HardwareDisplayPlane&) = delete;
   HardwareDisplayPlane& operator=(const HardwareDisplayPlane&) = delete;
@@ -34,6 +35,9 @@ class HardwareDisplayPlane {
 
   std::vector<uint64_t> ModifiersForFormat(uint32_t format) const;
 
+  const base::flat_set<uint32_t>& GetCompatibleCrtcIds() const {
+    return possible_crtc_ids_;
+  }
   bool CanUseForCrtcId(uint32_t crtc_id) const;
 
   // Adds trace records to |context|.

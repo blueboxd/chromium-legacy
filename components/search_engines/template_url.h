@@ -57,6 +57,7 @@ class TemplateURLRef {
     SEARCH,
     SUGGEST,
     IMAGE,
+    IMAGE_TRANSLATE,
     NEW_TAB,
     CONTEXTUAL_SEARCH,
     INDEXED
@@ -275,6 +276,12 @@ class TemplateURLRef {
     // Whether the request should bypass the HTTP cache, i.e., a "shift-reload".
     // If true, the net::LOAD_BYPASS_CACHE load flag will be set on the request.
     bool bypass_cache = false;
+
+    // The source locale used for image translations.
+    std::string image_translate_source_locale;
+
+    // The target locale used for image translations.
+    std::string image_translate_target_locale;
   };
 
   TemplateURLRef(const TemplateURL* owner, Type type);
@@ -438,6 +445,8 @@ class TemplateURLRef {
     MAIL_RU_REFERRAL_ID,
     SEARCH_TERMS,
     YANDEX_REFERRAL_ID,
+    IMAGE_TRANSLATE_SOURCE_LOCALE,
+    IMAGE_TRANSLATE_TARGET_LOCALE,
   };
 
   // Used to identify an element of the raw url that can be replaced.
@@ -707,6 +716,9 @@ class TemplateURL {
   const std::string& url() const { return data_.url(); }
   const std::string& suggestions_url() const { return data_.suggestions_url; }
   const std::string& image_url() const { return data_.image_url; }
+  const std::string& image_translate_url() const {
+    return data_.image_translate_url;
+  }
   const std::string& new_tab_url() const { return data_.new_tab_url; }
   const std::string& contextual_search_url() const {
     return data_.contextual_search_url;
@@ -725,6 +737,12 @@ class TemplateURL {
   }
   const std::string& side_image_search_param() const {
     return data_.side_image_search_param;
+  }
+  const std::string& image_translate_source_language_param_key() const {
+    return data_.image_translate_source_language_param_key;
+  }
+  const std::string& image_translate_target_language_param_key() const {
+    return data_.image_translate_target_language_param_key;
   }
   const std::u16string& image_search_branding_label() const {
     return !data_.image_search_branding_label.empty()
@@ -780,6 +798,9 @@ class TemplateURL {
     return suggestions_url_ref_;
   }
   const TemplateURLRef& image_url_ref() const { return image_url_ref_; }
+  const TemplateURLRef& image_translate_url_ref() const {
+    return image_translate_url_ref_;
+  }
   const TemplateURLRef& new_tab_url_ref() const { return new_tab_url_ref_; }
   const TemplateURLRef& contextual_search_url_ref() const {
     return contextual_search_url_ref_;
@@ -841,14 +862,15 @@ class TemplateURL {
   // optionally the search intent params and removes the other params. If
   // `normalize_search_terms` is true, the search terms in the final URL
   // will be converted to lowercase with extra whitespace characters collapsed.
-  // If `url` is not a search URL or replacement fails, leaves `result`
-  // untouched and returns false. Used to compare normalized (aka canonical)
-  // search URLs.
+  // If `url` is not a search URL or replacement fails, leaves `out_url` and
+  // `out_search_terms` untouched and returns false. Used to compare
+  // normalized (aka canonical) search URLs.
   bool KeepSearchTermsInURL(const GURL& url,
                             const SearchTermsData& search_terms_data,
                             const bool keep_search_intent_params,
                             const bool normalize_search_terms,
-                            GURL* result) const;
+                            GURL* out_url,
+                            std::u16string* out_search_terms = nullptr) const;
 
   // Given a |url| corresponding to this TemplateURL, identifies the search
   // terms and replaces them with the ones in |search_terms_args|, leaving the
@@ -969,6 +991,7 @@ class TemplateURL {
 
   TemplateURLRef suggestions_url_ref_;
   TemplateURLRef image_url_ref_;
+  TemplateURLRef image_translate_url_ref_;
   TemplateURLRef new_tab_url_ref_;
   TemplateURLRef contextual_search_url_ref_;
   std::unique_ptr<AssociatedExtensionInfo> extension_info_;

@@ -39,6 +39,7 @@
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/accessibility/accessibility_labels_service_factory.h"
 #include "chrome/browser/after_startup_task_utils.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/bluetooth/chrome_bluetooth_delegate_impl_client.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/browser_features.h"
@@ -249,6 +250,7 @@
 #include "components/safe_browsing/content/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/content/browser/password_protection/password_protection_commit_deferring_condition.h"
 #include "components/safe_browsing/content/browser/safe_browsing_navigation_throttle.h"
+#include "components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_service.h"
 #include "components/safe_browsing/core/browser/realtime/policy_engine.h"
 #include "components/safe_browsing/core/browser/realtime/url_lookup_service.h"
 #include "components/safe_browsing/core/browser/url_checker_delegate.h"
@@ -263,6 +265,7 @@
 #include "components/site_isolation/preloaded_isolated_origins.h"
 #include "components/site_isolation/site_isolation_policy.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_switches.h"
@@ -322,6 +325,7 @@
 #include "sandbox/policy/mojom/sandbox.mojom.h"
 #include "sandbox/policy/switches.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -399,6 +403,7 @@
 #include "chrome/browser/ash/system_extensions/system_extensions_provider.h"
 #include "chrome/browser/speech/tts_chromeos.h"
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chromeos/ash/services/network_health/public/cpp/network_health_helper.h"
 #include "chromeos/crosapi/cpp/lacros_startup_state.h"
@@ -407,6 +412,7 @@
 #include "components/user_manager/user_manager.h"
 #include "services/service_manager/public/mojom/interface_provider_spec.mojom.h"
 #include "storage/browser/file_system/external_mount_points.h"
+#include "ui/display/screen.h"
 #elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif BUILDFLAG(IS_ANDROID)
@@ -477,6 +483,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/search/new_tab_page_navigation_throttle.h"
 #include "chrome/browser/ui/web_applications/tabbed_web_app_navigation_throttle.h"
+#include "chrome/browser/ui/web_applications/webui_web_app_navigation_throttle.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_loader_factory.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -1553,6 +1560,10 @@ void ChromeContentBrowserClient::RegisterLocalStatePrefs(
       policy::policy_prefs::kPPAPISharedImagesSwapChainAllowed, true);
   registry->RegisterBooleanPref(
       policy::policy_prefs::kForceEnablePepperVideoDecoderDevAPI, false);
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_ANDROID)
+  registry->RegisterBooleanPref(prefs::kOutOfProcessSystemDnsResolutionEnabled,
+                                true);
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_ANDROID)
 }
 
 // static
@@ -2347,7 +2358,7 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
     InstantService* instant_service =
         InstantServiceFactory::GetForProfile(profile);
     if (instant_service)
-      instant_service->AddInstantProcess(site_instance->GetProcess());
+      instant_service->AddInstantProcess(site_instance->GetProcess()->GetID());
   }
 #endif
 
@@ -2688,20 +2699,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         command_line->AppendSwitch(switches::kDisablePrintPreview);
 
       // This passes the preference set by an enterprise policy on to a blink
-      // switch so that we know whether to force WebSQL/WebSQL in non-secure
-      // context to be enabled.
+      // switch so that we know whether to force WebSQL to be enabled.
       if (prefs->GetBoolean(storage::kWebSQLAccess)) {
         command_line->AppendSwitch(blink::switches::kWebSQLAccess);
-      }
-      if (prefs->GetBoolean(storage::kWebSQLNonSecureContextEnabled)) {
-        command_line->AppendSwitch(
-            blink::switches::kWebSQLNonSecureContextEnabled);
-      }
-
-      // Enable legacy quota API if enabled by enterprise policy.
-      if (prefs->GetBoolean(storage::kPrefixedStorageInfoEnabled)) {
-        command_line->AppendSwitch(
-            blink::switches::kPrefixedStorageInfoEnabled);
       }
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -4283,13 +4283,6 @@ std::string ChromeContentBrowserClient::GetDefaultDownloadName() {
   return l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME);
 }
 
-base::FilePath ChromeContentBrowserClient::GetFontLookupTableCacheDir() {
-  base::FilePath user_data_dir;
-  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  DCHECK(!user_data_dir.empty());
-  return user_data_dir.Append(FILE_PATH_LITERAL("FontLookupTableCache"));
-}
-
 base::FilePath ChromeContentBrowserClient::GetShaderDiskCacheDirectory() {
   base::FilePath user_data_dir;
   base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
@@ -4983,6 +4976,10 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   MaybeAddThrottle(
       web_app::TabbedWebAppNavigationThrottle::MaybeCreateThrottleFor(handle),
       &throttles);
+
+  MaybeAddThrottle(
+      web_app::WebUIWebAppNavigationThrottle::MaybeCreateThrottleFor(handle),
+      &throttles);
 #endif
 
   // g_browser_process->safe_browsing_service() may be null in unittests.
@@ -5362,6 +5359,11 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
         GetUrlLookupService(browser_context, is_enterprise_lookup_enabled,
                             is_consumer_lookup_enabled);
 
+    safe_browsing::HashRealTimeService* hash_realtime_service =
+        safe_browsing_service_
+            ? safe_browsing_service_->GetHashRealTimeService(profile)
+            : nullptr;
+
     result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
         base::BindOnce(
             &ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
@@ -5371,7 +5373,8 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
             /*should_check_on_sb_disabled=*/is_enterprise_lookup_enabled,
             safe_browsing::GetURLAllowlistByPolicy(profile->GetPrefs())),
         wc_getter, frame_tree_node_id,
-        url_lookup_service ? url_lookup_service->GetWeakPtr() : nullptr));
+        url_lookup_service ? url_lookup_service->GetWeakPtr() : nullptr,
+        hash_realtime_service ? hash_realtime_service->GetWeakPtr() : nullptr));
   }
 #endif
 
@@ -6600,6 +6603,27 @@ bool ChromeContentBrowserClient::ShouldSandboxNetworkService() {
   return SystemNetworkContextManager::IsNetworkSandboxEnabled();
 }
 
+bool ChromeContentBrowserClient::ShouldRunOutOfProcessSystemDnsResolution() {
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_ANDROID)
+  // This is possibly called before `g_browser_process` is initialized.
+  PrefService* local_state;
+  if (g_browser_process) {
+    local_state = g_browser_process->local_state();
+  } else {
+    local_state = startup_data_.chrome_feature_list_creator()->local_state();
+  }
+  if (local_state && local_state->HasPrefPath(
+                         prefs::kOutOfProcessSystemDnsResolutionEnabled)) {
+    return local_state->GetBoolean(
+        prefs::kOutOfProcessSystemDnsResolutionEnabled);
+  }
+#endif
+
+  // If no policy is specified, then delegate to global configuration.
+  return base::FeatureList::IsEnabled(
+      network::features::kOutOfProcessSystemDnsResolution);
+}
+
 void ChromeContentBrowserClient::LogWebFeatureForCurrentPage(
     content::RenderFrameHost* render_frame_host,
     blink::mojom::WebFeature feature) {
@@ -7307,6 +7331,8 @@ bool ChromeContentBrowserClient::OpenExternally(
     const GURL& url,
     WindowOpenDisposition disposition) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  const bool from_webui = opener->GetWebUI() != nullptr;
+
   // If Lacros is the primary browser, we intercept requests from Ash WebUIs and
   // redirect them to Lacros via crosapi. This is to make window.open and <a
   // href target="_blank"> links in WebUIs (e.g. ChromeOS Settings app) open in
@@ -7317,9 +7343,8 @@ bool ChromeContentBrowserClient::OpenExternally(
   // with separately) as well as some existing links that currently must remain
   // in Ash.
   bool should_open_in_lacros =
-      crosapi::lacros_startup_state::IsLacrosEnabled() &&
+      from_webui && crosapi::lacros_startup_state::IsLacrosEnabled() &&
       crosapi::lacros_startup_state::IsLacrosPrimaryEnabled() &&
-      opener->GetWebUI() != nullptr &&
       disposition != WindowOpenDisposition::NEW_POPUP &&
       !url.SchemeIs(content::kChromeDevToolsScheme) &&
       !url.SchemeIs(content::kChromeUIScheme) &&
@@ -7334,7 +7359,41 @@ bool ChromeContentBrowserClient::OpenExternally(
         ash::NewWindowDelegate::Disposition::kNewForegroundTab);
     return true;
   }
+
+  Profile* profile = Profile::FromBrowserContext(opener->GetBrowserContext());
+
+  // Handle capturing system apps directly, as otherwise an additional empty
+  // browser window could be created.
+  const absl::optional<ash::SystemWebAppType> capturing_system_app_type =
+      ash::GetCapturingSystemAppForURL(profile, url);
+  if (capturing_system_app_type) {
+    ash::SystemAppLaunchParams swa_params;
+    swa_params.url = url;
+    ash::LaunchSystemWebAppAsync(profile, capturing_system_app_type.value(),
+                                 swa_params);
+    return true;
+  }
+
+  // If Lacros is the only browser, we intercept any WebUI URLs that would be
+  // opened in a regular browser window. We open these with the OsUrlHandler SWA
+  // instead, which will load them in an app window.
+  bool should_open_in_ash_app =
+      from_webui && !crosapi::browser_util::IsAshWebBrowserEnabled() &&
+      ChromeWebUIControllerFactory::GetInstance()->CanHandleUrl(url) &&
+      !ash::GetCapturingSystemAppForURL(profile, url);
+  if (should_open_in_ash_app) {
+    ash::SystemAppLaunchParams launch_params;
+    launch_params.url = url;
+    int64_t display_id =
+        display::Screen::GetScreen()->GetDisplayForNewWindows().id();
+    ash::LaunchSystemWebAppAsync(
+        ProfileManager::GetPrimaryUserProfile(),
+        ash::SystemWebAppType::OS_URL_HANDLER, launch_params,
+        std::make_unique<apps::WindowInfo>(display_id));
+    return true;
+  }
 #endif
+
   return false;
 }
 

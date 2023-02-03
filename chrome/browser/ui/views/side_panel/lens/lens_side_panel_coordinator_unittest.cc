@@ -42,12 +42,11 @@ class LensSidePanelCoordinatorTest : public TestWithBrowserView {
   void SetUp() override {
     features.InitWithFeaturesAndParameters(
         {{lens::features::kLensStandalone,
-          {{lens::features::kEnableSidePanelForLens.name, "true"},
-           {lens::features::kHomepageURLForLens.name, kLensHomepageURL}}}},
+          {{lens::features::kHomepageURLForLens.name, kLensHomepageURL}}}},
         {});
     TestWithBrowserView::SetUp();
 
-    GetSidePanelCoordinator()->SetNoDelaysForTesting();
+    GetSidePanelCoordinator()->SetNoDelaysForTesting(true);
     auto* browser = browser_view()->browser();
     auto* global_registry =
         SidePanelCoordinator::GetGlobalSidePanelRegistry(browser);

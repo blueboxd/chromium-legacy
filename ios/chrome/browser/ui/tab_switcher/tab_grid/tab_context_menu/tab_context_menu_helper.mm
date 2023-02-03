@@ -13,12 +13,11 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_list.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"
-#import "ios/chrome/browser/main/browser_observer_bridge.h"
+#import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/menu/action_factory.h"
 #import "ios/chrome/browser/ui/menu/tab_context_menu_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_util.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
@@ -28,15 +27,11 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TabContextMenuHelper () <BrowserObserving, TabContextMenuProvider> {
-  // Observe BrowserObserver to prevent any access to Browser before its
-  // destroyed.
-  std::unique_ptr<BrowserObserverBridge> _browserObserver;
-}
+@interface TabContextMenuHelper ()
 
-@property(nonatomic, assign) Browser* browser;
 @property(nonatomic, weak) id<TabContextMenuDelegate> contextMenuDelegate;
 @property(nonatomic, assign) BOOL incognito;
+
 @end
 
 @implementation TabContextMenuHelper
@@ -49,7 +44,6 @@
   self = [super init];
   if (self) {
     _browser = browser;
-    _browserObserver = std::make_unique<BrowserObserverBridge>(_browser, self);
     _contextMenuDelegate = tabContextMenuDelegate;
     _incognito = _browser->GetBrowserState()->IsOffTheRecord();
   }
@@ -57,10 +51,7 @@
 }
 
 - (void)dealloc {
-  if (self.browser) {
-    _browserObserver.reset();
-    self.browser = nullptr;
-  }
+  self.browser = nullptr;
 }
 
 - (UIContextMenuConfiguration*)
@@ -106,79 +97,62 @@
 
   NSMutableArray<UIMenuElement*>* menuElements = [[NSMutableArray alloc] init];
 
-    if (IsPinnedTabsEnabled()) {
-      if (pinned) {
-        if ([self.contextMenuDelegate
-                respondsToSelector:@selector(unpinTabWithIdentifier:)]) {
-          [menuElements addObject:[actionFactory actionToUnpinTabWithBlock:^{
-                          [self.contextMenuDelegate
-                              unpinTabWithIdentifier:cell.itemIdentifier];
-                        }]];
-        }
-      } else {
-        if ([self.contextMenuDelegate
-                respondsToSelector:@selector(pinTabWithIdentifier:)]) {
-          [menuElements addObject:[actionFactory actionToPinTabWithBlock:^{
-                          [self.contextMenuDelegate
-                              pinTabWithIdentifier:cell.itemIdentifier];
-                        }]];
-        }
-      }
+  if (IsPinnedTabsEnabled() && !self.incognito) {
+    if (pinned) {
+      [menuElements addObject:[actionFactory actionToUnpinTabWithBlock:^{
+                      [self.contextMenuDelegate
+                          unpinTabWithIdentifier:cell.itemIdentifier];
+                    }]];
+    } else {
+      [menuElements addObject:[actionFactory actionToPinTabWithBlock:^{
+                      [self.contextMenuDelegate
+                          pinTabWithIdentifier:cell.itemIdentifier];
+                    }]];
+    }
+  }
+
+  if (!IsURLNewTabPage(item.URL)) {
+    [menuElements addObject:[actionFactory actionToShareWithBlock:^{
+                    [self.contextMenuDelegate
+                        shareURL:item.URL
+                           title:item.title
+                        scenario:SharingScenario::TabGridItem
+                        fromView:cell];
+                  }]];
+
+    if (item.URL.SchemeIsHTTPOrHTTPS()) {
+      [menuElements
+          addObject:[actionFactory actionToAddToReadingListWithBlock:^{
+            [self.contextMenuDelegate addToReadingListURL:item.URL
+                                                    title:item.title];
+          }]];
     }
 
-    if (!IsURLNewTabPage(item.URL)) {
-      if ([self.contextMenuDelegate respondsToSelector:@selector
-                                    (shareURL:title:scenario:fromView:)]) {
-        [menuElements addObject:[actionFactory actionToShareWithBlock:^{
-                        [self.contextMenuDelegate
-                            shareURL:item.URL
-                               title:item.title
-                            scenario:ActivityScenario::TabGridItem
-                            fromView:cell];
-                      }]];
+    UIAction* bookmarkAction;
+    const BOOL currentlyBookmarked = [self isTabItemBookmarked:item];
+    if (currentlyBookmarked) {
+      bookmarkAction = [actionFactory actionToEditBookmarkWithBlock:^{
+        [self.contextMenuDelegate editBookmarkWithURL:item.URL];
+      }];
+    } else {
+      bookmarkAction = [actionFactory actionToBookmarkWithBlock:^{
+        [self.contextMenuDelegate bookmarkURL:item.URL title:item.title];
+      }];
+    }
+    // Bookmarking can be disabled from prefs (from an enterprise policy),
+    // if that's the case grey out the option in the menu.
+    if (self.browser) {
+      BOOL isEditBookmarksEnabled =
+          self.browser->GetBrowserState()->GetPrefs()->GetBoolean(
+              bookmarks::prefs::kEditBookmarksEnabled);
+      if (!isEditBookmarksEnabled && bookmarkAction) {
+        bookmarkAction.attributes = UIMenuElementAttributesDisabled;
       }
-
-      if (item.URL.SchemeIsHTTPOrHTTPS() &&
-          [self.contextMenuDelegate
-              respondsToSelector:@selector(addToReadingListURL:title:)]) {
-        [menuElements
-            addObject:[actionFactory actionToAddToReadingListWithBlock:^{
-              [self.contextMenuDelegate addToReadingListURL:item.URL
-                                                      title:item.title];
-            }]];
-      }
-
-      UIAction* bookmarkAction;
-      const BOOL currentlyBookmarked = [self isTabItemBookmarked:item];
-      if (currentlyBookmarked) {
-        if ([self.contextMenuDelegate
-                respondsToSelector:@selector(editBookmarkWithURL:)]) {
-          bookmarkAction = [actionFactory actionToEditBookmarkWithBlock:^{
-            [self.contextMenuDelegate editBookmarkWithURL:item.URL];
-          }];
-        }
-      } else {
-        if ([self.contextMenuDelegate
-                respondsToSelector:@selector(bookmarkURL:title:)]) {
-          bookmarkAction = [actionFactory actionToBookmarkWithBlock:^{
-            [self.contextMenuDelegate bookmarkURL:item.URL title:item.title];
-          }];
-        }
-      }
-      // Bookmarking can be disabled from prefs (from an enterprise policy),
-      // if that's the case grey out the option in the menu.
-      if (self.browser) {
-        BOOL isEditBookmarksEnabled =
-            self.browser->GetBrowserState()->GetPrefs()->GetBoolean(
-                bookmarks::prefs::kEditBookmarksEnabled);
-        if (!isEditBookmarksEnabled && bookmarkAction) {
-          bookmarkAction.attributes = UIMenuElementAttributesDisabled;
-        }
-        if (bookmarkAction) {
-          [menuElements addObject:bookmarkAction];
-        }
+      if (bookmarkAction) {
+        [menuElements addObject:bookmarkAction];
       }
     }
+  }
 
   // Thumb strip, pinned tabs and search results menus don't support tab
   // selection.
@@ -186,31 +160,19 @@
       scenario == MenuScenarioHistogram::kTabGridSearchResult ||
       scenario == MenuScenarioHistogram::kPinnedTabsEntry ||
       scenario == MenuScenarioHistogram::kThumbStrip;
-  if (!scenarioDisablesSelection &&
-      [self.contextMenuDelegate respondsToSelector:@selector(selectTabs)]) {
+  if (!scenarioDisablesSelection) {
     [menuElements addObject:[actionFactory actionToSelectTabsWithBlock:^{
                     [self.contextMenuDelegate selectTabs];
                   }]];
   }
 
-  if ([self.contextMenuDelegate respondsToSelector:@selector
-                                (closeTabWithIdentifier:incognito:pinned:)]) {
-    [menuElements addObject:[actionFactory actionToCloseTabWithBlock:^{
-                    [self.contextMenuDelegate
-                        closeTabWithIdentifier:cell.itemIdentifier
-                                     incognito:self.incognito
-                                        pinned:pinned];
-                  }]];
-  }
+  [menuElements addObject:[actionFactory actionToCloseTabWithBlock:^{
+                  [self.contextMenuDelegate
+                      closeTabWithIdentifier:cell.itemIdentifier
+                                   incognito:self.incognito
+                                      pinned:pinned];
+                }]];
   return menuElements;
-}
-
-#pragma mark - BrowserObserving
-
-- (void)browserDestroyed:(Browser*)browser {
-  DCHECK_EQ(browser, self.browser);
-  _browserObserver.reset();
-  self.browser = nullptr;
 }
 
 #pragma mark - Private

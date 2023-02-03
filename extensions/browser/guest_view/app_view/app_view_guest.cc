@@ -19,6 +19,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/app_view/app_view_constants.h"
+#include "extensions/browser/guest_view/guest_view_feature_util.h"
 #include "extensions/browser/lazy_context_id.h"
 #include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/browser/process_manager.h"
@@ -231,6 +232,14 @@ void AppViewGuest::DidInitialize(const base::Value::Dict& create_params) {
 
   GetController().LoadURL(url_, content::Referrer(), ui::PAGE_TRANSITION_LINK,
                           std::string());
+}
+
+void AppViewGuest::MaybeRecreateGuestContents(
+    content::WebContents* embedder_web_contents) {
+  if (AreWebviewMPArchBehaviorsEnabled(browser_context())) {
+    // This situation is not possible for AppView.
+    NOTREACHED();
+  }
 }
 
 const char* AppViewGuest::GetAPINamespace() const {

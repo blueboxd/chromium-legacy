@@ -23,12 +23,13 @@ if (optimize_webui) {
 
     deps = [
       ":preprocess_generated",
-      "../../../../../ui/webui/resources:library",
-      "../../../../../ui/webui/resources/cr_components/localized_link:build_ts",
+      "//ui/webui/resources/cr_components/localized_link:build_ts",
+      "//ui/webui/resources/cr_elements:build_ts",
+      "//ui/webui/resources/js:build_ts",
+      "//ui/webui/resources/mojo:library",
     ]
 
     excludes = [
-      "chrome://resources/js/cr.js",
       "chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js",
       "chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js",
       "chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js",

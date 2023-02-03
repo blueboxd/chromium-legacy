@@ -74,6 +74,7 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline,
   bool IsActive() const override;
   absl::optional<base::TimeDelta> InitialStartTimeForAnimations() override;
   AnimationTimeDelta CalculateIntrinsicIterationDuration(
+      const Animation*,
       const Timing&) override;
   AnimationTimeDelta ZeroTime() override { return AnimationTimeDelta(); }
 
@@ -129,6 +130,10 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline,
     // Any arbitrary value should be able to be used here.
     return absl::make_optional(ANIMATION_TIME_DELTA_FROM_SECONDS(100));
   }
+
+  AnimationTimeline::TimeDelayPair ComputeEffectiveAnimationDelays(
+      const Animation* animation,
+      const Timing& timing) const override;
 
  protected:
   PhaseAndTime CurrentPhaseAndTime() override;

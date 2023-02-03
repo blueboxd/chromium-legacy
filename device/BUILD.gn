@@ -187,7 +187,10 @@ test("device_unittests") {
       "fido/virtual_u2f_device_unittest.cc",
     ]
 
-    deps += [ "//device/fido:mocks" ]
+    deps += [
+      "//device/fido:mocks",
+      "//services/data_decoder/public/cpp:test_support",
+    ]
 
     if (is_mac) {
       data_deps += [ "fido/strings:fido_test_strings" ]
@@ -282,7 +285,7 @@ test("device_unittests") {
       "bluetooth/floss/floss_advertiser_client_unittest.cc",
       "bluetooth/floss/floss_battery_manager_client_unittest.cc",
       "bluetooth/floss/floss_dbus_client_unittest.cc",
-      "bluetooth/floss/floss_gatt_client_unittest.cc",
+      "bluetooth/floss/floss_gatt_manager_client_unittest.cc",
       "bluetooth/floss/floss_lescan_client_unittest.cc",
       "bluetooth/floss/floss_manager_client_unittest.cc",
       "bluetooth/floss/floss_socket_manager_unittest.cc",

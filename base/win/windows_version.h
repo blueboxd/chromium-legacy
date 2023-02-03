@@ -54,8 +54,10 @@ enum class Version {
   WIN10_20H2 = 17,   // 20H2: Build 19042.
   WIN10_21H1 = 18,   // 21H1: Build 19043.
   WIN10_21H2 = 19,   // Win10 21H2: Build 19044.
-  SERVER_2022 = 20,  // Server 2022: Build 20348.
-  WIN11 = 21,        // Win11 21H2: Build 22000.
+  WIN10_22H2 = 20,   // Win10 21H2: Build 19045.
+  SERVER_2022 = 21,  // Server 2022: Build 20348.
+  WIN11 = 22,        // Win11 21H2: Build 22000.
+  WIN11_22H2 = 23,   // Win11 22H2: Build 22621.
   WIN_LAST,          // Indicates error condition.
 };
 
@@ -121,9 +123,9 @@ class BASE_EXPORT OSInfo {
   // The Kernel32* set of functions return the OS version as determined by a
   // call to VerQueryValue() on kernel32.dll. This avoids any running App Compat
   // shims from manipulating the version reported.
-  Version Kernel32Version() const;
-  VersionNumber Kernel32VersionNumber() const;
-  base::Version Kernel32BaseVersion() const;
+  static Version Kernel32Version();
+  static VersionNumber Kernel32VersionNumber();
+  static base::Version Kernel32BaseVersion();
 
   // These helper functions return information about common scenarios of
   // interest in regards to WOW emulation.

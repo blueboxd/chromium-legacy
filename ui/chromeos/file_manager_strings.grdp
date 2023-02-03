@@ -354,6 +354,9 @@
   <message name="IDS_FILE_BROWSER_CONFIGURE_VOLUME_BUTTON_LABEL" desc="Title of the action for configuring the selected volume.">
     Configure
   </message>
+  <message name="IDS_FILE_BROWSER_UNMOUNT_BUTTON_LABEL" desc="Title of the action for unmounting a given filesystem.">
+    Eject <ph name="TARGET_NAME">$1<ex>zipfile.zip</ex></ph>
+  </message>
   <message name="IDS_FILE_BROWSER_UNMOUNT_DEVICE_BUTTON_LABEL" desc="Title of the action for unmounting removable device.">
     Eject device
   </message>
@@ -604,6 +607,15 @@
   <message name="IDS_FILE_BROWSER_COPY_ITEMS_REMAINING_LONG" desc="File Manager status message including destination folder when copying multiple files or folders. 'Item' is used here as a generic term for file or directory.">
     Copying <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items to <ph name="FOLDER_NAME">$2<ex>images</ex></ph>
   </message>
+  <message name="IDS_FILE_BROWSER_PREPARING_FILE_NAME_MY_DRIVE" desc="Files app message displayed to users while they are copying files into My Drive to help them understand that files pasted into My Drive are not immediately synced.">
+    Preparing <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
+  </message>
+  <message name="IDS_FILE_BROWSER_PREPARING_ITEMS_MY_DRIVE" desc="Files app message displayed to users while they are copying files into My Drive to help them understand that files pasted into My Drive are not immediately synced.">
+    Preparing <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items...
+  </message>
+  <message name="IDS_FILE_BROWSER_READY_TO_SYNC_MY_DRIVE" desc="Files app message displayed to users after they copy files into My Drive to help them understand that files pasted into My Drive are not immediately synced.">
+    Ready to sync
+  </message>
   <message name="IDS_FILE_BROWSER_EXTRACT_FILESYSTEM_ERROR" desc="File Manager error message.">
     Extract operation failed. <ph name="ERROR_MESSAGE">$1<ex>An error occurred (code: ABORT)</ex></ph>
   </message>
@@ -803,6 +815,12 @@
   </message>
   <message name="IDS_FILE_BROWSER_COMPLETE_LABEL" desc="Complete label.">
     Complete
+  </message>
+  <message name="IDS_FILE_BROWSER_QUEUED_LABEL" desc="Queued label.">
+    Queued
+  </message>
+  <message name="IDS_FILE_BROWSER_IN_PROGRESS_LABEL" desc="In progress label.">
+    In progress
   </message>
   <message name="IDS_FILE_BROWSER_DISMISS_LABEL" desc="Dismiss label.">
     Dismiss

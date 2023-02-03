@@ -1149,8 +1149,10 @@ InspectorCSSAgent::AnimationsForNode(Element* element,
     AtomicString animation_name(animation_data->NameList()[i]);
     if (animation_name == CSSAnimationData::InitialName())
       continue;
-    StyleRuleKeyframes* keyframes_rule = style_resolver.FindKeyframesRule(
-        element, animating_element, animation_name);
+    StyleRuleKeyframes* keyframes_rule =
+        style_resolver
+            .FindKeyframesRule(element, animating_element, animation_name)
+            .rule;
     if (!keyframes_rule)
       continue;
 
@@ -2047,7 +2049,7 @@ std::unique_ptr<protocol::CSS::CSSContainerQuery>
 InspectorCSSAgent::BuildContainerQueryObject(CSSContainerRule* rule) {
   std::unique_ptr<protocol::CSS::CSSContainerQuery> container_query_object =
       protocol::CSS::CSSContainerQuery::create()
-          .setText(rule->ConditionTextInternal())
+          .setText(rule->containerQuery())
           .build();
 
   auto it =

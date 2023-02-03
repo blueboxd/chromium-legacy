@@ -45,10 +45,39 @@ void UpdateInternalMicBasedOnAudioDevice(AudioDevice& internal_mic,
   if (device.active) {
     internal_mic.active = true;
   }
+}
 
-  // TODO(b/260277007): Add noise cancellation to audio effects after
-  // CrasAudioHandler noise cancellation refactor complete and property added
-  // to mojo.
+// Determines the correct `mojom::AudioEffectState` for an audio device
+// depending on if:
+//   - the overall device(chromebook) supports noise cancellation
+//   - the provided audio device supports noise cancellation
+//   - if noise cancellation is enabled in CrasAudioHandler
+// TODO(b/265077695): Update logic when Noise Cancellation refactor in
+// CrasAudioHandler completed.
+mojom::AudioEffectState GetNoiseCancellationState(const AudioDevice& device) {
+  if (!device.is_input) {
+    return mojom::AudioEffectState::kNotSupported;
+  }
+
+  CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
+
+  // Overall device does not support noise cancellation.
+  if (!audio_handler->noise_cancellation_supported()) {
+    return mojom::AudioEffectState::kNotSupported;
+  }
+
+  // Check audio effect state for given audio device to determine if noise
+  // cancellation currently enabled.
+  if (!(device.audio_effect &
+        cras::AudioEffectType::EFFECT_TYPE_NOISE_CANCELLATION)) {
+    return mojom::AudioEffectState::kNotSupported;
+  }
+
+  // Device supports noise cancellation, get current device wide preference
+  // state from `CrasAudioHandler`.
+  return audio_handler->GetNoiseCancellationState()
+             ? mojom::AudioEffectState::kEnabled
+             : mojom::AudioEffectState::kNotEnabled;
 }
 
 }  // namespace
@@ -98,6 +127,7 @@ mojom::AudioDevicePtr GenerateMojoAudioDevice(const AudioDevice& device) {
   mojo_device->display_name = device.display_name;
   mojo_device->is_active = device.active;
   mojo_device->device_type = ComputeDeviceType(device.type);
+  mojo_device->noise_cancellation_state = GetNoiseCancellationState(device);
   return mojo_device;
 }
 
@@ -244,6 +274,23 @@ void CrosAudioConfigImpl::SetInputMuted(bool muted) {
   CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
   audio_handler->SetMuteForDevice(audio_handler->GetPrimaryActiveInputNode(),
                                   muted);
+}
+
+void CrosAudioConfigImpl::SetNoiseCancellationEnabled(bool enabled) {
+  CrasAudioHandler* audio_handler = CrasAudioHandler::Get();
+
+  // TODO(b/265077695): This check should be in CrasAudioHandler. It should also
+  // check for audio_effect in the active device to support noise cancellation.
+  if (!audio_handler->noise_cancellation_supported()) {
+    LOG(ERROR)
+        << "SetNoiseCancellationEnabled: Noise cancellation is not supported.";
+    return;
+  }
+
+  // TODO(b/265077695): put the SetNoiseCancellationPrefState code inside
+  // SetNoiseCancellationState in CrasAudioHandler.
+  audio_handler->SetNoiseCancellationState(enabled);
+  audio_handler->SetNoiseCancellationPrefState(enabled);
 }
 
 void CrosAudioConfigImpl::OnOutputNodeVolumeChanged(uint64_t node_id,

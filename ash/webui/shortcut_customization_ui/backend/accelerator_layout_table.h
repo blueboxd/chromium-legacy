@@ -13,9 +13,6 @@
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/mojom/accelerator_info.mojom.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "base/containers/fixed_flat_map.h"
-#include "base/no_destructor.h"
-#include "base/strings/string_piece_forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event_constants.h"
@@ -72,8 +69,6 @@ enum NonConfigurableActions {
   kBrowserBottomPage,
   kBrowserTopPage,
   kBrowserNextPane,
-  kBrowserPageUp,
-  kBrowserPageDown,
   kBrowserRightClick,
   // Ambient action ids:
   kAmbientDragLinkInSameTab,
@@ -434,12 +429,14 @@ constexpr AcceleratorLayoutDetails kAcceleratorLayouts[] = {
      mojom::AcceleratorSubcategory::kGeneral,
      /*locked=*/true, mojom::AcceleratorLayoutStyle::kDefault,
      mojom::AcceleratorSource::kAmbient},
-    {NonConfigurableActions::kBrowserBottomPage,
-     IDS_BROWSER_ACCELERATOR_DESCRIPTION_BOTTOM_PAGE,
-     mojom::AcceleratorCategory::kPageAndWebBrowser,
-     mojom::AcceleratorSubcategory::kGeneral,
-     /*locked=*/true, mojom::AcceleratorLayoutStyle::kDefault,
-     mojom::AcceleratorSource::kAmbient},
+    // TODO(jimmyxgong): Re-enable this shortcut. This conflicts with
+    // the 6-pack key End.
+    // {NonConfigurableActions::kBrowserBottomPage,
+    //  IDS_BROWSER_ACCELERATOR_DESCRIPTION_BOTTOM_PAGE,
+    //  mojom::AcceleratorCategory::kPageAndWebBrowser,
+    //  mojom::AcceleratorSubcategory::kGeneral,
+    //  /*locked=*/true, mojom::AcceleratorLayoutStyle::kDefault,
+    //  mojom::AcceleratorSource::kAmbient},
     {NonConfigurableActions::kBrowserFindNext,
      IDS_BROWSER_ACCELERATOR_DESCRIPTION_FIND_NEXT,
      mojom::AcceleratorCategory::kPageAndWebBrowser,
@@ -452,26 +449,16 @@ constexpr AcceleratorLayoutDetails kAcceleratorLayouts[] = {
      mojom::AcceleratorSubcategory::kGeneral,
      /*locked=*/true, mojom::AcceleratorLayoutStyle::kText,
      mojom::AcceleratorSource::kAmbient},
-    {NonConfigurableActions::kBrowserTopPage,
-     IDS_BROWSER_ACCELERATOR_DESCRIPTION_TOP_PAGE,
-     mojom::AcceleratorCategory::kPageAndWebBrowser,
-     mojom::AcceleratorSubcategory::kGeneral,
-     /*locked=*/true, mojom::AcceleratorLayoutStyle::kDefault,
-     mojom::AcceleratorSource::kAmbient},
+    // TODO(jimmyxgong): Re-enable this shortcut. This conflicts with
+    // the 6-pack key Home.
+    // {NonConfigurableActions::kBrowserTopPage,
+    //  IDS_BROWSER_ACCELERATOR_DESCRIPTION_TOP_PAGE,
+    //  mojom::AcceleratorCategory::kPageAndWebBrowser,
+    //  mojom::AcceleratorSubcategory::kGeneral,
+    //  /*locked=*/true, mojom::AcceleratorLayoutStyle::kDefault,
+    //  mojom::AcceleratorSource::kAmbient},
     {NonConfigurableActions::kBrowserNextPane,
      IDS_BROWSER_ACCELERATOR_DESCRIPTION_NEXT_PANE,
-     mojom::AcceleratorCategory::kPageAndWebBrowser,
-     mojom::AcceleratorSubcategory::kGeneral,
-     /*locked=*/true, mojom::AcceleratorLayoutStyle::kDefault,
-     mojom::AcceleratorSource::kAmbient},
-    {NonConfigurableActions::kBrowserPageDown,
-     IDS_BROWSER_ACCELERATOR_DESCRIPTION_PAGE_DOWN,
-     mojom::AcceleratorCategory::kPageAndWebBrowser,
-     mojom::AcceleratorSubcategory::kGeneral,
-     /*locked=*/true, mojom::AcceleratorLayoutStyle::kDefault,
-     mojom::AcceleratorSource::kAmbient},
-    {NonConfigurableActions::kBrowserPageUp,
-     IDS_BROWSER_ACCELERATOR_DESCRIPTION_PAGE_UP,
      mojom::AcceleratorCategory::kPageAndWebBrowser,
      mojom::AcceleratorSubcategory::kGeneral,
      /*locked=*/true, mojom::AcceleratorLayoutStyle::kDefault,

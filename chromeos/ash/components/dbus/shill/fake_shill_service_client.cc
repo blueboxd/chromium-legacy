@@ -211,6 +211,13 @@ void FakeShillServiceClient::SetProperties(const dbus::ObjectPath& service_path,
                                            const base::Value& properties,
                                            base::OnceClosure callback,
                                            ErrorCallback error_callback) {
+  if (set_properties_error_name_.has_value()) {
+    std::move(error_callback)
+        .Run(set_properties_error_name_.value(),
+             /*error_message=*/std::string());
+    set_properties_error_name_ = absl::nullopt;
+    return;
+  }
   for (auto iter : properties.DictItems()) {
     if (!SetServiceProperty(service_path.value(), iter.first, iter.second)) {
       LOG(ERROR) << "Service not found: " << service_path.value();
@@ -350,7 +357,7 @@ void FakeShillServiceClient::GetLoadableProfileEntries(
   DCHECK(profiles.size()) << "No profiles contain given service";
   // Provide a dictionary with  {profile_path: service_path} entries for
   // profile_paths that contain the service.
-  base::Value result_properties(base::Value::Type::DICTIONARY);
+  base::Value result_properties(base::Value::Type::DICT);
   for (const auto& profile : profiles) {
     result_properties.SetKey(profile, base::Value(service_path.value()));
   }
@@ -639,7 +646,7 @@ bool FakeShillServiceClient::ClearConfiguredServiceProperties(
     return true;
   }
 
-  base::Value properties_after_delete_entry(base::Value::Type::DICTIONARY);
+  base::Value properties_after_delete_entry(base::Value::Type::DICT);
 
   // Explicitly clear the profile property using SetServiceProperty so a
   // notification is sent about that.
@@ -700,7 +707,7 @@ std::string FakeShillServiceClient::FindSimilarService(
 
 void FakeShillServiceClient::ClearServices() {
   ShillManagerClient::Get()->GetTestInterface()->ClearManagerServices();
-  stub_services_ = base::Value(base::Value::Type::DICTIONARY);
+  stub_services_ = base::Value(base::Value::Type::DICT);
   connect_behavior_.clear();
 }
 
@@ -717,6 +724,11 @@ void FakeShillServiceClient::SetConnectBehavior(
 void FakeShillServiceClient::SetErrorForNextConnectionAttempt(
     const std::string& error_name) {
   connect_error_name_ = error_name;
+}
+
+void FakeShillServiceClient::SetErrorForNextSetPropertiesAttempt(
+    const std::string& error_name) {
+  set_properties_error_name_ = error_name;
 }
 
 void FakeShillServiceClient::SetRequestPortalState(const std::string& state) {
@@ -764,8 +776,8 @@ base::Value* FakeShillServiceClient::GetModifiableServiceProperties(
     bool create_if_missing) {
   base::Value* properties = stub_services_.FindDictKey(service_path);
   if (!properties && create_if_missing) {
-    properties = stub_services_.SetKey(
-        service_path, base::Value(base::Value::Type::DICTIONARY));
+    properties = stub_services_.SetKey(service_path,
+                                       base::Value(base::Value::Type::DICT));
   }
   return properties;
 }

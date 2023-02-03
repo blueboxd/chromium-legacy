@@ -22,6 +22,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/core/svg/svg_unit_types.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -34,10 +35,11 @@ class Vector2dF;
 namespace blink {
 
 class ComputedStyle;
+class Element;
+class LayoutObject;
 class SVGElement;
 class SVGLength;
 class UnzoomedLength;
-struct LengthPoint;
 
 enum class SVGLengthMode { kWidth, kHeight, kOther };
 
@@ -68,10 +70,6 @@ class CORE_EXPORT SVGLengthContext {
                                    const Length& y_length,
                                    const ComputedStyle&) const;
 
-  Length ConvertToLength(const SVGLength&) const;
-  LengthPoint ConvertToLengthPoint(const SVGLength& x,
-                                   const SVGLength& y) const;
-
   float ConvertValueToUserUnits(float,
                                 SVGLengthMode,
                                 CSSPrimitiveValue::UnitType from_unit) const;
@@ -96,7 +94,23 @@ class CORE_EXPORT SVGLengthContext {
   float ValueForLength(const Length&, float zoom, SVGLengthMode) const;
   static float ValueForLength(const Length&, float zoom, float dimension);
 
+  double ConvertValueToUserUnitsUnclamped(
+      float value,
+      SVGLengthMode mode,
+      CSSPrimitiveValue::UnitType from_unit) const;
+
   const SVGElement* context_;
+};
+
+class SVGLengthConversionData : public CSSToLengthConversionData {
+  STACK_ALLOCATED();
+
+ public:
+  SVGLengthConversionData(const Element& context, const ComputedStyle& style);
+  explicit SVGLengthConversionData(const LayoutObject& object);
+
+ private:
+  CSSToLengthConversionData::Flags ignored_flags_ = 0;
 };
 
 }  // namespace blink

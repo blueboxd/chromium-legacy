@@ -158,7 +158,7 @@ void RealtimeAudioDestinationHandler::RestartRendering() {
 }
 
 uint32_t RealtimeAudioDestinationHandler::MaxChannelCount() const {
-  return AudioDestination::MaxChannelCount();
+  return platform_destination_->MaxChannelCount();
 }
 
 double RealtimeAudioDestinationHandler::SampleRate() const {
@@ -362,6 +362,18 @@ void RealtimeAudioDestinationHandler::StopPlatformDestination() {
   if (platform_destination_->IsPlaying()) {
     platform_destination_->Stop();
   }
+}
+
+void RealtimeAudioDestinationHandler::PrepareTaskRunnerForWorklet() {
+  DCHECK(IsMainThread());
+  DCHECK_EQ(Context()->ContextState(), BaseAudioContext::kSuspended);
+  DCHECK(Context()->audioWorklet());
+  DCHECK(Context()->audioWorklet()->IsReady());
+
+  platform_destination_->SetWorkletTaskRunner(
+      Context()->audioWorklet()->GetMessagingProxy()
+          ->GetBackingWorkerThread()
+          ->GetTaskRunner(TaskType::kInternalMediaRealTime));
 }
 
 void RealtimeAudioDestinationHandler::SetSinkDescriptor(

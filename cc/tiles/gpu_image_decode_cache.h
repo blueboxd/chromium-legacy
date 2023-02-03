@@ -18,6 +18,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/raw_ptr.h"
 #include "base/synchronization/lock.h"
+#include "base/time/time.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/cc_export.h"
 #include "cc/paint/image_transfer_cache_entry.h"
@@ -543,6 +544,7 @@ class CC_EXPORT GpuImageDecodeCache
     bool is_bitmap_backed;
     bool is_budgeted = false;
     absl::optional<SkYUVAPixmapInfo> yuva_pixmap_info;
+    base::TimeTicks last_use;
 
     // If true, this image is no longer in our |persistent_cache_| and will be
     // deleted as soon as its ref count reaches zero.
@@ -633,7 +635,7 @@ class CC_EXPORT GpuImageDecodeCache
   // freeing unreferenced cache entries to make room.
   bool EnsureCapacity(size_t required_size);
   bool CanFitInWorkingSet(size_t size) const;
-  bool ExceedsPreferredCount() const;
+  bool ExceedsCacheLimits() const;
 
   void InsertTransferCacheEntry(
       const ClientImageTransferCacheEntry& image_entry,
@@ -770,6 +772,10 @@ class CC_EXPORT GpuImageDecodeCache
   template <typename Iterator>
   Iterator RemoveFromPersistentCache(Iterator it);
 
+  // Purges any old entries from the PersistentCache if the feature to enable
+  // this behavior is turned on.
+  void MaybePurgeOldCacheEntries();
+
   // Adds mips to an image if required.
   void UpdateMipsIfNeeded(const DrawImage& draw_image, ImageData* image_data);
 
@@ -793,6 +799,10 @@ class CC_EXPORT GpuImageDecodeCache
   base::Lock lock_;
 
   PersistentCache persistent_cache_;
+
+  // Tracks the total number of bytes of image data represented by the elements
+  // in `persistent_cache_`. Must be updated on AddTo/RemoveFromPersistentCache.
+  size_t persistent_cache_memory_size_ = 0;
 
   struct CacheEntries {
     PaintImage::ContentId content_ids[2] = {PaintImage::kInvalidContentId,

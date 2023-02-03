@@ -52,7 +52,7 @@ class MojoMediaClientImpl : public MojoMediaClient {
       case VideoDecoderType::kVaapi:
       case VideoDecoderType::kV4L2:
         configs = VideoDecoderPipeline::GetSupportedConfigs(
-            gpu::GpuDriverBugWorkarounds());
+            GetDecoderImplementationType(), gpu::GpuDriverBugWorkarounds());
         break;
       case VideoDecoderType::kVda: {
         VideoDecodeAccelerator::Capabilities capabilities =
@@ -90,7 +90,7 @@ class MojoMediaClientImpl : public MojoMediaClient {
 #endif
   }
   std::unique_ptr<VideoDecoder> CreateVideoDecoder(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
       MediaLog* media_log,
       mojom::CommandBufferIdPtr command_buffer_id,
       RequestOverlayInfoCB request_overlay_info_cb,
@@ -130,7 +130,9 @@ class MojoMediaClientImpl : public MojoMediaClient {
           gpu::GpuDriverBugWorkarounds(),
           /*client_task_runner=*/std::move(task_runner),
           std::make_unique<PlatformVideoFramePool>(),
-          std::make_unique<media::VideoFrameConverter>(), std::move(log),
+          std::make_unique<media::VideoFrameConverter>(),
+          VideoDecoderPipeline::DefaultPreferredRenderableFourccs(),
+          std::move(log),
           /*oop_video_decoder=*/{});
     }
   }

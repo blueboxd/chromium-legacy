@@ -67,14 +67,8 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
   // `report_urls` Reporting URLs returned by seller worklet reportResult()
   //  methods and the winning bidder's reportWin() methods, if any.
   //
-  // `debug_loss_report_urls` URLs to use for reporting loss result to bidders
-  //  and the seller. Empty if no report should be sent.
-  //
-  // `debug_win_report_urls` URLs to use for reporting win result to bidders and
-  //  the seller. Empty if no report should be sent.
-  //
-  // `interest_groups_that_bid` is a list of the interest groups that made bids
-  // in the auction. Empty if the auction didn't run to completion.
+  // `private_aggregation_requests` Requests made to the Private Aggregation
+  //  API. Keyed by reporting origin of the associated requests.
   //
   // `errors` are various error messages to be used for debugging. These are too
   //  sensitive for the renderers to see.
@@ -95,11 +89,8 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
       absl::optional<GURL> render_url,
       std::vector<GURL> ad_component_urls,
       std::string winning_group_ad_metadata,
-      std::vector<GURL> debug_loss_report_urls,
-      std::vector<GURL> debug_win_report_urls,
       std::map<url::Origin, PrivateAggregationRequests>
           private_aggregation_requests,
-      blink::InterestGroupSet interest_groups_that_bid,
       base::flat_set<std::string> k_anon_keys_to_join,
       std::vector<std::string> errors,
       std::unique_ptr<InterestGroupAuctionReporter>
@@ -120,9 +111,15 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
   // `auction_config` is the configuration provided by client JavaScript in
   //  the renderer in order to initiate the auction.
   //
-  //  `client_security_state` is the client security state of the frame that
+  // `frame_origin` is the origin of the frame running the auction. Used for
+  //  issuing reports.
+  //
+  // `client_security_state` is the client security state of the frame that
   //  issued the auction request -- this is used for post-auction interest group
-  //  updates.
+  //  updates, and sending reports.
+  //
+  // `url_loader_factory` will be used to issue reporting requests. It should be
+  // backed by a trusted URLLoaderFactory.
   //
   // `is_interest_group_api_allowed_callback` will be called on all buyer and
   //  seller origins, and those for which it returns false will not be allowed
@@ -131,14 +128,16 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
   // `browser_signals` signals from the browser about the auction that are the
   //  same for all worklets.
   //
-  //  `callback` is invoked on auction completion. It should synchronously
+  // `callback` is invoked on auction completion. It should synchronously
   //  destroy this AuctionRunner object. `callback` won't be invoked until after
   //  CreateAndStart() returns.
   static std::unique_ptr<AuctionRunner> CreateAndStart(
       AuctionWorkletManager* auction_worklet_manager,
       InterestGroupManagerImpl* interest_group_manager,
       const blink::AuctionConfig& auction_config,
+      const url::Origin& frame_origin,
       network::mojom::ClientSecurityStatePtr client_security_state,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       IsInterestGroupApiAllowedCallback is_interest_group_api_allowed_callback,
       mojo::PendingReceiver<AbortableAdAuction> abort_receiver,
       RunAuctionCallback callback);
@@ -186,7 +185,9 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
       InterestGroupManagerImpl* interest_group_manager,
       auction_worklet::mojom::KAnonymityBidMode kanon_mode,
       const blink::AuctionConfig& auction_config,
+      const url::Origin& frame_origin,
       network::mojom::ClientSecurityStatePtr client_security_state,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       IsInterestGroupApiAllowedCallback is_interest_group_api_allowed_callback,
       mojo::PendingReceiver<AbortableAdAuction> abort_receiver,
       RunAuctionCallback callback);
@@ -226,10 +227,14 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
 
   const raw_ptr<InterestGroupManagerImpl> interest_group_manager_;
 
+  const url::Origin frame_origin_;
+
   // ClientSecurityState built from the frame that issued the auction request;
   // will be used to update interest groups that participated in the auction
   // after the auction.
-  network::mojom::ClientSecurityStatePtr client_security_state_;
+  const network::mojom::ClientSecurityStatePtr client_security_state_;
+
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // For checking if operations like running auctions, updating interest groups,
   // etc. are allowed or not.

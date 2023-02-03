@@ -254,7 +254,7 @@ bool ReadValue(const base::Pickle* pickle,
       *value = base::Value(data);
       break;
     }
-    case base::Value::Type::DICTIONARY: {
+    case base::Value::Type::DICT: {
       base::Value::Dict val;
       if (!ReadDictValue(pickle, iter, recursion, &val))
         return false;
@@ -1311,7 +1311,7 @@ bool ParamTraits<base::UnguessableToken>::Read(const base::Pickle* m,
   // deserialized by the traits should always yield a non-empty token.
   // If deserialization results in an empty token, the data is malformed.
   absl::optional<base::UnguessableToken> token =
-      base::UnguessableToken::Deserialize2(high, low);
+      base::UnguessableToken::Deserialize(high, low);
   if (!token.has_value()) {
     return false;
   }

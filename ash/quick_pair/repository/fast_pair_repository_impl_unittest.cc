@@ -58,6 +58,8 @@ constexpr char kTestClassicAddress2[] = "00:11:22:33:44:66";
 constexpr char kTestClassicAddress3[] = "04:CB:88:1E:56:19";
 constexpr char kBase64ExpectedSha256Hash[] =
     "gVzzRtZjwYv8lO8xwWnWW2uw/stV6RdEUhv3cIN3nH4=";
+constexpr char kBase64ForgetPatternSha256Hash[] =
+    "8PDw8NZjwYv8lO8xwWnWW2uw/stV6RdEUhv3cIN3nH4=";
 constexpr char kBase64AccountKey[] = "BAcDiEH56/Mq3hW7OKUctA==";
 const std::vector<uint8_t> kAccountKey1{0x11, 0x22, 0x33, 0x44, 0x55, 0x66,
                                         0x77, 0x88, 0x99, 0x00, 0xAA, 0xBB,
@@ -330,6 +332,31 @@ TEST_F(FastPairRepositoryImplTest, CheckAccountKeys_Match) {
   run_loop->Run();
 }
 
+TEST_F(FastPairRepositoryImplTest, CheckAccountKeys_SkipForgetPattern) {
+  AccountKeyFilter filter(kFilterBytes1, {salt});
+  nearby::fastpair::GetObservedDeviceResponse details;
+  DeviceMetadata metadata(details, gfx::Image());
+
+  // In this test, we use a known "marked as forgotten" hash
+  // from Android. Note that Android also leaves the account key
+  // blank; however, we add a matching account key here to test the logic
+  // of detecting the Forget pattern in the hash, which should be cause
+  // the device to be skipped in CheckAccountKeys.
+  nearby::fastpair::FastPairInfo info = BuildFastPairInfo(
+      kValidModelId, kAccountKey1, kTestClassicAddress1, &metadata);
+  auto* device = info.mutable_device();
+  device->set_sha256_account_key_public_address(
+      Base64Decode(kBase64ForgetPatternSha256Hash));
+  footprints_fetcher_->AddUserFastPairInfo(info, base::DoNothing());
+
+  auto run_loop = std::make_unique<base::RunLoop>();
+  fast_pair_repository_->CheckAccountKeys(
+      filter, base::BindOnce(&FastPairRepositoryImplTest::VerifyAccountKeyCheck,
+                             base::Unretained(this), run_loop->QuitClosure(),
+                             /*expected_result=*/false));
+  run_loop->Run();
+}
+
 TEST_F(FastPairRepositoryImplTest, UpdateStaleUserDeviceCache) {
   AccountKeyFilter filter(kFilterBytes1, {salt});
   nearby::fastpair::GetObservedDeviceResponse response;
@@ -338,7 +365,8 @@ TEST_F(FastPairRepositoryImplTest, UpdateStaleUserDeviceCache) {
   auto device = base::MakeRefCounted<Device>(kValidModelId, kTestBLEAddress,
                                              Protocol::kFastPairInitial);
   device->set_classic_address(kTestClassicAddress1);
-  fast_pair_repository_->AssociateAccountKey(device, kAccountKey1);
+  fast_pair_repository_->WriteAccountAssociationToFootprints(device,
+                                                             kAccountKey1);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(footprints_fetcher_->ContainsKey(kAccountKey1));
   ASSERT_TRUE(
@@ -383,7 +411,8 @@ TEST_F(FastPairRepositoryImplTest, UseStaleCache) {
   auto device = base::MakeRefCounted<Device>(kValidModelId, kTestBLEAddress,
                                              Protocol::kFastPairInitial);
   device->set_classic_address(kTestClassicAddress1);
-  fast_pair_repository_->AssociateAccountKey(device, kAccountKey1);
+  fast_pair_repository_->WriteAccountAssociationToFootprints(device,
+                                                             kAccountKey1);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(footprints_fetcher_->ContainsKey(kAccountKey1));
   ASSERT_TRUE(
@@ -425,7 +454,8 @@ TEST_F(FastPairRepositoryImplTest, GetDeviceNameFromCache) {
                                              Protocol::kFastPairSubsequent);
   device->set_classic_address(kTestClassicAddress1);
   device->set_account_key(kAccountKey1);
-  fast_pair_repository_->AssociateAccountKey(device, kAccountKey1);
+  fast_pair_repository_->WriteAccountAssociationToFootprints(device,
+                                                             kAccountKey1);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(footprints_fetcher_->ContainsKey(kAccountKey1));
   ASSERT_TRUE(
@@ -456,7 +486,10 @@ TEST_F(FastPairRepositoryImplTest, LocalRemoveDeviceUpdatesCache) {
   auto device = base::MakeRefCounted<Device>(kValidModelId, kTestBLEAddress,
                                              Protocol::kFastPairInitial);
   device->set_classic_address(kTestClassicAddress1);
-  fast_pair_repository_->AssociateAccountKey(device, kAccountKey1);
+  device->set_account_key(kAccountKey1);
+  fast_pair_repository_->WriteAccountAssociationToLocalRegistry(device);
+  fast_pair_repository_->WriteAccountAssociationToFootprints(device,
+                                                             kAccountKey1);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(footprints_fetcher_->ContainsKey(kAccountKey1));
   ASSERT_TRUE(
@@ -484,21 +517,25 @@ TEST_F(FastPairRepositoryImplTest, LocalRemoveDeviceUpdatesCache) {
   run_loop->Run();
 }
 
-TEST_F(FastPairRepositoryImplTest, AssociateAccountKey_InvalidId) {
+TEST_F(FastPairRepositoryImplTest,
+       WriteAccountAssociationToFootprints_InvalidId) {
   auto device = base::MakeRefCounted<Device>(kInvalidModelId, kTestBLEAddress,
                                              Protocol::kFastPairInitial);
   device->set_classic_address(kTestClassicAddress1);
-  fast_pair_repository_->AssociateAccountKey(device, kAccountKey1);
+  fast_pair_repository_->WriteAccountAssociationToFootprints(device,
+                                                             kAccountKey1);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_FALSE(footprints_fetcher_->ContainsKey(kAccountKey1));
 }
 
-TEST_F(FastPairRepositoryImplTest, AssociateAccountKey_ValidId) {
+TEST_F(FastPairRepositoryImplTest,
+       WriteAccountAssociationToFootprints_ValidId) {
   auto device = base::MakeRefCounted<Device>(kValidModelId, kTestBLEAddress,
                                              Protocol::kFastPairInitial);
   device->set_classic_address(kTestClassicAddress1);
-  fast_pair_repository_->AssociateAccountKey(device, kAccountKey1);
+  fast_pair_repository_->WriteAccountAssociationToFootprints(device,
+                                                             kAccountKey1);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(footprints_fetcher_->ContainsKey(kAccountKey1));
@@ -509,11 +546,12 @@ TEST_F(FastPairRepositoryImplTest, AssociateAccountKey_ValidId) {
 }
 
 TEST_F(FastPairRepositoryImplTest,
-       AssociateAccountKey_LogRetroactiveSuccessFunnel) {
+       WriteAccountAssociationToFootprints_LogRetroactiveSuccessFunnel) {
   auto device = base::MakeRefCounted<Device>(kValidModelId, kTestBLEAddress,
                                              Protocol::kFastPairRetroactive);
   device->set_classic_address(kTestClassicAddress1);
-  fast_pair_repository_->AssociateAccountKey(device, kAccountKey1);
+  fast_pair_repository_->WriteAccountAssociationToFootprints(device,
+                                                             kAccountKey1);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(footprints_fetcher_->ContainsKey(kAccountKey1));
@@ -524,23 +562,26 @@ TEST_F(FastPairRepositoryImplTest,
 }
 
 TEST_F(FastPairRepositoryImplTest,
-       AssociateAccountKeyLocally_InvalidNoAccountKey) {
+       WriteAccountAssociationToLocalRegistry_InvalidNoAccountKey) {
   auto device = base::MakeRefCounted<Device>(kInvalidModelId, kTestBLEAddress,
                                              Protocol::kFastPairInitial);
   device->set_classic_address(kTestClassicAddress1);
-  ASSERT_FALSE(fast_pair_repository_->AssociateAccountKeyLocally(device));
+  ASSERT_FALSE(
+      fast_pair_repository_->WriteAccountAssociationToLocalRegistry(device));
   base::RunLoop().RunUntilIdle();
 
   ASSERT_FALSE(
       saved_device_registry_->IsAccountKeySavedToRegistry(kAccountKey1));
 }
 
-TEST_F(FastPairRepositoryImplTest, AssociateAccountKeyLocally_ValidAccountKey) {
+TEST_F(FastPairRepositoryImplTest,
+       WriteAccountAssociationToLocalRegistry_ValidAccountKey) {
   auto device = base::MakeRefCounted<Device>(kInvalidModelId, kTestBLEAddress,
                                              Protocol::kFastPairInitial);
   device->set_classic_address(kTestClassicAddress1);
   device->set_account_key(kAccountKey1);
-  ASSERT_TRUE(fast_pair_repository_->AssociateAccountKeyLocally(device));
+  ASSERT_TRUE(
+      fast_pair_repository_->WriteAccountAssociationToLocalRegistry(device));
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(
@@ -555,7 +596,10 @@ TEST_F(FastPairRepositoryImplTest, DeleteAssociatedDevice_Valid) {
   auto device = base::MakeRefCounted<Device>(kValidModelId, kTestBLEAddress,
                                              Protocol::kFastPairInitial);
   device->set_classic_address(kTestClassicAddress1);
-  fast_pair_repository_->AssociateAccountKey(device, kAccountKey1);
+  device->set_account_key(kAccountKey1);
+  fast_pair_repository_->WriteAccountAssociationToLocalRegistry(device);
+  fast_pair_repository_->WriteAccountAssociationToFootprints(device,
+                                                             kAccountKey1);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(footprints_fetcher_->ContainsKey(kAccountKey1));
   ASSERT_TRUE(
@@ -591,7 +635,10 @@ TEST_F(FastPairRepositoryImplTest, DeleteAssociatedDeviceByAccountKey_Valid) {
   auto device = base::MakeRefCounted<Device>(kValidModelId, kTestBLEAddress,
                                              Protocol::kFastPairInitial);
   device->set_classic_address(kTestClassicAddress1);
-  fast_pair_repository_->AssociateAccountKey(device, kAccountKey1);
+  device->set_account_key(kAccountKey1);
+  fast_pair_repository_->WriteAccountAssociationToLocalRegistry(device);
+  fast_pair_repository_->WriteAccountAssociationToFootprints(device,
+                                                             kAccountKey1);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(footprints_fetcher_->ContainsKey(kAccountKey1));
   ASSERT_TRUE(
@@ -613,7 +660,10 @@ TEST_F(FastPairRepositoryImplTest, RetriesForgetDevice_AfterNetworkAvailable) {
   auto device = base::MakeRefCounted<Device>(kValidModelId, kTestBLEAddress,
                                              Protocol::kFastPairInitial);
   device->set_classic_address(kTestClassicAddress1);
-  fast_pair_repository_->AssociateAccountKey(device, kAccountKey1);
+  device->set_account_key(kAccountKey1);
+  fast_pair_repository_->WriteAccountAssociationToLocalRegistry(device);
+  fast_pair_repository_->WriteAccountAssociationToFootprints(device,
+                                                             kAccountKey1);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(footprints_fetcher_->ContainsKey(kAccountKey1));
   ASSERT_TRUE(
@@ -679,7 +729,10 @@ TEST_F(FastPairRepositoryImplTest, RetriesForgetDevice_AlreadyDeleted) {
   auto device = base::MakeRefCounted<Device>(kValidModelId, kTestBLEAddress,
                                              Protocol::kFastPairInitial);
   device->set_classic_address(kTestClassicAddress1);
-  fast_pair_repository_->AssociateAccountKey(device, kAccountKey1);
+  device->set_account_key(kAccountKey1);
+  fast_pair_repository_->WriteAccountAssociationToLocalRegistry(device);
+  fast_pair_repository_->WriteAccountAssociationToFootprints(device,
+                                                             kAccountKey1);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(footprints_fetcher_->ContainsKey(kAccountKey1));
@@ -730,7 +783,10 @@ TEST_F(FastPairRepositoryImplTest, RetriesForgetDevice_MultipleDevices) {
   auto device1 = base::MakeRefCounted<Device>(kValidModelId, kTestBLEAddress,
                                               Protocol::kFastPairInitial);
   device1->set_classic_address(kTestClassicAddress1);
-  fast_pair_repository_->AssociateAccountKey(device1, kAccountKey1);
+  device1->set_account_key(kAccountKey1);
+  fast_pair_repository_->WriteAccountAssociationToFootprints(device1,
+                                                             kAccountKey1);
+  fast_pair_repository_->WriteAccountAssociationToLocalRegistry(device1);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(footprints_fetcher_->ContainsKey(kAccountKey1));
@@ -740,7 +796,10 @@ TEST_F(FastPairRepositoryImplTest, RetriesForgetDevice_MultipleDevices) {
   auto device2 = base::MakeRefCounted<Device>(kValidModelId, kTestBLEAddress2,
                                               Protocol::kFastPairInitial);
   device2->set_classic_address(kTestClassicAddress2);
-  fast_pair_repository_->AssociateAccountKey(device2, kAccountKey2);
+  device2->set_account_key(kAccountKey2);
+  fast_pair_repository_->WriteAccountAssociationToFootprints(device2,
+                                                             kAccountKey2);
+  fast_pair_repository_->WriteAccountAssociationToLocalRegistry(device2);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(footprints_fetcher_->ContainsKey(kAccountKey2));
@@ -937,7 +996,8 @@ TEST_F(FastPairRepositoryImplTest, GetSavedDevices_OptedIn) {
   auto device = base::MakeRefCounted<Device>(kValidModelId, kTestBLEAddress,
                                              Protocol::kFastPairInitial);
   device->set_classic_address(kTestClassicAddress1);
-  fast_pair_repository_->AssociateAccountKey(device, kAccountKey1);
+  fast_pair_repository_->WriteAccountAssociationToFootprints(device,
+                                                             kAccountKey1);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(footprints_fetcher_->ContainsKey(kAccountKey1));
   base::RunLoop().RunUntilIdle();
@@ -1109,6 +1169,28 @@ TEST_F(FastPairRepositoryImplTest,
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(FastPairRepositoryImplTest, IsDeviceSavedToAccount_IgnoreForgetPattern) {
+  // In this test, we use a known "marked as forgotten" hash
+  // from Android. Note that Android also leaves the account key
+  // blank; however, we add an account key here to test the logic
+  // of detecting the Forget pattern in the hash.
+  nearby::fastpair::FastPairInfo info;
+  auto* device = info.mutable_device();
+  device->set_account_key(Base64Decode(kBase64AccountKey));
+  device->set_sha256_account_key_public_address(
+      Base64Decode(kBase64ForgetPatternSha256Hash));
+  nearby::fastpair::UserReadDevicesResponse response;
+  *response.add_fast_pair_info() = info;
+  footprints_fetcher_->SetGetUserDevicesResponse(response);
+
+  base::MockCallback<base::OnceCallback<void(bool)>> callback;
+  EXPECT_CALL(callback, Run(testing::Eq(false))).Times(1);
+  fast_pair_repository_->IsDeviceSavedToAccount(kTestClassicAddress3,
+                                                callback.Get());
+
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_F(FastPairRepositoryImplTest, IsDeviceSavedToAccount_NoMatch) {
   nearby::fastpair::FastPairInfo info;
   auto* device = info.mutable_device();
@@ -1214,11 +1296,12 @@ TEST_F(FastPairRepositoryImplTest, IsHashCorrect) {
 }
 
 TEST_F(FastPairRepositoryImplTest,
-       WriteDeviceToFootprints_RemoveDeviceFromPendingWriteStore) {
+       WriteAccountAssociationToFootprints_RemoveDeviceFromPendingWriteStore) {
   auto device = base::MakeRefCounted<Device>(kValidModelId, kTestBLEAddress,
                                              Protocol::kFastPairInitial);
   device->set_classic_address(kTestClassicAddress1);
-  fast_pair_repository_->AssociateAccountKey(device, kAccountKey1);
+  fast_pair_repository_->WriteAccountAssociationToFootprints(device,
+                                                             kAccountKey1);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(footprints_fetcher_->ContainsKey(kAccountKey1));
   ASSERT_TRUE(
@@ -1235,7 +1318,8 @@ TEST_F(FastPairRepositoryImplTest, RetriesWriteDevice_AfterNetworkAvailable) {
 
   // Mock an error due to Network failure.
   footprints_fetcher_->SetAddUserFastPairInfoResult(false);
-  fast_pair_repository_->AssociateAccountKey(device, kAccountKey1);
+  fast_pair_repository_->WriteAccountAssociationToFootprints(device,
+                                                             kAccountKey1);
 
   base::RunLoop().RunUntilIdle();
 
@@ -1302,7 +1386,8 @@ TEST_F(FastPairRepositoryImplTest,
 
   // Mock an error due to Network failure.
   footprints_fetcher_->SetAddUserFastPairInfoResult(false);
-  fast_pair_repository_->AssociateAccountKey(device, kAccountKey1);
+  fast_pair_repository_->WriteAccountAssociationToFootprints(device,
+                                                             kAccountKey1);
 
   base::RunLoop().RunUntilIdle();
 

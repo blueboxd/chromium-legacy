@@ -133,6 +133,10 @@
 #include <OpenGL/CGLIOSurface.h>
 #endif  // BUILDFLAG(IS_MAC)
 
+#if BUILDFLAG(IS_WIN)
+#include "ui/gl/gl_image_d3d.h"
+#endif
+
 // Note: this undefs far and near so include this after other Windows headers.
 #include "third_party/angle/src/image_util/loadimage.h"
 
@@ -1251,8 +1255,16 @@ class GLES2DecoderImpl : public GLES2Decoder,
                                            GLenum plane_config,
                                            GLenum subsampling,
                                            const volatile GLbyte* mailboxes_in);
+  void DoCopySharedImageINTERNAL(GLint xoffset,
+                                 GLint yoffset,
+                                 GLint x,
+                                 GLint y,
+                                 GLsizei width,
+                                 GLsizei height,
+                                 GLboolean unpack_flip_y,
+                                 const volatile GLbyte* mailboxes);
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   void AttachImageToTextureWithDecoderBinding(uint32_t client_texture_id,
                                               uint32_t texture_target,
                                               gl::GLImage* image) override;
@@ -1261,16 +1273,6 @@ class GLES2DecoderImpl : public GLES2Decoder,
                                              uint32_t texture_target,
                                              gl::GLImage* image) override;
 #endif
-
-  // Attaches |image| to the texture referred to by |client_texture_id|, marking
-  // the image as needing on-demand binding by the decoder if
-  // |can_bind_to_sampler| is false and as not needing on-demand binding by the
-  // decoder otherwise. |can_bind_to_sampler| is always false on Mac/Win and
-  // always true on all other platforms.
-  void BindImageInternal(uint32_t client_texture_id,
-                         uint32_t texture_target,
-                         gl::GLImage* image,
-                         bool can_bind_to_sampler);
 
   void DoTraceEndCHROMIUM(void);
 
@@ -2195,6 +2197,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
       const char* function_name, GLuint max_vertex_accessed, bool* simulated);
   void RestoreStateForAttrib(GLuint attrib, bool restore_array_binding);
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   // If the texture has an image but that image is not bound to the texture,
   // this will attempt to bind it. texture_unit is the texture unit it should
   // be bound to, or 0 if it doesn't matter - setting it to 0 will cause the
@@ -2204,6 +2207,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
   bool DoBindTexImageIfNeeded(Texture* texture,
                               GLenum textarget,
                               GLuint texture_unit);
+#endif
 
   void DoWindowRectanglesEXT(GLenum mode, GLsizei n, const volatile GLint* box);
 
@@ -3228,15 +3232,14 @@ bool BackTexture::AllocateNativeGpuMemoryBuffer(const gfx::Size& size,
       decoder_->CreateAnonymousImage(size, buffer_format, &is_cleared);
   if (!image)
     return false;
-  if (!image->BindTexImage(Target()))
-    return false;
+  image->BindTexImage(Target());
 
   image_ = image;
   decoder_->texture_manager()->SetLevelInfo(
       texture_ref_.get(), Target(), 0, format, size.width(), size.height(), 1,
       0, format, GL_UNSIGNED_BYTE, gfx::Rect(size));
-  decoder_->texture_manager()->SetLevelImage(texture_ref_.get(), Target(), 0,
-                                             image_.get(), Texture::BOUND);
+  decoder_->texture_manager()->SetBoundLevelImage(texture_ref_.get(), Target(),
+                                                  0, image_.get());
 
   if (!is_cleared || zero) {
     GLuint fbo;
@@ -3263,8 +3266,9 @@ void BackTexture::DestroyNativeGpuMemoryBuffer(bool have_context) {
         "BackTexture::DestroyNativeGpuMemoryBuffer",
         decoder_->error_state_.get());
 
-    decoder_->texture_manager()->SetLevelImage(texture_ref_.get(), Target(), 0,
-                                               nullptr, Texture::UNBOUND);
+    decoder_->texture_manager()->UnsetLevelImage(texture_ref_.get(), Target(),
+                                                 0);
+
     image_ = nullptr;
   }
 }
@@ -3442,7 +3446,13 @@ GLES2Decoder* GLES2Decoder::Create(
                                            outputter, group);
   }
 
+// Allow linux to run fuzzers.
+#if BUILDFLAG(ENABLE_VALIDATING_COMMAND_DECODER) || BUILDFLAG(IS_LINUX)
   return new GLES2DecoderImpl(client, command_buffer_service, outputter, group);
+#else
+  LOG(FATAL) << "Validating command decoder is not supported.";
+  return nullptr;
+#endif
 }
 
 GLES2DecoderImpl::GLES2DecoderImpl(
@@ -8573,8 +8583,10 @@ void GLES2DecoderImpl::DoFramebufferTexture2DCommon(
     return;
   }
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   if (texture_ref)
     DoBindTexImageIfNeeded(texture_ref->texture(), textarget, 0);
+#endif
 
   std::vector<GLenum> attachments;
   if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
@@ -10498,14 +10510,13 @@ void GLES2DecoderImpl::PerformanceWarning(
                      std::string("PERFORMANCE WARNING: ") + msg);
 }
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 bool GLES2DecoderImpl::DoBindTexImageIfNeeded(Texture* texture,
                                               GLenum textarget,
                                               GLuint texture_unit) {
   // Image is already in use if texture is attached to a framebuffer.
   if (texture && !texture->IsAttachedToFramebuffer()) {
-    Texture::ImageState old_image_state;
-    gl::GLImage* image = texture->GetLevelImage(textarget, 0, &old_image_state);
-    if (image && old_image_state == Texture::UNBOUND) {
+    if (texture->HasUnboundLevelImage(textarget, 0)) {
       UMA_HISTOGRAM_BOOLEAN(
           "GPU.GLES2DecoderImplLazyBindingCheck.WasBindNecessary", true);
 
@@ -10514,9 +10525,16 @@ bool GLES2DecoderImpl::DoBindTexImageIfNeeded(Texture* texture,
       if (texture_unit)
         api()->glActiveTextureFn(texture_unit);
       api()->glBindTextureFn(textarget, texture->service_id());
-      bool rv = image->BindTexImage(textarget);
-      DCHECK(rv) << "BindTexImage() failed";
-      texture->SetLevelImageState(textarget, 0, Texture::BOUND);
+#if BUILDFLAG(IS_WIN)
+      auto* d3d_image =
+          gl::GLImage::ToGLImageD3D(texture->GetLevelImage(textarget, 0));
+      if (d3d_image) {
+        bool rv = d3d_image->BindTexImage(textarget);
+        DCHECK(rv) << "BindTexImage() failed";
+      }
+#endif
+
+      texture->MarkLevelImageBound(textarget, 0);
       if (!texture_unit) {
         RestoreCurrentTextureBindings(&state_, textarget,
                                       state_.active_texture_unit);
@@ -10536,6 +10554,7 @@ bool GLES2DecoderImpl::DoBindTexImageIfNeeded(Texture* texture,
 
   return false;
 }
+#endif
 
 void GLES2DecoderImpl::DoCopyBufferSubData(GLenum readtarget,
                                            GLenum writetarget,
@@ -10637,6 +10656,7 @@ bool GLES2DecoderImpl::PrepareTexturesForRender(bool* textures_set,
           }
         }
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
         if (textarget != GL_TEXTURE_CUBE_MAP) {
           Texture* texture = texture_ref->texture();
           if (DoBindTexImageIfNeeded(texture, textarget,
@@ -10645,6 +10665,7 @@ bool GLES2DecoderImpl::PrepareTexturesForRender(bool* textures_set,
             continue;
           }
         }
+#endif
       }
       // else: should this be an error?
     }
@@ -17844,16 +17865,9 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
                                        dest_level, true);
   }
 
-  // Try using GLImage::CopyTexImage when possible.
-  bool unpack_premultiply_alpha_change =
-      (unpack_premultiply_alpha ^ unpack_unmultiply_alpha) != 0;
-  // TODO(qiankun.miao@intel.com): Support level > 0 for CopyTexImage.
-  if (image && internal_format == source_internal_format && dest_level == 0 &&
-      !unpack_flip_y && !unpack_premultiply_alpha_change) {
-    api()->glBindTextureFn(dest_binding_target, dest_texture->service_id());
-  }
-
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   DoBindTexImageIfNeeded(source_texture, source_target, 0);
+#endif
 
   CopyTextureMethod method = GetCopyTextureCHROMIUMMethod(
       GetFeatureInfo(), source_target, source_level, source_internal_format,
@@ -18045,7 +18059,9 @@ void GLES2DecoderImpl::CopySubTextureHelper(const char* function_name,
                                        dest_level, true);
   }
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   DoBindTexImageIfNeeded(source_texture, source_target, 0);
+#endif
 
   CopyTextureMethod method = GetCopyTextureCHROMIUMMethod(
       GetFeatureInfo(), source_target, source_level, source_internal_format,
@@ -18515,6 +18531,18 @@ void GLES2DecoderImpl::DoConvertYUVAMailboxesToRGBINTERNAL(
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
+void GLES2DecoderImpl::DoCopySharedImageINTERNAL(
+    GLint xoffset,
+    GLint yoffset,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height,
+    GLboolean unpack_flip_y,
+    const volatile GLbyte* mailboxes) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
 void GLES2DecoderImpl::DoInsertEventMarkerEXT(
     GLsizei length, const GLchar* marker) {
   if (!marker) {
@@ -18531,34 +18559,11 @@ void GLES2DecoderImpl::DoPushGroupMarkerEXT(
 void GLES2DecoderImpl::DoPopGroupMarkerEXT(void) {
 }
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
 void GLES2DecoderImpl::AttachImageToTextureWithDecoderBinding(
     uint32_t client_texture_id,
     uint32_t texture_target,
     gl::GLImage* image) {
-  BindImageInternal(client_texture_id, texture_target, image,
-                    /*can_bind_to_sampler=*/false);
-}
-#elif !BUILDFLAG(IS_ANDROID)
-void GLES2DecoderImpl::AttachImageToTextureWithClientBinding(
-    uint32_t client_texture_id,
-    uint32_t texture_target,
-    gl::GLImage* image) {
-  BindImageInternal(client_texture_id, texture_target, image,
-                    /*can_bind_to_sampler=*/true);
-}
-#endif
-
-void GLES2DecoderImpl::BindImageInternal(uint32_t client_texture_id,
-                                         uint32_t texture_target,
-                                         gl::GLImage* image,
-                                         bool can_bind_to_sampler) {
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-  CHECK(!can_bind_to_sampler);
-#else
-  CHECK(can_bind_to_sampler);
-#endif
-
   TextureRef* ref = texture_manager()->GetTexture(client_texture_id);
   if (!ref) {
     return;
@@ -18569,11 +18574,34 @@ void GLES2DecoderImpl::BindImageInternal(uint32_t client_texture_id,
     return;
   }
 
-  texture_manager()->SetLevelImage(ref, texture_target, 0, image,
-                                   can_bind_to_sampler
-                                       ? gpu::gles2::Texture::BOUND
-                                       : gpu::gles2::Texture::UNBOUND);
+  if (image) {
+    texture_manager()->SetUnboundLevelImage(ref, texture_target, 0, image);
+  } else {
+    texture_manager()->UnsetLevelImage(ref, texture_target, 0);
+  }
 }
+#elif !BUILDFLAG(IS_ANDROID)
+void GLES2DecoderImpl::AttachImageToTextureWithClientBinding(
+    uint32_t client_texture_id,
+    uint32_t texture_target,
+    gl::GLImage* image) {
+  TextureRef* ref = texture_manager()->GetTexture(client_texture_id);
+  if (!ref) {
+    return;
+  }
+
+  GLenum bind_target = GLES2Util::GLFaceTargetToTextureTarget(texture_target);
+  if (ref->texture()->target() != bind_target) {
+    return;
+  }
+
+  if (image) {
+    texture_manager()->SetBoundLevelImage(ref, texture_target, 0, image);
+  } else {
+    texture_manager()->UnsetLevelImage(ref, texture_target, 0);
+  }
+}
+#endif
 
 error::Error GLES2DecoderImpl::HandleTraceBeginCHROMIUM(
     uint32_t immediate_data_size,

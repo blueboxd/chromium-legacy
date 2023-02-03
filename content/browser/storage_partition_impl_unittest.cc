@@ -690,6 +690,15 @@ void ClearData(content::StoragePartition* partition, base::RunLoop* run_loop) {
                        run_loop->QuitClosure());
 }
 
+void ClearDataForOrigin(uint32_t remove_mask,
+                        content::StoragePartition* partition,
+                        const GURL& origin,
+                        base::RunLoop* run_loop) {
+  partition->ClearDataForOrigin(
+      remove_mask, StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, origin,
+      run_loop->QuitClosure());
+}
+
 void ClearCodeCache(content::StoragePartition* partition,
                     base::Time begin_time,
                     base::Time end_time,
@@ -1500,6 +1509,37 @@ TEST_F(StoragePartitionImplTest, RemoveLocalStorageForOrigins) {
   EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin3));
 }
 
+TEST_F(StoragePartitionImplTest, RemoveLocalStorageForOneOrigin) {
+  const GURL kUrl1 = GURL("http://host1:1/");
+  const url::Origin kOrigin1 = url::Origin::Create(kUrl1);
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("http://host2:1/"));
+  const url::Origin kOrigin3 = url::Origin::Create(GURL("http://host3:1/"));
+
+  RemoveLocalStorageTester tester(task_environment(), browser_context());
+
+  tester.AddDOMStorageTestData(kOrigin1, kOrigin2, kOrigin3);
+
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      browser_context()->GetDefaultStoragePartition());
+
+  base::RunLoop run_loop;
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ClearDataForOrigin,
+                     StoragePartitionImpl::REMOVE_DATA_MASK_LOCAL_STORAGE,
+                     partition, kUrl1, &run_loop));
+  run_loop.Run();
+  // ClearData only guarantees that tasks to delete data are scheduled when its
+  // callback is invoked. It doesn't guarantee data has actually been cleared.
+  // So run all scheduled tasks to make sure data is cleared.
+  base::RunLoop().RunUntilIdle();
+
+  // kOrigin1 should be cleared.
+  EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin1));
+  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin2));
+  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin3));
+}
+
 TEST_F(StoragePartitionImplTest, ClearCodeCache) {
   const GURL kResourceURL("http://host4/script.js");
 
@@ -1788,7 +1828,7 @@ TEST_F(StoragePartitionImplTest, ConversionsClearDataForOrigin) {
   base::RunLoop run_loop;
   partition->ClearData(
       StoragePartition::REMOVE_DATA_MASK_ATTRIBUTION_REPORTING_SITE_CREATED, 0,
-      blink::StorageKey(source.common_info().source_origin()), now, now,
+      blink::StorageKey(source.common_info().reporting_origin()), now, now,
       run_loop.QuitClosure());
   run_loop.Run();
 
@@ -1855,7 +1895,7 @@ TEST_F(StoragePartitionImplTest, ConversionsClearDataForFilter) {
     auto impression = *SuitableOrigin::Deserialize(
         base::StringPrintf("https://imp-%d.com/", i));
     auto reporter = *SuitableOrigin::Deserialize(
-        base::StringPrintf("https://reporter-%d.com/", i));
+        base::StringPrintf("https://rep-%d.com/", i));
     auto conv = *SuitableOrigin::Deserialize(
         base::StringPrintf("https://conv-%d.com/", i));
     attribution_manager->HandleSource(SourceBuilder(now)
@@ -1872,7 +1912,7 @@ TEST_F(StoragePartitionImplTest, ConversionsClearDataForFilter) {
 
   EXPECT_EQ(5u, GetAttributionReportsForTesting(attribution_manager).size());
 
-  // Match against enough Origins to delete three of the imp/conv pairs.
+  // Only those with a matching reporting origin should be deleted.
   base::RunLoop run_loop;
   auto filter_builder = BrowsingDataFilterBuilder::Create(
       BrowsingDataFilterBuilder::Mode::kPreserve);
@@ -1884,16 +1924,14 @@ TEST_F(StoragePartitionImplTest, ConversionsClearDataForFilter) {
                storage_key == blink::StorageKey::CreateFromStringForTesting(
                                   "https://conv-3.com/") ||
                storage_key == blink::StorageKey::CreateFromStringForTesting(
-                                  "https://rep-4.com/") ||
-               storage_key == blink::StorageKey::CreateFromStringForTesting(
-                                  "https://imp-4.com/");
+                                  "https://rep-4.com/");
       });
   partition->ClearData(
       StoragePartition::REMOVE_DATA_MASK_ATTRIBUTION_REPORTING_SITE_CREATED, 0,
       filter_builder.get(), func, nullptr, false, now, now,
       run_loop.QuitClosure());
   run_loop.Run();
-  EXPECT_EQ(2u, GetAttributionReportsForTesting(attribution_manager).size());
+  EXPECT_EQ(4u, GetAttributionReportsForTesting(attribution_manager).size());
 }
 
 TEST_F(StoragePartitionImplTest, DataRemovalObserver) {

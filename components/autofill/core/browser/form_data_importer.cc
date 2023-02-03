@@ -465,6 +465,15 @@ bool FormDataImporter::ExtractAddressProfileFromSection(
     if (!field->IsFieldFillable() || value.empty())
       continue;
 
+    // When `kAutofillImportFromAutoccompleteUnrecognized` is enabled, Autofill
+    // imports from fields despite an unrecognized autocomplete attribute.
+    if (field->HasPredictionDespiteUnrecognizedAutocompleteAttribute()) {
+      if (!features::kAutofillImportFromAutoccompleteUnrecognized.Get()) {
+        continue;
+      }
+      import_metadata.num_autocomplete_unrecognized_fields++;
+    }
+
     AutofillType field_type = field->Type();
 
     // Credit card fields are handled by ExtractCreditCard().
@@ -868,12 +877,11 @@ absl::optional<CreditCard> FormDataImporter::ExtractCreditCard(
   // Attempt to find a matching server card. If such a server card exists,
   // return it (rather than the extracted card) because we want the server to be
   // the source of truth.
-  auto is_matching_server_card = [&candidate =
-                                      candidate](const CreditCard* card) {
+  auto is_matching_server_card = [&cand = candidate](const CreditCard* card) {
     return (card->record_type() == CreditCard::MASKED_SERVER_CARD &&
-            card->LastFourDigits() == candidate.LastFourDigits()) ||
+            card->LastFourDigits() == cand.LastFourDigits()) ||
            (card->record_type() == CreditCard::FULL_SERVER_CARD &&
-            candidate.HasSameNumberAs(*card));
+            cand.HasSameNumberAs(*card));
   };
   auto find_matching_server_card = [&]() {
     const auto& server_cards = personal_data_manager_->GetServerCreditCards();

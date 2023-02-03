@@ -323,9 +323,8 @@
       "is_debug": false,
       "optimize_webui": false,
       "symbol_level": 0,
-      "use_clang_coverage": true,
-      "use_goma": true,
-      "use_javascript_coverage": true
+      "use_javascript_coverage": true,
+      "use_remoteexec": true
     }
   },
   "linux-lacros-asan-lsan-rel": {
@@ -534,7 +533,6 @@
   "linux-webkit-msan-rel": {
     "gn_args": {
       "dcheck_always_on": false,
-      "instrumented_libraries_release": "xenial",
       "is_component_build": false,
       "is_debug": false,
       "is_msan": true,
@@ -667,7 +665,6 @@
   "linux_chromium_chromeos_msan_rel_ng": {
     "gn_args": {
       "dcheck_always_on": false,
-      "instrumented_libraries_release": "focal",
       "is_component_build": false,
       "is_debug": false,
       "is_msan": true,
@@ -724,7 +721,6 @@
   "linux_chromium_msan_rel_ng": {
     "gn_args": {
       "dcheck_always_on": false,
-      "instrumented_libraries_release": "focal",
       "is_component_build": false,
       "is_debug": false,
       "is_msan": true,

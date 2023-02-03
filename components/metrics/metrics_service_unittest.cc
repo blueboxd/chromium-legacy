@@ -31,6 +31,7 @@
 #include "build/build_config.h"
 #include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/client_info.h"
+#include "components/metrics/cloned_install_detector.h"
 #include "components/metrics/environment_recorder.h"
 #include "components/metrics/log_decoder.h"
 #include "components/metrics/metrics_features.h"
@@ -1073,7 +1074,8 @@ TEST_P(MetricsServiceTestWithFeatures, FirstLogCreatedBeforeUnsentLogsSent) {
   // is never deserialized to proto, so we're just passing some dummy content.
   ASSERT_EQ(0u, test_log_store->initial_log_count());
   ASSERT_EQ(0u, test_log_store->ongoing_log_count());
-  test_log_store->StoreLog("blah_blah", MetricsLog::ONGOING_LOG, LogMetadata());
+  test_log_store->StoreLog("blah_blah", MetricsLog::ONGOING_LOG, LogMetadata(),
+                           MetricsLogsEventManager::CreateReason::kUnknown);
   // Note: |initial_log_count()| refers to initial stability logs, so the above
   // log is counted an ongoing log (per its type).
   ASSERT_EQ(0u, test_log_store->initial_log_count());
@@ -1288,6 +1290,55 @@ TEST_P(MetricsServiceTestWithFeatures, EnablementObserverNotification) {
   service.Stop();
   ASSERT_TRUE(enabled.has_value());
   EXPECT_FALSE(enabled.value());
+}
+
+// Verifies that when a cloned install is detected, logs are purged.
+TEST_P(MetricsServiceTestWithFeatures, PurgeLogsOnClonedInstallDetected) {
+  EnableMetricsReporting();
+  TestMetricsServiceClient client;
+  TestMetricsService service(GetMetricsStateManager(), &client,
+                             GetLocalState());
+  service.InitializeMetricsRecordingState();
+
+  // Store various logs.
+  MetricsLogStore* test_log_store = service.LogStoreForTest();
+  test_log_store->StoreLog("dummy log data", MetricsLog::ONGOING_LOG,
+                           LogMetadata(),
+                           MetricsLogsEventManager::CreateReason::kUnknown);
+  test_log_store->StageNextLog();
+  test_log_store->StoreLog("more dummy log data", MetricsLog::ONGOING_LOG,
+                           LogMetadata(),
+                           MetricsLogsEventManager::CreateReason::kUnknown);
+  test_log_store->StoreLog("dummy stability log",
+                           MetricsLog::INITIAL_STABILITY_LOG, LogMetadata(),
+                           MetricsLogsEventManager::CreateReason::kUnknown);
+  test_log_store->SetAlternateOngoingLogStore(InitializeTestLogStoreAndGet());
+  test_log_store->StoreLog("dummy log for alternate ongoing log store",
+                           MetricsLog::ONGOING_LOG, LogMetadata(),
+                           MetricsLogsEventManager::CreateReason::kUnknown);
+  EXPECT_TRUE(test_log_store->has_staged_log());
+  EXPECT_TRUE(test_log_store->has_unsent_logs());
+
+  ClonedInstallDetector* cloned_install_detector =
+      GetMetricsStateManager()->cloned_install_detector_for_testing();
+
+  static constexpr char kTestRawId[] = "test";
+  // Hashed machine id for |kTestRawId|.
+  static constexpr int kTestHashedId = 2216819;
+
+  // Save a machine id that will not cause a clone to be detected.
+  GetLocalState()->SetInteger(prefs::kMetricsMachineId, kTestHashedId);
+  cloned_install_detector->SaveMachineId(GetLocalState(), kTestRawId);
+  // Verify that the logs are still present.
+  EXPECT_TRUE(test_log_store->has_staged_log());
+  EXPECT_TRUE(test_log_store->has_unsent_logs());
+
+  // Save a machine id that will cause a clone to be detected.
+  GetLocalState()->SetInteger(prefs::kMetricsMachineId, kTestHashedId + 1);
+  cloned_install_detector->SaveMachineId(GetLocalState(), kTestRawId);
+  // Verify that the logs were purged.
+  EXPECT_FALSE(test_log_store->has_staged_log());
+  EXPECT_FALSE(test_log_store->has_unsent_logs());
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

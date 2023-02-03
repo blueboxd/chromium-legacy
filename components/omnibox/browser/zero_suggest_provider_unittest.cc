@@ -144,8 +144,11 @@ class ZeroSuggestProviderTest : public testing::Test,
     search_terms_args.page_classification = page_classification;
     search_terms_args.focus_type = focus_type;
     search_terms_args.current_page_url = page_url;
+
+    TemplateURLService* template_url_service = client_->GetTemplateURLService();
     return RemoteSuggestionsService::EndpointUrl(
-        search_terms_args, client_->GetTemplateURLService());
+        template_url_service->GetDefaultSearchProvider(), search_terms_args,
+        template_url_service->search_terms_data());
   }
 
   AutocompleteInput OnFocusInputForNTP() {
@@ -1603,7 +1606,7 @@ TEST_F(ZeroSuggestProviderTest, TestZeroSuggestHasInMemoryCachedResultsNTP) {
       R"([],[],{"google:suggestrelevance":[602, 601, 600],)"
       R"("google:verbatimrelevance":1300}])");
   ZeroSuggestCacheService* cache_svc = client_->GetZeroSuggestCacheService();
-  cache_svc->StoreZeroSuggestResponse("", CacheEntry(json_response));
+  cache_svc->StoreZeroSuggestResponse("", json_response);
 
   AutocompleteInput input = OnFocusInputForNTP();
   provider_->Start(input, false);
@@ -1772,7 +1775,7 @@ TEST_F(ZeroSuggestProviderTest, TestZeroSuggestHasInMemoryCachedResultsSRP) {
   AutocompleteInput input = OnClobberInputForSRP();
   ZeroSuggestCacheService* cache_svc = client_->GetZeroSuggestCacheService();
   cache_svc->StoreZeroSuggestResponse(input.current_url().spec(),
-                                      CacheEntry(json_response));
+                                      json_response);
 
   provider_->Start(input, false);
   ASSERT_EQ(ZeroSuggestProvider::ResultType::kRemoteSendURL,
@@ -1943,7 +1946,7 @@ TEST_F(ZeroSuggestProviderTest, TestZeroSuggestHasInMemoryCachedResultsWeb) {
   AutocompleteInput input = OnClobberInputForWeb();
   ZeroSuggestCacheService* cache_svc = client_->GetZeroSuggestCacheService();
   cache_svc->StoreZeroSuggestResponse(input.current_url().spec(),
-                                      CacheEntry(json_response));
+                                      json_response);
 
   provider_->Start(input, false);
   ASSERT_EQ(ZeroSuggestProvider::ResultType::kRemoteSendURL,
@@ -2872,9 +2875,8 @@ TEST_F(ZeroSuggestProviderTest, TestDeleteMatchClearsInMemoryCache) {
       R"({"du": "https://www.google.com/s3"}]}])");
 
   ZeroSuggestCacheService* cache_svc = client_->GetZeroSuggestCacheService();
-  cache_svc->StoreZeroSuggestResponse("", CacheEntry(json_response));
-  cache_svc->StoreZeroSuggestResponse("https://www.google.com",
-                                      CacheEntry(json_response));
+  cache_svc->StoreZeroSuggestResponse("", json_response);
+  cache_svc->StoreZeroSuggestResponse("https://www.google.com", json_response);
 
   AutocompleteInput input = OnFocusInputForNTP();
   provider_->Start(input, false);

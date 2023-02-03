@@ -170,7 +170,11 @@ NET_EXPORT BASE_DECLARE_FEATURE(kTLS13KeyUpdate);
 // deployment of future security improvements.
 NET_EXPORT BASE_DECLARE_FEATURE(kPermuteTLSExtensions);
 
+// Enables Kyber-based post-quantum key-agreements in TLS 1.3 connections.
+NET_EXPORT BASE_DECLARE_FEATURE(kPostQuantumKyber);
+
 // Enables CECPQ2, a post-quantum key-agreement, in TLS 1.3 connections.
+// Ineffective if kPostQuantumKyber is enabled.
 NET_EXPORT BASE_DECLARE_FEATURE(kPostQuantumCECPQ2);
 
 // Enables CECPQ2, a post-quantum key-agreement, in TLS 1.3 connections for a
@@ -328,29 +332,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kCookieDomainRejectNonASCII);
 NET_EXPORT BASE_DECLARE_FEATURE(kBlockSetCookieHeader);
 
 NET_EXPORT BASE_DECLARE_FEATURE(kOptimisticBlockfileWrite);
-
-// Enable the Storage Access API. https://crbug.com/989663.
-NET_EXPORT BASE_DECLARE_FEATURE(kStorageAccessAPI);
-
-// Set the default number of "automatic" implicit storage access grants per
-// third party origin that can be granted. This can be overridden via
-// experimentation to allow for field trials to validate the default setting.
-NET_EXPORT extern const int kStorageAccessAPIDefaultImplicitGrantLimit;
-NET_EXPORT extern const base::FeatureParam<int>
-    kStorageAccessAPIImplicitGrantLimit;
-// Whether the Storage Access API can grant access to storage (even if it is
-// unpartitioned). When this feature is disabled, access to storage is only
-// granted if the storage is partitioned.
-NET_EXPORT extern const base::FeatureParam<bool>
-    kStorageAccessAPIGrantsUnpartitionedStorage;
-// Whether to auto-grant storage access requests when the top level origin and
-// the requesting origin are in the same First-Party Set.
-NET_EXPORT extern const base::FeatureParam<bool>
-    kStorageAccessAPIAutoGrantInFPS;
-// Whether to auto-deny storage access requests when the top level origin and
-// the requesting origin are not in the same First-Party Set.
-NET_EXPORT extern const base::FeatureParam<bool>
-    kStorageAccessAPIAutoDenyOutsideFPS;
 
 NET_EXPORT BASE_DECLARE_FEATURE(kThirdPartyStoragePartitioning);
 NET_EXPORT BASE_DECLARE_FEATURE(kSupportPartitionedBlobUrl);

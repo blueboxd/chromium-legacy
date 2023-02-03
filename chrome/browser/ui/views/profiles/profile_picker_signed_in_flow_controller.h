@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/profiles/profile_management_utils.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_web_contents_host.h"
 #include "chrome/browser/ui/webui/signin/enterprise_profile_welcome_ui.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -40,6 +41,7 @@ class ProfilePickerSignedInFlowController
       ProfilePickerWebContentsHost* host,
       Profile* profile,
       std::unique_ptr<content::WebContents> contents,
+      signin_metrics::AccessPoint signin_access_point,
       absl::optional<SkColor> profile_color);
   ~ProfilePickerSignedInFlowController() override;
   ProfilePickerSignedInFlowController(
@@ -67,7 +69,7 @@ class ProfilePickerSignedInFlowController
 
   // Finishes the sign-in process by moving to the enterprise profile welcome
   // screen.
-  void SwitchToEnterpriseProfileWelcome(
+  virtual void SwitchToEnterpriseProfileWelcome(
       EnterpriseProfileWelcomeUI::ScreenType type,
       signin::SigninChoiceCallback proceed_callback);
 
@@ -91,12 +93,6 @@ class ProfilePickerSignedInFlowController
   // Returns the URL for sync confirmation screen (or for the "is-loading"
   // version of it, if `loading` is true).
   GURL GetSyncConfirmationURL(bool loading);
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // Added for bug investigation purposes.
-  // TODO(crbug.com/1340791): Remove this once the source of the bug is found.
-  virtual void PreShowScreenForDebug() {}
-#endif
 
   ProfilePickerWebContentsHost* host() const { return host_; }
   Profile* profile() const { return profile_; }
@@ -129,6 +125,8 @@ class ProfilePickerSignedInFlowController
   // The web contents backed by `profile`. This is used for displaying the
   // sign-in flow.
   std::unique_ptr<content::WebContents> contents_;
+
+  const signin_metrics::AccessPoint signin_access_point_;
 
   // Set for the profile at the very end to avoid coloring the simple toolbar
   // for GAIA sign-in (that uses the ThemeProvider of the current profile).

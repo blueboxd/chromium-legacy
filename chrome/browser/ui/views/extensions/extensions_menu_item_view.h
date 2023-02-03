@@ -7,9 +7,12 @@
 
 #include <memory>
 
+#include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/extensions/extension_site_access_combobox_model.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/layout/flex_layout_view.h"
 
 class Browser;
@@ -87,7 +90,9 @@ class InstalledExtensionMenuItemView : public views::FlexLayoutView {
   InstalledExtensionMenuItemView(
       Browser* browser,
       std::unique_ptr<ToolbarActionViewController> controller,
-      bool allow_pinning);
+      bool allow_pinning,
+      views::Button::PressedCallback site_permissions_button_callback =
+          base::RepeatingClosure(base::NullCallback()));
   InstalledExtensionMenuItemView(const InstalledExtensionMenuItemView&) =
       delete;
   InstalledExtensionMenuItemView& operator=(
@@ -116,6 +121,9 @@ class InstalledExtensionMenuItemView : public views::FlexLayoutView {
     return context_menu_button_;
   }
   HoverButton* pin_button_for_testing() { return pin_button_; }
+  HoverButton* site_permissions_button_for_testing() {
+    return site_permissions_button_;
+  }
 
  private:
   // Returns whether the action corresponding to this view is pinned to the
@@ -140,6 +148,8 @@ class InstalledExtensionMenuItemView : public views::FlexLayoutView {
   const raw_ptr<ToolbarActionsModel> model_;
 
   raw_ptr<ExtensionsMenuButton> primary_action_button_;
+
+  raw_ptr<HoverButton> site_permissions_button_ = nullptr;
 
   raw_ptr<HoverButton> pin_button_ = nullptr;
 

@@ -803,7 +803,7 @@ public class FeedSurfaceCoordinator
         return new FeedStream(mActivity, mSnackbarManager, mBottomSheetController,
                 mIsPlaceholderShownInitially, mWindowAndroid, mShareSupplier, kind, this,
                 mActionDelegate, mHelpAndFeedbackLauncher, this /* FeedContentFirstLoadWatcher */,
-                streamsMediator, "".getBytes());
+                streamsMediator, null);
     }
 
     private void setHeaders(List<View> headerViews) {
@@ -1095,5 +1095,10 @@ public class FeedSurfaceCoordinator
     @VisibleForTesting
     public void clearScrollableContainerDelegateForTesting() {
         mScrollableContainerDelegate = null;
+    }
+
+    @VisibleForTesting
+    public FeedActionDelegate getActionDelegateForTesting() {
+        return mActionDelegate;
     }
 }

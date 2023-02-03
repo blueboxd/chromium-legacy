@@ -396,7 +396,6 @@ source_set("weblayer_lib_base") {
     "//base:base_static",
     "//base/third_party/dynamic_annotations",
     "//build:chromeos_buildflags",
-    "//cc",
     "//components/autofill/content/browser",
     "//components/autofill/content/renderer",
     "//components/autofill/core/browser",
@@ -420,6 +419,7 @@ source_set("weblayer_lib_base") {
     "//components/crash/content/browser",
     "//components/crash/core/app",
     "//components/crash/core/common",
+    "//components/digital_asset_links",
     "//components/download/content/factory",
     "//components/download/content/public",
     "//components/download/public/background_service:public",
@@ -707,6 +707,7 @@ source_set("weblayer_lib_base") {
       "common/crash_reporter/crash_reporter_client.h",
     ]
     deps += [
+      "//cc/slim",
       "//components/android_autofill/browser",
       "//components/android_autofill/browser:android",
       "//components/android_system_error_page",

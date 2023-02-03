@@ -72,7 +72,7 @@ class ViewTransitionStyleTracker
   // Returns true if the pseudo element corresponding to the given id and name
   // is the only child.
   bool MatchForOnlyChild(PseudoId pseudo_id,
-                         AtomicString view_transition_name) const;
+                         const AtomicString& view_transition_name) const;
 
   // Indicate that capture was requested. This verifies that the combination of
   // set elements and names is valid. Returns true if capture phase started, and
@@ -159,17 +159,23 @@ class ViewTransitionStyleTracker
 
   VectorOf<Element> GetTransitioningElements() const;
 
-  // In physical pixels. Returns the snapshot viewport rect, relative to the
-  // fixed viewport origin. See README.md for a detailed description of the
-  // snapshot viewport.
-  gfx::Rect GetSnapshotViewportRect() const;
+  // In physical pixels. Returns the size of the snapshot root rect. This is
+  // the fixed viewport size "as-if" all transient browser UI were hidden (e.g.
+  // include the mobile URL bar, virutal-keyboard, layout scrollbars in the
+  // rect size).
+  gfx::Size GetSnapshotRootSize() const;
 
-  // In physical pixels. Returns the offset within the root snapshot which
-  // should be used as the paint origin. The root snapshot fills the snapshot
-  // viewport, which is overlaid by viewport-insetting UI widgets such as the
-  // mobile URL bar. Because of this, we offset paint so that content is
-  // painted where it appears on the screen (rather than under the UI).
-  gfx::Vector2d GetRootSnapshotPaintOffset() const;
+  // In physical pixels. Returns the offset from the fixed viewport's origin to
+  // the snapshot root rect. These values will always be <= 0.
+  gfx::Vector2d GetFixedToSnapshotRootOffset() const;
+
+  // In physical pixels. Returns the offset from the frame origin to the the
+  // snapshot root rect. The only time this currently differs from the above
+  // offset is with a left-side vertical scrollbar (i.e. a vertical scrollbar
+  // in an RTL document). In that case the frame origin is at x-coordinate 0
+  // while the fixed viewport origin is inset by the scrollbar width.  Note: In
+  // Chrome, only iframes can have a left-side vertical scrollbar.
+  gfx::Vector2d GetFrameToSnapshotRootOffset() const;
 
   // Returns a serializable representation of the state cached by this class to
   // recreate the same pseudo-element tree in a new Document.
@@ -233,6 +239,11 @@ class ViewTransitionStyleTracker
     VectorOf<AtomicString> names;
   };
 
+  // In physical pixels. Returns the snapshot root rect, relative to the
+  // fixed viewport origin. See README.md for a detailed description of the
+  // snapshot root rect.
+  gfx::Rect GetSnapshotRootInFixedViewport() const;
+
   void InvalidateStyle();
   bool HasLiveNewContent() const;
   void EndTransition();
@@ -262,6 +273,8 @@ class ViewTransitionStyleTracker
       LayoutBoxModelObject& box,
       LayoutBoxModelObject* ancestor = nullptr);
 
+  bool SnapshotRootDidChangeSize() const;
+
   Member<Document> document_;
 
   // Indicates which step during the transition we're currently at.
@@ -276,6 +289,15 @@ class ViewTransitionStyleTracker
   // Tracks the number of names discovered during the capture phase of the
   // transition.
   int captured_name_count_ = 0;
+
+  // Tracks the size of the snapshot root rect that was used to generate
+  // snapshots. If the snapshot root changes size at any point in the
+  // transition the transition will be aborted. For SPA transitions, this will
+  // be empty until the kCapturing phase. For a cross-document transition, this
+  // will be initialized from the cached state at creation but is currently
+  // unset.
+  // TODO(bokan): Implement for cross-document transitions. crbug.com/1404957.
+  absl::optional<gfx::Size> snapshot_root_size_at_capture_;
 
   // Map of the CSS |view-transition-name| property to state for that tag.
   HeapHashMap<AtomicString, Member<ElementData>> element_data_map_;

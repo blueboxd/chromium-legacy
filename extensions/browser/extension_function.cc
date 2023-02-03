@@ -47,6 +47,7 @@
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/kiosk_mode_info.h"
 #include "extensions/common/mojom/renderer.mojom.h"
+#include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-forward.h"
 
 using content::BrowserThread;
@@ -762,6 +763,16 @@ void ExtensionFunction::WriteToConsole(blink::mojom::ConsoleMessageLevel level,
   if (!render_frame_host_)
     return;
   render_frame_host_->AddMessageToConsole(level, message);
+}
+
+void ExtensionFunction::ReportInspectorIssue(
+    blink::mojom::InspectorIssueInfoPtr info) {
+  // TODO(crbug.com/1096166): Service Worker-based extensions don't have a
+  // RenderFrameHost.
+  if (!render_frame_host_) {
+    return;
+  }
+  render_frame_host_->ReportInspectorIssue(std::move(info));
 }
 
 void ExtensionFunction::SetTransferredBlobs(

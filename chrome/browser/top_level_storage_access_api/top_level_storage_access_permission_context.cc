@@ -40,9 +40,9 @@ namespace {
 
 constexpr base::TimeDelta kGrantDuration = base::Hours(24);
 
-// TODO(crbug.com/1385156): Switch to non-StorageAccessAPI metrics.
 void RecordOutcomeSample(CookieRequestOutcome outcome) {
-  base::UmaHistogramEnumeration("API.StorageAccess.RequestOutcome", outcome);
+  base::UmaHistogramEnumeration("API.TopLevelStorageAccess.RequestOutcome",
+                                outcome);
 }
 
 }  // namespace
@@ -75,7 +75,7 @@ void TopLevelStorageAccessPermissionContext::DecidePermission(
     permissions::BrowserPermissionCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!user_gesture ||
-      !base::FeatureList::IsEnabled(net::features::kStorageAccessAPI) ||
+      !base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI) ||
       !requesting_origin.is_valid() || !embedding_origin.is_valid()) {
     RecordOutcomeSample(CookieRequestOutcome::kDeniedByPrerequisites);
     std::move(callback).Run(CONTENT_SETTING_BLOCK);
@@ -142,7 +142,7 @@ TopLevelStorageAccessPermissionContext::GetPermissionStatusInternal(
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
-  if (!base::FeatureList::IsEnabled(net::features::kStorageAccessAPI)) {
+  if (!base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
     return CONTENT_SETTING_BLOCK;
   }
 
@@ -180,7 +180,7 @@ void TopLevelStorageAccessPermissionContext::NotifyPermissionSetInternal(
     CookieRequestOutcome outcome) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!base::FeatureList::IsEnabled(net::features::kStorageAccessAPI)) {
+  if (!base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
     return;
   }
 
@@ -197,9 +197,6 @@ void TopLevelStorageAccessPermissionContext::NotifyPermissionSetInternal(
     std::move(callback).Run(content_setting);
     return;
   }
-
-  // TODO(crbug.com/1385156): Switch to non-StorageAccessAPI metrics.
-  base::UmaHistogramBoolean("API.StorageAccess.GrantIsImplicit", true);
 
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser_context());

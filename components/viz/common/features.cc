@@ -135,13 +135,6 @@ BASE_FEATURE(kUseRealVideoColorSpaceForDisplay,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
-// Used by CC to throttle frame production of older surfaces. Used by the
-// Browser to batch SurfaceSync calls sent to the Renderer for properties can
-// change in close proximity to each other.
-BASE_FEATURE(kSurfaceSyncThrottling,
-             "SurfaceSyncThrottling",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kDrawPredictedInkPoint,
              "DrawPredictedInkPoint",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -164,7 +157,7 @@ BASE_FEATURE(kDynamicSchedulerForClients,
              "DynamicSchedulerForClients",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
 BASE_FEATURE(kMacCAOverlayQuad,
              "MacCAOverlayQuads",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -243,15 +236,6 @@ bool IsOverlayPrioritizationEnabled() {
 
 bool IsDelegatedCompositingEnabled() {
   return base::FeatureList::IsEnabled(kDelegatedCompositing);
-}
-
-// If a synchronous IPC should used when destroying windows. This exists to test
-// the impact of removing the sync IPC.
-bool IsSyncWindowDestructionEnabled() {
-  static BASE_FEATURE(kSyncWindowDestruction, "SyncWindowDestruction",
-                      base::FEATURE_ENABLED_BY_DEFAULT);
-
-  return base::FeatureList::IsEnabled(kSyncWindowDestruction);
 }
 
 bool IsSimpleFrameRateThrottlingEnabled() {
@@ -344,10 +328,6 @@ bool UseRealVideoColorSpaceForDisplay() {
       features::kUseRealVideoColorSpaceForDisplay);
 }
 #endif
-
-bool IsSurfaceSyncThrottling() {
-  return base::FeatureList::IsEnabled(kSurfaceSyncThrottling);
-}
 
 // Used by Viz to determine if viz::DisplayScheduler should dynamically adjust
 // its frame deadline. Returns the percentile of historic draw times to base the

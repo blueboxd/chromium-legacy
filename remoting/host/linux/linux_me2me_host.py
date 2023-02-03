@@ -159,8 +159,11 @@ COMMAND_NOT_EXECUTABLE_EXIT_CODE = 126
 # wayland compositor/server for clients to connect to.
 RUNTIME_DIR_TEMPLATE = "/run/user/%s"
 
-# Binary name for the gnome-session.
+# Binary name for `gnome-session`.
 GNOME_SESSION = "gnome-session"
+
+# Binary name for `gnome-session-quit`.
+GNOME_SESSION_QUIT = "gnome-session-quit"
 
 # Globals needed by the atexit cleanup() handler.
 g_desktop = None
@@ -933,6 +936,39 @@ class WaylandDesktop(Desktop):
     return self._wait_for_wayland_compositor_running()
 
   def cleanup(self):
+    if self.host_proc is not None:
+      logging.info("Sending SIGTERM to host proc (pid=%s)", self.host_proc.pid)
+      try:
+        psutil_proc = psutil.Process(self.host_proc.pid)
+        psutil_proc.terminate()
+
+        # Use a short timeout, to avoid delaying service shutdown if the
+        # process refuses to die for some reason.
+        psutil_proc.wait(timeout=10)
+      except psutil.TimeoutExpired:
+        logging.error("Timed out - sending SIGKILL")
+        psutil_proc.kill()
+      except psutil.Error:
+        logging.error("Error terminating process")
+      self.host_proc = None
+
+    # We currently only support gnome-session (which is currently managed)
+    # by CRD itself.
+    logging.info("Executing %s" % GNOME_SESSION_QUIT)
+    if shutil.which(GNOME_SESSION_QUIT):
+      cleanup_proc = subprocess.Popen(
+        [GNOME_SESSION_QUIT, "--force", "--no-prompt"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env=self.child_env)
+      stdout, stderr = cleanup_proc.communicate()
+      if stderr:
+        logging.error("Failed to execute %s:\n%s" %
+                      (GNOME_SESSION_QUIT, stderr))
+      self.session_proc = None
+    else:
+      logging.warning("No %s found on the system" % GNOME_SESSION_QUIT)
+
     super(WaylandDesktop, self).cleanup()
     if self._wayland_socket:
       full_socket_path = os.path.join(self.runtime_dir, self._wayland_socket)
@@ -1207,19 +1243,35 @@ class XDesktop(Desktop):
     # non-fatal; the X server will continue to run with the dimensions from
     # the "-screen" option.
     if self.randr_add_sizes:
-      for width, height in self.sizes:
-        # This sets dot-clock, vtotal and htotal such that the computed
-        # refresh-rate will have a realistic value:
-        # 60Hz = dot-clock / (vtotal * htotal).
-        label = "%dx%d" % (width, height)
-        args = ["xrandr", "--newmode", label, "60", str(width), "0", "0",
-                "1000", str(height), "0", "0", "1000"]
-        subprocess.call(args, env=self.child_env, stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL)
-        output_name = "screen" if self.use_xvfb else "DUMMY0"
-        args = ["xrandr", "--addmode", output_name, label]
-        subprocess.call(args, env=self.child_env, stdout=subprocess.DEVNULL,
-                        stderr=subprocess.DEVNULL)
+      refresh_rates = ["60"]
+      try:
+        proc_num = subprocess.check_output("nproc", text=True)
+
+        # Keep the proc_num logic in sync with desktop_resizer_x11.cc
+        if (int(proc_num) > 16):
+          refresh_rates.append("120")
+      except (ValueError, OSError, subprocess.CalledProcessError) as e:
+        logging.error("Failed to retrieve processor count: " + str(e))
+
+      output_names = (
+          ["screen"]
+          if self.use_xvfb
+          else ["DUMMY0","DUMMY1","DUMMY2","DUMMY3"])
+
+      for output_name in output_names:
+        for refresh_rate in refresh_rates:
+          for width, height in self.sizes:
+            # This sets dot-clock, vtotal and htotal such that the computed
+            # refresh-rate will have a realistic value:
+            # refresh rate = dot-clock / (vtotal * htotal).
+            label = "%dx%d_%s" % (width, height, refresh_rate)
+            args = ["xrandr", "--newmode", label, refresh_rate, str(width), "0",
+                    "0", "1000", str(height), "0", "0", "1000"]
+            subprocess.call(args, env=self.child_env, stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL)
+            args = ["xrandr", "--addmode", output_name, label]
+            subprocess.call(args, env=self.child_env, stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL)
 
     # Set the initial mode to the first size specified, otherwise the X server
     # would default to (max_width, max_height), which might not even be in the

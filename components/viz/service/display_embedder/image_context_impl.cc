@@ -183,7 +183,7 @@ void ImageContextImpl::BeginAccessIfNecessary(
   }
 
   gfx::Size texture_size;
-  if (BindTextureIfNecessary(texture_base, &texture_size) &&
+  if (ShouldCheckTextureSize(texture_base, &texture_size) &&
       texture_size != size()) {
     DLOG(ERROR) << "Failed to fulfill the promise texture - texture "
                    "size does not match TransferableResource size: "
@@ -315,25 +315,12 @@ bool ImageContextImpl::BeginAccessIfNecessaryForSharedImage(
   return true;
 }
 
-bool ImageContextImpl::BindTextureIfNecessary(gpu::TextureBase* texture_base,
+bool ImageContextImpl::ShouldCheckTextureSize(gpu::TextureBase* texture_base,
                                               gfx::Size* size) {
   if (texture_base->GetType() != gpu::TextureBase::Type::kValidated)
     return false;
-  // If a texture is validated and bound to an image, we may defer copying the
-  // image to the texture until the texture is used. It is for implementing low
-  // latency drawing (e.g. fast ink) and avoiding unnecessary texture copy. So
-  // we need check the texture image state, and bind the image to the
-  // texture if necessary.
   auto* texture = gpu::gles2::Texture::CheckedCast(texture_base);
-  gpu::gles2::Texture::ImageState image_state;
-  auto* image = texture->GetLevelImage(GL_TEXTURE_2D, 0, &image_state);
-  if (image && image_state == gpu::gles2::Texture::UNBOUND) {
-    glBindTexture(texture_base->target(), texture_base->service_id());
-    if (!image->BindTexImage(texture_base->target())) {
-      LOG(ERROR) << "Failed to bind a gl image to texture.";
-      return false;
-    }
-  }
+
   GLsizei temp_width, temp_height;
   texture->GetLevelSize(texture_base->target(), 0 /* level */, &temp_width,
                         &temp_height, nullptr /* depth */);

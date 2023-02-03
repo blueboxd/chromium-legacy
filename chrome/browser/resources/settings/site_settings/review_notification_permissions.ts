@@ -136,11 +136,15 @@ export class SettingsReviewNotificationPermissionsElement extends
 
     this.sites_ = await this.browserProxy_.getNotificationPermissionReview();
     this.metricsBrowserProxy_.recordSafetyCheckNotificationsListCountHistogram(
-      this.sites_.length);
+        this.sites_.length);
     this.sitesLoaded_ = true;
 
     this.eventTracker_.add(
         document, 'keydown', (e: Event) => this.onKeyDown_(e as KeyboardEvent));
+
+    this.metricsBrowserProxy_
+        .recordSafetyCheckNotificationsModuleInteractionsHistogram(
+            SafetyCheckNotificationsModuleInteractions.OPEN_REVIEW_UI);
   }
 
   override disconnectedCallback() {
@@ -228,8 +232,6 @@ export class SettingsReviewNotificationPermissionsElement extends
     for (const row of rows) {
       row.classList.remove('removed');
     }
-    this.metricsBrowserProxy_.recordSafetyCheckNotificationsListCountHistogram(
-        this.sites_.length);
   }
 
   private onShowTooltip_(e: Event) {
@@ -412,11 +414,9 @@ export class SettingsReviewNotificationPermissionsElement extends
         await PluralStringProxyImpl.getInstance().getPluralString(
             'safetyCheckNotificationPermissionReviewSecondaryLabel',
             this.sites_.length);
-    /**
-     * Focus on the expand button after the undo button is clicked and sites are
-     * loaded again.
-     */
-    if (this.sites_.length !== 0 && this.shouldRefocusExpandButton_) {
+    // Focus on the expand button after the undo button is clicked and sites are
+    // loaded again.
+    if (this.shouldRefocusExpandButton_) {
       this.shouldRefocusExpandButton_ = false;
       const expandButton = this.shadowRoot!.querySelector('cr-expand-button');
       assert(expandButton);

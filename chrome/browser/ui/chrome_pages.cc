@@ -23,7 +23,6 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -41,6 +40,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
+#include "components/safe_browsing/core/common/safe_browsing_settings_metrics.h"
 #include "components/signin/public/base/consent_level.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
@@ -257,9 +257,7 @@ void ShowHistory(Browser* browser, const std::string& host_name) {
   // History UI should not be shown in Incognito mode, instead history
   // disclaimer bubble should show up. This also updates the behavior of history
   // keyboard shortcts in Incognito.
-  if (browser->profile()->IsOffTheRecord() &&
-      base::FeatureList::IsEnabled(
-          features::kUpdateHistoryEntryPointsInIncognito)) {
+  if (browser->profile()->IsOffTheRecord()) {
     browser->window()->ShowIncognitoHistoryDisclaimerDialog();
     return;
   }
@@ -444,8 +442,7 @@ void ShowPasswordCheck(Browser* browser) {
 }
 
 void ShowSafeBrowsingEnhancedProtection(Browser* browser) {
-  base::RecordAction(
-      UserMetricsAction("Options_ShowSafeBrowsingEnhancedProtection"));
+  safe_browsing::LogShowEnhancedProtectionAction();
   ShowSettingsSubPage(browser, kSafeBrowsingEnhancedProtectionSubPage);
 }
 
@@ -584,6 +581,14 @@ void ShowFirmwareUpdatesApp(Profile* profile) {
   ShowSystemAppInternal(profile, ash::SystemWebAppType::FIRMWARE_UPDATE);
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   ShowSystemAppInternal(profile, GURL(kOsUIFirmwareUpdaterAppURL));
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+}
+
+void ShowShortcutCustomizationApp(Profile* profile) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ShowSystemAppInternal(profile, ash::SystemWebAppType::SHORTCUT_CUSTOMIZATION);
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  ShowSystemAppInternal(profile, GURL(kOsUIShortcutCustomizationAppURL));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 

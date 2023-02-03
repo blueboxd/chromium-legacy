@@ -153,6 +153,8 @@ CreateSuggestionGroupsMap(
     omnibox::mojom::SuggestionGroupPtr suggestion_group =
         omnibox::mojom::SuggestionGroup::New();
     suggestion_group->header = base::UTF8ToUTF16(pair.second.header_text());
+    suggestion_group->side_type =
+        static_cast<omnibox::mojom::SideType>(pair.second.side_type());
     suggestion_group->hidden =
         result.IsSuggestionGroupHidden(prefs, pair.first);
     suggestion_group->show_group_a11y_label = l10n_util::GetStringFUTF16(
@@ -199,8 +201,9 @@ std::u16string GetAdditionalA11yMessage(const AutocompleteMatch& match,
           base::FeatureList::IsEnabled(omnibox::kNtpRealboxPedals)) {
         return l10n_util::GetStringUTF16(IDS_ACC_TAB_SWITCH_SUFFIX);
       }
-      if (match.action) {
-        return match.action->GetLabelStrings().accessibility_suffix;
+      const OmniboxAction* action = match.GetPrimaryAction();
+      if (action) {
+        return action->GetLabelStrings().accessibility_suffix;
       }
       if (match.SupportsDeletion()) {
         return l10n_util::GetStringUTF16(IDS_ACC_REMOVE_SUGGESTION_SUFFIX);
@@ -282,15 +285,16 @@ std::vector<omnibox::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
 
     // Omit actions that takeover the whole match, because the C++ handler
     // remaps the navigation to execute the action. (Doesn't happen in the JS.)
-    if (match.action && !match.action->TakesOverMatch() &&
+    const OmniboxAction* action = match.GetPrimaryAction();
+    if (action && !action->TakesOverMatch() &&
         base::FeatureList::IsEnabled(omnibox::kNtpRealboxPedals)) {
       const OmniboxAction::LabelStrings& label_strings =
-          match.action->GetLabelStrings();
+          action->GetLabelStrings();
       mojom_match->action = omnibox::mojom::Action::New(
           label_strings.accessibility_hint, label_strings.hint,
           label_strings.suggestion_contents,
           RealboxHandler::PedalVectorIconToResourceName(
-              match.action->GetVectorIcon()));
+              action->GetVectorIcon()));
     }
     mojom_match->a11y_label = AutocompleteMatchType::ToAccessibilityLabel(
         match, match.contents, line, 0,
@@ -392,6 +396,10 @@ void RealboxHandler::SetupDropdownWebUIDataSource(
 
   source->AddBoolean("roundCorners", base::FeatureList::IsEnabled(
                                          ntp_features::kRealboxRoundedCorners));
+
+  source->AddBoolean(
+      "showSecondarySide",
+      base::FeatureList::IsEnabled(omnibox::kKeepSecondaryZeroSuggest));
 }
 
 // static
@@ -612,7 +620,9 @@ void RealboxHandler::OpenAutocompleteMatch(
   }
 
   AutocompleteMatch match(autocomplete_controller_->result().match_at(line));
-  if (match.action && match.action->TakesOverMatch()) {
+  // If an action takes over the whole match, it will be the primary action.
+  const OmniboxAction* action = match.GetPrimaryAction();
+  if (action && action->TakesOverMatch()) {
     return ExecuteAction(line, base::TimeTicks::Now(), mouse_button, alt_key,
                          ctrl_key, meta_key, shift_key);
   }
@@ -805,20 +815,22 @@ void RealboxHandler::ExecuteAction(uint8_t line,
     return;
   }
 
-  const auto& match = autocomplete_controller_->result().match_at(line);
-  if (match.action) {
+  const AutocompleteMatch& match =
+      autocomplete_controller_->result().match_at(line);
+  const OmniboxAction* action = match.GetPrimaryAction();
+  if (action) {
     WindowOpenDisposition disposition = ui::DispositionFromClick(
         /*middle_button=*/mouse_button == 1, alt_key, ctrl_key, meta_key,
         shift_key);
     // TODO(tommycli): Add recording of action shown in the realbox when the
     // user uses the realbox to go somewhere OTHER than executing an action.
-    match.action->RecordActionShown(line, /*executed=*/true);
+    action->RecordActionShown(line, /*executed=*/true);
     OmniboxAction::ExecutionContext context(
         *(autocomplete_controller_->autocomplete_provider_client()),
         base::BindOnce(&RealboxHandler::OpenURL,
                        weak_ptr_factory_.GetWeakPtr()),
         match_selection_timestamp, disposition);
-    match.action->Execute(context);
+    action->Execute(context);
   } else if (match.has_tab_match.value_or(false)) {
     WindowOpenDisposition disposition = WindowOpenDisposition::SWITCH_TO_TAB;
     ui::PageTransition transition = ui::PageTransitionFromInt(

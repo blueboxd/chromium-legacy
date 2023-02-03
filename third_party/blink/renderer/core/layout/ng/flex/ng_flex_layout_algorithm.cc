@@ -2714,7 +2714,7 @@ bool NGFlexLayoutAlgorithm::MinBlockSizeShouldEncompassIntrinsicSize(
 
   if (is_column_) {
     bool can_shrink = item_style.ResolvedFlexShrink(Style()) != 0.f &&
-                      !Style().LogicalHeight().IsAutoOrContentOrIntrinsic();
+                      IsColumnContainerMainSizeDefinite();
 
     // Only allow growth if the item can't shrink and the flex-basis is
     // content-based.
@@ -2729,8 +2729,10 @@ bool NGFlexLayoutAlgorithm::MinBlockSizeShouldEncompassIntrinsicSize(
       return true;
   } else {
     // Don't grow if the item's block-size should be the same as its container.
-    if (WillChildCrossSizeBeContainerCrossSize(item.ng_input_node))
+    if (WillChildCrossSizeBeContainerCrossSize(item.ng_input_node) &&
+        !Style().LogicalHeight().IsAutoOrContentOrIntrinsic()) {
       return false;
+    }
 
     // Only allow growth if the item's cross size is auto.
     if (DoesItemCrossSizeComputeToAuto(item.ng_input_node))

@@ -17,16 +17,21 @@
 #include "chrome/browser/ui/views/profiles/profile_picker_web_contents_host.h"
 #include "chrome/browser/ui/webui/intro/intro_ui.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "url/gurl.h"
+
 namespace {
+
+const signin_metrics::AccessPoint kAccessPoint =
+    signin_metrics::AccessPoint::ACCESS_POINT_FOR_YOU_FRE;
 
 class IntroStepController : public ProfileManagementStepController {
  public:
   explicit IntroStepController(
       ProfilePickerWebContentsHost* host,
-      base::RepeatingCallback<void(bool sign_in)> choice_callback,
+      base::RepeatingCallback<void(IntroChoice)> choice_callback,
       bool enable_animations)
       : ProfileManagementStepController(host),
         intro_url_(BuildIntroURL(enable_animations)),
@@ -86,7 +91,7 @@ class IntroStepController : public ProfileManagementStepController {
 
   // `choice_callback_` is a `Repeating` one to be able to advance the flow more
   // than once in case we navigate back to this step.
-  const base::RepeatingCallback<void(bool sign_in)> choice_callback_;
+  const base::RepeatingCallback<void(IntroChoice)> choice_callback_;
 
   base::WeakPtrFactory<IntroStepController> weak_ptr_factory_{this};
 };
@@ -106,6 +111,7 @@ class FirstRunPostSignInAdapter : public ProfilePickerSignedInFlowController {
       : ProfilePickerSignedInFlowController(host,
                                             profile,
                                             std::move(contents),
+                                            kAccessPoint,
                                             /*profile_color=*/absl::nullopt),
         finish_flow_callback_(std::move(finish_flow_callback)) {
     DCHECK(finish_flow_callback_.value());
@@ -139,7 +145,7 @@ class FirstRunPostSignInAdapter : public ProfilePickerSignedInFlowController {
 
 std::unique_ptr<ProfileManagementStepController> CreateIntroStep(
     ProfilePickerWebContentsHost* host,
-    base::RepeatingCallback<void(bool sign_in)> choice_callback,
+    base::RepeatingCallback<void(IntroChoice)> choice_callback,
     bool enable_animations) {
   return std::make_unique<IntroStepController>(host, std::move(choice_callback),
                                                enable_animations);
@@ -195,8 +201,13 @@ bool FirstRunFlowControllerDice::PreFinishWithBrowser() {
   return true;
 }
 
-void FirstRunFlowControllerDice::HandleIntroSigninChoice(bool sign_in) {
-  if (!sign_in) {
+void FirstRunFlowControllerDice::HandleIntroSigninChoice(IntroChoice choice) {
+  if (choice == IntroChoice::kQuit) {
+    // The view is getting destroyed. The class destructor will handle the rest.
+    return;
+  }
+
+  if (choice == IntroChoice::kContinueWithoutAccount) {
     FinishFlowAndRunInBrowser(profile_, PostHostClearedCallback());
     return;
   }
@@ -207,7 +218,7 @@ void FirstRunFlowControllerDice::HandleIntroSigninChoice(bool sign_in) {
 
 std::unique_ptr<ProfilePickerDiceSignInProvider>
 FirstRunFlowControllerDice::CreateDiceSignInProvider() {
-  return std::make_unique<ProfilePickerDiceSignInProvider>(host(),
+  return std::make_unique<ProfilePickerDiceSignInProvider>(host(), kAccessPoint,
                                                            profile_->GetPath());
 }
 

@@ -23,14 +23,16 @@ def _setup_sys_path():
     # https://docs.python.org/3/library/sys.html?highlight=path[0]#sys.path
     sys.path.insert(1, module_dir)
 
-
 _setup_sys_path()
 
+import argparse
 from mojom.generate import generator
 from mojom.generate.template_expander import UseJinja
 from mojom.generate import template_expander
 # Import it as "mojom" because "module" is a common variable name.
 import mojom.generate.module as mojom
+
+GENERATOR_PREFIX = 'js_interface_binder'
 
 
 class JsInterfaceBinderImplStylizer(generator.Stylizer):
@@ -68,7 +70,14 @@ class Generator(generator.Generator):
 
   @staticmethod
   def GetTemplatePrefix():
-    return "js_interface_binder_templates"
+    return 'js_interface_binder_templates'
+
+  def _GetKindName(self, kind):
+    """Return `kind`'s name, prefixing it with its namespace if necessary."""
+    should_include_namespace = self.module.path != kind.module.path
+    if should_include_namespace:
+      return f'{kind.module.namespace}::{kind.name}'
+    return kind.name
 
   def _GetCppType(self, kind):
     """Return a string representing the C++ type of `kind`
@@ -76,18 +85,18 @@ class Generator(generator.Generator):
      Returns None if the type is not supposed to be used in a JsInterfaceBinder.
      """
     if mojom.IsPendingRemoteKind(kind):
-      return "::mojo::PendingRemote<%s>" % kind.kind.name
+      return f'::mojo::PendingRemote<{self._GetKindName(kind.kind)}>'
     if mojom.IsPendingReceiverKind(kind):
-      return "::mojo::PendingReceiver<%s>" % kind.kind.name
+      return f'::mojo::PendingReceiver<{self._GetKindName(kind.kind)}>'
 
   def _GetBinderMemberVariableName(self, bind_method):
     """Return the variable name of the binder corresponding to `bind_method`."""
-    return "binder_for_%s" % generator.ToLowerSnakeCase(bind_method.name)
+    return f'binder_for_{generator.ToLowerSnakeCase(bind_method.name)}'
 
   def GetFilters(self):
     return {
-        "cpp_type": self._GetCppType,
-        "binder_variable_name": self._GetBinderMemberVariableName,
+        'cpp_type': self._GetCppType,
+        'binder_variable_name': self._GetBinderMemberVariableName,
     }
 
   def _GetInterfaceBinders(self):
@@ -96,6 +105,7 @@ class Generator(generator.Generator):
     Raises an Exception if any JsInterfaceBinder don't satisfy JsInterfaceBinder
     constraints.
     """
+    # TODO(ortuno): Remove support for multiple JsInterfaceBinders.
     interface_binders = [
         interface for interface in self.module.interfaces if
         (interface.attributes and interface.attributes.get('JsInterfaceBinder'))
@@ -104,7 +114,6 @@ class Generator(generator.Generator):
     # Enforce JsInterfaceBinders constraints.
     for interface_binder in interface_binders:
       for method in interface_binder.methods:
-        print(method.response_parameters)
         if method.response_parameters != None:
           raise Exception(f'{interface_binder.name}.{method.name} has a '
                           'response. JsInterfaceBinder\'s methods should not '
@@ -122,22 +131,43 @@ class Generator(generator.Generator):
     return interface_binders
 
   def _GetParameters(self):
+    webui_controller_namespace = None
+    webui_controller_name = None
+
+    namespace_end = self.webui_controller_with_namespace.rfind("::")
+    if namespace_end == -1:
+      webui_controller_name = self.webui_controller_with_namespace
+    else:
+      webui_controller_namespace = \
+        self.webui_controller_with_namespace[:namespace_end]
+      webui_controller_name = \
+        self.webui_controller_with_namespace[namespace_end + 2:]
+
     return {
-        "module": self.module,
-        "interface_binders": self._GetInterfaceBinders()
+        'module': self.module,
+        'interface_binders': self._GetInterfaceBinders(),
+        'webui_controller_name': webui_controller_name,
+        'webui_controller_namespace': webui_controller_namespace,
+        'webui_controller_header': self.webui_controller_header,
     }
 
-  @UseJinja("js_interface_binder_impl.h.tmpl")
+  @UseJinja('js_interface_binder_impl.h.tmpl')
   def _GenerateJsInterfaceBinderImplDeclaration(self):
     return self._GetParameters()
 
-  @UseJinja("js_interface_binder_impl.cc.tmpl")
+  @UseJinja('js_interface_binder_impl.cc.tmpl')
   def _GenerateJsInterfaceBinderImplDefinition(self):
     return self._GetParameters()
 
-  def GenerateFiles(self, args):
+  def GenerateFiles(self, unparsed_args):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--js_interface_binder_config', dest='config')
+    args = parser.parse_args(unparsed_args)
+    (self.webui_controller_with_namespace, self.webui_controller_header) = \
+        args.config.split('=')
+
     self.module.Stylize(JsInterfaceBinderImplStylizer())
     self.WriteWithComment(self._GenerateJsInterfaceBinderImplDeclaration(),
-                          "%s-js-interface-binder-impl.h" % self.module.path)
+                          f'{self.module.path}-js-interface-binder-impl.h')
     self.WriteWithComment(self._GenerateJsInterfaceBinderImplDefinition(),
-                          "%s-js-interface-binder-impl.cc" % self.module.path)
+                          f'{self.module.path}-js-interface-binder-impl.cc')

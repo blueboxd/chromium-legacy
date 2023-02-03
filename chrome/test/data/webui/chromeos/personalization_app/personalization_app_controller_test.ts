@@ -5,7 +5,7 @@
 import 'chrome://personalization/strings.m.js';
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
-import {cancelPreviewWallpaper, DailyRefreshType, DefaultImageSymbol, DisplayableImage, fetchCollections, fetchGooglePhotosAlbum, fetchGooglePhotosAlbums, fetchLocalData, getDefaultImageThumbnail, GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, initializeBackdropData, initializeGooglePhotosData, isDefaultImage, isFilePath, isGooglePhotosPhoto, isWallpaperImage, kDefaultImageSymbol, selectGooglePhotosAlbum, selectWallpaper, updateDailyRefreshWallpaper, WallpaperType} from 'chrome://personalization/js/personalization_app.js';
+import {cancelPreviewWallpaper, DailyRefreshType, DefaultImageSymbol, DisplayableImage, fetchCollections, fetchGooglePhotosAlbum, fetchGooglePhotosAlbums, fetchLocalData, getDefaultImageThumbnail, GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, initializeBackdropData, initializeGooglePhotosData, isDefaultImage, isFilePath, isGooglePhotosPhoto, isWallpaperImage, kDefaultImageSymbol, selectGooglePhotosAlbum, selectWallpaper, updateDailyRefreshWallpaper, WallpaperLayout, WallpaperType} from 'chrome://personalization/js/personalization_app.js';
 import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
@@ -621,8 +621,6 @@ suite('Personalization app controller', () => {
 });
 
 suite('full screen mode', () => {
-  const fullscreenPreviewFeature = 'fullScreenPreviewEnabled';
-
   let wallpaperProvider: TestWallpaperProvider;
   let personalizationStore: TestPersonalizationStore;
 
@@ -632,67 +630,36 @@ suite('full screen mode', () => {
     personalizationStore.setReducersEnabled(true);
   });
 
-  test(
-      'enters full screen mode when in tablet and preview flag is set',
-      async () => {
-        await initializeBackdropData(wallpaperProvider, personalizationStore);
+  test('enters full screen mode when in tablet', async () => {
+    await initializeBackdropData(wallpaperProvider, personalizationStore);
 
-        assertFalse(personalizationStore.data.wallpaper.fullscreen);
+    assertFalse(personalizationStore.data.wallpaper.fullscreen);
 
-        loadTimeData.overrideValues({[fullscreenPreviewFeature]: false});
-        wallpaperProvider.isInTabletModeResponse = true;
+    wallpaperProvider.isInTabletModeResponse = true;
 
-        {
-          const selectWallpaperPromise = selectWallpaper(
-              wallpaperProvider.images![0]!, wallpaperProvider,
-              personalizationStore);
-          const [assetId, previewMode] =
-              await wallpaperProvider.whenCalled('selectWallpaper');
-          assertFalse(previewMode);
-          assertEquals(wallpaperProvider.images![0]!.assetId, assetId);
+    assertEquals(0, wallpaperProvider.getCallCount('makeTransparent'));
+    assertEquals(0, wallpaperProvider.getCallCount('makeOpaque'));
 
-          await selectWallpaperPromise;
-          assertEquals(
-              0, wallpaperProvider.getCallCount('makeTransparent'),
-              'makeTransparent is not called when fullscreen preview is off');
-          assertEquals(
-              0, wallpaperProvider.getCallCount('makeOpaque'),
-              'makeOpaque is not called when fullscreen preview is off');
+    const selectWallpaperPromise = selectWallpaper(
+        wallpaperProvider.images![0]!, wallpaperProvider, personalizationStore);
 
-          assertFalse(personalizationStore.data.wallpaper.fullscreen);
-        }
+    const [assetId, previewMode] =
+        await wallpaperProvider.whenCalled('selectWallpaper');
+    assertTrue(previewMode);
+    assertEquals(wallpaperProvider.images![0]!.assetId, assetId);
 
-        wallpaperProvider.reset();
+    await selectWallpaperPromise;
+    assertEquals(
+        1, wallpaperProvider.getCallCount('makeTransparent'),
+        'makeTransparent is called while calling selectWallpaper');
 
-        {
-          // Now with flag turned on.
-          loadTimeData.overrideValues({[fullscreenPreviewFeature]: true});
+    assertTrue(personalizationStore.data.wallpaper.fullscreen);
 
-          assertEquals(0, wallpaperProvider.getCallCount('makeTransparent'));
-          assertEquals(0, wallpaperProvider.getCallCount('makeOpaque'));
-
-          const selectWallpaperPromise = selectWallpaper(
-              wallpaperProvider.images![0]!, wallpaperProvider,
-              personalizationStore);
-
-          const [assetId, previewMode] =
-              await wallpaperProvider.whenCalled('selectWallpaper');
-          assertTrue(previewMode);
-          assertEquals(wallpaperProvider.images![0]!.assetId, assetId);
-
-          await selectWallpaperPromise;
-          assertEquals(
-              1, wallpaperProvider.getCallCount('makeTransparent'),
-              'makeTransparent is called while calling selectWallpaper');
-
-          assertTrue(personalizationStore.data.wallpaper.fullscreen);
-
-          await cancelPreviewWallpaper(wallpaperProvider);
-          assertEquals(
-              1, wallpaperProvider.getCallCount('makeOpaque'),
-              'makeOpaque is called while calling cancelPreviewWallpaper');
-        }
-      });
+    await cancelPreviewWallpaper(wallpaperProvider);
+    assertEquals(
+        1, wallpaperProvider.getCallCount('makeOpaque'),
+        'makeOpaque is called while calling cancelPreviewWallpaper');
+  });
 });
 
 suite('observes pendingState during wallpaper selection', () => {
@@ -936,8 +903,10 @@ suite('does not respond to re-selecting the current wallpaper', () => {
     const pendingSelected = personalizationStore.data.wallpaper.pendingSelected;
     assertEquals(pendingSelected, image);
     personalizationStore.data.wallpaper.currentSelected = {
-      key: getImageKey(image),
+      key: getImageKey(image)!,
       type: getImageType(image),
+      attribution: [],
+      layout: WallpaperLayout.kCenterCropped,
     };
     personalizationStore.data.wallpaper.pendingSelected = null;
 
@@ -1016,6 +985,9 @@ suite('updates default image', () => {
     // state.
     personalizationStore.reset(personalizationStore.data);
 
+    assertTrue(
+        Array.isArray(personalizationStore.data.wallpaper.local.images),
+        'wallpaper.local.images is not array');
     assertTrue(
         personalizationStore.data.wallpaper.local.images.every(
             (image: FilePath|DefaultImageSymbol) => isFilePath(image) &&

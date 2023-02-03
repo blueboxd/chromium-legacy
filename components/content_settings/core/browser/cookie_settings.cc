@@ -28,7 +28,7 @@
 #if BUILDFLAG(IS_IOS)
 #include "components/content_settings/core/common/features.h"
 #else
-#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/features_generated.h"
 #endif
 
 namespace content_settings {
@@ -97,8 +97,9 @@ bool CookieSettings::IsThirdPartyAccessAllowed(
     QueryReason query_reason) {
   // Use GURL() as an opaque primary url to check if any site
   // could access cookies in a 3p context on |first_party_url|.
-  return IsAllowed(
-      GetCookieSetting(GURL(), first_party_url, source, query_reason));
+  return IsAllowed(GetCookieSetting(GURL(), first_party_url,
+                                    net::CookieSettingOverrides(), source,
+                                    query_reason));
 }
 
 void CookieSettings::SetThirdPartyCookieSetting(const GURL& first_party_url,
@@ -210,7 +211,14 @@ ContentSetting CookieSettings::GetCookieSettingInternal(
   // our checking logic.
   // We'll perform this check after we know if we will |block| or not to avoid
   // performing extra work in scenarios we already allow.
-  if (block && ShouldConsiderStorageAccessGrants(query_reason)) {
+
+  // TODO(https://crbug.com/1411765): instead of using a BUILDFLAG and checking
+  // the feature here, we should rely on CookieSettingsFactory to plumb in this
+  // boolean instead.
+  bool storage_access_api_enabled =
+      base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI);
+  if (block && storage_access_api_enabled &&
+      ShouldConsiderStorageAccessGrants(query_reason)) {
     ContentSetting host_setting = host_content_settings_map_->GetContentSetting(
         url, first_party_url, ContentSettingsType::STORAGE_ACCESS);
 
@@ -221,15 +229,16 @@ ContentSetting CookieSettings::GetCookieSettingInternal(
     }
   }
 
-  if (block && ShouldConsiderTopLevelStorageAccessGrants(query_reason)) {
+  if (block && storage_access_api_enabled &&
+      ShouldConsiderTopLevelStorageAccessGrants(query_reason, overrides)) {
     ContentSetting host_setting = host_content_settings_map_->GetContentSetting(
         url, first_party_url, ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS);
 
     if (host_setting == CONTENT_SETTING_ALLOW) {
       block = false;
-      // TODO(crbug.com/1385156): Move to separate metric names.
-      FireStorageAccessHistogram(net::cookie_util::StorageAccessResult::
-                                     ACCESS_ALLOWED_STORAGE_ACCESS_GRANT);
+      FireStorageAccessHistogram(
+          net::cookie_util::StorageAccessResult::
+              ACCESS_ALLOWED_TOP_LEVEL_STORAGE_ACCESS_GRANT);
     }
   }
 #endif

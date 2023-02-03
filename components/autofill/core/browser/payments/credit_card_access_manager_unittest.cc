@@ -74,9 +74,9 @@
 #include "url/gurl.h"
 
 #if !BUILDFLAG(IS_IOS)
-#include "components/autofill/core/browser/payments/fido_authentication_strike_database.h"
 #include "components/autofill/core/browser/payments/test_credit_card_fido_authenticator.h"
 #include "components/autofill/core/browser/payments/test_internal_authenticator.h"
+#include "components/autofill/core/browser/strike_databases/payments/fido_authentication_strike_database.h"
 #include "content/public/test/mock_navigation_handle.h"
 #endif
 
@@ -207,7 +207,7 @@ class CreditCardAccessManagerTest : public testing::Test {
     autofill_driver_->set_autofill_manager(
         std::move(browser_autofill_manager_));
     autofill_driver_->SetAuthenticator(new TestInternalAuthenticator());
-    auto fido_authenticator = std::make_unique<TestCreditCardFIDOAuthenticator>(
+    auto fido_authenticator = std::make_unique<TestCreditCardFidoAuthenticator>(
         autofill_driver_.get(), &autofill_client_);
     fido_authenticator_ = fido_authenticator.get();
     credit_card_access_manager_->set_fido_authenticator_for_testing(
@@ -267,13 +267,13 @@ class CreditCardAccessManagerTest : public testing::Test {
     personal_data().AddServerCreditCard(server_card);
   }
 
-  CreditCardCVCAuthenticator* GetCVCAuthenticator() {
-    return autofill_client_.GetCVCAuthenticator();
+  CreditCardCvcAuthenticator* GetCvcAuthenticator() {
+    return autofill_client_.GetCvcAuthenticator();
   }
 
   void MockUserResponseForCvcAuth(std::u16string cvc, bool enable_fido) {
     payments::FullCardRequest* full_card_request =
-        GetCVCAuthenticator()->full_card_request_.get();
+        GetCvcAuthenticator()->full_card_request_.get();
     if (!full_card_request)
       return;
 
@@ -294,7 +294,7 @@ class CreditCardAccessManagerTest : public testing::Test {
                             bool follow_with_fido_auth = false,
                             bool is_virtual_card = false) {
     payments::FullCardRequest* full_card_request =
-        GetCVCAuthenticator()->full_card_request_.get();
+        GetCvcAuthenticator()->full_card_request_.get();
 
     if (!full_card_request)
       return false;
@@ -391,9 +391,9 @@ class CreditCardAccessManagerTest : public testing::Test {
     GetFIDOAuthenticator()->OnDidGetOptChangeResult(result, response);
   }
 
-  TestCreditCardFIDOAuthenticator* GetFIDOAuthenticator() {
-    return static_cast<TestCreditCardFIDOAuthenticator*>(
-        credit_card_access_manager_->GetOrCreateFIDOAuthenticator());
+  TestCreditCardFidoAuthenticator* GetFIDOAuthenticator() {
+    return static_cast<TestCreditCardFidoAuthenticator*>(
+        credit_card_access_manager_->GetOrCreateFidoAuthenticator());
   }
 #endif
 
@@ -485,7 +485,7 @@ class CreditCardAccessManagerTest : public testing::Test {
       EXPECT_EQ(fido_authenticator_->context_token().value(),
                 "fake_context_token");
 
-      CreditCardFIDOAuthenticator::FidoAuthenticationResponse fido_response{
+      CreditCardFidoAuthenticator::FidoAuthenticationResponse fido_response{
           .did_succeed = false};
       credit_card_access_manager_->OnFIDOAuthenticationComplete(fido_response);
     }
@@ -498,8 +498,8 @@ class CreditCardAccessManagerTest : public testing::Test {
 
     switch (challenge_option.type) {
       case CardUnmaskChallengeOptionType::kCvc: {
-        CreditCardCVCAuthenticator* cvc_authenticator =
-            autofill_client_.GetCVCAuthenticator();
+        CreditCardCvcAuthenticator* cvc_authenticator =
+            autofill_client_.GetCvcAuthenticator();
         DCHECK(cvc_authenticator);
         payments::PaymentsClient::UnmaskRequestDetails* request_details =
             cvc_authenticator->GetFullCardRequest()->request_.get();
@@ -556,7 +556,7 @@ class CreditCardAccessManagerTest : public testing::Test {
   raw_ptr<CreditCardAccessManager> credit_card_access_manager_;
   raw_ptr<TestCreditCardOtpAuthenticator> otp_authenticator_;
 #if !BUILDFLAG(IS_IOS)
-  raw_ptr<TestCreditCardFIDOAuthenticator> fido_authenticator_;
+  raw_ptr<TestCreditCardFidoAuthenticator> fido_authenticator_;
 #endif
 };
 
@@ -741,7 +741,7 @@ TEST_F(CreditCardAccessManagerTest, CardUnmaskPreflightCalledMetric) {
   std::string verifiability_check_metric =
       "Autofill.BetterAuth.UserVerifiabilityCheckDuration";
   std::string preflight_call_metric =
-      "Autofill.BetterAuth.CardUnmaskPreflightCalled";
+      "Autofill.BetterAuth.CardUnmaskPreflightCalledWithFidoOptInStatus";
   std::string preflight_latency_metric =
       "Autofill.BetterAuth.CardUnmaskPreflightDuration";
 
@@ -792,30 +792,44 @@ TEST_F(CreditCardAccessManagerTest, CardUnmaskPreflightCalledMetric) {
   }
 
   {
-    // Create server card and set user as eligible for FIDO auth.
-    base::HistogramTester histogram_tester;
-    ClearCards();
-    CreateServerCard(kTestGUID, kTestNumber);
+    // Tests that the metrics log correctly when the user is eligible for FIDO,
+    // and has only masked server cards.
+    for (bool is_user_opted_in_to_fido : {true, false}) {
+      SCOPED_TRACE(testing::Message()
+                   << " is_user_opted_in_to_fido="
+                   << static_cast<int>(is_user_opted_in_to_fido));
+      // Create server card and set user as eligible for FIDO auth, and set that
+      // the user is either opted-in to FIDO auth or opted-out of FIDO auth
+      // based on `is_user_opted_in_to_fido`.
+      base::HistogramTester histogram_tester;
+      ClearCards();
+      CreateServerCard(kTestGUID, kTestNumber);
 #if !BUILDFLAG(IS_IOS)
-    GetFIDOAuthenticator()->SetUserVerifiable(true);
+      auto* fido_authenticator = GetFIDOAuthenticator();
+      fido_authenticator->SetUserVerifiable(true);
+      fido_authenticator->set_is_user_opted_in(
+          /*is_user_opted_in=*/is_user_opted_in_to_fido);
 #endif
-    ResetFetchCreditCard();
+      ResetFetchCreditCard();
 
-    credit_card_access_manager_->PrepareToFetchCreditCard();
-    InvokeUnmaskDetailsTimeout();
-    WaitForCallbacks();
+      credit_card_access_manager_->PrepareToFetchCreditCard();
+      InvokeUnmaskDetailsTimeout();
+      WaitForCallbacks();
 
-    // Preflight call is made only if a server card is available and the user is
-    // eligible for FIDO authentication, except on iOS.
+      // Preflight call is made only if a server card is available and the user
+      // is eligible for FIDO authentication, except on iOS.
 #if BUILDFLAG(IS_IOS)
-    histogram_tester.ExpectTotalCount(verifiability_check_metric, 0);
-    histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
-    histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
+      histogram_tester.ExpectTotalCount(verifiability_check_metric, 0);
+      histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
+      histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
 #else
-    histogram_tester.ExpectTotalCount(verifiability_check_metric, 1);
-    histogram_tester.ExpectTotalCount(preflight_call_metric, 1);
-    histogram_tester.ExpectTotalCount(preflight_latency_metric, 1);
+      histogram_tester.ExpectTotalCount(verifiability_check_metric, 1);
+      histogram_tester.ExpectUniqueSample(preflight_call_metric,
+                                          /*sample=*/is_user_opted_in_to_fido,
+                                          /*expected_bucket_count=*/1);
+      histogram_tester.ExpectTotalCount(preflight_latency_metric, 1);
 #endif
+    }
   }
 }
 
@@ -848,9 +862,9 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOSuccess) {
       CreditCardFormEventLogger::UnmaskAuthFlowEvent::kPromptShown, 1);
 
   // FIDO Success.
-  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::AUTHENTICATION_FLOW,
+  EXPECT_EQ(CreditCardFidoAuthenticator::Flow::AUTHENTICATION_FLOW,
             GetFIDOAuthenticator()->current_flow());
-  TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
+  TestCreditCardFidoAuthenticator::GetAssertion(GetFIDOAuthenticator(),
                                                 /*did_succeed=*/true);
   EXPECT_TRUE(GetRealPanForFIDOAuth(AutofillClient::PaymentsRpcResult::kSuccess,
                                     kTestNumber));
@@ -900,7 +914,7 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOSuccessWithDcvv) {
   WaitForCallbacks();
 
   // FIDO Success.
-  TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
+  TestCreditCardFidoAuthenticator::GetAssertion(GetFIDOAuthenticator(),
                                                 /*did_succeed=*/true);
 
   // Mock Payments response that includes DCVV along with Full PAN.
@@ -941,9 +955,9 @@ TEST_F(CreditCardAccessManagerTest,
       CreditCardFormEventLogger::UnmaskAuthFlowEvent::kPromptShown, 1);
 
   // FIDO Failure.
-  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::AUTHENTICATION_FLOW,
+  EXPECT_EQ(CreditCardFidoAuthenticator::Flow::AUTHENTICATION_FLOW,
             GetFIDOAuthenticator()->current_flow());
-  TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
+  TestCreditCardFidoAuthenticator::GetAssertion(GetFIDOAuthenticator(),
                                                 /*did_succeed=*/false);
 
   histogram_tester.ExpectBucketCount(
@@ -955,7 +969,7 @@ TEST_F(CreditCardAccessManagerTest,
   EXPECT_NE(accessor_->result(), CreditCardFetchResult::kSuccess);
 
   // Followed by a fallback to CVC.
-  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::NONE_FLOW,
+  EXPECT_EQ(CreditCardFidoAuthenticator::Flow::NONE_FLOW,
             GetFIDOAuthenticator()->current_flow());
   EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
                                    kTestNumber));
@@ -996,16 +1010,16 @@ TEST_F(CreditCardAccessManagerTest,
   WaitForCallbacks();
 
   // FIDO Failure.
-  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::AUTHENTICATION_FLOW,
+  EXPECT_EQ(CreditCardFidoAuthenticator::Flow::AUTHENTICATION_FLOW,
             GetFIDOAuthenticator()->current_flow());
-  TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
+  TestCreditCardFidoAuthenticator::GetAssertion(GetFIDOAuthenticator(),
                                                 /*did_succeed=*/true);
   EXPECT_TRUE(GetRealPanForFIDOAuth(
       AutofillClient::PaymentsRpcResult::kPermanentFailure, kTestNumber));
   EXPECT_NE(accessor_->result(), CreditCardFetchResult::kSuccess);
 
   // Followed by a fallback to CVC.
-  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::NONE_FLOW,
+  EXPECT_EQ(CreditCardFidoAuthenticator::Flow::NONE_FLOW,
             GetFIDOAuthenticator()->current_flow());
   EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult::kSuccess,
                                    kTestNumber));
@@ -1138,7 +1152,7 @@ TEST_F(CreditCardAccessManagerTest,
     {
       // Preflight call returned before card was chosen.
       base::HistogramTester histogram_tester;
-      // This is important because CreditCardFIDOAuthenticator will update the
+      // This is important because CreditCardFidoAuthenticator will update the
       // opted-in pref according to GetDetailsForGetRealPan response.
       payments_client_->AllowFidoRegistration(!user_is_opted_in);
 
@@ -1271,9 +1285,9 @@ TEST_F(CreditCardAccessManagerTest, FIDONewCardAuthorization) {
   EXPECT_EQ(accessor_->cvc(), std::u16string());
 
   // Mock user response.
-  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::FOLLOWUP_AFTER_CVC_AUTH_FLOW,
+  EXPECT_EQ(CreditCardFidoAuthenticator::Flow::FOLLOWUP_AFTER_CVC_AUTH_FLOW,
             GetFIDOAuthenticator()->current_flow());
-  TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
+  TestCreditCardFidoAuthenticator::GetAssertion(GetFIDOAuthenticator(),
                                                 /*did_succeed=*/true);
   // Ensure that form is filled after user verification (OnCreditCardFetched is
   // called).
@@ -1371,16 +1385,16 @@ TEST_F(CreditCardAccessManagerTest, FIDOOptInSuccess_Android) {
                                    /*follow_with_fido_auth=*/true));
   WaitForCallbacks();
 
-  // Check current flow to ensure CreditCardFIDOAuthenticator::Authorize is
+  // Check current flow to ensure CreditCardFidoAuthenticator::Authorize is
   // called and correct flow is set.
-  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::OPT_IN_WITH_CHALLENGE_FLOW,
+  EXPECT_EQ(CreditCardFidoAuthenticator::Flow::OPT_IN_WITH_CHALLENGE_FLOW,
             GetFIDOAuthenticator()->current_flow());
   // Ensure that form is not filled yet (OnCreditCardFetched is not called).
   EXPECT_EQ(accessor_->number(), std::u16string());
   EXPECT_EQ(accessor_->cvc(), std::u16string());
 
   // Mock user response.
-  TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
+  TestCreditCardFidoAuthenticator::GetAssertion(GetFIDOAuthenticator(),
                                                 /*did_succeed=*/true);
   // Ensure that form is filled after user verification (OnCreditCardFetched is
   // called).
@@ -1421,16 +1435,16 @@ TEST_F(CreditCardAccessManagerTest, FIDOOptInUserVerificationFailure) {
                                    kTestNumber,
                                    /*fido_opt_in=*/false,
                                    /*follow_with_fido_auth=*/true));
-  // Check current flow to ensure CreditCardFIDOAuthenticator::Authorize is
+  // Check current flow to ensure CreditCardFidoAuthenticator::Authorize is
   // called and correct flow is set.
-  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::OPT_IN_WITH_CHALLENGE_FLOW,
+  EXPECT_EQ(CreditCardFidoAuthenticator::Flow::OPT_IN_WITH_CHALLENGE_FLOW,
             GetFIDOAuthenticator()->current_flow());
   // Ensure that form is not filled yet (OnCreditCardFetched is not called).
   EXPECT_EQ(accessor_->number(), std::u16string());
   EXPECT_EQ(accessor_->cvc(), std::u16string());
 
   // Mock GetAssertion failure.
-  TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
+  TestCreditCardFidoAuthenticator::GetAssertion(GetFIDOAuthenticator(),
                                                 /*did_succeed=*/false);
   // Ensure that form is still filled even if user verification fails
   // (OnCreditCardFetched is called). Note that this is different behavior than
@@ -1462,16 +1476,16 @@ TEST_F(CreditCardAccessManagerTest, FIDOOptInServerFailure) {
                                    kTestNumber,
                                    /*fido_opt_in=*/false,
                                    /*follow_with_fido_auth=*/true));
-  // Check current flow to ensure CreditCardFIDOAuthenticator::Authorize is
+  // Check current flow to ensure CreditCardFidoAuthenticator::Authorize is
   // called and correct flow is set.
-  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::OPT_IN_WITH_CHALLENGE_FLOW,
+  EXPECT_EQ(CreditCardFidoAuthenticator::Flow::OPT_IN_WITH_CHALLENGE_FLOW,
             GetFIDOAuthenticator()->current_flow());
   // Ensure that form is not filled yet (OnCreditCardFetched is not called).
   EXPECT_EQ(accessor_->number(), std::u16string());
   EXPECT_EQ(accessor_->cvc(), std::u16string());
 
   // Mock user response and OptChange payments call.
-  TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
+  TestCreditCardFidoAuthenticator::GetAssertion(GetFIDOAuthenticator(),
                                                 /*did_succeed=*/true);
   // Ensure that form is filled after user verification (OnCreditCardFetched is
   // called).
@@ -1503,9 +1517,9 @@ TEST_F(CreditCardAccessManagerTest, FIDOOptIn_CheckboxDeclined) {
   // Ensure that form is filled (OnCreditCardFetched is called).
   EXPECT_EQ(kTestNumber16, accessor_->number());
   EXPECT_EQ(kTestCvc16, accessor_->cvc());
-  // Check current flow to ensure CreditCardFIDOAuthenticator::Authorize is
+  // Check current flow to ensure CreditCardFidoAuthenticator::Authorize is
   // never called.
-  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::NONE_FLOW,
+  EXPECT_EQ(CreditCardFidoAuthenticator::Flow::NONE_FLOW,
             GetFIDOAuthenticator()->current_flow());
   EXPECT_FALSE(GetFIDOAuthenticator()->IsUserOptedIn());
 }
@@ -1576,9 +1590,9 @@ TEST_F(CreditCardAccessManagerTest,
             /*include_creation_options=*/true);
 
   // Mock user response and OptChange payments call.
-  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::OPT_IN_WITH_CHALLENGE_FLOW,
+  EXPECT_EQ(CreditCardFidoAuthenticator::Flow::OPT_IN_WITH_CHALLENGE_FLOW,
             GetFIDOAuthenticator()->current_flow());
-  TestCreditCardFIDOAuthenticator::MakeCredential(GetFIDOAuthenticator(),
+  TestCreditCardFidoAuthenticator::MakeCredential(GetFIDOAuthenticator(),
                                                   /*did_succeed=*/true);
   OptChange(AutofillClient::PaymentsRpcResult::kSuccess,
             /*user_is_opted_in=*/true);
@@ -1712,7 +1726,7 @@ TEST_F(CreditCardAccessManagerTest,
             /*include_creation_options=*/true);
 
   // Mock user response.
-  TestCreditCardFIDOAuthenticator::MakeCredential(GetFIDOAuthenticator(),
+  TestCreditCardFidoAuthenticator::MakeCredential(GetFIDOAuthenticator(),
                                                   /*did_succeed=*/false);
   EXPECT_EQ(FidoAuthenticationStrikeDatabase::
                 kStrikesToAddWhenUserVerificationFailsOnOptInAttempt,
@@ -1759,9 +1773,9 @@ TEST_F(CreditCardAccessManagerTest,
             /*include_request_options=*/true);
 
   // Mock user response and OptChange payments call.
-  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::OPT_IN_WITH_CHALLENGE_FLOW,
+  EXPECT_EQ(CreditCardFidoAuthenticator::Flow::OPT_IN_WITH_CHALLENGE_FLOW,
             GetFIDOAuthenticator()->current_flow());
-  TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
+  TestCreditCardFidoAuthenticator::GetAssertion(GetFIDOAuthenticator(),
                                                 /*did_succeed=*/true);
   OptChange(AutofillClient::PaymentsRpcResult::kSuccess,
             /*user_is_opted_in=*/true);
@@ -1807,7 +1821,7 @@ TEST_F(CreditCardAccessManagerTest, SettingsPage_FIDOEnrollment) {
               /*user_is_opted_in=*/false,
               /*include_creation_options=*/true);
     // Mock user response and payments response.
-    TestCreditCardFIDOAuthenticator::MakeCredential(GetFIDOAuthenticator(),
+    TestCreditCardFidoAuthenticator::MakeCredential(GetFIDOAuthenticator(),
                                                     did_succeed);
 
     histogram_tester.ExpectBucketCount(
@@ -2023,7 +2037,7 @@ TEST_F(CreditCardAccessManagerTest, PreflightCallRateLimited) {
   // Create server card and set user as eligible for FIDO auth.
   base::HistogramTester histogram_tester;
   std::string preflight_call_metric =
-      "Autofill.BetterAuth.CardUnmaskPreflightCalled";
+      "Autofill.BetterAuth.CardUnmaskPreflightCalledWithFidoOptInStatus";
 
   ClearCards();
   CreateServerCard(kTestGUID, kTestNumber);
@@ -2236,8 +2250,8 @@ TEST_F(CreditCardAccessManagerTest,
       /*is_user_verifiable=*/false, challenge_options, /*selected_index=*/0);
 
   CreditCard card = test::GetCreditCard();
-  credit_card_access_manager_->OnCVCAuthenticationComplete(
-      CreditCardCVCAuthenticator::CVCAuthenticationResponse()
+  credit_card_access_manager_->OnCvcAuthenticationComplete(
+      CreditCardCvcAuthenticator::CvcAuthenticationResponse()
           .with_did_succeed(true)
           .with_card(&card)
           .with_cvc(u"123"));
@@ -2278,8 +2292,8 @@ TEST_F(CreditCardAccessManagerTest,
       }
       case CardUnmaskChallengeOptionType::kCvc: {
         CreditCard card = test::GetCreditCard();
-        credit_card_access_manager_->OnCVCAuthenticationComplete(
-            CreditCardCVCAuthenticator::CVCAuthenticationResponse()
+        credit_card_access_manager_->OnCvcAuthenticationComplete(
+            CreditCardCvcAuthenticator::CvcAuthenticationResponse()
                 .with_did_succeed(true)
                 .with_card(&card)
                 .with_cvc(u"123"));
@@ -2363,7 +2377,7 @@ TEST_F(CreditCardAccessManagerTest,
   EXPECT_EQ(fido_authenticator_->context_token().value(), "fake_context_token");
 
   // Mock FIDO authentication completed.
-  CreditCardFIDOAuthenticator::FidoAuthenticationResponse fido_response;
+  CreditCardFidoAuthenticator::FidoAuthenticationResponse fido_response;
   fido_response.did_succeed = true;
   CreditCard card = test::GetCreditCard();
   fido_response.card = &card;
@@ -2428,7 +2442,7 @@ TEST_F(
   EXPECT_EQ(fido_authenticator_->context_token().value(), "fake_context_token");
 
   // Mock FIDO authentication completed.
-  CreditCardFIDOAuthenticator::FidoAuthenticationResponse fido_response;
+  CreditCardFidoAuthenticator::FidoAuthenticationResponse fido_response;
   fido_response.did_succeed = true;
   CreditCard card = test::GetCreditCard();
   fido_response.card = &card;

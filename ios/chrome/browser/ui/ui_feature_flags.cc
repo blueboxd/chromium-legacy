@@ -63,10 +63,6 @@ BASE_FEATURE(kIOSLocationBarUseNativeContextMenu,
              "IOSLocationBarUseNativeContextMenu",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kUpdateHistoryEntryPointsInIncognito,
-             "UpdateHistoryEntryPointsInIncognito",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kUseLensToSearchForImage,
              "UseLensToSearchForImage",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -81,6 +77,10 @@ BASE_FEATURE(kEnableLensInKeyboard,
 
 BASE_FEATURE(kEnableLensInNTP,
              "EnableLensInNTP",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableLensContextMenuAltText,
+             "EnableLensContextMenuAltText",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableLensInOmniboxCopiedImage,
@@ -120,7 +120,7 @@ extern const char kEnableExperienceKitMapsVariationSrp[] = "with SRP";
 
 BASE_FEATURE(kMapsExperienceKit,
              "MapsExperienceKit",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableMiniMap,
              "EnableMiniMap",
@@ -130,18 +130,22 @@ BASE_FEATURE(kTabGridRecencySort,
              "TabGridRecencySort",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableNewBookmarksImplementation,
-             "EnableNewBookmarksImplementation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+bool IsTabGridSortedByRecency() {
+  return base::FeatureList::IsEnabled(kTabGridRecencySort);
+}
 
 BASE_FEATURE(kMultilineFadeTruncatingLabel,
              "MultilineFadeTruncatingLabel",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableAccessibilityIdentifierToOmniboxLeadingImage,
-             "EnableAccessibilityIdentifierToOmniboxLeadingImage",
+BASE_FEATURE(kTabStripContextMenu,
+             "TabStripContextMenu",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-bool IsTabGridSortedByRecency() {
-  return base::FeatureList::IsEnabled(kTabGridRecencySort);
+BASE_FEATURE(kCloseAllTabsConfirmation,
+             "CloseAllTabsConfirmation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsCloseAllTabsConfirmationEnabled() {
+  return base::FeatureList::IsEnabled(kCloseAllTabsConfirmation);
 }

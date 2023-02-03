@@ -193,6 +193,13 @@ export class PdfViewerElement extends PdfViewerBaseElement {
         value: false,
       },
 
+      // <if expr="enable_screen_ai_service">
+      pdfOcrEnabled_: {
+        type: Boolean,
+        value: false,
+      },
+      // </if>
+
       printingEnabled_: {
         type: Boolean,
         value: false,
@@ -251,6 +258,9 @@ export class PdfViewerElement extends PdfViewerBaseElement {
   private navigator_: PdfNavigator|null = null;
   private pageNo_: number;
   private pdfAnnotationsEnabled_: boolean;
+  // <if expr="enable_screen_ai_service">
+  private pdfOcrEnabled_: boolean;
+  // </if>
   private pluginController_: PluginController|null = null;
   private printingEnabled_: boolean;
   private showPasswordDialog_: boolean;
@@ -315,6 +325,9 @@ export class PdfViewerElement extends PdfViewerBaseElement {
     if (this.toolbarEnabled_) {
       this.$.toolbar.hidden = false;
     }
+    const showSidenav = this.paramsParser.shouldShowSidenav(
+        this.originalUrl, this.sidenavCollapsed_);
+    this.sidenavCollapsed_ = !showSidenav;
 
     this.navigator_ = new PdfNavigator(
         this.originalUrl, this.viewport, this.paramsParser,
@@ -661,6 +674,9 @@ export class PdfViewerElement extends PdfViewerBaseElement {
 
     this.pdfAnnotationsEnabled_ =
         loadTimeData.getBoolean('pdfAnnotationsEnabled');
+    // <if expr="enable_screen_ai_service">
+    this.pdfOcrEnabled_ = loadTimeData.getBoolean('pdfOcrEnabled');
+    // </if>
     this.printingEnabled_ = loadTimeData.getBoolean('printingEnabled');
     const presetZoomFactors = this.viewport.presetZoomFactors;
     this.zoomBounds_.min = Math.round(presetZoomFactors[0] * 100);

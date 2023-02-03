@@ -4,11 +4,15 @@
 
 package org.chromium.chrome.browser.creator;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.appcompat.widget.TooltipCompat;
 
 import org.chromium.ui.widget.ButtonCompat;
 
@@ -29,10 +33,12 @@ public class CreatorProfileView extends LinearLayout {
 
     public void setTitle(String title) {
         mTitle.setText(title);
+        TooltipCompat.setTooltipText(mTitle, title);
     }
 
     public void setUrl(String url) {
         mUrl.setText(url);
+        TooltipCompat.setTooltipText(mUrl, url);
     }
 
     public void setIsFollowedStatus(boolean isFollowed) {
@@ -50,10 +56,30 @@ public class CreatorProfileView extends LinearLayout {
     public void setProfileVisibility(boolean isToolbarVisible) {
         if (isToolbarVisible) {
             setAlpha(1.0f);
-            animate().alpha(0.0f).setDuration(FADE_OUT_ANIMATION_DURATION_MS).start();
+            animate()
+                    .alpha(0.0f)
+                    .setDuration(FADE_OUT_ANIMATION_DURATION_MS)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            mFollowButton.setEnabled(false);
+                            mFollowingButton.setEnabled(false);
+                        }
+                    })
+                    .start();
         } else {
             setAlpha(0.0f);
-            animate().alpha(1.0f).setDuration(FADE_IN_ANIMATION_DURATION_MS).start();
+            animate()
+                    .alpha(1.0f)
+                    .setDuration(FADE_IN_ANIMATION_DURATION_MS)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationStart(Animator animation) {
+                            mFollowButton.setEnabled(true);
+                            mFollowingButton.setEnabled(true);
+                        }
+                    })
+                    .start();
         }
     }
 

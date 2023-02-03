@@ -74,7 +74,8 @@ class SearchControllerTest : public testing::Test {
     search_controller_ = std::make_unique<SearchController>(
         /*model_updater=*/&model_updater_,
         /*list_controller=*/&list_controller_,
-        /*notifier=*/nullptr, &profile_);
+        /*notifier=*/nullptr, &profile_,
+        /*federated_service_controller_*/ nullptr);
     search_controller_->Initialize();
 
     auto ranker_manager = std::make_unique<TestRankerManager>(&profile_);
@@ -150,6 +151,14 @@ class SearchControllerTest : public testing::Test {
   // Owned by |search_controller_|.
   TestRankerManager* ranker_manager_{nullptr};
 };
+
+// Tests that long queries are truncated to the maximum allowed query length.
+TEST_F(SearchControllerTest, TruncateLongQuery) {
+  std::u16string long_query(kMaxAllowedQueryLength + 1, u'a');
+  search_controller_->StartSearch(long_query);
+  EXPECT_EQ(search_controller_->get_query(),
+            long_query.substr(0, kMaxAllowedQueryLength));
+}
 
 // Tests that best matches are ordered first, and categories are ignored when
 // ranking within best match.

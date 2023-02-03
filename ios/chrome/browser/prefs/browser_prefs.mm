@@ -41,6 +41,7 @@
 #import "components/reading_list/core/reading_list_pref_names.h"
 #import "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #import "components/search_engines/template_url_prepopulate_data.h"
+#import "components/segmentation_platform/embedder/default_model/device_switcher_result_dispatcher.h"
 #import "components/segmentation_platform/public/segmentation_platform_service.h"
 #import "components/sessions/core/session_id_generator.h"
 #import "components/signin/public/base/signin_pref_names.h"
@@ -287,6 +288,8 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   safe_browsing::RegisterProfilePrefs(registry);
   segmentation_platform::SegmentationPlatformService::RegisterProfilePrefs(
       registry);
+  segmentation_platform::DeviceSwitcherResultDispatcher::RegisterProfilePrefs(
+      registry);
   sync_sessions::SessionSyncPrefs::RegisterProfilePrefs(registry);
   syncer::DeviceInfoPrefs::RegisterProfilePrefs(registry);
   syncer::SyncPrefs::RegisterProfilePrefs(registry);
@@ -367,7 +370,9 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
   registry->RegisterBooleanPref(kOptimizationGuideRemoteFetchingEnabled, true);
 
+  // Register HTTPS related settings.
   registry->RegisterBooleanPref(prefs::kHttpsOnlyModeEnabled, false);
+  registry->RegisterBooleanPref(prefs::kMixedContentAutoupgradeEnabled, true);
 
   // Register pref storing whether the Incognito interstitial for third-party
   // intents is enabled.

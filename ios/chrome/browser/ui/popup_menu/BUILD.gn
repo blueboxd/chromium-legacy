@@ -105,7 +105,6 @@ source_set("popup_menu") {
     "//ios/chrome/browser/ui/popup_menu/public/cells",
     "//ios/chrome/browser/ui/presenters",
     "//ios/chrome/browser/ui/reading_list",
-    "//ios/chrome/browser/ui/sharing/activity_services",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/url:constants",
     "//ios/chrome/browser/url_loading",
@@ -137,10 +136,7 @@ source_set("constants") {
 
 source_set("metrics_protocols") {
   configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "popup_menu_carousel_metrics_delegate.h",
-    "popup_menu_metrics_handler.h",
-  ]
+  sources = [ "popup_menu_metrics_handler.h" ]
 }
 
 source_set("unit_tests") {

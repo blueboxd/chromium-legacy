@@ -47,6 +47,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
+#include "base/test/gtest_tags.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/value_iterators.h"
@@ -834,6 +835,7 @@ std::ostream& operator<<(std::ostream& out, const GuestMode mode) {
 
 FileManagerBrowserTestBase::Options::Options() = default;
 FileManagerBrowserTestBase::Options::Options(const Options&) = default;
+FileManagerBrowserTestBase::Options::~Options() = default;
 
 std::ostream& operator<<(std::ostream& out,
                          const FileManagerBrowserTestBase::Options& options) {
@@ -1321,8 +1323,27 @@ class DriveFsTestVolume : public TestVolume {
     drivefs_delegate.FlushForTesting();
   }
 
+  void SendCloudDeleteEvent(const std::string& path) {
+    const base::FilePath file_path(path);
+    absl::optional<drivefs::FakeDriveFs::FileMetadata> metadata =
+        fake_drivefs_helper_->fake_drivefs().GetItemMetadata(file_path);
+    ASSERT_TRUE(metadata.has_value()) << "No file metadata with path: " << path;
+
+    std::vector<drivefs::mojom::FileChangePtr> file_changes;
+    file_changes.emplace_back(absl::in_place, file_path,
+                              drivefs::mojom::FileChange::Type::kDelete,
+                              metadata.value().stable_id);
+    auto& drivefs_delegate = fake_drivefs_helper_->fake_drivefs().delegate();
+    drivefs_delegate->OnFilesChanged(std::move(file_changes));
+    drivefs_delegate.FlushForTesting();
+  }
+
   absl::optional<drivefs::mojom::DialogResult> last_dialog_result() {
     return last_dialog_result_;
+  }
+
+  absl::optional<bool> IsItemPinned(const std::string& path) {
+    return fake_drivefs_helper_->fake_drivefs().IsItemPinned(path);
   }
 
  private:
@@ -2000,6 +2021,18 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     enabled_features.push_back(ash::features::kGoogleOneOfferFilesBanner);
   } else {
     disabled_features.push_back(ash::features::kGoogleOneOfferFilesBanner);
+  }
+
+  if (options.enable_drive_bulk_pinning) {
+    enabled_features.push_back(ash::features::kDriveFsBulkPinning);
+  } else {
+    disabled_features.push_back(ash::features::kDriveFsBulkPinning);
+  }
+
+  if (options.feature_ids.size() > 0) {
+    for (const std::string& feature_id : options.feature_ids) {
+      base::AddTagToTestResult("feature_id", feature_id);
+    }
   }
 
   // This is destroyed in |TearDown()|. We cannot initialize this in the
@@ -3244,6 +3277,22 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     base::JSONWriter::Write(
         base::Value(result ? static_cast<int32_t>(result.value()) : -1),
         output);
+    return;
+  }
+
+  if (name == "isItemPinned") {
+    const std::string* path = value.FindString("path");
+    ASSERT_TRUE(path) << "No supplied path to isItemPinned";
+    absl::optional<bool> is_pinned = drive_volume_->IsItemPinned(*path);
+    ASSERT_TRUE(is_pinned.has_value()) << "Supplied path is unknown: " << *path;
+    base::JSONWriter::Write(base::Value(is_pinned.value()), output);
+    return;
+  }
+
+  if (name == "sendDriveCloudDeleteEvent") {
+    const std::string* path = value.FindString("path");
+    ASSERT_TRUE(path) << "No supplied path to sendDriveFilesChangedEvent";
+    drive_volume_->SendCloudDeleteEvent(*path);
     return;
   }
 

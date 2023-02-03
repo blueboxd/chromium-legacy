@@ -333,6 +333,10 @@ HEADLESS_PROTOCOL_TEST(ShowDirectoryPickerNoCrash,
 HEADLESS_PROTOCOL_TEST(ShowFilePickerInterception,
                        "sanity/show-file-picker-interception.js")
 
+HEADLESS_PROTOCOL_TEST(WindowSizeOnStart, "sanity/window-size-on-start.js")
+
+HEADLESS_PROTOCOL_TEST(ScreencastBasics, "sanity/screencast-basics.js")
+
 class HeadlessProtocolBrowserTestWithProxy
     : public HeadlessProtocolBrowserTest {
  public:

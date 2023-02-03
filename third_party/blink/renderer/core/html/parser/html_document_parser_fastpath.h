@@ -15,12 +15,20 @@ class Document;
 class DocumentFragment;
 class Element;
 
-CORE_EXPORT bool TryParsingHTMLFragment(const String& source,
-                                        Document& document,
-                                        DocumentFragment& fragment,
-                                        Element& context_element,
-                                        ParserContentPolicy policy,
-                                        bool include_shadow_roots);
+// If this fails because of an unsupported tag and
+// `failed_because_unsupported_tag` is non-null, then it is set to true.
+CORE_EXPORT bool TryParsingHTMLFragment(
+    const String& source,
+    Document& document,
+    DocumentFragment& fragment,
+    Element& context_element,
+    ParserContentPolicy policy,
+    bool include_shadow_roots,
+    bool* failed_because_unsupported_tag = nullptr);
+
+// Logs histograms to help track why parsing failed because of an unsupported
+// tag when `fragment` was generated.
+void LogTagsForUnsupportedTagTypeFailure(DocumentFragment& fragment);
 
 // Captures the potential outcomes for fast path html parser.
 // These values are persisted to logs. Entries should not be renumbered and
@@ -50,11 +58,13 @@ enum class HtmlFastPathResult {
   kFailedUnexpectedTagNameCloseState = 20,
   kFailedEndTagNameMismatch = 21,
   kFailedShadowRoots = 22,
-  kFailedDirAttributeDirty = 23,
+  // This value is no longer used.
+  // kFailedDirAttributeDirty = 23,
   kFailedOnAttribute = 24,
   kFailedMaxDepth = 25,
   kFailedBigText = 25,
-  kMaxValue = kFailedBigText
+  kFailedCssPseudoDirEnabledAndDirAttributeDirty = 26,
+  kMaxValue = kFailedCssPseudoDirEnabledAndDirAttributeDirty,
 };
 
 }  // namespace blink

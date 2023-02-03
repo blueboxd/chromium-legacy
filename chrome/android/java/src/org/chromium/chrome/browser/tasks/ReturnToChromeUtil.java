@@ -46,12 +46,12 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.ActiveTabState;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
+import org.chromium.chrome.browser.util.BrowserUiUtils;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.features.start_surface.StartSurfaceState;
 import org.chromium.chrome.features.start_surface.StartSurfaceUserData;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
-import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.segmentation_platform.SegmentSelectionResult;
 import org.chromium.components.segmentation_platform.SegmentationPlatformService;
@@ -146,16 +146,17 @@ public final class ReturnToChromeUtil {
 
     /**
      * Determine if we should show the tab switcher on returning to Chrome.
-     *   Returns true if enough time has elapsed since the app was last backgrounded.
-     *   The threshold time in milliseconds is set by experiment "enable-tab-switcher-on-return" or
-     *   from segmentation platform result if {@link ChromeFeatureList.START_SURFACE_RETURN_TIME} is
-     *   enabled.
+     *   Returns true if enough time has elapsed since the app was last backgrounded or foreground,
+     *   depending on which time is the max.
+     *   The threshold time in milliseconds is set by experiment "enable-start-surface-return-time"
+     *   or from segmentation platform result if {@link ChromeFeatureList.START_SURFACE_RETURN_TIME}
+     *   is enabled.
      *
-     * @param lastBackgroundedTimeMillis The last time the application was backgrounded. Set in
-     *                                   ChromeTabbedActivity::onStopWithNative
+     * @param lastTimeMillis The last time the application was backgrounded or foreground, depends
+     *                       on which time is the max. Set in ChromeTabbedActivity::onStopWithNative
      * @return true if past threshold, false if not past threshold or experiment cannot be loaded.
      */
-    public static boolean shouldShowTabSwitcher(final long lastBackgroundedTimeMillis) {
+    public static boolean shouldShowTabSwitcher(final long lastTimeMillis) {
         long tabSwitcherAfterMillis =
                 StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS.getValue()
                 * DateUtils.SECOND_IN_MILLIS;
@@ -165,7 +166,7 @@ public final class ReturnToChromeUtil {
             tabSwitcherAfterMillis = getReturnTimeFromSegmentation();
         }
 
-        if (lastBackgroundedTimeMillis == -1) {
+        if (lastTimeMillis == -1) {
             // No last background timestamp set, use control behavior unless "immediate" was set.
             return tabSwitcherAfterMillis == 0;
         }
@@ -175,7 +176,7 @@ public final class ReturnToChromeUtil {
             return false;
         }
 
-        return System.currentTimeMillis() - lastBackgroundedTimeMillis >= tabSwitcherAfterMillis;
+        return System.currentTimeMillis() - lastTimeMillis >= tabSwitcherAfterMillis;
     }
 
     /**
@@ -287,17 +288,14 @@ public final class ReturnToChromeUtil {
             StartSurfaceUserData.setOpenedFromStart(newTab);
         }
 
-        if (params.getTransitionType() == PageTransition.AUTO_BOOKMARK) {
-            if (!TextUtils.equals(UrlConstants.RECENT_TABS_URL, params.getUrl())
-                    && params.getReferrer() == null) {
-                RecordUserAction.record("Suggestions.Tile.Tapped.StartSurface");
-            }
-        } else if (url == null) {
-            RecordUserAction.record("MobileMenuNewTab.StartSurfaceFinale");
-        } else {
+        int transitionAfterMask = params.getTransitionType() & PageTransition.CORE_MASK;
+        if (transitionAfterMask == PageTransition.TYPED
+                || transitionAfterMask == PageTransition.GENERATED) {
             RecordUserAction.record("MobileOmniboxUse.StartSurface");
+            BrowserUiUtils.recordModuleClickHistogram(BrowserUiUtils.HostSurface.START_SURFACE,
+                    BrowserUiUtils.ModuleTypeOnStartAndNTP.OMNIBOX);
 
-            // These are duplicated here but would have been recorded by LocationBarLayout#loadUrl.
+            // These are not duplicated here with the recording in LocationBarLayout#loadUrl.
             RecordUserAction.record("MobileOmniboxUse");
             LocaleManager.getInstance().recordLocaleBasedSearchMetrics(
                     false, url, params.getTransitionType());
@@ -470,9 +468,11 @@ public final class ReturnToChromeUtil {
         }
 
         // Checks whether to show the Start surface due to feature flag TAB_SWITCHER_ON_RETURN_MS.
-        long lastBackgroundedTimeMillis = inactivityTracker.getLastBackgroundedTimeMs();
+        long lastVisibleTimeMs = inactivityTracker.getLastVisibleTimeMs();
+        long lastBackgroundTimeMs = inactivityTracker.getLastBackgroundedTimeMs();
         boolean tabSwitcherOnReturn = IntentUtils.isMainIntentFromLauncher(intent)
-                && ReturnToChromeUtil.shouldShowTabSwitcher(lastBackgroundedTimeMillis);
+                && ReturnToChromeUtil.shouldShowTabSwitcher(
+                        Math.max(lastBackgroundTimeMs, lastVisibleTimeMs));
 
         // If the overview page won't be shown on startup, stops here.
         if (!tabSwitcherOnReturn) return false;

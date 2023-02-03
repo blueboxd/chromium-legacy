@@ -12,7 +12,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/feedback/feedback_dialog_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -140,6 +139,7 @@ bool IsFromUserInteraction(FeedbackSource source) {
     case kFeedbackSourceArcApp:
     case kFeedbackSourceAsh:
     case kFeedbackSourceAssistant:
+    case kFeedbackSourceAutofillContextMenu:
     case kFeedbackSourceBrowserCommand:
     case kFeedbackSourceConnectivityDiagnostics:
     case kFeedbackSourceDesktopTabGroups:

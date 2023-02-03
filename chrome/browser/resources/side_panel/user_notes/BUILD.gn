@@ -15,6 +15,8 @@ build_webui("build") {
     "app.ts",
     "user_note.ts",
     "user_note_menu.ts",
+    "user_note_overview_row.ts",
+    "user_note_overviews_list.ts",
   ]
 
   non_web_component_files = [ "user_notes_api_proxy.ts" ]
@@ -25,7 +27,8 @@ build_webui("build") {
   ts_composite = true
   ts_deps = [
     "//third_party/polymer/v3_0:library",
-    "//ui/webui/resources:library",
+    "//ui/webui/resources/cr_elements:build_ts",
+    "//ui/webui/resources/js:build_ts",
     "//ui/webui/resources/mojo:library",
   ]
 }

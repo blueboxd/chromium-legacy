@@ -53,6 +53,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/test/test_render_frame_host.h"
 #include "crypto/sha2.h"
 #include "device/base/features.h"
@@ -83,6 +84,7 @@
 #include "device/fido/pin.h"
 #include "device/fido/public_key.h"
 #include "device/fido/public_key_credential_descriptor.h"
+#include "device/fido/public_key_credential_user_entity.h"
 #include "device/fido/test_callback_receiver.h"
 #include "device/fido/virtual_ctap2_device.h"
 #include "device/fido/virtual_fido_device.h"
@@ -1490,6 +1492,40 @@ TEST_F(AuthenticatorImplTest, IsUVPAA) {
   EXPECT_FALSE(cb.value());
 }
 #endif  // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_WIN)
+class OffTheRecordAuthenticatorImplTest : public AuthenticatorImplTest {
+ protected:
+  std::unique_ptr<BrowserContext> CreateBrowserContext() override {
+    auto browser_context = std::make_unique<TestBrowserContext>();
+    browser_context->set_is_off_the_record(true);
+    return browser_context;
+  }
+};
+
+// Tests that IsUVPAA returns true if the version of Windows supports an
+// appropriate warning.
+TEST_F(OffTheRecordAuthenticatorImplTest, WinIsUVPAAIncognito) {
+  NavigateAndCommit(GURL(kTestOrigin1));
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+  fake_win_webauthn_api_.set_available(true);
+  fake_win_webauthn_api_.set_is_uvpaa(true);
+
+  for (bool win_api_supports_incognito_warning : {false, true}) {
+    TestIsUvpaaCallback cb;
+    SCOPED_TRACE(win_api_supports_incognito_warning
+                     ? "supports incognito"
+                     : "does not support incognito");
+    fake_win_webauthn_api_.set_version(win_api_supports_incognito_warning
+                                           ? WEBAUTHN_API_VERSION_4
+                                           : WEBAUTHN_API_VERSION_3);
+    authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
+    cb.WaitForCallback();
+    EXPECT_EQ(cb.value(), win_api_supports_incognito_warning);
+  }
+}
+#endif  // BUILDFLAG(IS_WIN)
 
 // TestWebAuthenticationRequestProxy is a test fake implementation of the
 // WebAuthenticationRequestProxy embedder interface.
@@ -7676,58 +7712,68 @@ TEST_F(ResidentKeyAuthenticatorImplTest, CredProtectRegistration) {
   const int kOk = 0;
   const int kNonsense = 1;
   const int kNotAllow = 2;
+  const device::UserVerificationRequirement kUV =
+      device::UserVerificationRequirement::kRequired;
+  const device::UserVerificationRequirement kUP =
+      device::UserVerificationRequirement::kDiscouraged;
+  const device::UserVerificationRequirement kUVPref =
+      device::UserVerificationRequirement::kPreferred;
 
   const struct {
     bool supported_by_authenticator;
     bool is_resident;
     blink::mojom::ProtectionPolicy protection;
     bool enforce;
-    bool uv;
+    device::UserVerificationRequirement uv;
     int expected_outcome;
     blink::mojom::ProtectionPolicy resulting_policy;
   } kExpectations[] = {
       // clang-format off
     // Support | Resdnt | Level      | Enf  |  UV  || Result   | Prot level
-    {  false,   false,   UNSPECIFIED, false, false,   kOk,       NONE},
-    {  false,   false,   UNSPECIFIED, true,  false,   kNonsense, UNSPECIFIED},
-    {  false,   false,   NONE,        false, false,   kNonsense, UNSPECIFIED},
-    {  false,   false,   NONE,        true,  false,   kNonsense, UNSPECIFIED},
-    {  false,   false,   UV_OR_CRED,  false, false,   kOk,       NONE},
-    {  false,   false,   UV_OR_CRED,  true,  false,   kNotAllow, UNSPECIFIED},
-    {  false,   false,   UV_OR_CRED,  false, true,    kOk,       NONE},
-    {  false,   false,   UV_OR_CRED,  true,  true,    kNotAllow, UNSPECIFIED},
-    {  false,   false,   UV_REQ,      false, false,   kNonsense, UNSPECIFIED},
-    {  false,   false,   UV_REQ,      false, true,    kOk,       NONE},
-    {  false,   false,   UV_REQ,      true,  false,   kNonsense, UNSPECIFIED},
-    {  false,   false,   UV_REQ,      true,  true,    kNotAllow, UNSPECIFIED},
-    {  false,   true,    UNSPECIFIED, false, false,   kOk,       NONE},
-    {  false,   true,    UNSPECIFIED, true,  false,   kNonsense, UNSPECIFIED},
-    {  false,   true,    NONE,        false, false,   kOk,       NONE},
-    {  false,   true,    NONE,        true,  false,   kNonsense, UNSPECIFIED},
-    {  false,   true,    UV_OR_CRED,  false, false,   kOk,       NONE},
-    {  false,   true,    UV_OR_CRED,  true,  false,   kNotAllow, UNSPECIFIED},
-    {  false,   true,    UV_REQ,      false, false,   kNonsense, UNSPECIFIED},
-    {  false,   true,    UV_REQ,      false, true,    kOk,       NONE},
-    {  false,   true,    UV_REQ,      true,  false,   kNonsense, UNSPECIFIED},
-    {  false,   true,    UV_REQ,      true,  true,    kNotAllow, UNSPECIFIED},
+    {  false,   false,   UNSPECIFIED, false, kUP,     kOk,       NONE},
+    {  false,   false,   UNSPECIFIED, true,  kUP,     kNonsense, UNSPECIFIED},
+    {  false,   false,   UNSPECIFIED, false, kUVPref, kOk,       NONE},
+    {  false,   false,   NONE,        false, kUP,     kNonsense, UNSPECIFIED},
+    {  false,   false,   NONE,        true,  kUP,     kNonsense, UNSPECIFIED},
+    {  false,   false,   UV_OR_CRED,  false, kUP,     kOk,       NONE},
+    {  false,   false,   UV_OR_CRED,  true,  kUP,     kNotAllow, UNSPECIFIED},
+    {  false,   false,   UV_OR_CRED,  false, kUV,     kOk,       NONE},
+    {  false,   false,   UV_OR_CRED,  true,  kUV,     kNotAllow, UNSPECIFIED},
+    {  false,   false,   UV_REQ,      false, kUP,     kNonsense, UNSPECIFIED},
+    {  false,   false,   UV_REQ,      false, kUV,     kOk,       NONE},
+    {  false,   false,   UV_REQ,      true,  kUP,     kNonsense, UNSPECIFIED},
+    {  false,   false,   UV_REQ,      true,  kUV,     kNotAllow, UNSPECIFIED},
+    {  false,   true,    UNSPECIFIED, false, kUP,     kOk,       NONE},
+    {  false,   true,    UNSPECIFIED, true,  kUP,     kNonsense, UNSPECIFIED},
+    {  false,   true,    NONE,        false, kUP,     kOk,       NONE},
+    {  false,   true,    NONE,        true,  kUP,     kNonsense, UNSPECIFIED},
+    {  false,   true,    UV_OR_CRED,  false, kUP,     kOk,       NONE},
+    {  false,   true,    UV_OR_CRED,  true,  kUP,     kNotAllow, UNSPECIFIED},
+    {  false,   true,    UV_REQ,      false, kUP,     kNonsense, UNSPECIFIED},
+    {  false,   true,    UV_REQ,      false, kUV,     kOk,       NONE},
+    {  false,   true,    UV_REQ,      true,  kUP,     kNonsense, UNSPECIFIED},
+    {  false,   true,    UV_REQ,      true,  kUV,     kNotAllow, UNSPECIFIED},
 
     // For the case where the authenticator supports credProtect we do not
     // repeat the cases above that are |kNonsense| on the assumption that
     // authenticator support is irrelevant. Therefore these are just the non-
     // kNonsense cases from the prior block.
-    {  true,    false,   UNSPECIFIED, false, false,   kOk,       NONE},
-    {  true,    false,   UV_OR_CRED,  false, false,   kOk,       UV_OR_CRED},
-    {  true,    false,   UV_OR_CRED,  true,  false,   kOk,       UV_OR_CRED},
-    {  true,    false,   UV_OR_CRED,  false, true,    kOk,       UV_OR_CRED},
-    {  true,    false,   UV_OR_CRED,  true,  true,    kOk,       UV_OR_CRED},
-    {  true,    false,   UV_REQ,      false, true,    kOk,       UV_REQ},
-    {  true,    false,   UV_REQ,      true,  true,    kOk,       UV_REQ},
-    {  true,    true,    UNSPECIFIED, false, false,   kOk,       UV_OR_CRED},
-    {  true,    true,    NONE,        false, false,   kOk,       NONE},
-    {  true,    true,    UV_OR_CRED,  false, false,   kOk,       UV_OR_CRED},
-    {  true,    true,    UV_OR_CRED,  true,  false,   kOk,       UV_OR_CRED},
-    {  true,    true,    UV_REQ,      false, true,    kOk,       UV_REQ},
-    {  true,    true,    UV_REQ,      true,  true,    kOk,       UV_REQ},
+    {  true,    false,   UNSPECIFIED, false, kUP,     kOk,       NONE},
+    {  true,    false,   UV_OR_CRED,  false, kUP,     kOk,       UV_OR_CRED},
+    {  true,    false,   UV_OR_CRED,  true,  kUP,     kOk,       UV_OR_CRED},
+    {  true,    false,   UV_OR_CRED,  false, kUV,     kOk,       UV_OR_CRED},
+    {  true,    false,   UV_OR_CRED,  true,  kUV,     kOk,       UV_OR_CRED},
+    {  true,    false,   UV_REQ,      false, kUV,     kOk,       UV_REQ},
+    {  true,    false,   UV_REQ,      true,  kUV,     kOk,       UV_REQ},
+    {  true,    true,    UNSPECIFIED, false, kUP,     kOk,       UV_OR_CRED},
+    {  true,    true,    UNSPECIFIED, false, kUVPref, kOk,       UV_REQ},
+    {  true,    true,    NONE,        false, kUP,     kOk,       NONE},
+    {  true,    true,    NONE,        false, kUVPref, kOk,       NONE},
+    {  true,    true,    UV_OR_CRED,  false, kUP,     kOk,       UV_OR_CRED},
+    {  true,    true,    UV_OR_CRED,  true,  kUP,     kOk,       UV_OR_CRED},
+    {  true,    true,    UV_OR_CRED,  false, kUVPref, kOk,       UV_OR_CRED},
+    {  true,    true,    UV_REQ,      false, kUV,     kOk,       UV_REQ},
+    {  true,    true,    UV_REQ,      true,  kUV,     kOk,       UV_REQ},
       // clang-format on
   };
 
@@ -7739,7 +7785,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, CredProtectRegistration) {
     virtual_device_factory_->SetCtap2Config(config);
     virtual_device_factory_->mutable_state()->registrations.clear();
 
-    SCOPED_TRACE(::testing::Message() << "uv=" << test.uv);
+    SCOPED_TRACE(::testing::Message() << "uv=" << UVToString(test.uv));
     SCOPED_TRACE(::testing::Message() << "enforce=" << test.enforce);
     SCOPED_TRACE(::testing::Message()
                  << "level=" << ProtectionPolicyDescription(test.protection));
@@ -7753,9 +7799,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, CredProtectRegistration) {
                          : device::ResidentKeyRequirement::kDiscouraged;
     options->protection_policy = test.protection;
     options->enforce_protection_policy = test.enforce;
-    options->authenticator_selection->user_verification_requirement =
-        test.uv ? device::UserVerificationRequirement::kRequired
-                : device::UserVerificationRequirement::kDiscouraged;
+    options->authenticator_selection->user_verification_requirement = test.uv;
 
     AuthenticatorStatus status =
         AuthenticatorMakeCredential(std::move(options)).status;
@@ -8021,6 +8065,35 @@ TEST_F(ResidentKeyAuthenticatorImplTest, WinCredProtectApiVersion) {
                                     : AuthenticatorStatus::NOT_ALLOWED_ERROR);
   }
 }
+
+// Tests that the incognito flag is plumbed through conditional UI requests.
+TEST_F(ResidentKeyAuthenticatorImplTest, ConditionalUI_Incognito) {
+  fake_win_webauthn_api_.set_available(true);
+  fake_win_webauthn_api_.set_version(WEBAUTHN_API_VERSION_4);
+  fake_win_webauthn_api_.set_supports_silent_discovery(true);
+  device::PublicKeyCredentialRpEntity rp(kTestRelyingPartyId);
+  device::PublicKeyCredentialUserEntity user({1, 2, 3, 4});
+  fake_win_webauthn_api_.InjectDiscoverableCredential(
+      /*credential_id=*/{{4, 3, 2, 1}}, std::move(rp), std::move(user));
+
+  // |SelectAccount| should not be called for conditional UI requests.
+  test_client_.delegate_config.expected_accounts = "<invalid>";
+  test_client_.delegate_config.expect_conditional = true;
+
+  for (bool is_off_the_record : {true, false}) {
+    SCOPED_TRACE(is_off_the_record ? "off the record" : "on the record");
+    static_cast<TestBrowserContext*>(GetBrowserContext())
+        ->set_is_off_the_record(is_off_the_record);
+    PublicKeyCredentialRequestOptionsPtr options(get_credential_options());
+    options->is_conditional = true;
+    GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
+    EXPECT_EQ(AuthenticatorStatus::SUCCESS, result.status);
+    ASSERT_TRUE(fake_win_webauthn_api_.last_get_credentials_options());
+    EXPECT_EQ(fake_win_webauthn_api_.last_get_credentials_options()
+                  ->bBrowserInPrivateMode,
+              is_off_the_record);
+  }
+}
 #endif  // BUILDFLAG(IS_WIN)
 
 // Tests that chrome does not attempt setting the PRF extension during a
@@ -8101,13 +8174,16 @@ TEST_F(ResidentKeyAuthenticatorImplTest, PRFExtension) {
   }
 
   auto assertion = [&](std::vector<blink::mojom::PRFValuesPtr> inputs,
-                       unsigned allow_list_size =
-                           1) -> blink::mojom::PRFValuesPtr {
+                       unsigned allow_list_size = 1,
+                       device::UserVerificationRequirement uv =
+                           device::UserVerificationRequirement::kPreferred)
+      -> blink::mojom::PRFValuesPtr {
     PublicKeyCredentialRequestOptionsPtr options =
         GetTestPublicKeyCredentialRequestOptions();
     options->prf = true;
     options->prf_inputs = std::move(inputs);
     options->allow_credentials.clear();
+    options->user_verification = uv;
     if (allow_list_size >= 1) {
       for (unsigned i = 0; i < allow_list_size - 1; i++) {
         std::vector<uint8_t> random_credential_id(32, static_cast<uint8_t>(i));
@@ -8148,6 +8224,18 @@ TEST_F(ResidentKeyAuthenticatorImplTest, PRFExtension) {
     inputs.emplace_back(std::move(prf_value));
     auto result = assertion(std::move(inputs));
     ASSERT_EQ(result->first, salt1_eval);
+  }
+
+  // ... but should be different when uv=discouraged because a different PRF
+  // is used.
+  {
+    auto prf_value = blink::mojom::PRFValues::New();
+    prf_value->first = salt1;
+    std::vector<blink::mojom::PRFValuesPtr> inputs;
+    inputs.emplace_back(std::move(prf_value));
+    auto result = assertion(std::move(inputs), 1,
+                            device::UserVerificationRequirement::kDiscouraged);
+    ASSERT_NE(result->first, salt1_eval);
   }
 
   // Should be able to evaluate two points at once.

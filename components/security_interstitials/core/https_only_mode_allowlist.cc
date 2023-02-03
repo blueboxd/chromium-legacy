@@ -7,6 +7,7 @@
 #include "base/containers/contains.h"
 #include "base/json/values_util.h"
 #include "base/time/clock.h"
+#include "base/values.h"
 
 namespace {
 
@@ -50,7 +51,7 @@ void HttpsOnlyModeAllowlist::AllowHttpForHost(const std::string& host,
   // directly storing a string value.
   GURL url = GetSecureGURLForHost(host);
   base::Time expiration_time = clock_->Now() + expiration_timeout_;
-  auto dict = std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
+  auto dict = std::make_unique<base::Value>(base::Value::Type::DICT);
   dict->SetKey(kHTTPAllowlistExpirationTimeKey,
                base::TimeToValue(expiration_time));
   host_content_settings_map_->SetWebsiteSettingDefaultScope(
@@ -76,8 +77,8 @@ bool HttpsOnlyModeAllowlist::IsHttpAllowedForHost(
     return false;
   }
 
-  auto* decision_expiration_value =
-      value.FindKey(kHTTPAllowlistExpirationTimeKey);
+  const base::Value* decision_expiration_value =
+      value.GetDict().Find(kHTTPAllowlistExpirationTimeKey);
   auto decision_expiration = base::ValueToTime(decision_expiration_value);
   if (decision_expiration <= clock_->Now()) {
     // Allowlist entry has expired.

@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/promos_manager/features.h"
 #import "ios/chrome/browser/promos_manager/impression_limit.h"
 #import "ios/chrome/browser/promos_manager/promo.h"
+#import "ios/chrome/browser/promos_manager/promo_config.h"
 #import "ios/chrome/browser/promos_manager/promos_manager.h"
 #import "ios/chrome/browser/promos_manager/promos_manager_impl.h"
 #import "testing/platform_test.h"
@@ -37,9 +38,12 @@ int TodaysDay() {
 }
 
 const base::TimeDelta kTimeDelta1Day = base::Days(1);
+const base::TimeDelta kTimeDelta1Hour = base::Hours(1);
+
 const PromoContext kPromoContextForActive = PromoContext{
     .was_pending = false,
 };
+
 }  // namespace
 
 class PromosManagerImplTest : public PlatformTest {
@@ -1219,14 +1223,13 @@ TEST_F(PromosManagerImplTest, RegistersPromoSpecificImpressionLimits) {
     thricePerWeek,
   ];
 
-  base::small_map<std::map<promos_manager::Promo, NSArray<ImpressionLimit*>*>>
-      promoImpressionLimits;
-  promoImpressionLimits[promos_manager::Promo::DefaultBrowser] =
-      defaultBrowserLimits;
-  promoImpressionLimits[promos_manager::Promo::CredentialProviderExtension] =
-      credentialProviderLimits;
-  promos_manager_->InitializePromoImpressionLimits(
-      std::move(promoImpressionLimits));
+  PromoConfigsSet promoImpressionLimits;
+  promoImpressionLimits.emplace(promos_manager::Promo::DefaultBrowser, nullptr,
+                                defaultBrowserLimits);
+  promoImpressionLimits.emplace(
+      promos_manager::Promo::CredentialProviderExtension, nullptr,
+      credentialProviderLimits);
+  promos_manager_->InitializePromoConfigs(std::move(promoImpressionLimits));
 
   EXPECT_EQ(promos_manager_->PromoImpressionLimits(
                 promos_manager::Promo::DefaultBrowser),
@@ -1464,4 +1467,104 @@ TEST_F(PromosManagerImplTest,
   EXPECT_TRUE(
       local_state_->GetDict(prefs::kIosPromosManagerSingleDisplayPendingPromos)
           .empty());
+}
+
+// Tests `NextPromoForDisplay` returns a pending promo that has become active
+// and takes precedence over other active promos.
+TEST_F(PromosManagerImplTest, NextPromoForDisplayReturnsPendingPromo) {
+  CreatePromosManager();
+
+  promos_manager_->single_display_active_promos_ = {
+      promos_manager::Promo::Test,
+  };
+  promos_manager_->single_display_pending_promos_ = {
+      {promos_manager::Promo::CredentialProviderExtension,
+       test_clock_.Now() + kTimeDelta1Day},
+      {promos_manager::Promo::AppStoreRating,
+       test_clock_.Now() + kTimeDelta1Day * 2},
+  };
+
+  // Advance to so that the CredentialProviderExtension becomes active.
+  test_clock_.Advance(kTimeDelta1Day + kTimeDelta1Hour);
+
+  absl::optional<promos_manager::Promo> promo =
+      promos_manager_->NextPromoForDisplay();
+  EXPECT_TRUE(promo.has_value());
+  EXPECT_EQ(promo.value(), promos_manager::Promo::CredentialProviderExtension);
+}
+
+// Tests `NextPromoForDisplay` returns an active promo whose type has the
+// highest priority can take precedence over other pending-becomes-active
+// promos.
+TEST_F(PromosManagerImplTest,
+       NextPromoForDisplayReturnsActivePromoOfPrioritizedType) {
+  CreatePromosManager();
+
+  promos_manager_->single_display_active_promos_ = {
+      promos_manager::Promo::PostRestoreSignInFullscreen,
+  };
+  promos_manager_->single_display_pending_promos_ = {
+      {promos_manager::Promo::CredentialProviderExtension,
+       test_clock_.Now() + kTimeDelta1Day},
+  };
+
+  // Advance to so that the CredentialProviderExtension becomes active.
+  test_clock_.Advance(kTimeDelta1Day + kTimeDelta1Hour);
+
+  absl::optional<promos_manager::Promo> promo =
+      promos_manager_->NextPromoForDisplay();
+
+  EXPECT_TRUE(promo.has_value());
+  EXPECT_EQ(promo.value(), promos_manager::Promo::PostRestoreSignInFullscreen);
+}
+
+// Tests `NextPromoForDisplay` returns empty when non of the pending promos can
+// become active.
+TEST_F(PromosManagerImplTest, NextPromoForDisplayReturnsEmpty) {
+  CreatePromosManager();
+
+  promos_manager_->single_display_active_promos_ = {};
+  promos_manager_->single_display_pending_promos_ = {
+      {promos_manager::Promo::Test, test_clock_.Now() + kTimeDelta1Hour * 2},
+      {promos_manager::Promo::CredentialProviderExtension,
+       test_clock_.Now() + kTimeDelta1Day},
+  };
+
+  // Advance to so that the none of the pending promo can become active.
+  test_clock_.Advance(kTimeDelta1Hour);
+
+  absl::optional<promos_manager::Promo> promo =
+      promos_manager_->NextPromoForDisplay();
+
+  EXPECT_FALSE(promo.has_value());
+}
+
+// Tests `NextPromoForDisplay` returns empty when non of the promos can pass the
+// onceEveryTwoDays impression limit check.
+TEST_F(PromosManagerImplTest,
+       NextPromoForDisplayReturnsEmptyAfterImpressionCheck) {
+  CreatePromosManager();
+
+  promos_manager_->single_display_active_promos_ = {
+      promos_manager::Promo::AppStoreRating};
+  promos_manager_->single_display_pending_promos_ = {
+      {promos_manager::Promo::Test, test_clock_.Now() + kTimeDelta1Hour},
+      {promos_manager::Promo::CredentialProviderExtension,
+       test_clock_.Now() + kTimeDelta1Hour},
+  };
+
+  int today = TodaysDay();
+  const std::vector<promos_manager::Impression> impressions = {
+      promos_manager::Impression(promos_manager::Promo::Test, today),
+  };
+  promos_manager_->impression_history_ = impressions;
+
+  // Advance the time so that all pending promos can become active, but will
+  // fall into the two-day window since the last impression.
+  test_clock_.Advance(kTimeDelta1Day);
+
+  absl::optional<promos_manager::Promo> promo =
+      promos_manager_->NextPromoForDisplay();
+
+  EXPECT_FALSE(promo.has_value());
 }

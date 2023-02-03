@@ -122,7 +122,7 @@ EnableMetricsDefault MetricsServiceClient::GetMetricsReportingDefaultState() {
   return EnableMetricsDefault::DEFAULT_UNKNOWN;
 }
 
-bool MetricsServiceClient::IsUMACellularUploadLogicEnabled() {
+bool MetricsServiceClient::IsOnCellularConnection() {
   return false;
 }
 
@@ -148,6 +148,12 @@ std::string MetricsServiceClient::GetUploadSigningKey() {
 
 bool MetricsServiceClient::ShouldResetClientIdsOnClonedInstall() {
   return false;
+}
+
+base::CallbackListSubscription
+MetricsServiceClient::AddOnClonedInstallDetectedCallback(
+    base::OnceClosure callback) {
+  return base::CallbackListSubscription();
 }
 
 MetricsLogStore::StorageLimits MetricsServiceClient::GetStorageLimits() const {

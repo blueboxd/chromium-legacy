@@ -174,6 +174,7 @@
 #include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_ui.h"
 #include "chrome/browser/ui/webui/side_panel/reading_list/reading_list.mojom.h"
 #include "chrome/browser/ui/webui/side_panel/reading_list/reading_list_ui.h"
+#include "chrome/browser/ui/webui/side_panel/search_companion/search_companion_side_panel_ui.h"
 #include "chrome/browser/ui/webui/side_panel/user_notes/user_notes.mojom.h"
 #include "chrome/browser/ui/webui/side_panel/user_notes/user_notes_side_panel_ui.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
@@ -335,14 +336,15 @@
 #endif
 
 #if BUILDFLAG(ENABLE_SPEECH_SERVICE)
-#include "chrome/browser/accessibility/live_caption_speech_recognition_host.h"
-#include "chrome/browser/accessibility/live_caption_unavailability_notifier.h"
+#include "chrome/browser/accessibility/live_caption/live_caption_speech_recognition_host.h"
+#include "chrome/browser/accessibility/live_caption/live_caption_unavailability_notifier.h"
 #include "chrome/browser/speech/speech_recognition_client_browser_interface.h"
 #include "chrome/browser/speech/speech_recognition_client_browser_interface_factory.h"
 #include "chrome/browser/speech/speech_recognition_service.h"
 #include "media/mojo/mojom/renderer_extensions.mojom.h"
 #include "media/mojo/mojom/speech_recognition.mojom.h"  // nogncheck
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/accessibility/live_caption/live_caption_surface.h"
 #include "chromeos/crosapi/mojom/speech_recognition.mojom.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 #endif  // BUILDFLAG(ENABLE_SPEECH_SERVICE)
@@ -637,17 +639,53 @@ void BindSpeechRecognitionClientBrowserInterfaceHandler(
 void BindSpeechRecognitionRecognizerClientHandler(
     content::RenderFrameHost* frame_host,
     mojo::PendingReceiver<media::mojom::SpeechRecognitionRecognizerClient>
-        receiver) {
+        client_receiver) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // On LaCrOS, forward to Ash.
+
+  // Hold a client-browser interface just long enough to bootstrap a remote
+  // recognizer client.
+  mojo::Remote<media::mojom::SpeechRecognitionClientBrowserInterface>
+      interface_remote;
+  auto* service = chromeos::LacrosService::Get();
+  if (!service || !service->IsAvailable<crosapi::mojom::SpeechRecognition>()) {
+    return;
+  }
+  service->GetRemote<crosapi::mojom::SpeechRecognition>()
+      ->BindSpeechRecognitionClientBrowserInterface(
+          interface_remote.BindNewPipeAndPassReceiver());
+
+  // Grab the per-web-contents logic on our end to drive the remote client.
+  auto* surface = captions::LiveCaptionSurface::GetOrCreateForWebContents(
+      content::WebContents::FromRenderFrameHost(frame_host));
+  mojo::PendingRemote<media::mojom::SpeechRecognitionSurface> surface_remote;
+  mojo::PendingReceiver<media::mojom::SpeechRecognitionSurfaceClient>
+      surface_client_receiver;
+  surface->BindToSurfaceClient(
+      surface_remote.InitWithNewPipeAndPassReceiver(),
+      surface_client_receiver.InitWithNewPipeAndPassRemote());
+
+  // Populate static info to send to the client.
+  auto metadata = media::mojom::SpeechRecognitionSurfaceMetadata::New();
+  metadata->session_id = surface->session_id();
+
+  // Bootstrap the recognizer client.
+  interface_remote->BindRecognizerToRemoteClient(
+      std::move(client_receiver), std::move(surface_client_receiver),
+      std::move(surface_remote), std::move(metadata));
+#else
   Profile* profile = Profile::FromBrowserContext(
       frame_host->GetProcess()->GetBrowserContext());
   PrefService* profile_prefs = profile->GetPrefs();
   if (profile_prefs->GetBoolean(prefs::kLiveCaptionEnabled) &&
       captions::IsLiveCaptionFeatureSupported()) {
-    captions::LiveCaptionSpeechRecognitionHost::Create(frame_host,
-                                                       std::move(receiver));
+    captions::LiveCaptionSpeechRecognitionHost::Create(
+        frame_host, std::move(client_receiver));
   }
+#endif
 }
 
+#if BUILDFLAG(IS_WIN)
 void BindMediaFoundationRendererNotifierHandler(
     content::RenderFrameHost* frame_host,
     mojo::PendingReceiver<media::mojom::MediaFoundationRendererNotifier>
@@ -657,6 +695,7 @@ void BindMediaFoundationRendererNotifierHandler(
                                                         std::move(receiver));
   }
 }
+#endif  // BUILDFLAG(IS_WIN)
 #endif  // BUILDFLAG(ENABLE_SPEECH_SERVICE)
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
@@ -808,8 +847,10 @@ void PopulateChromeFrameBinders(
       base::BindRepeating(&BindSpeechRecognitionClientBrowserInterfaceHandler));
   map->Add<media::mojom::SpeechRecognitionRecognizerClient>(
       base::BindRepeating(&BindSpeechRecognitionRecognizerClientHandler));
+#if BUILDFLAG(IS_WIN)
   map->Add<media::mojom::MediaFoundationRendererNotifier>(
       base::BindRepeating(&BindMediaFoundationRendererNotifierHandler));
+#endif
 #endif  // BUILDFLAG(ENABLE_SPEECH_SERVICE)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
@@ -915,7 +956,7 @@ void PopulateChromeWebUIFrameBinders(
       ash::personalization_app::PersonalizationAppUI,
       ash::settings::OSSettingsUI,
 #endif
-      NewTabPageUI, OmniboxPopupUI>(map);
+      NewTabPageUI, OmniboxPopupUI, BookmarksSidePanelUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       new_tab_page::mojom::PageHandlerFactory, NewTabPageUI>(map);
@@ -930,12 +971,25 @@ void PopulateChromeWebUIFrameBinders(
   if (history_clusters_service &&
       history_clusters_service->IsJourneysEnabled()) {
     if (base::FeatureList::IsEnabled(history_clusters::kSidePanelJourneys)) {
-      RegisterWebUIControllerInterfaceBinder<
-          history_clusters::mojom::PageHandler, HistoryUI,
-          HistoryClustersSidePanelUI>(map);
+      if (base::FeatureList::IsEnabled(
+              ntp_features::kNtpHistoryClustersModule)) {
+        RegisterWebUIControllerInterfaceBinder<
+            history_clusters::mojom::PageHandler, HistoryUI, NewTabPageUI,
+            HistoryClustersSidePanelUI>(map);
+      } else {
+        RegisterWebUIControllerInterfaceBinder<
+            history_clusters::mojom::PageHandler, HistoryUI,
+            HistoryClustersSidePanelUI>(map);
+      }
     } else {
-      RegisterWebUIControllerInterfaceBinder<
-          history_clusters::mojom::PageHandler, HistoryUI>(map);
+      if (base::FeatureList::IsEnabled(
+              ntp_features::kNtpHistoryClustersModule)) {
+        RegisterWebUIControllerInterfaceBinder<
+            history_clusters::mojom::PageHandler, NewTabPageUI, HistoryUI>(map);
+      } else {
+        RegisterWebUIControllerInterfaceBinder<
+            history_clusters::mojom::PageHandler, HistoryUI>(map);
+      }
     }
   }
 
@@ -1000,6 +1054,12 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       shopping_list::mojom::ShoppingListHandlerFactory, BookmarksSidePanelUI>(
       map);
+
+  if (base::FeatureList::IsEnabled(features::kSidePanelSearchCompanion)) {
+    RegisterWebUIControllerInterfaceBinder<
+        side_panel::mojom::SearchCompanionPageHandlerFactory,
+        SearchCompanionSidePanelUI>(map);
+  }
 
   if (customize_chrome::IsSidePanelEnabled()) {
     RegisterWebUIControllerInterfaceBinder<
@@ -1084,6 +1144,9 @@ void PopulateChromeWebUIFrameBinders(
                                          ash::settings::OSSettingsUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<ash::auth::mojom::RecoveryFactorEditor,
+                                         ash::settings::OSSettingsUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<ash::auth::mojom::PinFactorEditor,
                                          ash::settings::OSSettingsUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<

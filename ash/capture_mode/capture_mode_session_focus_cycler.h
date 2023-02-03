@@ -10,6 +10,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/capture_mode/capture_mode_types.h"
+#include "base/functional/callback_forward.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/aura/window_observer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -60,6 +62,10 @@ class ASH_EXPORT CaptureModeSessionFocusCycler : public views::WidgetObserver {
     kSettingsMenu,
     // The camera preview shown inside the current capture surface.
     kCameraPreview,
+    // Similar to `kPendingSettings` above, but for the recording type menu.
+    kPendingRecordingType,
+    // The menu items inside the recording type menu.
+    kRecordingTypeMenu,
   };
 
   // If a focusable capture session item is part of a views hierarchy, it needs
@@ -77,6 +83,11 @@ class ASH_EXPORT CaptureModeSessionFocusCycler : public views::WidgetObserver {
     virtual std::unique_ptr<views::HighlightPathGenerator>
     CreatePathGenerator();
 
+    // Sets `needs_highlight_path_` to true, so that a new highlight path
+    // generator can be created and installed on the focus ring the next time
+    // `PseudoFocus()` is called.
+    void InvalidateFocusRingPath();
+
     // Shows the focus ring and triggers setting accessibility focus on the
     // associated view.
     virtual void PseudoFocus();
@@ -91,7 +102,8 @@ class ASH_EXPORT CaptureModeSessionFocusCycler : public views::WidgetObserver {
     virtual void ClickView();
 
    protected:
-    virtual ~HighlightableView() = default;
+    HighlightableView();
+    virtual ~HighlightableView();
 
     // TODO(crbug.com/1182456): This can result in multiple of these objects
     // thinking they have focus if CaptureModeSessionFocusCycler does not call
@@ -103,6 +115,14 @@ class ASH_EXPORT CaptureModeSessionFocusCycler : public views::WidgetObserver {
     // A convenience pointer to the focus ring, which is owned by the views
     // hierarchy.
     views::FocusRing* focus_ring_ = nullptr;
+
+    // True until a highlight path generator has been installed on the focus
+    // ring. The path generator can be refreshed (e.g. to change the shape of
+    // the focus ring) via calling `InvalidateFocusRingPath()`, which will set
+    // this to back to `true`.
+    bool needs_highlight_path_ = true;
+
+    base::WeakPtrFactory<HighlightableView> weak_ptr_factory_{this};
   };
 
   // An aura window that can be focused in capture session.
@@ -128,6 +148,11 @@ class ASH_EXPORT CaptureModeSessionFocusCycler : public views::WidgetObserver {
     CaptureModeSession* const session_;
   };
 
+  // Defines a type for a callback that can be called to construct a highlight
+  // path generator which will be used for a custom focus ring shape.
+  using HighlightPathGeneratorFactory =
+      base::RepeatingCallback<std::unique_ptr<views::HighlightPathGenerator>()>;
+
   // A helper class that creates a highlightable object for a given view. The
   // helper is mainly used for the views that need to be created by other
   // classes, such as the `IconButton` created by `IconSwitch`.
@@ -135,18 +160,24 @@ class ASH_EXPORT CaptureModeSessionFocusCycler : public views::WidgetObserver {
       : public CaptureModeSessionFocusCycler::HighlightableView {
    public:
     explicit HighlightHelper(views::View* view);
+    HighlightHelper(views::View* view, HighlightPathGeneratorFactory callback);
     HighlightHelper(const HighlightHelper&) = delete;
     HighlightHelper& operator=(const HighlightHelper&) = delete;
     ~HighlightHelper() override;
 
     static void Install(views::View* view);
+    static void Install(views::View* view,
+                        HighlightPathGeneratorFactory callback);
     static HighlightHelper* Get(views::View* view);
 
     // CaptureModeSessionFocusCycler::HighlightableView:
     views::View* GetView() override;
+    std::unique_ptr<views::HighlightPathGenerator> CreatePathGenerator()
+        override;
 
    private:
     views::View* const view_;
+    HighlightPathGeneratorFactory highlight_path_generator_factory_;
   };
 
   explicit CaptureModeSessionFocusCycler(CaptureModeSession* session);
@@ -162,8 +193,9 @@ class ASH_EXPORT CaptureModeSessionFocusCycler : public views::WidgetObserver {
   //      (fullscreen/region/window) on the capture bar.
   //   2) Region selection area: If visible.
   //   3) Capture/record button: If visible.
-  //   4) Settings menu: If visible.
-  //   5) Settings and close button: On the capture bar.
+  //   4) Recording type menu: If visible.
+  //   5) Settings menu: If visible.
+  //   6) Settings and close button: On the capture bar.
   // This should be called by CaptureModeSession when it receives a VKEY_TAB.
   void AdvanceFocus(bool reverse);
 
@@ -203,9 +235,15 @@ class ASH_EXPORT CaptureModeSessionFocusCycler : public views::WidgetObserver {
   // cycle, otherwise it should be removed from the a11y annotation cycle.
   void OnCaptureLabelWidgetUpdated();
 
-  // Called when the settings menu is created. Starts observing the settings
-  // menu.
-  void OnSettingsMenuWidgetCreated();
+  // Called when either the settings or the recording type menus `widget`'s are
+  // opened to set up the focus state. The given `focus_group` will be set as
+  // the `current_focus_group_`. If `by_key_event` is true, it means the menu
+  // was opened via keyboard navigation, and therefore future calls to
+  // `AdvanceFocus()` will navigate to items within the menu, rather than
+  // closing the menu.
+  void OnMenuOpened(views::Widget* widget,
+                    FocusGroup focus_group,
+                    bool by_key_event);
 
   // views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;
@@ -242,6 +280,7 @@ class ASH_EXPORT CaptureModeSessionFocusCycler : public views::WidgetObserver {
   void UpdateA11yAnnotation();
 
   views::Widget* GetSettingsMenuWidget() const;
+  views::Widget* GetRecordingTypeMenuWidget() const;
 
   // Returns the window which is supposed to be set as the a11y override window
   // for accessibility controller according to the `current_focus_group_`.
@@ -285,13 +324,13 @@ class ASH_EXPORT CaptureModeSessionFocusCycler : public views::WidgetObserver {
   std::unique_ptr<ScopedA11yOverrideWindowSetter> scoped_a11y_overrider_;
 
   base::ScopedObservation<views::Widget, views::WidgetObserver>
-      settings_menu_widget_observeration_{this};
+      menu_widget_observeration_{this};
 
-  // True if the settings menu was opened via clicking space when the settings
-  // button had focus. In this case, advancing focus will focus into the
-  // settings menu. Otherwise, advancing focus with the settings menu open will
-  // close the settings menu.
-  bool settings_menu_opened_with_keyboard_nav_ = false;
+  // True if the current open menu (either settings or recording type) was open
+  // by a key event (e.g. spacebar press) on their entry point button. In that
+  // case, `AdvanceFocus()` will navigate to items within that menu. Otherwise,
+  // `AdvanceFocus()` will close the menu.
+  bool menu_opened_with_keyboard_nav_ = false;
 };
 
 }  // namespace ash

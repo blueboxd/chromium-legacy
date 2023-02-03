@@ -405,6 +405,8 @@ class SequenceManagerTest
     }
   }
 
+  debug::CrashKeyString* dummy_key() { return &dummy_key_; }
+
   void AdvanceMockTickClock(TimeDelta delta) override {
     fixture_->AdvanceMockTickClock(delta);
   }
@@ -445,6 +447,7 @@ class SequenceManagerTest
   }
 
  private:
+  debug::CrashKeyString dummy_key_{"dummy", debug::CrashKeySize::Size64};
   std::unique_ptr<Fixture> fixture_;
 };
 
@@ -2415,6 +2418,7 @@ TEST_P(SequenceManagerTest, TimeDomainMigrationWithIncomingImmediateTasks) {
   RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1u));
 
+  sequence_manager()->ResetTimeDomain();
   queue->ShutdownTaskQueue();
 }
 
@@ -2438,6 +2442,7 @@ TEST_P(SequenceManagerTest, TimeDomainDoesNotCauseWakeUp) {
   LazyNow lazy_now2(domain.get());
   EXPECT_EQ(WakeUp{}, sequence_manager()->GetPendingWakeUp(&lazy_now2));
 
+  sequence_manager()->ResetTimeDomain();
   queue->ShutdownTaskQueue();
 }
 
@@ -2470,6 +2475,7 @@ TEST_P(SequenceManagerTest,
   FastForwardBy(Milliseconds(400));
   EXPECT_THAT(run_order, ElementsAre(4u, 3u, 2u, 1u));
 
+  sequence_manager()->ResetTimeDomain();
   queue->ShutdownTaskQueue();
 }
 
@@ -2477,15 +2483,11 @@ namespace {
 
 class MockTaskQueueThrottler : public TaskQueue::Throttler {
  public:
-  raw_ptr<TaskQueue> task_queue;
-
-  explicit MockTaskQueueThrottler(TaskQueue* task_queue)
-      : task_queue(task_queue) {}
+  MockTaskQueueThrottler() = default;
   ~MockTaskQueueThrottler() = default;
 
   MOCK_METHOD1(OnWakeUp, void(LazyNow*));
   MOCK_METHOD0(OnHasImmediateTask, void());
-
   MOCK_METHOD1(GetNextAllowedWakeUp_DesiredWakeUpTime, void(TimeTicks));
 
   absl::optional<WakeUp> GetNextAllowedWakeUp(
@@ -2510,9 +2512,8 @@ class MockTaskQueueThrottler : public TaskQueue::Throttler {
 }  // namespace
 
 TEST_P(SequenceManagerTest, TaskQueueThrottler_ImmediateTask) {
+  StrictMock<MockTaskQueueThrottler> throttler;
   auto queue = CreateTaskQueue();
-
-  StrictMock<MockTaskQueueThrottler> throttler(queue.get());
   queue->SetThrottler(&throttler);
 
   // OnHasImmediateTask should be called when a task is posted on an empty
@@ -2543,15 +2544,14 @@ TEST_P(SequenceManagerTest, TaskQueueThrottler_ImmediateTask) {
 }
 
 TEST_P(SequenceManagerTest, TaskQueueThrottler_DelayedTask) {
+  StrictMock<MockTaskQueueThrottler> throttler;
   auto queue = CreateTaskQueue();
+  queue->SetThrottler(&throttler);
 
   TimeTicks start_time = sequence_manager()->NowTicks();
   TimeDelta delay10s(Seconds(10));
   TimeDelta delay100s(Seconds(100));
   TimeDelta delay1s(Seconds(1));
-
-  StrictMock<MockTaskQueueThrottler> throttler(queue.get());
-  queue->SetThrottler(&throttler);
 
   // GetNextAllowedWakeUp should be called when a delayed task is posted on an
   // empty queue.
@@ -2593,13 +2593,12 @@ TEST_P(SequenceManagerTest, TaskQueueThrottler_DelayedTask) {
 }
 
 TEST_P(SequenceManagerTest, TaskQueueThrottler_OnWakeUp) {
+  StrictMock<MockTaskQueueThrottler> throttler;
   auto queue = CreateTaskQueue();
+  queue->SetThrottler(&throttler);
 
   TimeTicks start_time = sequence_manager()->NowTicks();
   TimeDelta delay(Seconds(1));
-
-  StrictMock<MockTaskQueueThrottler> throttler(queue.get());
-  queue->SetThrottler(&throttler);
 
   EXPECT_CALL(throttler,
               GetNextAllowedWakeUp_DesiredWakeUpTime(start_time + delay));
@@ -2620,14 +2619,14 @@ TEST_P(SequenceManagerTest, TaskQueueThrottler_OnWakeUp) {
 }
 
 TEST_P(SequenceManagerTest, TaskQueueThrottler_ResetThrottler) {
+  StrictMock<MockTaskQueueThrottler> throttler;
   auto queue = CreateTaskQueue();
+  queue->SetThrottler(&throttler);
 
   TimeTicks start_time = sequence_manager()->NowTicks();
   TimeDelta delay10s(Seconds(10));
   TimeDelta delay1s(Seconds(1));
 
-  StrictMock<MockTaskQueueThrottler> throttler(queue.get());
-  queue->SetThrottler(&throttler);
   EXPECT_FALSE(queue->GetNextDesiredWakeUp());
 
   // GetNextAllowedWakeUp should be called when a delayed task is posted on an
@@ -2653,10 +2652,9 @@ TEST_P(SequenceManagerTest, TaskQueueThrottler_ResetThrottler) {
 }
 
 TEST_P(SequenceManagerTest, TaskQueueThrottler_DelayedTaskMultipleQueues) {
+  StrictMock<MockTaskQueueThrottler> throttler0;
+  StrictMock<MockTaskQueueThrottler> throttler1;
   auto queues = CreateTaskQueues(2u);
-
-  StrictMock<MockTaskQueueThrottler> throttler0(queues[0].get());
-  StrictMock<MockTaskQueueThrottler> throttler1(queues[1].get());
   queues[0]->SetThrottler(&throttler0);
   queues[1]->SetThrottler(&throttler1);
 
@@ -2714,12 +2712,11 @@ TEST_P(SequenceManagerTest, TaskQueueThrottler_DelayedWorkWhichCanRunNow) {
   // available in the middle of the scheduling code. For this test we force
   // notification dispatching by calling UpdateWakeUp() explicitly.
 
+  StrictMock<MockTaskQueueThrottler> throttler;
   auto queue = CreateTaskQueue();
+  queue->SetThrottler(&throttler);
 
   TimeDelta delay1s(Seconds(1));
-
-  StrictMock<MockTaskQueueThrottler> throttler(queue.get());
-  queue->SetThrottler(&throttler);
 
   // GetNextAllowedWakeUp should be called when a delayed task is posted on an
   // empty queue.
@@ -2776,9 +2773,8 @@ class DestructionCallback {
 }  // namespace
 
 TEST_P(SequenceManagerTest, TaskQueueThrottler_SweepCanceledDelayedTasks) {
+  StrictMock<MockTaskQueueThrottler> throttler;
   auto queue = CreateTaskQueue();
-
-  StrictMock<MockTaskQueueThrottler> throttler(queue.get());
   queue->SetThrottler(&throttler);
 
   TimeTicks start_time = sequence_manager()->NowTicks();
@@ -3997,13 +3993,12 @@ TEST_P(SequenceManagerTest, GetNextDesiredWakeUp) {
 }
 
 TEST_P(SequenceManagerTest, SetTimeDomainForDisabledQueue) {
+  StrictMock<MockTaskQueueThrottler> throttler;
   auto queue = CreateTaskQueue();
+  queue->SetThrottler(&throttler);
 
   TimeTicks start_time = sequence_manager()->NowTicks();
   TimeDelta delay(Milliseconds(1));
-
-  StrictMock<MockTaskQueueThrottler> throttler(queue.get());
-  queue->SetThrottler(&throttler);
 
   EXPECT_CALL(throttler,
               GetNextAllowedWakeUp_DesiredWakeUpTime(start_time + delay));
@@ -4125,15 +4120,14 @@ TEST_P(SequenceManagerTest, ProcessTasksWithTaskTimeObservers) {
 }
 
 TEST_P(SequenceManagerTest, ObserverNotFiredAfterTaskQueueDestructed) {
-  scoped_refptr<TestTaskQueue> main_tq = CreateTaskQueue();
-
-  StrictMock<MockTaskQueueThrottler> throttler(main_tq.get());
-  main_tq->SetThrottler(&throttler);
+  StrictMock<MockTaskQueueThrottler> throttler;
+  auto queue = CreateTaskQueue();
+  queue->SetThrottler(&throttler);
 
   // We don't expect the throttler to be notified if the TaskQueue gets
   // destructed.
-  auto task_runner = main_tq->task_runner();
-  main_tq = nullptr;
+  auto task_runner = queue->task_runner();
+  queue = nullptr;
   task_runner->PostTask(FROM_HERE, BindOnce(&NopTask));
 
   FastForwardUntilNoTasksRemain();
@@ -4141,18 +4135,17 @@ TEST_P(SequenceManagerTest, ObserverNotFiredAfterTaskQueueDestructed) {
 
 TEST_P(SequenceManagerTest,
        OnQueueNextWakeUpChangedNotFiredForDisabledQueuePostTask) {
-  scoped_refptr<TestTaskQueue> main_tq = CreateTaskQueue();
-  auto task_runner = main_tq->task_runner();
-
-  StrictMock<MockTaskQueueThrottler> throttler(main_tq.get());
-  main_tq->SetThrottler(&throttler);
+  StrictMock<MockTaskQueueThrottler> throttler;
+  auto queue = CreateTaskQueue();
+  queue->SetThrottler(&throttler);
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
-      main_tq->CreateQueueEnabledVoter();
+      queue->CreateQueueEnabledVoter();
   voter->SetVoteToEnable(false);
 
   // We don't expect the OnHasImmediateTask to be called if the TaskQueue gets
   // disabled.
+  auto task_runner = queue->task_runner();
   task_runner->PostTask(FROM_HERE, BindOnce(&NopTask));
 
   FastForwardUntilNoTasksRemain();
@@ -4163,18 +4156,17 @@ TEST_P(SequenceManagerTest,
 
 TEST_P(SequenceManagerTest,
        OnQueueNextWakeUpChangedNotFiredForCrossThreadDisabledQueuePostTask) {
-  scoped_refptr<TestTaskQueue> main_tq = CreateTaskQueue();
-  auto task_runner = main_tq->task_runner();
-
-  StrictMock<MockTaskQueueThrottler> throttler(main_tq.get());
-  main_tq->SetThrottler(&throttler);
+  StrictMock<MockTaskQueueThrottler> throttler;
+  auto queue = CreateTaskQueue();
+  queue->SetThrottler(&throttler);
 
   std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
-      main_tq->CreateQueueEnabledVoter();
+      queue->CreateQueueEnabledVoter();
   voter->SetVoteToEnable(false);
 
   // We don't expect OnHasImmediateTask to be called if the TaskQueue gets
   // blocked.
+  auto task_runner = queue->task_runner();
   WaitableEvent done_event;
   Thread thread("TestThread");
   thread.Start();
@@ -5116,14 +5108,13 @@ TEST_P(SequenceManagerTest, CrashKeys) {
 
   MockCrashKeyImplementation* mock_impl = crash_key_impl.get();
   debug::SetCrashKeyImplementation(std::move(crash_key_impl));
-  debug::CrashKeyString dummy_key("dummy", debug::CrashKeySize::Size64);
 
   // Parent task.
   auto parent_location = FROM_HERE;
   auto expected_stack1 = StringPrintf(
       "0x%zX 0x0",
       reinterpret_cast<uintptr_t>(parent_location.program_counter()));
-  EXPECT_CALL(*mock_impl, Allocate(_, _)).WillRepeatedly(Return(&dummy_key));
+  EXPECT_CALL(*mock_impl, Allocate(_, _)).WillRepeatedly(Return(dummy_key()));
   EXPECT_CALL(*mock_impl, Set(_, testing::Eq(expected_stack1)));
 
   // Child task.

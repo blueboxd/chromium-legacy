@@ -10,7 +10,6 @@
 #include "base/mac/mac_logging.h"
 #include "base/ranges/algorithm.h"
 #include "base/sys_byteorder.h"
-#include "base/task/single_thread_task_runner.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_discard_helper.h"
 #include "media/base/bind_to_current_loop.h"
@@ -114,8 +113,9 @@ OSStatus ProvideInputCallback(AudioConverterRef decoder,
   buffer_list->mBuffers[0].mNumberChannels = 0;
   buffer_list->mBuffers[0].mDataByteSize = input_data->buffer->data_size();
 
-  // No const version of this API unfortunately, so we need writable_data().
-  buffer_list->mBuffers[0].mData = input_data->buffer->writable_data();
+  // No const version of this API unfortunately, so we need const_cast().
+  buffer_list->mBuffers[0].mData =
+      const_cast<uint8_t*>(input_data->buffer->data());
 
   if (packets)
     *packets = &input_data->packet;

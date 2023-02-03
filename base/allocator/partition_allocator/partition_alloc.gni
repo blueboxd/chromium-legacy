@@ -5,6 +5,19 @@
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build_overrides/partition_alloc.gni")
 
+# Whether 64-bit pointers are used.
+# A static_assert in partition_alloc_config.h verifies that.
+if (is_nacl) {
+  # NaCl targets don't use 64-bit pointers.
+  has_64_bit_pointers = false
+} else if (current_cpu == "x64" || current_cpu == "arm64") {
+  has_64_bit_pointers = true
+} else if (current_cpu == "x86" || current_cpu == "arm") {
+  has_64_bit_pointers = false
+} else {
+  assert(false, "Unknown CPU: $current_cpu")
+}
+
 if (use_partition_alloc_as_malloc_default) {
   _default_allocator = "partition"
 } else {
@@ -39,7 +52,9 @@ declare_args() {
 }
 
 declare_args() {
-  use_freeslot_bitmap = false
+  # TODO(bartekn): Disable soon. Enabled temporarily to catch a suspected
+  # double-free.
+  use_freeslot_bitmap = true
 
   # Puts the regular and BRP pools right next to each other, so that we can
   # check "belongs to one of the two pools" with a single bitmask operation.
@@ -55,7 +70,7 @@ declare_args() {
 
 declare_args() {
   # Build support for Use-after-Free protection via BackupRefPtr (BRP) or
-  # MTECheckedPtr, and switch the raw_ptr<T> implementation to BackupRefPtrImpl
+  # MTECheckedPtr, and switch the raw_ptr<T> implementation to RawPtrBackupRefImpl
   # and MTECheckedPtrImp, respectively. They're mutually exclusive.
   #
   # These are effective only for memory allocated from PartitionAlloc, so it is
@@ -129,8 +144,7 @@ declare_args() {
   # to go through build_overrides
   enable_dangling_raw_ptr_perf_experiment = false
 
-  # TODO(bartekn): Enabled temporarily, disable before reaches Beta.
-  backup_ref_ptr_poison_oob_ptr = enable_backup_ref_ptr_support
+  backup_ref_ptr_poison_oob_ptr = false
 }
 
 declare_args() {
@@ -139,8 +153,12 @@ declare_args() {
   enable_shadow_metadata = false
 }
 
-# *Scan is currently only used by Chromium.
-use_starscan = build_with_chromium
+# *Scan is currently only used by Chromium, and supports only 64-bit.
+use_starscan = build_with_chromium && has_64_bit_pointers
+
+pcscan_stack_supported =
+    use_starscan && (current_cpu == "x64" || current_cpu == "x86" ||
+                     current_cpu == "arm" || current_cpu == "arm64")
 
 # We want to provide assertions that guard against inconsistent build
 # args, but there is no point in having them fire if we're not building
@@ -208,15 +226,15 @@ assert(
 assert(!enable_backup_ref_ptr_support || !use_asan_unowned_ptr,
        "Both BackupRefPtr and AsanUnownedPtr can't be enabled at the same time")
 
-# HookableRawPtrImpl and BackupRefPtr are mutually exclusive variants of raw_ptr.
+# RawPtrHookableImpl and BackupRefPtr are mutually exclusive variants of raw_ptr.
 assert(
     !use_hookable_raw_ptr || !enable_backup_ref_ptr_support,
-    "Both HookableRawPtrImpl and BackupRefPtr can't be enabled at the same time")
+    "Both RawPtrHookableImpl and BackupRefPtr can't be enabled at the same time")
 
-# HookableRawPtrImpl and AsanUnownedPtr are mutually exclusive variants of raw_ptr.
+# RawPtrHookableImpl and AsanUnownedPtr are mutually exclusive variants of raw_ptr.
 assert(
     !use_hookable_raw_ptr || !use_asan_unowned_ptr,
-    "Both HookableRawPtrImpl and AsanUnownedPtr can't be enabled at the same time")
+    "Both RawPtrHookableImpl and AsanUnownedPtr can't be enabled at the same time")
 
 assert(!use_asan_backup_ref_ptr || is_asan,
        "AsanBackupRefPtr requires AddressSanitizer")
@@ -231,7 +249,7 @@ assert(build_with_chromium || !use_asan_backup_ref_ptr,
        "AsanBackupRefPtr is not supported outside Chromium")
 
 assert(!use_asan_backup_ref_ptr || use_hookable_raw_ptr,
-       "AsanBackupRefPtr requires HookableRawPtrImpl")
+       "AsanBackupRefPtr requires RawPtrHookableImpl")
 
 declare_args() {
   enable_pkeys = is_linux && target_cpu == "x64"

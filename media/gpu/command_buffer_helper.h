@@ -19,7 +19,9 @@
 namespace gpu {
 class CommandBufferStub;
 class DXGISharedHandleManager;
+class MemoryTypeTracker;
 class SharedImageBacking;
+class SharedImageManager;
 class SharedImageRepresentationFactoryRef;
 class SharedImageStub;
 class TextureBase;
@@ -75,6 +77,10 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
 
   // Retrieve the interface through which to create shared images.
   virtual gpu::SharedImageStub* GetSharedImageStub() = 0;
+
+  virtual gpu::MemoryTypeTracker* GetMemoryTypeTracker() = 0;
+
+  virtual gpu::SharedImageManager* GetSharedImageManager() = 0;
 
 #if BUILDFLAG(IS_WIN)
   virtual gpu::DXGISharedHandleManager* GetDXGISharedHandleManager() = 0;
@@ -137,9 +143,9 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
                                       gl::GLImage* image) = 0;
 #endif
 
-  // Set the callback to be called when our stub is destroyed. This callback
+  // Add a callback to be called when our stub is destroyed. This callback
   // may not change the current context.
-  virtual void SetWillDestroyStubCB(WillDestroyStubCB will_destroy_stub_cb) = 0;
+  virtual void AddWillDestroyStubCB(WillDestroyStubCB callback) = 0;
 
   // Is the backing command buffer passthrough (versus validating).
   virtual bool IsPassthrough() const = 0;

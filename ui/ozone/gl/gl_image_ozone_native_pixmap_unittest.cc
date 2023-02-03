@@ -78,6 +78,11 @@ class GLImageNativePixmapTestDelegate : public GLImageTestDelegateBase {
     return image;
   }
 
+  bool BindImageToTarget(GLImage* image, unsigned target) {
+    static_cast<gl::GLImageNativePixmap*>(image)->BindTexImage(target);
+    return true;
+  }
+
   unsigned GetTextureTarget() const { return GL_TEXTURE_EXTERNAL_OES; }
 
   const uint8_t* GetImageColor() const {

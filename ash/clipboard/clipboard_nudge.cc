@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/constants/notifier_catalogs.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -18,7 +17,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/system_nudge_label.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/chromeos/events/keyboard_layout_util.h"
+#include "ui/chromeos/events/keyboard_capability.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/color_palette.h"
@@ -58,9 +57,10 @@ bool IsAssistantAvailable() {
 
 }  // namespace
 
-ClipboardNudge::ClipboardNudge(ClipboardNudgeType nudge_type)
+ClipboardNudge::ClipboardNudge(ClipboardNudgeType nudge_type,
+                               NudgeCatalogName catalog_name)
     : SystemNudge(kClipboardNudgeName,
-                  NudgeCatalogName::kMultipaste,
+                  catalog_name,
                   kClipboardIconSize,
                   kIconLabelSpacing,
                   kNudgePadding),
@@ -69,7 +69,8 @@ ClipboardNudge::ClipboardNudge(ClipboardNudgeType nudge_type)
 ClipboardNudge::~ClipboardNudge() = default;
 
 std::unique_ptr<SystemNudgeLabel> ClipboardNudge::CreateLabelView() const {
-  bool use_launcher_key = ui::DeviceUsesKeyboardLayout2();
+  bool use_launcher_key =
+      Shell::Get()->keyboard_capability()->HasLauncherButton();
   std::u16string shortcut_key = l10n_util::GetStringUTF16(
       use_launcher_key ? IDS_ASH_SHORTCUT_MODIFIER_LAUNCHER
                        : IDS_ASH_SHORTCUT_MODIFIER_SEARCH);

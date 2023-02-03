@@ -1,5 +1,4 @@
 <style include="common cros-button-style">
-  /* TODO(b/253470553): Remove after Ambient subpage UI change is released. */
   #container.pre-ui-change {
     border: none;
     display: grid;
@@ -134,7 +133,7 @@
             [[getAlbumDescription_(topicSource_, previewAlbums_)]]
           </span>
         </h3>
-        <div id="buttonContainer" hidden$="[[!isScreenSaverPreviewEnabled_()]]">
+        <div id="buttonContainer" hidden$="[[!isScreenSaverPreviewEnabled_]]">
           <cr-button
               class$="[[getScreenSaverPreviewClass_(ambientUiVisibility_)]]"
               on-click="startScreenSaverPreview_">

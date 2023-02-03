@@ -78,6 +78,7 @@
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "third_party/blink/public/common/features.h"
 
@@ -973,8 +974,15 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 }
 
+// TODO(crbug.com/1412461): Re-enable this test when de-flaked.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_NotControlledByDistributorsSW \
+  DISABLED_NotControlledByDistributorsSW
+#else
+#define MAYBE_NotControlledByDistributorsSW NotControlledByDistributorsSW
+#endif
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
-                       NotControlledByDistributorsSW) {
+                       MAYBE_NotControlledByDistributorsSW) {
   // SW-scope: http://127.0.0.1:PORT/sxg/
   // SXG physical URL: http://127.0.0.1:PORT/sxg/test.example.org_test.sxg
   // SXG logical URL: https://test.example.org/test/
@@ -1601,7 +1609,7 @@ class SignedExchangePKPBrowserTest
       mojo::ScopedAllowSyncCallForTesting allow_sync_call;
 
       mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
-      GetNetworkService()->BindTestInterface(
+      GetNetworkService()->BindTestInterfaceForTesting(
           network_service_test.BindNewPipeAndPassReceiver());
       network_service_test->SetTransportSecurityStateSource(0);
     } else {
@@ -1623,7 +1631,7 @@ class SignedExchangePKPBrowserTest
 
     if (IsOutOfProcessNetworkService()) {
       mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
-      GetNetworkService()->BindTestInterface(
+      GetNetworkService()->BindTestInterfaceForTesting(
           network_service_test.BindNewPipeAndPassReceiver());
       network_service_test->SetTransportSecurityStateSource(reporting_port);
     } else {

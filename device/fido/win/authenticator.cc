@@ -48,6 +48,7 @@ struct PlatformCredentialListDeleter {
 
 // static
 void WinWebAuthnApiAuthenticator::IsUserVerifyingPlatformAuthenticatorAvailable(
+    bool is_off_the_record,
     WinWebAuthnApi* api,
     base::OnceCallback<void(bool is_available)> callback) {
   base::ThreadPool::PostTaskAndReplyWithResult(
@@ -55,14 +56,19 @@ void WinWebAuthnApiAuthenticator::IsUserVerifyingPlatformAuthenticatorAvailable(
       {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(
-          [](WinWebAuthnApi* api) {
+          [](bool is_off_the_record, WinWebAuthnApi* api) {
             BOOL result;
-            return api && api->IsAvailable() &&
-                   api->IsUserVerifyingPlatformAuthenticatorAvailable(
+            if (!api || !api->IsAvailable()) {
+              return false;
+            }
+            if (is_off_the_record && api->Version() < WEBAUTHN_API_VERSION_4) {
+              return false;
+            }
+            return api->IsUserVerifyingPlatformAuthenticatorAvailable(
                        &result) == S_OK &&
                    result == TRUE;
           },
-          api),
+          is_off_the_record, api),
       std::move(callback));
 }
 
@@ -235,19 +241,21 @@ void WinWebAuthnApiAuthenticator::GetAssertionDone(
     return;
   }
   if (result.first != CtapDeviceResponseCode::kSuccess) {
-    std::move(callback).Run(result.first, absl::nullopt);
+    std::move(callback).Run(result.first, {});
     return;
   }
   if (!result.second) {
-    std::move(callback).Run(CtapDeviceResponseCode::kCtap2ErrInvalidCBOR,
-                            absl::nullopt);
+    std::move(callback).Run(CtapDeviceResponseCode::kCtap2ErrInvalidCBOR, {});
     return;
   }
-  std::move(callback).Run(result.first, std::move(result.second));
+  std::vector<AuthenticatorGetAssertionResponse> responses;
+  responses.emplace_back(std::move(*result.second));
+  std::move(callback).Run(result.first, std::move(responses));
 }
 
 void WinWebAuthnApiAuthenticator::GetCredentialInformationForRequest(
     const CtapGetAssertionRequest& request,
+    const CtapGetAssertionOptions& request_options,
     base::OnceCallback<void(std::vector<DiscoverableCredentialMetadata>, bool)>
         callback) {
   // Since the Windows authenticator forwards requests to other devices such as
@@ -271,8 +279,7 @@ void WinWebAuthnApiAuthenticator::GetCredentialInformationForRequest(
   WEBAUTHN_GET_CREDENTIALS_OPTIONS options{
       .dwVersion = WEBAUTHN_GET_CREDENTIALS_OPTIONS_VERSION_1,
       .pwszRpId = base::as_wcstr(rp_id),
-      // TODO(nsatragno): plumb browser private mode status in.
-      .bBrowserInPrivateMode = false};
+      .bBrowserInPrivateMode = request_options.is_off_the_record_context};
   PWEBAUTHN_CREDENTIAL_DETAILS_LIST credentials = nullptr;
   HRESULT hresult = win_api_->GetPlatformCredentialList(&options, &credentials);
   std::unique_ptr<WEBAUTHN_CREDENTIAL_DETAILS_LIST,

@@ -18,6 +18,7 @@
 #include "ash/public/cpp/system_sounds_delegate.h"
 #include "ash/system/input_device_settings/input_device_settings_controller_impl.h"
 #include "ash/system/input_device_settings/input_device_tracker.h"
+#include "ash/system/input_device_settings/keyboard_modifier_metrics_recorder.h"
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
@@ -482,6 +483,10 @@ class ASH_EXPORT Shell : public SessionObserver,
     return input_device_settings_controller_.get();
   }
 
+  InputDeviceTracker* input_device_tracker() {
+    return input_device_tracker_.get();
+  }
+
   EventClientImpl* event_client() { return event_client_.get(); }
   EventTransformationHandler* event_transformation_handler() {
     return event_transformation_handler_.get();
@@ -536,6 +541,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   KeyboardControllerImpl* keyboard_controller() {
     return keyboard_controller_.get();
+  }
+  KeyboardModifierMetricsRecorder* keyboard_modifier_metrics_recorder() {
+    return keyboard_modifier_metrics_recorder_.get();
   }
   LaserPointerController* laser_pointer_controller() {
     return laser_pointer_controller_.get();
@@ -860,7 +868,8 @@ class ASH_EXPORT Shell : public SessionObserver,
       input_device_settings_controller_;
 
   std::unique_ptr<InputDeviceTracker> input_device_tracker_;
-
+  std::unique_ptr<KeyboardModifierMetricsRecorder>
+      keyboard_modifier_metrics_recorder_;
   std::unique_ptr<UserMetricsRecorder> user_metrics_recorder_;
   std::unique_ptr<WindowPositioner> window_positioner_;
 

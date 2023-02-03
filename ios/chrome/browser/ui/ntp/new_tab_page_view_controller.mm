@@ -42,7 +42,7 @@
 namespace {
 // Animation time for the shift up/down animations to focus/defocus omnibox.
 const CGFloat kShiftTilesDownAnimationDuration = 0.2;
-const CGFloat kShiftTilesUpAnimationDuration = 0.25;
+const CGFloat kShiftTilesUpAnimationDuration = 0.1;
 }  // namespace
 
 @interface NewTabPageViewController () <NewTabPageOmniboxPositioning,
@@ -77,10 +77,14 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
 @property(nonatomic, strong)
     NSArray<NSLayoutConstraint*>* feedHeaderConstraints;
 
-// `YES` if the initial scroll position is from the saved web state (when
-// navigating away and back), and `NO` if it is the top of the NTP.
-@property(nonatomic, assign, getter=isInitialOffsetFromSavedState)
-    BOOL initialOffsetFromSavedState;
+// `YES` if the NTP starting content offset should be set to a previous scroll
+// state (when navigating away and back), and `NO` if it should be the top of
+// the NTP.
+@property(nonatomic, assign) BOOL hasSavedOffsetFromPreviousScrollState;
+
+// The content offset saved from a previous scroll state in the NTP. If this is
+// set, `hasSavedOffsetFromPreviousScrollState` should be YES.
+@property(nonatomic, assign) CGFloat savedScrollOffset;
 
 // The scroll position when a scrolling event starts.
 @property(nonatomic, assign) int scrollStartPosition;
@@ -203,8 +207,6 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
   [super viewWillLayoutSubviews];
 
   [self updateNTPLayout];
-  [self updateAdditionalOffset];
-  [self updateScrolledToMinimumHeight];
   [self.headerController updateConstraints];
 }
 
@@ -229,7 +231,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
   [self updateFakeOmniboxForScrollPosition];
 
   if (self.shouldFocusFakebox) {
-    [self focusFakebox];
+    [self shiftTilesUpToFocusOmnibox];
     self.shouldFocusFakebox = NO;
   }
 
@@ -457,7 +459,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
   // Ensure initial fake omnibox layout.
   [self updateFakeOmniboxForScrollPosition];
 
-  if (!self.viewDidAppear && ![self isInitialOffsetFromSavedState]) {
+  if (!self.viewDidAppear && !self.hasSavedOffsetFromPreviousScrollState) {
     [self setContentOffsetToTop];
   }
 }
@@ -508,6 +510,16 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
   }
 }
 
+- (void)feedLayoutDidEndUpdates {
+  [self updateFeedInsetsForMinimumHeight];
+  // Update saved scroll state after updating insets
+  if (self.hasSavedOffsetFromPreviousScrollState) {
+    [self setContentOffset:self.savedScrollOffset];
+    self.hasSavedOffsetFromPreviousScrollState = NO;
+  }
+  [self updateStickyElements];
+}
+
 - (void)updateStickyElements {
   [self handleStickyElementsForScrollPosition:[self scrollPosition] force:YES];
 }
@@ -515,7 +527,8 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
 #pragma mark - NewTabPageConsumer
 
 - (void)setSavedContentOffset:(CGFloat)offset {
-  self.initialOffsetFromSavedState = YES;
+  self.hasSavedOffsetFromPreviousScrollState = YES;
+  self.savedScrollOffset = offset;
   [self setContentOffset:offset];
 }
 
@@ -575,7 +588,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
   // action) needs to wait until it is ready. viewDidAppear: currently serves as
   // this proxy as there is no specific signal given from the feed that its
   // contents have loaded.
-  if (self.isFeedVisible && ![self collectionViewHasLoaded]) {
+  if (self.isFeedVisible && !self.viewDidAppear) {
     self.shouldFocusFakebox = YES;
   } else {
     [self shiftTilesUpToFocusOmnibox];
@@ -786,6 +799,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
   if (self.scrolledToMinimumHeight) {
     self.shouldAnimateHeader = NO;
     self.disableScrollAnimation = NO;
+    [self.ntpContentDelegate focusOmnibox];
     [self.headerController
         completeHeaderFakeOmniboxFocusAnimationWithFinalPosition:
             UIViewAnimatingPositionEnd];
@@ -829,6 +843,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
                 self.disableScrollAnimation = YES;
                 [strongSelf.headerController expandHeaderForFocus];
                 shiftOmniboxToTop();
+                [strongSelf.ntpContentDelegate focusOmnibox];
               }
             }];
 
@@ -1070,6 +1085,7 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
   self.collectionView.contentInset = UIEdgeInsetsMake(
       [self heightAboveFeed], 0, self.collectionView.contentInset.bottom, 0);
   [self updateAdditionalOffset];
+  [self updateScrolledToMinimumHeight];
 }
 
 // Updates additionalOffset using the content above the feed.
@@ -1461,7 +1477,10 @@ const CGFloat kShiftTilesUpAnimationDuration = 0.25;
 // Checks if the collection view is scrolled at least to the minimum height and
 // updates property.
 - (void)updateScrolledToMinimumHeight {
-  self.scrolledToMinimumHeight = [self scrollPosition] >= [self pinnedOffsetY];
+  CGFloat scrollPosition = [self scrollPosition];
+  CGFloat offset = [self pinnedOffsetY];
+
+  self.scrolledToMinimumHeight = scrollPosition >= offset;
 }
 
 // Adds `viewController` as a child of `parentViewController` and adds

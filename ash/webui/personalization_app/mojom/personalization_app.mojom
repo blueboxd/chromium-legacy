@@ -100,6 +100,9 @@ struct GooglePhotosAlbum {
 
     // Latest modification timestamp used to sort albums.
     mojo_base.mojom.Time timestamp;
+
+    // Whether the album is a shared album.
+    bool is_shared;
 };
 
 // Represents the server-provided response to a Google Photos albums request.
@@ -366,6 +369,9 @@ interface ThemeObserver {
 
   //Notifies the JS side about the current state of the color scheme.
   OnColorSchemeChanged(ColorScheme color_scheme);
+
+  // Notifies the JS side that the sample color schemes have changed.
+  OnSampleColorSchemesChanged(array<SampleColorScheme> sample_color_schemes);
 
   // Notifies the JS side about the current state of the static color.
   OnStaticColorChanged(skia.mojom.SkColor? color);
@@ -644,6 +650,9 @@ enum BacklightColor {
   kPurple = 7,
 
   kRainbow = 100,
+  // Indicates multi-zone customization is selected. The actual zone colors are
+  // saved in |ash::prefs::kPersonalizationKeyboardBacklightZoneColors|.
+  kMultiZone = 101,
 };
 
 // Hex values of the colors displayed in the rgb keyboard section.

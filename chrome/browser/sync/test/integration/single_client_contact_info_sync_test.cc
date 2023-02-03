@@ -6,9 +6,11 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/test/integration/contact_info_helper.h"
+#include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/fake_server_match_status_checker.h"
 #include "chrome/browser/sync/test/integration/sync_service_impl_harness.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/autofill/core/browser/contact_info_sync_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -27,6 +29,7 @@ namespace {
 using autofill::AutofillProfile;
 using contact_info_helper::BuildTestAccountProfile;
 using contact_info_helper::PersonalDataManagerProfileChecker;
+using testing::IsEmpty;
 using testing::UnorderedElementsAre;
 
 // Helper class to wait until the fake server's ContactInfoSpecifics match a
@@ -127,9 +130,81 @@ IN_PROC_BROWSER_TEST_F(SingleClientContactInfoSyncTest, ClearOnDisableSync) {
                                                 UnorderedElementsAre(kProfile))
                   .Wait());
   GetClient(0)->StopSyncServiceAndClearData();
+  EXPECT_TRUE(
+      PersonalDataManagerProfileChecker(GetPersonalDataManager(), IsEmpty())
+          .Wait());
+}
+
+// Specialized fixture to test the behavior for custom passphrase users with and
+// without kSyncEnableContactInfoDataTypeForCustomPassphraseUsers enabled.
+class SingleClientContactInfoPassphraseSyncTest
+    : public SingleClientContactInfoSyncTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  SingleClientContactInfoPassphraseSyncTest() {
+    passphrase_feature_.InitWithFeatureState(
+        syncer::kSyncEnableContactInfoDataTypeForCustomPassphraseUsers,
+        EnabledForPassphraseUsersTestParam());
+  }
+
+  bool EnabledForPassphraseUsersTestParam() const { return GetParam(); }
+
+ private:
+  base::test::ScopedFeatureList passphrase_feature_;
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         SingleClientContactInfoPassphraseSyncTest,
+                         testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(SingleClientContactInfoPassphraseSyncTest, Passphrase) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(
+      GetSyncService(0)->GetActiveDataTypes().Has(syncer::CONTACT_INFO));
+  GetSyncService(0)->GetUserSettings()->SetEncryptionPassphrase("123456");
+  ASSERT_TRUE(
+      ServerPassphraseTypeChecker(syncer::PassphraseType::kCustomPassphrase)
+          .Wait());
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+  EXPECT_EQ(GetSyncService(0)->GetActiveDataTypes().Has(syncer::CONTACT_INFO),
+            EnabledForPassphraseUsersTestParam());
+}
+
+// Specialized fixture that enables AutofillAccountProfilesOnSignIn.
+class SingleClientContactInfoTransportSyncTest
+    : public SingleClientContactInfoSyncTest {
+ public:
+  SingleClientContactInfoTransportSyncTest() {
+    transport_feature_.InitAndEnableFeature(
+        syncer::kSyncEnableContactInfoDataTypeInTransportMode);
+  }
+
+ private:
+  base::test::ScopedFeatureList transport_feature_;
+};
+
+// When AutofillAccountProfilesOnSignIn is enabled, the CONTACT_INFO type should
+// run in transport mode and the availability of account profiles should depend
+// on the signed-in state.
+IN_PROC_BROWSER_TEST_F(SingleClientContactInfoTransportSyncTest,
+                       TransportMode) {
+  AutofillProfile profile = BuildTestAccountProfile();
+  AddSpecificsToServer(AsContactInfoSpecifics(profile), GetFakeServer());
+  ASSERT_TRUE(SetupClients());
+  ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+  EXPECT_TRUE(
+      GetSyncService(0)->GetActiveDataTypes().Has(syncer::CONTACT_INFO));
   EXPECT_TRUE(PersonalDataManagerProfileChecker(GetPersonalDataManager(),
-                                                testing::IsEmpty())
+                                                UnorderedElementsAre(profile))
                   .Wait());
+  // ChromeOS doesn't have the concept of sign-out.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  GetClient(0)->SignOutPrimaryAccount();
+  EXPECT_TRUE(
+      PersonalDataManagerProfileChecker(GetPersonalDataManager(), IsEmpty())
+          .Wait());
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 }  // namespace

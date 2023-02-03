@@ -127,9 +127,11 @@ void ReadAnythingModel::AccessibilityEventReceived(
   }
 }
 
-void ReadAnythingModel::OnActiveAXTreeIDChanged(const ui::AXTreeID& tree_id) {
+void ReadAnythingModel::OnActiveAXTreeIDChanged(
+    const ui::AXTreeID& tree_id,
+    const ukm::SourceId& ukm_source_id) {
   for (Observer& obs : observers_) {
-    obs.OnActiveAXTreeIDChanged(tree_id);
+    obs.OnActiveAXTreeIDChanged(tree_id, ukm_source_id);
   }
 }
 
@@ -177,14 +179,13 @@ void ReadAnythingModel::NotifyThemeChanged() {
 ///////////////////////////////////////////////////////////////////////////////
 
 ReadAnythingFontModel::ReadAnythingFontModel() {
-  // TODO(1266555): i18n.
+  // TODO(1266555): i18n and replace temp fonts with finalized fonts.
   font_choices_.emplace_back(u"Standard font");
   font_choices_.emplace_back(u"Sans-serif");
   font_choices_.emplace_back(u"Serif");
-  font_choices_.emplace_back(u"Avenir");
-  font_choices_.emplace_back(u"Comic Neue");
+  font_choices_.emplace_back(u"Arial");
   font_choices_.emplace_back(u"Comic Sans MS");
-  font_choices_.emplace_back(u"Poppins");
+  font_choices_.emplace_back(u"Times New Roman");
   font_choices_.shrink_to_fit();
 }
 

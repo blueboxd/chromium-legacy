@@ -60,11 +60,6 @@ class FlatlandSurface : public ui::PlatformWindowSurface {
   template <typename T>
   friend class FlatlandSurfaceTestBase;
 
-  struct PresentationState {
-    base::TimeTicks presentation_time;
-    base::TimeDelta interval;
-  };
-
   struct PresentedFrame {
     PresentedFrame(fuchsia::ui::composition::ContentId image_id,
                    scoped_refptr<gfx::NativePixmap> primary_plane,
@@ -109,12 +104,15 @@ class FlatlandSurface : public ui::PlatformWindowSurface {
 
   void RemovePixmapResources(FlatlandPixmapId pixmap_id);
 
-  void OnPresentComplete(zx_time_t actual_presentation_time);
+  void OnPresentComplete(base::TimeTicks actual_presentation_time,
+                         base::TimeDelta presentation_interval);
 
   FlatlandIds CreateOrGetFlatlandIds(gfx::NativePixmap* pixmap,
                                      bool is_primary_plane);
 
   void ClearScene();
+
+  void OnFlatlandError(fuchsia::ui::composition::FlatlandError error);
 
   fuchsia::ui::composition::AllocatorPtr flatland_allocator_;
   FlatlandConnection flatland_;

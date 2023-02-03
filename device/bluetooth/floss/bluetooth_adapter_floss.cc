@@ -343,6 +343,15 @@ void BluetoothAdapterFloss::SetDiscoverable(bool discoverable,
       discoverable);
 }
 
+base::TimeDelta BluetoothAdapterFloss::GetDiscoverableTimeout() const {
+  if (!IsPresent()) {
+    return base::Seconds(0);
+  }
+
+  return base::Seconds(
+      FlossDBusManager::Get()->GetAdapterClient()->GetDiscoverableTimeout());
+}
+
 bool BluetoothAdapterFloss::IsDiscovering() const {
   if (!IsPresent())
     return false;
@@ -1156,8 +1165,6 @@ void BluetoothAdapterFloss::ScanResultReceived(ScanResult scan_result) {
 }
 
 void BluetoothAdapterFloss::ScanResultLost(ScanResult scan_result) {
-  // TODO(b/217274013): This needs to be wired once filters are in place and
-  // API has been defined on daemon
   BLUETOOTH_LOG(DEBUG) << __func__ << ": " << scan_result.address;
 
   auto device = CreateBluetoothDeviceFloss(FlossDeviceId(

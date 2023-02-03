@@ -16,12 +16,13 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/color/color_id.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/bubble/bubble_border.h"
 
 namespace views {
-class BoxLayout;
+class BoxLayoutView;
 }
 
 namespace autofill {
@@ -67,10 +68,10 @@ class AutofillPopupRowView : public views::View {
   AutofillPopupViewNativeViews* popup_view() { return popup_view_; }
   int GetLineNumber() const;
   bool GetSelected() const;
+  ui::ColorId GetBackgroundColorId() const;
 
   virtual void CreateContent() = 0;
-  virtual void RefreshStyle() = 0;
-  virtual std::unique_ptr<views::Background> CreateBackground() = 0;
+  virtual void RefreshStyle() {}
 
  private:
   raw_ptr<AutofillPopupViewNativeViews> popup_view_;
@@ -92,13 +93,12 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
       delete;
   ~AutofillPopupViewNativeViews() override;
 
-  const std::vector<AutofillPopupRowView*>& GetRowsForTesting() {
+  const std::vector<raw_ptr<AutofillPopupRowView>>& GetRowsForTesting() {
     return rows_;
   }
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void OnThemeChanged() override;
 
   // AutofillPopupView:
   void Show() override;
@@ -133,11 +133,9 @@ class AutofillPopupViewNativeViews : public AutofillPopupBaseView,
 
   // Controller for this view.
   base::WeakPtr<AutofillPopupController> controller_ = nullptr;
-  std::vector<AutofillPopupRowView*> rows_;
-  raw_ptr<views::BoxLayout, DanglingUntriaged> layout_ = nullptr;
-  raw_ptr<views::ScrollView, DanglingUntriaged> scroll_view_ = nullptr;
-  raw_ptr<views::View, DanglingUntriaged> body_container_ = nullptr;
-  raw_ptr<views::View, DanglingUntriaged> footer_container_ = nullptr;
+  std::vector<raw_ptr<AutofillPopupRowView>> rows_;
+  raw_ptr<views::ScrollView> scroll_view_ = nullptr;
+  raw_ptr<views::BoxLayoutView> body_container_ = nullptr;
 };
 
 }  // namespace autofill

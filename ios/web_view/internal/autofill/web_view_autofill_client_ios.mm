@@ -118,9 +118,9 @@ WebViewAutofillClientIOS::GetAutocompleteHistoryManager() {
   return autocomplete_history_manager_;
 }
 
-CreditCardCVCAuthenticator* WebViewAutofillClientIOS::GetCVCAuthenticator() {
+CreditCardCvcAuthenticator* WebViewAutofillClientIOS::GetCvcAuthenticator() {
   if (!cvc_authenticator_) {
-    cvc_authenticator_ = std::make_unique<CreditCardCVCAuthenticator>(this);
+    cvc_authenticator_ = std::make_unique<CreditCardCvcAuthenticator>(this);
   }
   return cvc_authenticator_.get();
 }
@@ -271,9 +271,10 @@ bool WebViewAutofillClientIOS::IsFastCheckoutSupported() {
   return false;
 }
 
-bool WebViewAutofillClientIOS::TryToShowFastCheckout(const FormData& form,
-                                                     const FormFieldData& field,
-                                                     AutofillDriver* driver) {
+bool WebViewAutofillClientIOS::TryToShowFastCheckout(
+    const FormData& form,
+    const FormFieldData& field,
+    base::WeakPtr<AutofillManager> autofill_manager) {
   return false;
 }
 
@@ -361,10 +362,6 @@ void WebViewAutofillClientIOS::DidFillOrPreviewField(
 
 bool WebViewAutofillClientIOS::IsContextSecure() const {
   return IsContextSecureForWebState(web_state_);
-}
-
-bool WebViewAutofillClientIOS::ShouldShowSigninPromo() {
-  return false;
 }
 
 void WebViewAutofillClientIOS::ExecuteCommand(int id) {

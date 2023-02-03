@@ -189,7 +189,7 @@ void PasswordSyncTokenFetcher::OnAccessTokenFetchComplete(
 }
 
 void PasswordSyncTokenFetcher::FetchSyncToken(const std::string& access_token) {
-  base::Value request_data(base::Value::Type::DICTIONARY);
+  base::Value request_data(base::Value::Type::DICT);
   request_data.SetStringKey(kTokenTypeKey, kTokenTypeValue);
   std::string request_string;
   if (!base::JSONWriter::Write(request_data, &request_string)) {
@@ -214,8 +214,13 @@ void PasswordSyncTokenFetcher::FetchSyncToken(const std::string& access_token) {
       }
       policy {
         cookies_allowed: NO
-        policy_exception_justification:
-          "No policies implemented yet."
+        setting : "Only Admins can enable/disable this feature from the admin"
+                  "dashboard."
+        chrome_policy {
+          SamlInSessionPasswordChangeEnabled {
+            SamlInSessionPasswordChangeEnabled : false
+          }
+        }
       })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   switch (request_type_) {
@@ -288,10 +293,10 @@ void PasswordSyncTokenFetcher::OnSimpleLoaderComplete(
       deserializer.Deserialize(/*error_code=*/nullptr, &error_msg);
 
   if (!response_body || (response_code != net::HTTP_OK)) {
-    const auto* error_json = json_value && json_value->is_dict()
-                                 ? json_value->FindKeyOfType(
-                                       kErrorKey, base::Value::Type::DICTIONARY)
-                                 : nullptr;
+    const auto* error_json =
+        json_value && json_value->is_dict()
+            ? json_value->FindKeyOfType(kErrorKey, base::Value::Type::DICT)
+            : nullptr;
     const auto* error_value =
         error_json ? error_json->FindKeyOfType(kErrorDescription,
                                                base::Value::Type::STRING)

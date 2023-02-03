@@ -76,6 +76,7 @@ class AutofillProfile : public AutofillDataModel {
 
   // AutofillDataModel:
   AutofillMetadata GetMetadata() const override;
+  double GetRankingScore(base::Time current_time) const override;
   bool SetMetadata(const AutofillMetadata& metadata) override;
   // Returns whether the profile is deletable: if it is not verified and has not
   // been used for longer than |kDisusedAddressDeletionTimeDelta|.
@@ -283,6 +284,11 @@ class AutofillProfile : public AutofillDataModel {
   void set_last_modifier_id(int modifier_id) {
     last_modifier_id_ = modifier_id;
   }
+
+  // Converts a kLocalOrSyncable profile to a kAccount profile and returns it.
+  // The converted profile shares the same content, but with a different GUID
+  // and with `source_` kAccount. Additional kAccount-specific metadata is set.
+  AutofillProfile ConvertToAccountProfile() const;
 
   // Checks for non-empty setting-inaccessible fields and returns all that were
   // found.

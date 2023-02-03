@@ -28,13 +28,12 @@ class ASH_EXPORT KeyboardPrefHandlerImpl : public KeyboardPrefHandler {
 
  private:
   mojom::KeyboardSettingsPtr GetNewKeyboardSettings(
+      PrefService* prefs,
       const mojom::Keyboard& keyboard);
   mojom::KeyboardSettingsPtr RetreiveKeyboardSettings(
       PrefService* prefs,
       const mojom::Keyboard& keyboard,
       const base::Value::Dict& settings_dict);
-
-  bool IsValidModifier(int val);
 };
 
 }  // namespace ash

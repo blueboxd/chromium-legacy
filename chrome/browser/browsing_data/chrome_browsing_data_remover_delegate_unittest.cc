@@ -88,7 +88,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
-#include "components/autofill/core/browser/strike_database.h"
+#include "components/autofill/core/browser/strike_databases/strike_database.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -2157,8 +2157,6 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ZeroSuggestPrefsBasedCacheClear) {
 
 #if !BUILDFLAG(IS_ANDROID)
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, ZeroSuggestInMemoryCacheClear) {
-  using CacheEntry = ZeroSuggestCacheService::CacheEntry;
-
   // Enable in-memory ZPS caching.
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(omnibox::kZeroSuggestInMemoryCaching);
@@ -2168,10 +2166,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, ZeroSuggestInMemoryCacheClear) {
 
   ZeroSuggestCacheService* zero_suggest_cache_service =
       ZeroSuggestCacheServiceFactory::GetForProfile(GetProfile());
-  zero_suggest_cache_service->StoreZeroSuggestResponse(page_url,
-                                                       CacheEntry(response));
-  zero_suggest_cache_service->StoreZeroSuggestResponse("",
-                                                       CacheEntry(response));
+  zero_suggest_cache_service->StoreZeroSuggestResponse(page_url, response);
+  zero_suggest_cache_service->StoreZeroSuggestResponse("", response);
 
   // Verify that the cache is initially non-empty.
   EXPECT_FALSE(zero_suggest_cache_service->IsCacheEmpty());
@@ -2485,16 +2481,16 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
       HostContentSettingsMapFactory::GetForProfile(GetProfile());
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       kOrigin1, GURL(), ContentSettingsType::SITE_ENGAGEMENT,
-      base::Value(base::Value::Type::DICTIONARY));
+      base::Value(base::Value::Type::DICT));
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       kOrigin2, GURL(), ContentSettingsType::SITE_ENGAGEMENT,
-      base::Value(base::Value::Type::DICTIONARY));
+      base::Value(base::Value::Type::DICT));
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       kOrigin3, GURL(), ContentSettingsType::SITE_ENGAGEMENT,
-      base::Value(base::Value::Type::DICTIONARY));
+      base::Value(base::Value::Type::DICT));
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       kOrigin4, GURL(), ContentSettingsType::SITE_ENGAGEMENT,
-      base::Value(base::Value::Type::DICTIONARY));
+      base::Value(base::Value::Type::DICT));
 
   // Clear all except for origin1 and origin3.
   std::unique_ptr<BrowsingDataFilterBuilder> filter(
@@ -3806,7 +3802,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateOriginTrialsTest,
   std::vector<std::string> tokens{kPersistentOriginTrialToken};
   content::OriginTrialsControllerDelegate* delegate =
       profile->GetOriginTrialsControllerDelegate();
-  delegate->PersistTrialsFromTokens(origin, tokens,
+  delegate->PersistTrialsFromTokens(origin, /*partition_origin=*/origin, tokens,
                                     kPersistentOriginTrialValidTime);
 
   // Delete all data types that trigger website setting deletions.
@@ -3816,12 +3812,14 @@ TEST_F(ChromeBrowsingDataRemoverDelegateOriginTrialsTest,
 
   EXPECT_FALSE(
       delegate
-          ->GetPersistedTrialsForOrigin(origin, kPersistentOriginTrialValidTime)
+          ->GetPersistedTrialsForOrigin(origin, /*partition_origin=*/origin,
+                                        kPersistentOriginTrialValidTime)
           .empty());
 
   BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(), mask, false);
-  EXPECT_TRUE(
-      delegate
-          ->GetPersistedTrialsForOrigin(origin, kPersistentOriginTrialValidTime)
-          .empty());
+  EXPECT_TRUE(delegate
+                  ->GetPersistedTrialsForOrigin(origin,
+                                                /*partition_origin=*/origin,
+                                                kPersistentOriginTrialValidTime)
+                  .empty());
 }

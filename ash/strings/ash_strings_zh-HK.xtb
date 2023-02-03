@@ -162,10 +162,8 @@
 <translation id="1771761307086386028">向右捲動</translation>
 <translation id="1774796056689732716">日曆，<ph name="CURRENT_MONTH_YEAR" />，目前揀咗 <ph name="DATE" />。</translation>
 <translation id="1787955149152357925">關閉</translation>
-<translation id="1797271123677381264">忘記密碼</translation>
 <translation id="1807246157184219062">淺色</translation>
 <translation id="181103072419391116">訊號強度係 <ph name="SIGNAL_STRENGTH" />，由管理員管理</translation>
-<translation id="1812997170047690955">我嘅畫面上面有咩？</translation>
 <translation id="1816896987747843206">此操作會允許具備相機權限的所有應用程式和網站存取相機</translation>
 <translation id="1823280932251546115">狀態列，時間 <ph name="TIME" />，
         <ph name="BATTERY" />
@@ -291,6 +289,7 @@
 <translation id="2501920221385095727">相黏鍵</translation>
 <translation id="2509468283778169019">大寫鍵已啟用</translation>
 <translation id="2515586267016047495">Alt</translation>
+<translation id="2526581474998477112">解鎖視窗</translation>
 <translation id="2542089167727451762">輕按您的個人檔案圖片</translation>
 <translation id="255671100581129685">「Google 助理」不適用於公開工作階段。</translation>
 <translation id="256712445991462162">固定的放大鏡</translation>
@@ -320,6 +319,7 @@
 <translation id="2704781753052663061">加入其他 Wi-Fi 網絡</translation>
 <translation id="2705001408393684014">切換去咪高風。<ph name="STATE_TEXT" /></translation>
 <translation id="2706462751667573066">向上鍵</translation>
+<translation id="2710984741481549981">鎖定視窗</translation>
 <translation id="2718395828230677721">夜燈模式</translation>
 <translation id="2726420622004325180">您的手機必須具備流動數據，才能啟用熱點功能</translation>
 <translation id="2727175239389218057">回覆</translation>
@@ -420,9 +420,11 @@
 <translation id="3289674678944039601">正在透過電源適配器充電</translation>
 <translation id="3290356915286466215">不安全</translation>
 <translation id="3294437725009624529">訪客</translation>
+<translation id="3298690094479023523">系統仍然無法驗證您的 PIN 或密碼。請再試一次。</translation>
 <translation id="3307642347673023554">已切換至手提電腦模式</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> 稍後仍可登入。</translation>
 <translation id="3321628682574733415">家長存取碼錯誤</translation>
+<translation id="332827762492701193">已隱藏通知</translation>
 <translation id="3339826665088060472">螢幕截圖，用嚟擷取螢幕截圖同埋錄影螢幕嘅工具</translation>
 <translation id="3340978935015468852">設定</translation>
 <translation id="3341303451326249809">擷取咗螢幕畫面</translation>
@@ -559,6 +561,7 @@
 <translation id="4017989525502048489">雷射筆</translation>
 <translation id="401993194061514265">無法使用標記，請重新開啟螢幕錄影應用程式。</translation>
 <translation id="4021716437419160885">向下捲動</translation>
+<translation id="4024840464866786680">如果您忘記 PIN 和密碼，或最近曾變更 Google 帳戶密碼，請嘗試復原此使用者密碼。</translation>
 <translation id="4028481283645788203">為安全起見，請輸入密碼</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">您正在分享螢幕畫面</translation>
@@ -577,10 +580,12 @@
 <translation id="4130035430755296270">將滑鼠游標懸停在上方，即可查看更多版面配置選項</translation>
 <translation id="4136724716305260864">開啟，直到日出</translation>
 <translation id="4146833061457621061">播音樂</translation>
+<translation id="4150201353443180367">顯示屏</translation>
 <translation id="4165275524535002941">連接線可能不支援顯示屏</translation>
 <translation id="4177913004758410636">{0,plural, =1{請在 1 天內更新裝置}other{請在 # 天內更新裝置}}</translation>
 <translation id="4181841719683918333">語言</translation>
 <translation id="4192112279662688596">或</translation>
+<translation id="4193857202545160520">顯示點擊次數和鍵盤快速鍵</translation>
 <translation id="4195814663415092787">開啟上次瀏覽的內容</translation>
 <translation id="4195877955194704651">自動點擊嘅掣</translation>
 <translation id="4197790712631116042">已關閉</translation>
@@ -697,10 +702,12 @@
 <translation id="4735944890391795473">桌面 12</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4740516757091333363">要刪除已儲存的桌面嗎？</translation>
+<translation id="4747410141429390146">如要查看通知，請解鎖裝置</translation>
 <translation id="4752784485658729358">只允許儲存 6 個桌面。請移除一個桌面以儲存新桌面。</translation>
 <translation id="4759238208242260848">下載</translation>
 <translation id="4762573482154983647">隱藏應用程式</translation>
 <translation id="4774338217796918551">明天<ph name="COME_BACK_TIME" /> 後才可使用。</translation>
+<translation id="4776584068981882959">系統仍然無法驗證您的密碼。請再試一次。</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密碼</translation>
 <translation id="4777825441726637019">Play 商店</translation>
 <translation id="4778095205580009397">「Google 助理」不適用於示範工作階段。</translation>
@@ -730,6 +737,8 @@
 <translation id="4919841137949306064">「<ph name="APP_NAME" />」目前正在使用您的相機</translation>
 <translation id="492453977506755176">擷取模式鍵</translation>
 <translation id="4925542575807923399">這個帳戶的管理員要求這個帳戶必須是多重登入工作階段中第一個登入的帳戶。</translation>
+<translation id="4929163402621253029">您正在說話嗎？您的麥克風未開啟。瞭解詳情</translation>
+<translation id="4936329710968938986">所有人，已關閉</translation>
 <translation id="4938176435186993759">隱藏所有建議</translation>
 <translation id="4945196315133970626">關閉通知</translation>
 <translation id="4946376291507881335">擷取</translation>
@@ -762,6 +771,7 @@
 <translation id="5107522548814527560">網絡</translation>
 <translation id="5111318697104479778"><ph name="DESC" />，<ph name="STRENGTH" /></translation>
 <translation id="5117590920725113268">顯示下個月</translation>
+<translation id="5127986747308934633">管理員正在控制您的裝置</translation>
 <translation id="5136175204352732067">已連接不同的鍵盤</translation>
 <translation id="5147567197700016471">已解鎖</translation>
 <translation id="5150070631291639005">私隱設定</translation>
@@ -836,6 +846,7 @@
 <translation id="5536723544185013515">最近用嘅應用程式，用向左或者向右箭咀導覽就可以存取所有最近用嘅應用程式</translation>
 <translation id="553675580533261935">正在結束工作階段</translation>
 <translation id="5537725057119320332">投放</translation>
+<translation id="5546397813406633847">復原使用者密碼</translation>
 <translation id="554893713779400387">切換語音輸入</translation>
 <translation id="5558091555391176027">將「咫尺共享」功能切換為向附近的所有裝置顯示</translation>
 <translation id="5560420195677022218">在 <ph name="DEVICE_TYPE" /> 上查看手機的應用程式</translation>
@@ -852,6 +863,7 @@
 <translation id="5618148318840095371">我們已將您的連線切換至更優質的網絡</translation>
 <translation id="5619862035903135339">管理員政策停用擷取螢幕截圖功能</translation>
 <translation id="5625955975703555628">LTE+</translation>
+<translation id="5627392655516693966">無法驗證您的密碼。請再試一次。</translation>
 <translation id="5648021990716966815">麥克風插孔</translation>
 <translation id="5652575806481723716">「<ph name="FOCUSED_APP_NAME" />」有新嘅要求需要你處理。</translation>
 <translation id="5662075790140998213">桌面 10</translation>
@@ -870,7 +882,9 @@
 <translation id="5707775774148071965">您的裝置支援比連接線更高的資料傳輸速率。裝置效能可能受到限制。</translation>
 <translation id="5710450975648804523">「請勿騷擾」模式已開啟</translation>
 <translation id="571295407079589142">流動數據已關閉</translation>
+<translation id="5727460725221669831">如果您忘記密碼，或最近曾變更 Google 帳戶密碼，請嘗試復原此使用者密碼。</translation>
 <translation id="573413375004481890">此裝置無法支援所有顯示屏，因此已取消連接其中一個</translation>
+<translation id="5740328398383587084">咫尺共享</translation>
 <translation id="574392208103952083">中</translation>
 <translation id="5744083938413354016">按住拖曳</translation>
 <translation id="5745612484876805746">「夜燈模式」會在日落時自動開啟</translation>
@@ -990,6 +1004,7 @@
 <translation id="639644700271529076">大寫鍵已關閉</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6417265370957905582">Google 助理</translation>
+<translation id="641867537956679916">管理員已登入並調查問題。待管理員交還控制權後，您便可繼續使用裝置。</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />，訊號強度係 <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">清除所有通知</translation>
 <translation id="643147933154517414">沒有通知</translation>
@@ -1277,6 +1292,7 @@
 <translation id="79341161159229895">帳戶由 <ph name="FIRST_PARENT_EMAIL" /> 和 <ph name="SECOND_PARENT_EMAIL" /> 管理</translation>
 <translation id="793716872548410480">按下<ph name="SHORTCUT_KEY_NAME" /> + V 鍵即可查看剪貼簿。您最後複製的 5 個項目會儲存至剪貼簿。</translation>
 <translation id="7942349550061667556">紅色</translation>
+<translation id="7944023924886109030">睇今日嘅所有活動</translation>
 <translation id="7963992254934562106">來自 <ph name="PHONE_NAME" /></translation>
 <translation id="7968693143708939792">選取資料夾…</translation>
 <translation id="7977927628060636163">正在搜尋流動網絡…</translation>
@@ -1378,6 +1394,7 @@
 <translation id="8477270416194247200">按下 Alt + 搜尋鍵或 Shift 鍵即可取消。</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> 不支援 <ph name="SPECIFIED_RESOLUTION" />，解像度已變更為 <ph name="FALLBACK_RESOLUTION" />。請按一下 [確認] 以保留變更。系統會在 <ph name="TIMEOUT_SECONDS" />後還原先前的設定。</translation>
 <translation id="8496402167048257517">顯示「咫尺共享」設定</translation>
+<translation id="8507563469658346379">所有人，<ph name="REMAINING_TIME" /></translation>
 <translation id="85123341071060231">Chromebook 的藍牙已關閉。如要解鎖 Chromebook，請輸入密碼。</translation>
 <translation id="8513108775083588393">自動旋轉</translation>
 <translation id="851458219935658693">顯示目前桌面嘅視窗，揀咗圓形按鈕</translation>

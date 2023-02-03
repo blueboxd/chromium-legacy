@@ -15,6 +15,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/types/optional_util.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_util.h"
 #include "media/base/simple_sync_token_client.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
@@ -176,8 +177,8 @@ void MojoVideoDecoderService::Construct(
 
   client_.Bind(std::move(client));
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      base::SingleThreadTaskRunner::GetCurrentDefault();
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      base::SequencedTaskRunner::GetCurrentDefault();
 
   media_log_ =
       std::make_unique<MojoMediaLog>(std::move(media_log), task_runner);
@@ -282,7 +283,7 @@ void MojoVideoDecoderService::Decode(mojom::DecoderBufferPtr buffer,
   DCHECK(callback);
 
   std::unique_ptr<ScopedDecodeTrace> trace_event;
-  if (ScopedDecodeTrace::IsEnabled()) {
+  if (MediaTraceIsEnabled()) {
     // Because multiple Decode() calls may be in flight, each call needs a
     // unique trace event class to identify it. This scoped event is bound
     // into the OnDecodeDone callback to ensure the trace is always closed.

@@ -23,7 +23,14 @@ NSString* EncodeNSTextCheckingResultData(NSTextCheckingResult* match);
 // `NSTextCheckingResult` (without range).
 NSTextCheckingResult* DecodeNSTextCheckingResultData(NSString* base64_data);
 
-// Encapsulates data into a `base::Value::Type::DICTIONARY` that can be
+// Checks if the detected entity is an URL and more specifically an email.
+bool IsNSTextCheckingResultEmail(NSTextCheckingResult* result);
+
+// Returns a NSTextCheckingTypeLink result from an email string.
+NSTextCheckingResult* MakeNSTextCheckingResultEmail(NSString* email,
+                                                    NSRange range);
+
+// Encapsulates data into a `base::Value::Type::DICT` that can be
 // passed to JS. `data` must come from `EncodeNSTextCheckingResultData`.
 base::Value::Dict ConvertMatchToAnnotation(NSString* source,
                                            NSRange range,

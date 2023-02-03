@@ -12,10 +12,12 @@
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
@@ -180,6 +182,8 @@ Site InstallableSiteToSite(InstallableSite site) {
       return Site::kStandalone;
     case InstallableSite::kMinimalUi:
       return Site::kMinimalUi;
+    case InstallableSite::kTabbed:
+      return Site::kTabbed;
     case InstallableSite::kStandaloneNestedA:
       return Site::kStandaloneNestedA;
     case InstallableSite::kStandaloneNestedB:
@@ -256,6 +260,12 @@ base::flat_map<Site, SiteConfig> g_site_configs = {
       .app_name = "Site B",
       .wco_not_enabled_title = u"Site B",
       .icon_color = SK_ColorBLACK}},
+    {Site::kTabbed,
+     {.relative_url = "/webapps_integration/tabbed/basic.html",
+      .relative_manifest_id = "webapps_integration/tabbed/basic.html",
+      .app_name = "Tabbed",
+      .wco_not_enabled_title = u"Tabbed",
+      .icon_color = SK_ColorRED}},
     {Site::kNotPromotable,
      {.relative_url = "/webapps_integration/not_promotable/basic.html",
       .relative_manifest_id = "webapps_integration/not_promotable/basic.html",
@@ -346,6 +356,8 @@ base::flat_map<Display, DisplayConfig> g_display_configs = {
      {.manifest_url_param = "?manifest=manifest_browser.json"}},
     {Display::kMinimalUi,
      {.manifest_url_param = "?manifest=manifest_minimal_ui.json"}},
+    {Display::kTabbed,
+     {.manifest_url_param = "?manifest=manifest_tabbed.json"}},
     {Display::kStandalone, {.manifest_url_param = "?manifest=basic.json"}},
     {Display::kWco,
      {.manifest_url_param =
@@ -421,7 +433,9 @@ class BrowserAddedWaiter final : public BrowserListObserver {
   BrowserAddedWaiter() { BrowserList::AddObserver(this); }
   ~BrowserAddedWaiter() override { BrowserList::RemoveObserver(this); }
 
-  void Wait() { run_loop_.Run(); }
+  void Wait(const base::Location& location = base::Location::Current()) {
+    run_loop_.Run(location);
+  }
 
   // BrowserListObserver
   void OnBrowserAdded(Browser* browser) override {
@@ -948,10 +962,17 @@ void WebAppIntegrationTestDriver::AwaitManifestUpdate(Site site) {
   if (!previous_manifest_updates_.contains(app_id)) {
     waiting_for_update_id_ = app_id;
     waiting_for_update_run_loop_ = std::make_unique<base::RunLoop>();
-    Browser* browser = GetBrowserForAppId(profile(), app_id);
-    while (browser != nullptr) {
-      delegate_->CloseBrowserSynchronously(browser);
-      browser = GetBrowserForAppId(profile(), app_id);
+    // Only close windows if immediate updating is not enabled.
+    if (!base::FeatureList::IsEnabled(
+            features::kWebAppManifestImmediateUpdating)) {
+      Browser* browser = GetBrowserForAppId(profile(), app_id);
+      while (browser != nullptr) {
+        if (browser == app_browser_) {
+          app_browser_ = nullptr;
+        }
+        delegate_->CloseBrowserSynchronously(browser);
+        browser = GetBrowserForAppId(profile(), app_id);
+      }
     }
     waiting_for_update_run_loop_->Run();
     waiting_for_update_run_loop_.reset();
@@ -984,11 +1005,28 @@ void WebAppIntegrationTestDriver::CloseCustomToolbar() {
 }
 
 void WebAppIntegrationTestDriver::ClosePwa() {
-  if (!BeforeStateChangeAction(__FUNCTION__))
+  if (!BeforeStateChangeAction(__FUNCTION__)) {
     return;
+  }
   ASSERT_TRUE(app_browser()) << "No current app browser";
+
+  ui_test_utils::BrowserChangeObserver close_observer(
+      app_browser(),
+      ui_test_utils::BrowserChangeObserver::ChangeType::kRemoved);
   app_browser()->window()->Close();
-  ui_test_utils::WaitForBrowserToClose(app_browser());
+  close_observer.Wait();
+  app_browser_ = nullptr;
+
+  AfterStateChangeAction();
+}
+
+void WebAppIntegrationTestDriver::MaybeClosePwa() {
+  if (!BeforeStateChangeAction(__FUNCTION__)) {
+    return;
+  }
+  if (app_browser()) {
+    ClosePwa();
+  }
   AfterStateChangeAction();
 }
 

@@ -24,6 +24,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/extension_options/extension_options_constants.h"
 #include "extensions/browser/guest_view/extension_options/extension_options_guest_delegate.h"
+#include "extensions/browser/guest_view/guest_view_feature_util.h"
 #include "extensions/common/api/extension_options_internal.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -106,6 +107,14 @@ void ExtensionOptionsGuest::DidInitialize(
   ExtensionsAPIClient::Get()->AttachWebContentsHelpers(web_contents());
   GetController().LoadURL(options_page_, content::Referrer(),
                           ui::PAGE_TRANSITION_LINK, std::string());
+}
+
+void ExtensionOptionsGuest::MaybeRecreateGuestContents(
+    content::WebContents* embedder_web_contents) {
+  if (AreWebviewMPArchBehaviorsEnabled(browser_context())) {
+    // This situation is not possible for ExtensionOptions.
+    NOTREACHED();
+  }
 }
 
 void ExtensionOptionsGuest::GuestViewDidStopLoading() {

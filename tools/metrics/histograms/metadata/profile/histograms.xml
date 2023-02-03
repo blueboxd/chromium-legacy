@@ -122,7 +122,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.DeleteProfileAction" enum="ProfileDeleteAction"
-    expires_after="2023-03-05">
+    expires_after="never">
+<!-- expires-never: Used to log the profile deletions actions and their source.
+     Profile deletion removes the entire local profile, which means that it
+     deletes user data and this operation cannot be undone. Therefore it is
+     important to not see unexplainable spikes in the profile deletion
+     operations. -->
+
   <owner>msarda@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <owner>anthonyvd@chromium.org</owner>
@@ -770,6 +776,33 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="ProfilePicker.FirstRun.OrganizationAvailableTiming" units="ms"
+    expires_after="2023-07-25">
+  <owner>dgn@chromium.org</owner>
+  <owner>jyammine@google.com</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Records the time between the first run of Chrome on Desktop is loaded and
+    the organization name is available to be shown in the enterprise disclaimer.
+    This is only logged if the device is managed and the policy store is loaded
+    in the specified time delay.
+  </summary>
+</histogram>
+
+<histogram name="ProfilePicker.FirstRun.PolicyStoreState"
+    enum="FirstRunCloudPolicyStoreState" expires_after="2023-07-25">
+  <owner>dgn@chromium.org</owner>
+  <owner>jyammine@google.com</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Records the loading state of the clould policy store when it is loaded or
+    after a specified time delay. This is recorded for the first run experience
+    on desktop for managed devices. This is needed to track if the managed
+    organization name has been properly displayed in the first run experience
+    managed disclaimer.
+  </summary>
+</histogram>
+
 <histogram name="ProfilePicker.NewProfileCreateShortcut" enum="BooleanCreated"
     expires_after="M90">
   <owner>msalama@chromium.org</owner>
@@ -802,7 +835,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ProfilePicker.StartupTime.BeforeCreation" units="ms"
-    expires_after="2023-05-27">
+    expires_after="2023-07-30">
   <owner>alexilin@chromium.org</owner>
   <owner>dgn@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -825,7 +858,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ProfilePicker.StartupTime.FirstPaint.FromApplicationStart"
-    units="ms" expires_after="2023-05-27">
+    units="ms" expires_after="2023-07-30">
   <owner>alexilin@chromium.org</owner>
   <owner>dgn@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -851,7 +884,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ProfilePicker.StartupTime.WebViewCreated" units="ms"
-    expires_after="2023-04-23">
+    expires_after="2023-07-30">
   <owner>alexilin@chromium.org</owner>
   <owner>dgn@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>

@@ -329,7 +329,7 @@ void AutofillManager::OnFormsSeen(
     for (const FormData& form : updated_forms) {
       const auto parse_form_start_time = AutofillTickClock::NowTicks();
       FormStructure* cached_form_structure =
-          FindCachedFormByRendererId(form.global_id());
+          FindCachedFormById(form.global_id());
 
       // Not updating signatures of credit card forms is legacy behaviour. We
       // believe that the signatures are kept stable for voting purposes.
@@ -378,8 +378,7 @@ void AutofillManager::OnFormsParsed(const std::vector<FormData>& forms) {
   std::vector<FormStructure*> queryable_forms;
   DenseSet<FormType> form_types;
   for (const FormData& form : forms) {
-    FormStructure* form_structure =
-        FindCachedFormByRendererId(form.global_id());
+    FormStructure* form_structure = FindCachedFormById(form.global_id());
     if (!form_structure) {
       NOTREACHED();
       continue;
@@ -419,8 +418,11 @@ void AutofillManager::OnFormsParsed(const std::vector<FormData>& forms) {
 
   // Query the server if at least one of the forms was parsed.
   if (!queryable_forms.empty() && download_manager()) {
-    download_manager()->StartQueryRequest(
-        queryable_forms, driver()->IsolationInfo(), GetWeakPtr());
+    NotifyObservers(&Observer::OnBeforeLoadedServerPredictions);
+    if (!download_manager()->StartQueryRequest(
+            queryable_forms, driver()->IsolationInfo(), GetWeakPtr())) {
+      NotifyObservers(&Observer::OnAfterLoadedServerPredictions);
+    }
   }
 }
 
@@ -577,7 +579,7 @@ bool AutofillManager::GetCachedFormAndField(const FormData& form,
                                             FormStructure** form_structure,
                                             AutofillField** autofill_field) {
   // Maybe find an existing FormStructure that corresponds to |form|.
-  FormStructure* cached_form = FindCachedFormByRendererId(form.global_id());
+  FormStructure* cached_form = FindCachedFormById(form.global_id());
   if (cached_form) {
     if (base::FeatureList::IsEnabled(features::kAutofillParseAsync) ||
         !CachedFormNeedsUpdate(form, *cached_form)) {
@@ -639,10 +641,21 @@ size_t AutofillManager::FindCachedFormsBySignature(
   return hits_num;
 }
 
-FormStructure* AutofillManager::FindCachedFormByRendererId(
-    FormGlobalId form_id) const {
+FormStructure* AutofillManager::FindCachedFormById(FormGlobalId form_id) const {
   auto it = form_structures_.find(form_id);
   return it != form_structures_.end() ? it->second.get() : nullptr;
+}
+
+void AutofillManager::SetShouldSuppressKeyboard(bool suppress) {
+  driver_->SetShouldSuppressKeyboard(suppress);
+}
+
+bool AutofillManager::CanShowAutofillUi() const {
+  return driver_->CanShowAutofillUi();
+}
+
+void AutofillManager::TriggerReparseInAllFrames() {
+  driver_->TriggerReparseInAllFrames();
 }
 
 void AutofillManager::ParseFormsAsync(
@@ -677,7 +690,7 @@ void AutofillManager::ParseFormsAsync(
     DCHECK_LE(num_managed_forms, kAutofillManagerMaxFormCacheSize);
 
     if (FormStructure* cached_form_structure =
-            FindCachedFormByRendererId(form_data.global_id())) {
+            FindCachedFormById(form_data.global_id())) {
       // We need to keep the server data if available. We need to use them while
       // determining the heuristics.
       form_structure->RetrieveFromCache(
@@ -781,7 +794,7 @@ void AutofillManager::ParseFormAsync(
   }
 
   if (FormStructure* cached_form_structure =
-          FindCachedFormByRendererId(form_data.global_id())) {
+          FindCachedFormById(form_data.global_id())) {
     if (!CachedFormNeedsUpdate(form_data, *cached_form_structure)) {
       std::move(callback).Run(*this, form_data);
       return;
@@ -925,8 +938,10 @@ void AutofillManager::OnLoadedServerPredictions(
 
   // If there are no current forms corresponding to the queried signatures, drop
   // the query response.
-  if (queried_forms.empty())
+  if (queried_forms.empty()) {
+    NotifyObservers(&Observer::OnAfterLoadedServerPredictions);
     return;
+  }
 
   // Parse and store the server predictions.
   FormStructure::ParseApiQueryResponse(
@@ -953,6 +968,7 @@ void AutofillManager::OnLoadedServerPredictions(
   // Forward form structures to the password generation manager to detect
   // account creation forms.
   PropagateAutofillPredictions(queried_forms);
+  NotifyObservers(&Observer::OnAfterLoadedServerPredictions);
 }
 
 void AutofillManager::OnServerRequestError(

@@ -4,6 +4,7 @@
 
 import("///build/config/ozone.gni")
 import("//build/config/chromeos/ui_mode.gni")
+import("//build/config/features.gni")
 import("//build/config/ui.gni")
 
 component("clipboard_types") {
@@ -14,8 +15,12 @@ component("clipboard_types") {
     "clipboard_constants.h",
   ]
 
-  if (!is_ios) {
+  if (use_blink) {
     sources += [ "clipboard_format_type.h" ]
+
+    if (is_ios) {
+      sources += [ "clipboard_format_type_ios.mm" ]
+    }
   }
 
   if (is_android) {
@@ -70,6 +75,7 @@ component("clipboard") {
   sources = [
     "clipboard.cc",
     "clipboard.h",
+    "clipboard_content_type.h",
     "clipboard_metrics.cc",
     "clipboard_metrics.h",
     "clipboard_monitor.cc",
@@ -99,6 +105,15 @@ component("clipboard") {
     ]
   }
 
+  if (is_ios) {
+    sources += [
+      "clipboard_data.cc",
+      "clipboard_data.h",
+      "clipboard_ios.mm",
+      "clipboard_non_backed.cc",
+      "clipboard_non_backed.h",
+    ]
+  }
   if (is_win) {
     sources += [
       "clipboard_util_win.cc",

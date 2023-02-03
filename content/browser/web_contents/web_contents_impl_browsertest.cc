@@ -114,9 +114,7 @@
 #include "ui/display/screen.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-#include "base/allocator/partition_alloc_features.h"
-#include "base/allocator/partition_allocator/partition_alloc_config.h"
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)
 #include "base/allocator/partition_allocator/starscan/pcscan.h"
 #endif
 
@@ -2546,94 +2544,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UserAgentOverride) {
   tab_observer.Wait();
   EXPECT_EQ(kUserAgentOverride,
             EvalJs(shell()->web_contents(), "document.body.textContent;"));
-}
-
-class WebContentsImplBrowserTestUserAgentOverrideSubstring
-    : public WebContentsImplBrowserTest {
- public:
-  void SetUp() override {
-    scoped_feature_list_.Reset();
-    scoped_feature_list_.InitAndEnableFeature(
-        blink::features::kUserAgentOverrideExperiment);
-    WebContentsImplBrowserTest::SetUp();
-  }
-};
-
-// Verify UserAgentOverride histograms
-IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTestUserAgentOverrideSubstring,
-                       UserAgentOverrideHistogram) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  const std::string kHeaderPath =
-      std::string("/echoheader?") + net::HttpRequestHeaders::kUserAgent;
-  const GURL kUrl(embedded_test_server()->GetURL(kHeaderPath));
-  EXPECT_TRUE(NavigateToURL(shell(), kUrl));
-
-  std::string original_ua = ShellContentBrowserClient::Get()->GetUserAgent();
-  std::string ua_no_substring = "foo";
-  std::string ua_prefix = "foo" + original_ua;
-  std::string ua_suffix = original_ua + "foo";
-  {
-    base::HistogramTester histogram;
-    shell()->web_contents()->SetUserAgentOverride(
-        blink::UserAgentOverride::UserAgentOnly(ua_no_substring), false);
-    shell()
-        ->web_contents()
-        ->GetController()
-        .GetLastCommittedEntry()
-        ->SetIsOverridingUserAgent(true);
-    EXPECT_TRUE(NavigateToURL(shell(), kUrl));
-    histogram.ExpectBucketCount(
-        blink::UserAgentOverride::kUserAgentOverrideHistogram,
-        blink::UserAgentOverride::UserAgentOverriden, 1);
-    histogram.ExpectBucketCount(
-        blink::UserAgentOverride::kUserAgentOverrideHistogram,
-        blink::UserAgentOverride::UserAgentOverrideSubstring, 0);
-    histogram.ExpectBucketCount(
-        blink::UserAgentOverride::kUserAgentOverrideHistogram,
-        blink::UserAgentOverride::UserAgentOverrideSuffix, 0);
-  }
-
-  {
-    base::HistogramTester histogram;
-    shell()->web_contents()->SetUserAgentOverride(
-        blink::UserAgentOverride::UserAgentOnly(ua_prefix), false);
-    shell()
-        ->web_contents()
-        ->GetController()
-        .GetLastCommittedEntry()
-        ->SetIsOverridingUserAgent(true);
-    EXPECT_TRUE(NavigateToURL(shell(), kUrl));
-    histogram.ExpectBucketCount(
-        blink::UserAgentOverride::kUserAgentOverrideHistogram,
-        blink::UserAgentOverride::UserAgentOverriden, 0);
-    histogram.ExpectBucketCount(
-        blink::UserAgentOverride::kUserAgentOverrideHistogram,
-        blink::UserAgentOverride::UserAgentOverrideSubstring, 1);
-    histogram.ExpectBucketCount(
-        blink::UserAgentOverride::kUserAgentOverrideHistogram,
-        blink::UserAgentOverride::UserAgentOverrideSuffix, 0);
-  }
-
-  {
-    base::HistogramTester histogram;
-    shell()->web_contents()->SetUserAgentOverride(
-        blink::UserAgentOverride::UserAgentOnly(ua_suffix), false);
-    shell()
-        ->web_contents()
-        ->GetController()
-        .GetLastCommittedEntry()
-        ->SetIsOverridingUserAgent(true);
-    EXPECT_TRUE(NavigateToURL(shell(), kUrl));
-    histogram.ExpectBucketCount(
-        blink::UserAgentOverride::kUserAgentOverrideHistogram,
-        blink::UserAgentOverride::UserAgentOverriden, 0);
-    histogram.ExpectBucketCount(
-        blink::UserAgentOverride::kUserAgentOverrideHistogram,
-        blink::UserAgentOverride::UserAgentOverrideSubstring, 0);
-    histogram.ExpectBucketCount(
-        blink::UserAgentOverride::kUserAgentOverrideHistogram,
-        blink::UserAgentOverride::UserAgentOverrideSuffix, 1);
-  }
 }
 
 // Verifies the user-agent string may be changed in DidStartNavigation().
@@ -5830,7 +5740,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsFencedFrameBrowserTest,
     test_recorder_.ExpectEntryMetric(entry, UkmEntry::kIsTopFrameName, false);
 }
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && PA_CONFIG(ALLOW_PCSCAN)
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)
 
 namespace {
 
@@ -5955,6 +5865,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplStarScanPrerenderBrowserTest,
   EXPECT_TRUE(partition_alloc::internal::PCScan::IsEnabled());
 }
 
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && PA_CONFIG(ALLOW_PCSCAN)
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)
 
 }  // namespace content

@@ -243,6 +243,29 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Sync.ClearMetadataWhileStopped.DelayedClear"
+    enum="SyncModelTypes" expires_after="2023-11-30">
+  <owner>ankushkush@google.com</owner>
+  <owner>treib@chromium.org</owner>
+  <component>Services&gt;Sync</component>
+  <summary>
+    Recorded when metadata is cleared upon ModelReadyToSync() in the case where
+    clearing of metadata was requested before ModelReadyToSync() while the data
+    type was not running.
+  </summary>
+</histogram>
+
+<histogram name="Sync.ClearMetadataWhileStopped.ImmediateClear"
+    enum="SyncModelTypes" expires_after="2023-11-30">
+  <owner>ankushkush@google.com</owner>
+  <owner>treib@chromium.org</owner>
+  <component>Services&gt;Sync</component>
+  <summary>
+    Recorded whenever clearing of metadata is requested while the data type is
+    not running and the metadata is cleared immediately.
+  </summary>
+</histogram>
+
 <histogram name="Sync.CommitResponseForUnknownEntity" enum="SyncModelTypes"
     expires_after="2023-06-30">
   <owner>treib@chromium.org</owner>
@@ -395,7 +418,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.CustomOSSync" enum="SyncModelTypes"
-    expires_after="2023-05-14">
+    expires_after="2023-07-30">
   <owner>mmoskvitin@google.com</owner>
   <owner>treib@chromium.org</owner>
   <component>Services&gt;Sync</component>
@@ -542,7 +565,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.IncomingInvalidationStatus"
-    enum="SyncIncomingInvalidationStatus" expires_after="2023-05-27">
+    enum="SyncIncomingInvalidationStatus" expires_after="2023-07-30">
   <owner>rushans@google.com</owner>
   <owner>treib@chromium.org</owner>
   <component>Services&gt;Sync</component>
@@ -650,7 +673,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Sync.Local.FileSizeKB" units="KB" expires_after="2023-05-27">
+<histogram name="Sync.Local.FileSizeKB" units="KB" expires_after="2023-07-30">
   <owner>igorruvinov@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <component>Services&gt;Sync</component>
@@ -710,6 +733,30 @@ chromium-metrics-reviews@google.com.
     Recorded after receiving an incoming deletion of local DeviceInfo during
     incremental update. Counts whether the local DeviceInfo is marked to be
     reuploaded.
+  </summary>
+</histogram>
+
+<histogram name="Sync.ModelLoadManager.LoadModelsElapsedTime" units="ms"
+    expires_after="2023-11-30">
+  <owner>ankushkush@google.com</owner>
+  <owner>treib@chromium.org</owner>
+  <component>Services&gt;Sync</component>
+  <summary>
+    Records the time taken for all data types to finish loading, initiated from
+    ModelLoadManager::LoadModels().
+  </summary>
+</histogram>
+
+<histogram name="Sync.ModelLoadManager.LoadModelsTimeout" enum="SyncModelTypes"
+    expires_after="2023-11-30">
+  <owner>ankushkush@google.com</owner>
+  <owner>treib@chromium.org</owner>
+  <component>Services&gt;Sync</component>
+  <summary>
+    Recorded whenever a data type fails to complete loading, called from
+    ModelLoadManager::LoadModels(), before the timeout. This type is ignored and
+    the rest of types which have loaded are marked ready for configuration. This
+    type would ultimately be stopped once gets out of MODEL_STARTING state.
   </summary>
 </histogram>
 
@@ -1078,7 +1125,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.PostedClientToServerMessageLatency" units="ms"
-    expires_after="2023-05-27">
+    expires_after="2023-07-30">
   <owner>mastiz@chromium.org</owner>
   <component>Services&gt;Sync</component>
   <summary>
@@ -1116,7 +1163,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.PostedGetUpdatesOrigin" enum="SyncGetUpdatesOrigin"
-    expires_after="2023-05-27">
+    expires_after="2023-07-30">
   <owner>mastiz@chromium.org</owner>
   <owner>rushans@google.com</owner>
   <component>Services&gt;Sync</component>
@@ -1384,7 +1431,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sync.TrustedVaultAccessTokenFetchSuccess" enum="Boolean"
-    expires_after="2023-05-27">
+    expires_after="2023-07-30">
   <owner>mmoskvitin@google.com</owner>
   <owner>mastiz@chromium.org</owner>
   <component>Services&gt;Sync</component>

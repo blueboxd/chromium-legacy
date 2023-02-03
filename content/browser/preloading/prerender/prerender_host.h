@@ -103,8 +103,8 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
   };
 
   // Returns the PrerenderHost that the given `frame_tree_node` is in, if it is
-  // being prerendered. Note that this function returns false if the prerender
-  // has been canceled.
+  // being prerendered. Note that this function returns a nullptr if the
+  // prerender has been canceled.
   // TODO(https://crbug.com/1355279): Always return a non-null ptr if the
   // frame_tree_node is in a prerendering tree.
   static PrerenderHost* GetPrerenderHostFromFrameTreeNode(
@@ -157,6 +157,11 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
 
   // Returns false if prerendering hasn't been started.
   bool StartPrerendering();
+
+  // Called from PrerenderHostRegistry::DidStartNavigation(). It may reset
+  // `is_ready_for_activation_` flag when the main frame navigation happens in
+  // a prerendered page.
+  void DidStartNavigation(NavigationHandle* navigation_handle);
 
   // Called from PrerenderHostRegistry::DidFinishNavigation(). If the navigation
   // request is for the main frame and doesn't have an error, then the host will

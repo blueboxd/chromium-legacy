@@ -5,10 +5,12 @@
 package org.chromium.chrome.browser.app.feed;
 
 import android.content.Context;
+import android.content.Intent;
 
 import org.chromium.base.Callback;
 import org.chromium.base.FeatureList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.app.creator.CreatorActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.feed.FeedActionDelegate;
@@ -25,6 +27,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.util.BrowserUiUtils;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
@@ -41,14 +44,18 @@ public class FeedActionDelegateImpl implements FeedActionDelegate {
     private final SnackbarManager mSnackbarManager;
     private final CrowButtonDelegate mCrowButtonDelegate;
 
+    @BrowserUiUtils.HostSurface
+    private int mHostSurface;
+
     public FeedActionDelegateImpl(Context activityContext, SnackbarManager snackbarManager,
             NativePageNavigationDelegate navigationDelegate, BookmarkModel bookmarkModel,
-            CrowButtonDelegate crowButtonDelegate) {
+            CrowButtonDelegate crowButtonDelegate, @BrowserUiUtils.HostSurface int hostSurface) {
         mActivityContext = activityContext;
         mNavigationDelegate = navigationDelegate;
         mBookmarkModel = bookmarkModel;
         mSnackbarManager = snackbarManager;
         mCrowButtonDelegate = crowButtonDelegate;
+        mHostSurface = hostSurface;
     }
     @Override
     public void downloadPage(String url) {
@@ -83,6 +90,9 @@ public class FeedActionDelegateImpl implements FeedActionDelegate {
             });
         }
         ReturnToChromeUtil.onFeedCardOpened();
+
+        BrowserUiUtils.recordModuleClickHistogram(
+                mHostSurface, BrowserUiUtils.ModuleTypeOnStartAndNTP.FEED);
     }
 
     @Override
@@ -94,6 +104,9 @@ public class FeedActionDelegateImpl implements FeedActionDelegate {
     public void openHelpPage() {
         mNavigationDelegate.openUrl(WindowOpenDisposition.CURRENT_TAB,
                 new LoadUrlParams(NEW_TAB_URL_HELP, PageTransition.AUTO_BOOKMARK));
+
+        BrowserUiUtils.recordModuleClickHistogram(
+                mHostSurface, BrowserUiUtils.ModuleTypeOnStartAndNTP.FEED);
     }
 
     @Override
@@ -118,6 +131,20 @@ public class FeedActionDelegateImpl implements FeedActionDelegate {
                     /*tab=*/null, mActivityContext, new GURL(url), GURL.emptyGURL(),
                     /*isFollowing=*/true);
         }
+    }
+
+    @Override
+    public void openWebFeed(String webFeedName) {
+        if (!FeatureList.isInitialized()
+                || !ChromeFeatureList.isEnabled(ChromeFeatureList.CORMORANT)) {
+            return;
+        }
+
+        assert ThreadUtils.runningOnUiThread();
+        Class<?> creatorActivityClass = CreatorActivity.class;
+        Intent intent = new Intent(mActivityContext, creatorActivityClass);
+        intent.putExtra("CREATOR_WEB_FEED_ID", webFeedName);
+        mActivityContext.startActivity(intent);
     }
 
     @Override

@@ -473,26 +473,25 @@ filelist.renderFileNameLabel = (doc, entry, locationInfo) => {
 };
 
 /**
- * Renders the inline status in the detail table.
+ * Renders the drive inline status in the detail table.
  * @return {!HTMLDivElement} Created element.
  */
 filelist.renderInlineStatus = (doc) => {
-  const icon = /** @type {!HTMLDivElement} */ (doc.createElement('div'));
-  icon.className = 'inline-status';
-  icon.setAttribute('aria-label', str('OFFLINE_COLUMN_LABEL'));
+  const iconDiv = /** @type {!HTMLDivElement} */ (doc.createElement('div'));
+  iconDiv.className = 'inline-status';
 
   const inlineStatusIcon = doc.createElement('xf-icon');
   inlineStatusIcon.size = 'extra_small';
-  inlineStatusIcon.type = '';
-  icon.appendChild(inlineStatusIcon);
+  inlineStatusIcon.type = 'offline';
+  iconDiv.appendChild(inlineStatusIcon);
 
   if (util.isInlineSyncStatusEnabled()) {
     const syncProgress = doc.createElement('xf-pie-progress');
     syncProgress.className = 'progress';
-    icon.appendChild(syncProgress);
+    iconDiv.appendChild(syncProgress);
   }
 
-  return icon;
+  return iconDiv;
 };
 
 /**
@@ -505,7 +504,7 @@ filelist.updateListItemExternalProps = (li, externalProps, isTeamDriveRoot) => {
     li.classList.toggle(
         'dim-offline', externalProps.availableOffline === false);
     li.classList.toggle('dim-hosted', !!externalProps.hosted);
-    if (externalProps.contentMimeType !== undefined) {
+    if (externalProps.contentMimeType) {
       li.classList.toggle(
           'dim-encrypted',
           externalProps.contentMimeType.startsWith(
@@ -513,11 +512,7 @@ filelist.updateListItemExternalProps = (li, externalProps, isTeamDriveRoot) => {
     }
   }
 
-  const inlineStatusIcon = li.querySelector('.inline-status xf-icon');
-  if (inlineStatusIcon) {
-    // TODO: use "XfIcon.types.OFFLINE*" instead when converting to TS.
-    inlineStatusIcon.type = externalProps.pinned ? 'offline' : '';
-  }
+  li.classList.toggle('pinned', externalProps.pinned);
 
   const iconDiv = li.querySelector('.detail-icon');
   if (!iconDiv) {
@@ -538,13 +533,38 @@ filelist.updateListItemExternalProps = (li, externalProps, isTeamDriveRoot) => {
         'external-media-root', !!externalProps.isExternalMedia);
   }
 
-  const {syncStatus, progress} = externalProps;
-  if (util.isInlineSyncStatusEnabled() && syncStatus) {
-    li.setAttribute('data-sync-status', syncStatus);
-    li.querySelector('.progress')
-        .setAttribute('progress', (progress || 0).toFixed(2));
+  const inlineStatus = li.querySelector('.inline-status');
+  if (inlineStatus) {
+    // TODO: use "XfIcon.types.OFFLINE*" instead when converting to TS.
+    inlineStatus.querySelector('xf-icon').type =
+        externalProps.pinned ? 'offline' : '';
+
+    // Clear the inline status' aria label and set it to "in progress",
+    // "queued", or "available offline" with the respective order of
+    // precedence if applicable.
+    inlineStatus.setAttribute(
+        'aria-label', externalProps.pinned ? str('OFFLINE_COLUMN_LABEL') : '');
+
+    const {syncStatus, progress} = externalProps;
+    if (util.isInlineSyncStatusEnabled() && syncStatus) {
+      switch (syncStatus) {
+        case chrome.fileManagerPrivate.SyncStatus.QUEUED:
+          inlineStatus.setAttribute('aria-label', str('QUEUED_LABEL'));
+          break;
+        case chrome.fileManagerPrivate.SyncStatus.IN_PROGRESS:
+          inlineStatus.setAttribute(
+              'aria-label',
+              `${str('IN_PROGRESS_LABEL')} - %${(progress * 100).toFixed()}`);
+          break;
+        default:
+          break;
+      }
+
+      li.setAttribute('data-sync-status', syncStatus);
+      li.querySelector('.progress')
+          .setAttribute('progress', (progress || 0).toFixed(2));
+    }
   }
-  // TODO(b/255474670): set sync status aria-label.
 };
 
 /**

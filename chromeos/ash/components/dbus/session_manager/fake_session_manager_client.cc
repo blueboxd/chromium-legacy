@@ -378,7 +378,8 @@ void FakeSessionManagerClient::StartDeviceWipe() {
 }
 
 void FakeSessionManagerClient::StartRemoteDeviceWipe(
-    const enterprise_management::SignedData& signed_command) {
+    const enterprise_management::SignedData& signed_command,
+    enterprise_management::PolicyFetchRequest::SignatureType signature_type) {
   start_device_wipe_call_count_++;
   if (!on_start_device_wipe_callback_.is_null()) {
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
@@ -805,7 +806,7 @@ bool FakeSessionManagerClient::GetFlagsForUser(
   }
 
   // Encode origin list values.
-  base::Value origin_list_dict(base::Value::Type::DICTIONARY);
+  base::Value origin_list_dict(base::Value::Type::DICT);
   for (const auto& entry : iter->second.origin_list_flags) {
     origin_list_dict.SetStringKey(entry.first, entry.second);
   }

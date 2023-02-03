@@ -55,6 +55,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/focusable_border.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -234,7 +235,8 @@ Textfield::Textfield()
   GetRenderText()->SetFontList(GetDefaultFontList());
   UpdateBorder();
   SetFocusBehavior(FocusBehavior::ALWAYS);
-
+  views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
+                                                GetCornerRadius());
   FocusRing::Install(this);
 
 #if !BUILDFLAG(IS_MAC)
@@ -1184,23 +1186,96 @@ bool Textfield::HasTextBeingDragged() const {
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, ui::TouchEditable overrides:
 
-void Textfield::SelectRect(const gfx::Point& start, const gfx::Point& end) {
-  if (GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE)
-    return;
+void Textfield::MoveCaret(const gfx::Point& position) {
+  SelectBetweenCoordinates(position, position);
+}
 
-  gfx::SelectionModel start_caret = GetRenderText()->FindCursorPosition(start);
-  gfx::SelectionModel end_caret = GetRenderText()->FindCursorPosition(end);
-  gfx::SelectionModel selection(
-      gfx::Range(start_caret.caret_pos(), end_caret.caret_pos()),
-      end_caret.caret_affinity());
+void Textfield::MoveRangeSelectionExtent(const gfx::Point& extent) {
+  if (GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE) {
+    return;
+  }
+
+  gfx::SelectionModel new_extent_caret =
+      GetRenderText()->FindCursorPosition(extent);
+  size_t new_extent_pos = new_extent_caret.caret_pos();
+  size_t extent_pos = extent_caret_.caret_pos();
+  if (new_extent_pos == extent_pos) {
+    return;
+  }
+
+  gfx::SelectionModel base_caret =
+      GetRenderText()->GetSelectionModelForSelectionStart();
+  size_t base_pos = base_caret.caret_pos();
+  size_t end_pos = new_extent_pos;
+  gfx::LogicalCursorDirection cursor_direction =
+      new_extent_pos > base_pos ? gfx::CURSOR_FORWARD : gfx::CURSOR_BACKWARD;
+
+#if BUILDFLAG(IS_CHROMEOS)
+  bool selection_shrinking = cursor_direction == gfx::CURSOR_FORWARD
+                                 ? new_extent_pos < extent_pos
+                                 : new_extent_pos > extent_pos;
+
+  gfx::Range word_range =
+      GetRenderText()->ExpandRangeToWordBoundary(gfx::Range(extent_pos));
+  bool extent_moved_past_next_word_boundary =
+      (cursor_direction == gfx::CURSOR_BACKWARD &&
+       new_extent_pos <= word_range.start()) ||
+      (cursor_direction == gfx::CURSOR_FORWARD &&
+       new_extent_pos >= word_range.end());
+
+  if (::features::IsTouchTextEditingRedesignEnabled()) {
+    if (selection_shrinking) {
+      break_type_ = gfx::CHARACTER_BREAK;
+    } else if (extent_moved_past_next_word_boundary) {
+      // Switch to using word breaks only after the selection has expanded past
+      // a word boundary. This ensures that the selection can be adjusted by
+      // character when adjusting within a word after the selection has shrunk.
+      break_type_ = gfx::WORD_BREAK;
+    }
+  }
+
+  if (break_type_ == gfx::WORD_BREAK) {
+    // Compute the closest word boundary to the new extent position.
+    gfx::Range new_word_range =
+        GetRenderText()->ExpandRangeToWordBoundary(gfx::Range(new_extent_pos));
+    DCHECK(new_extent_pos >= new_word_range.start() &&
+           new_extent_pos <= new_word_range.end());
+    end_pos = new_extent_pos - new_word_range.start() <
+                      new_word_range.end() - new_extent_pos
+                  ? new_word_range.start()
+                  : new_word_range.end();
+  }
+#endif
+
+  gfx::SelectionModel selection(gfx::Range(base_pos, end_pos),
+                                cursor_direction);
 
   OnBeforeUserAction();
   SelectSelectionModel(selection);
   OnAfterUserAction();
+
+  extent_caret_ = new_extent_caret;
 }
 
-void Textfield::MoveCaretTo(const gfx::Point& point) {
-  SelectRect(point, point);
+void Textfield::SelectBetweenCoordinates(const gfx::Point& base,
+                                         const gfx::Point& extent) {
+  if (GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE) {
+    return;
+  }
+
+  gfx::SelectionModel base_caret = GetRenderText()->FindCursorPosition(base);
+  gfx::SelectionModel extent_caret =
+      GetRenderText()->FindCursorPosition(extent);
+  gfx::SelectionModel selection(
+      gfx::Range(base_caret.caret_pos(), extent_caret.caret_pos()),
+      extent_caret.caret_affinity());
+
+  OnBeforeUserAction();
+  SelectSelectionModel(selection);
+  OnAfterUserAction();
+
+  extent_caret_ = extent_caret;
+  break_type_ = gfx::CHARACTER_BREAK;
 }
 
 void Textfield::GetSelectionEndPoints(gfx::SelectionBound* anchor,
@@ -2343,11 +2418,8 @@ void Textfield::UpdateSelectionClipboard() {
 
 void Textfield::UpdateBackgroundColor() {
   const SkColor color = GetBackgroundColor();
-  SetBackground(
-      CreateBackgroundFromPainter(Painter::CreateSolidRoundRectPainter(
-          color, ::features::IsChromeRefresh2023()
-                     ? FocusableBorder::kChromeRefresh2023CornerRadiusDp
-                     : FocusableBorder::kCornerRadiusDp)));
+  SetBackground(CreateBackgroundFromPainter(
+      Painter::CreateSolidRoundRectPainter(color, GetCornerRadius())));
   // Disable subpixel rendering when the background color is not opaque because
   // it draws incorrect colors around the glyphs in that case.
   // See crbug.com/115198
@@ -2368,8 +2440,10 @@ void Textfield::UpdateBorder() {
           provider->GetDistanceMetric(DISTANCE_CONTROL_VERTICAL_TEXT_PADDING),
       extra_insets_.right() + provider->GetDistanceMetric(
                                   DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING)));
-  if (invalid_)
+  if (invalid_) {
     border->SetColorId(ui::kColorAlertHighSeverity);
+  }
+  border->SetCornerRadius(GetCornerRadius());
   View::SetBorder(std::move(border));
 }
 
@@ -2702,6 +2776,12 @@ void Textfield::DropDraggedText(const ui::DropTargetEvent& event,
   UpdateAfterChange(TextChangeType::kUserTriggered, true);
   OnAfterUserAction();
   output_drag_op = move ? DragOperation::kMove : DragOperation::kCopy;
+}
+
+float Textfield::GetCornerRadius() {
+  return ::features::IsChromeRefresh2023()
+             ? LayoutProvider::Get()->GetCornerRadiusMetric(Emphasis::kHigh)
+             : FocusRing::kDefaultCornerRadiusDp;
 }
 
 BEGIN_METADATA(Textfield, View)

@@ -329,6 +329,7 @@ void LocationBarView::Init() {
   // Add icons only when feature is not enabled. Otherwise icons will
   // be added to the ToolbarPageActionIconContainerView.
   params.types_enabled.push_back(PageActionIconType::kSaveCard);
+  params.types_enabled.push_back(PageActionIconType::kSaveIban);
   params.types_enabled.push_back(PageActionIconType::kLocalCardMigration);
   params.types_enabled.push_back(
       PageActionIconType::kVirtualCardManualFallback);
@@ -1006,9 +1007,11 @@ void LocationBarView::RefreshBackground() {
 
 bool LocationBarView::RefreshContentSettingViews() {
   if (web_app::AppBrowserController::IsWebApp(browser_)) {
-    // For hosted apps, the location bar is normally hidden and icons appear in
+    // For web apps, the location bar is normally hidden and icons appear in
     // the window frame instead.
-    GetWidget()->non_client_view()->ResetWindowControls();
+    if (auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser_)) {
+      browser_view->UpdateWebAppStatusIconsVisiblity();
+    }
   }
 
   bool visibility_changed = false;
@@ -1023,9 +1026,11 @@ bool LocationBarView::RefreshContentSettingViews() {
 
 void LocationBarView::RefreshPageActionIconViews() {
   if (web_app::AppBrowserController::IsWebApp(browser_)) {
-    // For hosted apps, the location bar is normally hidden and icons appear in
+    // For web apps, the location bar is normally hidden and icons appear in
     // the window frame instead.
-    GetWidget()->non_client_view()->ResetWindowControls();
+    if (auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser_)) {
+      browser_view->UpdateWebAppStatusIconsVisiblity();
+    }
   }
 
   page_action_icon_controller_->UpdateAll();

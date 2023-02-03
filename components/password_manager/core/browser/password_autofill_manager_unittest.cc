@@ -38,8 +38,10 @@
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/password_manager/core/browser/mock_password_feature_manager.h"
 #include "components/password_manager/core/browser/mock_webauthn_credentials_delegate.h"
+#include "components/password_manager/core/browser/passkey_credential.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -65,9 +67,7 @@
 #endif
 
 // The name of the username/password element in the form.
-const char16_t kUsernameName[] = u"username";
 const char16_t kInvalidUsername[] = u"no-username";
-const char16_t kPasswordName[] = u"password";
 
 const char16_t kAliceUsername[] = u"alice";
 const char16_t kAlicePassword[] = u"password";
@@ -297,16 +297,9 @@ class PasswordAutofillManagerTest : public testing::Test {
       : test_username_(kAliceUsername), test_password_(kAlicePassword) {}
 
   void SetUp() override {
-    // Add a preferred login and an additional login to the FillData.
-    autofill::FormFieldData username_field;
-    username_field.name = kUsernameName;
-    username_field.value = test_username_;
-    fill_data_.username_field = username_field;
-
-    autofill::FormFieldData password_field;
-    password_field.name = kPasswordName;
-    password_field.value = test_password_;
-    fill_data_.password_field = password_field;
+    // Add a preferred login.
+    fill_data_.preferred_login.username = test_username_;
+    fill_data_.preferred_login.password = test_password_;
   }
 
   void InitializePasswordAutofillManager(TestPasswordManagerClient* client,
@@ -342,9 +335,9 @@ class PasswordAutofillManagerTest : public testing::Test {
 
   autofill::PasswordFormFillData CreateTestFormFillData() {
     autofill::PasswordFormFillData data;
-    data.username_field.value = test_username_;
-    data.password_field.value = test_password_;
-    data.preferred_realm = "http://foo.com/";
+    data.preferred_login.username = test_username_;
+    data.preferred_login.password = test_password_;
+    data.preferred_login.realm = "http://foo.com/";
     return data;
   }
 
@@ -455,7 +448,7 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
 
     // Load filling and favicon data.
     autofill::PasswordFormFillData data = CreateTestFormFillData();
-    data.uses_account_store = false;
+    data.preferred_login.uses_account_store = false;
     favicon::MockFaviconService favicon_service;
     EXPECT_CALL(client, GetFaviconService()).WillOnce(Return(&favicon_service));
     EXPECT_CALL(favicon_service, GetFaviconImageForPageURL(data.url, _, _))
@@ -522,9 +515,9 @@ TEST_F(PasswordAutofillManagerTest,
     autofill::PasswordFormFillData data = CreateTestFormFillData();
     autofill::PasswordAndMetadata duplicate;
     duplicate.password = kAliceAccountStoredPassword;
-    duplicate.realm = data.preferred_realm;
+    duplicate.realm = data.preferred_login.realm;
     duplicate.uses_account_store = true;
-    duplicate.username = data.username_field.value;
+    duplicate.username = data.preferred_login.username;
     data.additional_logins.push_back(duplicate);
     favicon::MockFaviconService favicon_service;
     EXPECT_CALL(client, GetFaviconService()).WillOnce(Return(&favicon_service));
@@ -970,7 +963,7 @@ TEST_F(PasswordAutofillManagerTest,
 
   // Once the data is loaded, an update fills the new passwords:
   autofill::PasswordFormFillData new_data = CreateTestFormFillData();
-  new_data.uses_account_store = true;
+  new_data.preferred_login.uses_account_store = true;
   autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
   additional.username = u"bar.foo@example.com";
@@ -1101,8 +1094,8 @@ TEST_F(PasswordAutofillManagerTest, PrettifiedAndroidRealmsAreShownAsLabels) {
   InitializePasswordAutofillManager(&client, &autofill_client);
 
   autofill::PasswordFormFillData data;
-  data.username_field.value = test_username_;
-  data.preferred_realm = "android://hash@com.example1.android/";
+  data.preferred_login.username = test_username_;
+  data.preferred_login.realm = "android://hash@com.example1.android/";
 
   autofill::PasswordAndMetadata additional;
   additional.realm = "android://hash@com.example2.android/";
@@ -1177,9 +1170,9 @@ TEST_F(PasswordAutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
   gfx::RectF element_bounds;
   autofill::PasswordFormFillData data;
   std::u16string username = u"foo.bar@example.com";
-  data.username_field.value = username;
-  data.password_field.value = u"foobar";
-  data.preferred_realm = "http://foo.com/";
+  data.preferred_login.username = username;
+  data.preferred_login.password = u"foobar";
+  data.preferred_login.realm = "http://foo.com/";
 
   autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
@@ -1221,9 +1214,9 @@ TEST_F(PasswordAutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
   gfx::RectF element_bounds;
   autofill::PasswordFormFillData data;
   std::u16string username = u"foo.bar@example.com";
-  data.username_field.value = username;
-  data.password_field.value = u"foobar";
-  data.preferred_realm = "http://foo.com/";
+  data.preferred_login.username = username;
+  data.preferred_login.password = u"foobar";
+  data.preferred_login.realm = "http://foo.com/";
 
   autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
@@ -1254,9 +1247,9 @@ TEST_F(PasswordAutofillManagerTest,
   gfx::RectF element_bounds;
   autofill::PasswordFormFillData data;
   std::u16string username = u"foo.bar@example.com";
-  data.username_field.value = username;
-  data.password_field.value = u"foobar";
-  data.preferred_realm = "http://foo.com/";
+  data.preferred_login.username = username;
+  data.preferred_login.password = u"foobar";
+  data.preferred_login.realm = "http://foo.com/";
 
   autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
@@ -1299,9 +1292,9 @@ TEST_F(PasswordAutofillManagerTest,
   gfx::RectF element_bounds;
   autofill::PasswordFormFillData data;
   std::u16string username = u"foo.bar@example.com";
-  data.username_field.value = username;
-  data.password_field.value = u"foobar";
-  data.preferred_realm = "http://foo.com/";
+  data.preferred_login.username = username;
+  data.preferred_login.password = u"foobar";
+  data.preferred_login.realm = "http://foo.com/";
 
   autofill::PasswordAndMetadata additional;
   additional.realm = "https://foobarrealm.org";
@@ -1334,7 +1327,7 @@ TEST_F(PasswordAutofillManagerTest, PreviewAndFillEmptyUsernameSuggestion) {
   // Initialize PasswordAutofillManager with credentials without username.
   TestPasswordManagerClient client;
   NiceMock<MockAutofillClient> autofill_client;
-  fill_data().username_field.value.clear();
+  fill_data().preferred_login.username.clear();
   InitializePasswordAutofillManager(&client, &autofill_client);
 
   std::u16string no_username_string =
@@ -1637,9 +1630,9 @@ TEST_F(PasswordAutofillManagerTest, DisplayAccountSuggestionsIndicatorIcon) {
 
   gfx::RectF element_bounds;
   autofill::PasswordFormFillData data;
-  data.username_field.value = test_username_;
-  data.password_field.value = u"foobar";
-  data.uses_account_store = true;
+  data.preferred_login.username = test_username_;
+  data.preferred_login.password = u"foobar";
+  data.preferred_login.uses_account_store = true;
 
   password_autofill_manager_->OnAddPasswordFillData(data);
 
@@ -2107,17 +2100,15 @@ TEST_F(PasswordAutofillManagerTest, ShowsWebAuthnSuggestions) {
   // Return a WebAuthn credential.
   const std::string kId = "abcd";
   const std::u16string kName = u"nadeshiko@example.com";
-  const std::u16string kAuthenticator = u"Use device sign-in";
-  autofill::Suggestion webauthn_credential(kName);
-  webauthn_credential.frontend_id = autofill::POPUP_ITEM_ID_WEBAUTHN_CREDENTIAL;
-  webauthn_credential.payload = Suggestion::BackendId(kId);
-  webauthn_credential.labels = {{Suggestion::Text(kAuthenticator)}};
+  PasskeyCredential::Username passkeyName(kName);
+  PasskeyCredential::BackendId passkeyId(kId);
+  PasskeyCredential passkey(passkeyName, passkeyId);
   EXPECT_CALL(client, GetWebAuthnCredentialsDelegateForDriver)
       .WillRepeatedly(Return(&webauthn_credentials_delegate));
-  absl::optional<std::vector<autofill::Suggestion>> webauthn_credential_list =
-      std::vector<autofill::Suggestion>{webauthn_credential};
-  EXPECT_CALL(webauthn_credentials_delegate, GetWebAuthnSuggestions)
-      .WillOnce(ReturnRef(webauthn_credential_list));
+  absl::optional<std::vector<PasskeyCredential>> passkey_list =
+      std::vector<PasskeyCredential>{passkey};
+  EXPECT_CALL(webauthn_credentials_delegate, GetPasskeys)
+      .WillRepeatedly(ReturnRef(passkey_list));
 
   // Show password suggestions including WebAuthn credentials.
   autofill::AutofillClient::PopupOpenArgs open_args;
@@ -2146,7 +2137,8 @@ TEST_F(PasswordAutofillManagerTest, ShowsWebAuthnSuggestions) {
       AreImagesEqual(open_args.suggestions[0].custom_icon, kTestFavicon));
   ASSERT_EQ(open_args.suggestions[0].labels.size(), 1U);
   ASSERT_EQ(open_args.suggestions[0].labels[0].size(), 1U);
-  EXPECT_EQ(open_args.suggestions[0].labels[0][0].value, kAuthenticator);
+  EXPECT_EQ(open_args.suggestions[0].labels[0][0].value,
+            l10n_util::GetStringUTF16(GetPlatformAuthenticatorLabel()));
   testing::Mock::VerifyAndClearExpectations(client.mock_driver());
 
   // Check that preview of the "username" (i.e. the credential name) works.
@@ -2158,7 +2150,7 @@ TEST_F(PasswordAutofillManagerTest, ShowsWebAuthnSuggestions) {
   testing::Mock::VerifyAndClearExpectations(client.mock_driver());
 
   // Check that selecting the credential reports back to the client.
-  EXPECT_CALL(webauthn_credentials_delegate, SelectWebAuthnCredential(kId));
+  EXPECT_CALL(webauthn_credentials_delegate, SelectPasskey(kId));
   EXPECT_CALL(
       autofill_client,
       HideAutofillPopup(autofill::PopupHidingReason::kAcceptSuggestion));
@@ -2178,12 +2170,11 @@ TEST_F(PasswordAutofillManagerTest, ShowsWebAuthnSignInWithAnotherDevice) {
   InitializePasswordAutofillManager(&client, &autofill_client);
 
   // Enable WebAuthn autofill.
-  absl::optional<std::vector<autofill::Suggestion>> webauthn_credentials(
-      absl::in_place);
+  absl::optional<std::vector<PasskeyCredential>> passkeys(absl::in_place);
   EXPECT_CALL(client, GetWebAuthnCredentialsDelegateForDriver)
       .WillRepeatedly(Return(&webauthn_credentials_delegate));
-  EXPECT_CALL(webauthn_credentials_delegate, GetWebAuthnSuggestions)
-      .WillOnce(ReturnRef(webauthn_credentials));
+  EXPECT_CALL(webauthn_credentials_delegate, GetPasskeys)
+      .WillRepeatedly(ReturnRef(passkeys));
 
   // Show password suggestions including WebAuthn credentials.
   autofill::AutofillClient::PopupOpenArgs open_args;
@@ -2223,19 +2214,15 @@ TEST_F(PasswordAutofillManagerTest, WebAuthnFaviconWithoutPasswords) {
   password_autofill_manager_->OnAddPasswordFillData(data);
 
   // Enable WebAuthn autofill to return a credential.
-  const std::string kId = "abcd";
-  const std::u16string kName = u"nadeshiko@example.com";
-  const std::u16string kAuthenticator = u"Use device sign-in";
-  autofill::Suggestion webauthn_credential(kName);
-  webauthn_credential.frontend_id = autofill::POPUP_ITEM_ID_WEBAUTHN_CREDENTIAL;
-  webauthn_credential.payload = Suggestion::BackendId(kId);
-  webauthn_credential.labels = {{Suggestion::Text(kAuthenticator)}};
-  absl::optional<std::vector<autofill::Suggestion>> webauthn_credentials =
-      std::vector{std::move(webauthn_credential)};
+  PasskeyCredential passkey(
+      PasskeyCredential::Username(u"nadeshiko@example.com"),
+      PasskeyCredential::BackendId("abcd"));
+  absl::optional<std::vector<PasskeyCredential>> passkeys =
+      std::vector{std::move(passkey)};
   EXPECT_CALL(client, GetWebAuthnCredentialsDelegateForDriver)
       .WillRepeatedly(Return(&webauthn_credentials_delegate));
-  EXPECT_CALL(webauthn_credentials_delegate, GetWebAuthnSuggestions)
-      .WillOnce(ReturnRef(webauthn_credentials));
+  EXPECT_CALL(webauthn_credentials_delegate, GetPasskeys)
+      .WillRepeatedly(ReturnRef(passkeys));
 
   // Show webauthn suggestions with the correct favicon.
   autofill::AutofillClient::PopupOpenArgs open_args;
@@ -2268,12 +2255,11 @@ TEST_F(PasswordAutofillManagerTest, ShowsWebAuthnSignInWithoutPasswordData) {
   password_autofill_manager_->DeleteFillData();
 
   // Enable WebAuthn autofill.
-  absl::optional<std::vector<autofill::Suggestion>> webauthn_credentials(
-      absl::in_place);
+  absl::optional<std::vector<PasskeyCredential>> passkeys(absl::in_place);
   EXPECT_CALL(client, GetWebAuthnCredentialsDelegateForDriver)
       .WillRepeatedly(Return(&webauthn_credentials_delegate));
-  EXPECT_CALL(webauthn_credentials_delegate, GetWebAuthnSuggestions)
-      .WillOnce(ReturnRef(webauthn_credentials));
+  EXPECT_CALL(webauthn_credentials_delegate, GetPasskeys)
+      .WillRepeatedly(ReturnRef(passkeys));
 
   autofill::AutofillClient::PopupOpenArgs open_args;
   EXPECT_CALL(autofill_client, ShowAutofillPopup)
@@ -2300,8 +2286,6 @@ TEST_F(PasswordAutofillManagerTest, WebAuthnSignInLaunchesWebAuthnFlow) {
   InitializePasswordAutofillManager(&client, &autofill_client);
 
   // Enable WebAuthn autofill.
-  absl::optional<std::vector<autofill::Suggestion>> webauthn_credentials(
-      absl::in_place);
   EXPECT_CALL(client, GetWebAuthnCredentialsDelegateForDriver)
       .WillRepeatedly(Return(&webauthn_credentials_delegate));
 

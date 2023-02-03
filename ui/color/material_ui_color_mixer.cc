@@ -23,20 +23,26 @@ void AddMaterialUiColorMixer(ColorProvider* provider,
            << (dark_mode ? "Dark" : "Light") << " window.";
   ColorMixer& mixer = provider->AddMixer();
 
-  mixer[kColorButtonBackground] = {SK_ColorTRANSPARENT};
+  mixer[kColorButtonBackground] = {kColorSysSurface};
   mixer[kColorButtonBackgroundPressed] =
       GetResultingPaintColor({kColorSysStatePressed}, {kColorButtonBackground});
   mixer[kColorButtonBackgroundProminent] = {kColorSysPrimary};
-  mixer[kColorButtonBackgroundProminentDisabled] = {kColorSysDisabledContainer};
+  mixer[kColorButtonBackgroundProminentDisabled] = {GetResultingPaintColor(
+      {kColorSysStateDisabledContainer}, {kColorButtonBackground})};
   mixer[kColorButtonBackgroundProminentFocused] = {GetResultingPaintColor(
       {kColorSysStateFocus}, {kColorButtonBackgroundProminent})};
   mixer[kColorButtonBorder] = {kColorSysOutline};
-  mixer[kColorButtonBorderDisabled] = {kColorSysOnSurfaceDisabled};
+  mixer[kColorButtonBorderDisabled] = {kColorSysStateDisabled};
   mixer[kColorButtonForeground] = {kColorSysOnSurfacePrimary};
   mixer[kColorButtonForegroundChecked] = {kColorButtonForeground};
-  mixer[kColorButtonForegroundDisabled] = {kColorSysOnSurfaceDisabled};
+  mixer[kColorButtonForegroundDisabled] = {kColorSysStateDisabled};
   mixer[kColorButtonForegroundProminent] = {kColorSysOnPrimary};
   mixer[kColorButtonForegroundUnchecked] = {kColorSysOnSurfaceVariant};
+  mixer[kColorFocusableBorderFocused] = {kColorSysStateFocusRing};
+  mixer[kColorFocusableBorderUnfocused] = {kColorSysOutline};
+  mixer[kColorFrameActive] = {kColorSysHeader};
+  mixer[kColorFrameActiveUnthemed] = {kColorSysHeader};
+  mixer[kColorFrameInactive] = {kColorSysHeaderInactive};
   mixer[kColorSliderThumb] = {kColorSysPrimary};
   mixer[kColorSliderThumbMinimal] = {kColorSysSecondary};
   mixer[kColorSliderTrack] = {kColorSysOnPrimary};

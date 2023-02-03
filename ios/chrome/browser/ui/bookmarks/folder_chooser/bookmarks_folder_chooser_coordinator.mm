@@ -9,35 +9,52 @@
 #import "base/check.h"
 #import "base/check_op.h"
 #import "base/mac/foundation_util.h"
+#import "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
+#import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_navigation_controller_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/folder_chooser/bookmarks_folder_chooser_coordinator_delegate.h"
+#import "ios/chrome/browser/ui/bookmarks/folder_chooser/bookmarks_folder_chooser_view_controller.h"
+#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@implementation BookmarksFolderChooserCoordinator {
-  // The navigation controller is nil if the folder chooser view controller is
-  // pushed into the base navigation controller.
-  // Otherwise, the navigation controller is presented in the base view
-  // controller.
-  UINavigationController* _navigationController;
-  UIViewController* _folderChooserViewController;
+@interface BookmarksFolderChooserCoordinator () <
+    BookmarksFolderChooserViewControllerDelegate> {
+  // If folder chooser is created with a base view controller then folder
+  // chooser will create and own `_navigationController` that should be deleted
+  // in the end.
+  // Otherwise, folder chooser is pushed into the `_baseNavigationController`
+  // that it doesn't own.
+  TableViewNavigationController* _navigationController;
+  // Delegate for `_navigationController` if it was created inside folder
+  // chooser and needs to be deleted with it.
+  BookmarkNavigationControllerDelegate* _navigationControllerDelegate;
+  BookmarksFolderChooserViewController* _folderChooserViewController;
   // List of nodes to hide when displaying folders. This is to avoid to move a
   // folder inside a child folder.
   std::set<const bookmarks::BookmarkNode*> _hiddenNodes;
+  // The currently selected folder to show in the UI.
+  const bookmarks::BookmarkNode* _selectedFolder;
 }
+
+@end
+
+@implementation BookmarksFolderChooserCoordinator
 
 @synthesize baseNavigationController = _baseNavigationController;
 
 - (instancetype)
-    initWithBaseNavigationController:
-        (UINavigationController*)navigationController
-                             browser:(Browser*)browser
-                         hiddenNodes:
-                             (const std::set<const bookmarks::BookmarkNode*>&)
-                                 hiddenNodes {
-  self = [super initWithBaseViewController:navigationController
-                                   browser:browser];
+    initWithNavigationController:(UINavigationController*)navigationController
+                         browser:(Browser*)browser
+                  selectedFolder:(const bookmarks::BookmarkNode*)folder
+                     hiddenNodes:
+                         (const std::set<const bookmarks::BookmarkNode*>&)
+                             hiddenNodes {
+  self = [self initWithBaseViewController:navigationController
+                                  browser:browser
+                           selectedFolder:folder];
   if (self) {
     _baseNavigationController = navigationController;
     _hiddenNodes = hiddenNodes;
@@ -46,21 +63,43 @@
 }
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                                   browser:(Browser*)browser {
-  return [super initWithBaseViewController:viewController browser:browser];
+                                   browser:(Browser*)browser
+                            selectedFolder:
+                                (const bookmarks::BookmarkNode*)folder {
+  self = [super initWithBaseViewController:viewController browser:browser];
+  if (self) {
+    _selectedFolder = folder;
+  }
+  return self;
 }
 
 - (void)start {
   [super start];
-  // TODO(crbug.com/1402758): Create a view controller and a mediator.
-  _folderChooserViewController = nil;
-  if (self.baseNavigationController) {
-    [self.baseNavigationController
-        pushViewController:_folderChooserViewController
-                  animated:YES];
+  // TODO(crbug.com/1402758): Create a mediator.
+  bookmarks::BookmarkModel* model =
+      ios::BookmarkModelFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
+  _folderChooserViewController = [[BookmarksFolderChooserViewController alloc]
+      initWithBookmarkModel:model
+           allowsNewFolders:YES
+                editedNodes:_hiddenNodes
+               allowsCancel:YES
+             selectedFolder:_selectedFolder
+                    browser:self.browser];
+  _folderChooserViewController.delegate = self;
+
+  if (_baseNavigationController) {
+    [_baseNavigationController pushViewController:_folderChooserViewController
+                                         animated:YES];
   } else {
-    _navigationController = [[UINavigationController alloc]
-        initWithRootViewController:_folderChooserViewController];
+    _navigationController = [[TableViewNavigationController alloc]
+        initWithTable:_folderChooserViewController];
+    _navigationControllerDelegate =
+        [[BookmarkNavigationControllerDelegate alloc] init];
+    _navigationController.delegate = _navigationControllerDelegate;
+
+    [_navigationController
+        setModalPresentationStyle:UIModalPresentationFormSheet];
     [self.baseViewController presentViewController:_navigationController
                                           animated:YES
                                         completion:nil];
@@ -70,16 +109,43 @@
 - (void)stop {
   [super stop];
   DCHECK(_folderChooserViewController);
-  if (self.baseNavigationController) {
-    DCHECK_EQ(self.baseNavigationController.topViewController,
+
+  if (_baseNavigationController) {
+    DCHECK_EQ(_baseNavigationController.topViewController,
               _folderChooserViewController);
-    [self.baseNavigationController popViewControllerAnimated:YES];
-  } else {
-    DCHECK(_navigationController);
+    [_baseNavigationController popViewControllerAnimated:YES];
+  } else if (_navigationController) {
     [self.baseViewController dismissViewControllerAnimated:YES completion:nil];
     _navigationController = nil;
+    _navigationControllerDelegate = nil;
+  } else {
+    DCHECK(!self.baseViewController.presentedViewController);
   }
+  _delegate = nil;
   _folderChooserViewController = nil;
+}
+
+#pragma mark - BookmarkFolderViewControllerDelegate
+
+- (void)folderPicker:(BookmarksFolderChooserViewController*)folderPicker
+    didFinishWithFolder:(const bookmarks::BookmarkNode*)folder {
+  [_delegate
+      bookmarksFolderChooserCoordinatorDidConfirm:self
+                               withSelectedFolder:folder
+                                      editedNodes:folderPicker.editedNodes];
+}
+
+- (void)folderPickerDidCancel:
+    (BookmarksFolderChooserViewController*)folderPicker {
+  [_delegate bookmarksFolderChooserCoordinatorDidCancel:self];
+}
+
+- (void)folderPickerDidDismiss:
+    (BookmarksFolderChooserViewController*)folderPicker {
+  DCHECK(_navigationController);
+  _navigationController = nil;
+  _navigationControllerDelegate = nil;
+  [_delegate bookmarksFolderChooserCoordinatorDidCancel:self];
 }
 
 @end

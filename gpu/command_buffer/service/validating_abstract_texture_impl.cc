@@ -52,7 +52,7 @@ void ValidatingAbstractTextureImpl::SetParameteri(GLenum pname, GLint param) {
                                      texture_ref_.get(), pname, param);
 }
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
 void ValidatingAbstractTextureImpl::SetUnboundImage(gl::GLImage* image) {
   if (!texture_ref_)
     return;
@@ -61,9 +61,13 @@ void ValidatingAbstractTextureImpl::SetUnboundImage(gl::GLImage* image) {
   const GLint level = 0;
 
   // Configure the new image.
-  Texture::ImageState state = Texture::ImageState::UNBOUND;
-  GetTextureManager()->SetLevelImage(texture_ref_.get(), target, level, image,
-                                     state);
+  if (image) {
+    GetTextureManager()->SetUnboundLevelImage(texture_ref_.get(), target, level,
+                                              image);
+  } else {
+    GetTextureManager()->UnsetLevelImage(texture_ref_.get(), target, level);
+  }
+
   GetTextureManager()->SetLevelCleared(texture_ref_.get(), target, level,
                                        image);
 }
@@ -77,10 +81,13 @@ void ValidatingAbstractTextureImpl::SetBoundImage(gl::GLImage* image) {
   const GLint level = 0;
 
   // Configure the new image.
-  Texture::ImageState state =
-      image ? Texture::ImageState::BOUND : Texture::ImageState::UNBOUND;
-  GetTextureManager()->SetLevelImage(texture_ref_.get(), target, level, image,
-                                     state);
+  if (image) {
+    GetTextureManager()->SetBoundLevelImage(texture_ref_.get(), target, level,
+                                            image);
+  } else {
+    GetTextureManager()->UnsetLevelImage(texture_ref_.get(), target, level);
+  }
+
   GetTextureManager()->SetLevelCleared(texture_ref_.get(), target, level,
                                        image);
 }
@@ -92,7 +99,7 @@ gl::GLImage* ValidatingAbstractTextureImpl::GetImageForTesting() const {
 
   const GLuint target = texture_ref_->texture()->target();
   const GLint level = 0;
-  return texture_ref_->texture()->GetLevelImage(target, level, nullptr);
+  return texture_ref_->texture()->GetLevelImage(target, level);
 }
 
 void ValidatingAbstractTextureImpl::SetCleared() {

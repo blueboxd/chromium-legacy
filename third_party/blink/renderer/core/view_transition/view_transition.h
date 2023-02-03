@@ -97,7 +97,7 @@ class CORE_EXPORT ViewTransition : public ScriptWrappable,
   // Returns true if the pseudo element corresponding to the given id and name
   // is the only child.
   bool MatchForOnlyChild(PseudoId pseudo_id,
-                         AtomicString view_transition_name) const;
+                         const AtomicString& view_transition_name) const;
 
   // ExecutionContextLifecycleObserver implementation.
   void ContextDestroyed() override;
@@ -165,8 +165,8 @@ class CORE_EXPORT ViewTransition : public ScriptWrappable,
 
   // In physical pixels. See comments on equivalent methods in
   // ViewTransitionStyleTracker for info.
-  gfx::Rect GetSnapshotViewportRect() const;
-  gfx::Vector2d GetRootSnapshotPaintOffset() const;
+  gfx::Size GetSnapshotRootSize() const;
+  gfx::Vector2d GetFrameToSnapshotRootOffset() const;
 
   bool IsDone() const { return IsTerminalState(state_); }
 

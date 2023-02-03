@@ -19,7 +19,6 @@
 #include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/common/extensions/api/input_ime.h"
 #include "chrome/common/extensions/api/input_method_private.h"
@@ -935,9 +934,11 @@ bool InputImeEventRouter::RegisterImeExtension(
 void InputImeEventRouter::UnregisterAllImes(const std::string& extension_id) {
   auto it = engine_map_.find(extension_id);
   if (it != engine_map_.end()) {
-    ash::input_method::InputMethodManager::Get()
-        ->GetActiveIMEState()
-        ->RemoveInputMethodExtension(extension_id);
+    auto active_ime_state =
+        ash::input_method::InputMethodManager::Get()->GetActiveIMEState();
+    if (active_ime_state) {
+      active_ime_state->RemoveInputMethodExtension(extension_id);
+    }
     engine_map_.erase(it);
   }
 }

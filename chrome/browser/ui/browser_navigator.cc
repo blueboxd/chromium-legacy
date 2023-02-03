@@ -55,12 +55,9 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "extensions/buildflags/buildflags.h"
-#include "third_party/blink/public/common/features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/gfx/geometry/resize_utils.h"
 #include "url/url_constants.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -169,32 +166,10 @@ bool AdjustNavigateParamsForURL(NavigateParams* params) {
   return true;
 }
 
-gfx::Rect CalculateInitialPictureInPictureWindowBounds(
-    float initial_aspect_ratio) {
-  DCHECK(initial_aspect_ratio > 0);
-
-  // TODO(https://crbug.com/1327797): This copies a bunch of logic from
-  // OverlayWindowViews. The sizing logic should be delegated to a PiP-specific
-  // controller.
-  gfx::Rect work_area =
-      display::Screen::GetScreen()->GetDisplayForNewWindows().work_area();
-  gfx::Rect window_bounds(work_area.width() / 5, work_area.height() / 5);
-  gfx::SizeRectToAspectRatio(gfx::ResizeEdge::kTopLeft, initial_aspect_ratio,
-                             gfx::Size(0, 0), work_area.size(), &window_bounds);
-
-  int window_diff_width = work_area.right() - window_bounds.width();
-  int window_diff_height = work_area.bottom() - window_bounds.height();
-
-  // Keep a margin distance of 2% the average of the two window size
-  // differences, keeping the margins consistent.
-  int buffer = (window_diff_width + window_diff_height) / 2 * 0.02;
-
-  gfx::Point default_origin =
-      gfx::Point(window_diff_width - buffer, window_diff_height - buffer);
-  default_origin += work_area.OffsetFromOrigin();
-  window_bounds.set_origin(default_origin);
-
-  return window_bounds;
+Browser::ValueSpecified GetOriginSpecified(const NavigateParams& params) {
+  return params.window_features.has_x && params.window_features.has_y
+             ? Browser::ValueSpecified::kSpecified
+             : Browser::ValueSpecified::kUnspecified;
 }
 
 // Returns a Browser and tab index. The browser can host the navigation or
@@ -238,10 +213,13 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
         Browser* browser = nullptr;
         if (Browser::GetCreationStatusForProfile(profile) ==
             Browser::CreationStatus::kOk) {
-          browser = Browser::Create(Browser::CreateParams::CreateForApp(
-              app_name,
-              true,  // trusted_source. Installed PWAs are considered trusted.
-              params.window_bounds, profile, params.user_gesture));
+          // Installed PWAs are considered trusted.
+          Browser::CreateParams browser_params =
+              Browser::CreateParams::CreateForApp(
+                  app_name, /*trusted_source=*/true,
+                  params.window_features.bounds, profile, params.user_gesture);
+          browser_params.initial_origin_specified = GetOriginSpecified(params);
+          browser = Browser::Create(browser_params);
         }
         return {browser, -1};
       }
@@ -294,11 +272,6 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
       return {GetOrCreateBrowser(profile, params.user_gesture), -1};
     case WindowOpenDisposition::NEW_PICTURE_IN_PICTURE:
 #if !BUILDFLAG(IS_ANDROID)
-      if (!base::FeatureList::IsEnabled(
-              blink::features::kDocumentPictureInPictureAPI)) {
-        return {nullptr, -1};
-      }
-
       // Picture in picture windows may not be opened by other picture in
       // picture windows.
       if (params.browser->is_type_picture_in_picture())
@@ -308,18 +281,22 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
         Browser::CreateParams browser_params(Browser::TYPE_PICTURE_IN_PICTURE,
                                              profile, params.user_gesture);
         browser_params.trusted_source = params.trusted_source;
-        if (params.contents_to_insert) {
-          browser_params.initial_bounds =
-              CalculateInitialPictureInPictureWindowBounds(
-                  params.contents_to_insert
-                      ->GetPictureInPictureInitialAspectRatio());
-          browser_params.initial_aspect_ratio =
-              params.contents_to_insert
-                  ->GetPictureInPictureInitialAspectRatio();
-          browser_params.lock_aspect_ratio =
-              params.contents_to_insert->GetPictureInPictureLockAspectRatio();
-          browser_params.omit_from_session_restore = true;
+        DCHECK(params.contents_to_insert);
+        auto pip_options =
+            params.contents_to_insert->GetPictureInPictureOptions();
+        if (!pip_options.has_value()) {
+          return {nullptr, -1};
         }
+        browser_params.initial_bounds = PictureInPictureWindowManager::
+            CalculateInitialPictureInPictureWindowBounds(
+                *pip_options,
+                display::Screen::GetScreen()->GetDisplayForNewWindows());
+        browser_params.initial_aspect_ratio =
+            pip_options->initial_aspect_ratio > 0.0
+                ? pip_options->initial_aspect_ratio
+                : 1.0;
+        browser_params.lock_aspect_ratio = pip_options->lock_aspect_ratio;
+        browser_params.omit_from_session_restore = true;
 
         return {Browser::Create(browser_params), -1};
       }
@@ -346,13 +323,16 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
         Browser::CreateParams browser_params(Browser::TYPE_POPUP, profile,
                                              params.user_gesture);
         browser_params.trusted_source = params.trusted_source;
-        browser_params.initial_bounds = params.window_bounds;
+        browser_params.initial_bounds = params.window_features.bounds;
+        browser_params.initial_origin_specified = GetOriginSpecified(params);
         return {Browser::Create(browser_params), -1};
       }
-      return {Browser::Create(Browser::CreateParams::CreateForAppPopup(
-                  app_name, params.trusted_source, params.window_bounds,
-                  profile, params.user_gesture)),
-              -1};
+      Browser::CreateParams browser_params =
+          Browser::CreateParams::CreateForAppPopup(
+              app_name, params.trusted_source, params.window_features.bounds,
+              profile, params.user_gesture);
+      browser_params.initial_origin_specified = GetOriginSpecified(params);
+      return {Browser::Create(browser_params), -1};
     }
     case WindowOpenDisposition::NEW_WINDOW: {
       // Make a new normal browser window.

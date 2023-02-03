@@ -30,18 +30,24 @@ class Group {
   Group(size_t limit, omnibox::GroupId group_id);
   virtual ~Group();
 
-  // Returns if `match` can be added to this `Group`.
+  // Returns if `match` can be added to this `Group`. Checks if the `GroupId` of
+  // the match is permitted in this `Group`, this `Group`'s total limit, and the
+  // limit for the `GroupId` of the match.
   virtual bool CanAdd(const AutocompleteMatch& match) const;
-  // Adds `match` to this `Group`. `CanAdd()` should be verified by the caller.
+  // Adds `match` to this `Group` and increments this `Group`'s total count and
+  // the count for the `GroupId` of the match. `CanAdd()` should be verified by
+  // the caller.
   void Add(const AutocompleteMatch& match);
 
-  size_t limit() { return limit_; }
+  size_t limit() const { return limit_; }
   void set_limit(size_t limit) { limit_ = limit; }
-  const ACMatches& matches() { return matches_; }
+  const ACMatches& matches() const { return matches_; }
 
  private:
   // Max number of matches this `Group` can contain.
   size_t limit_{0};
+  // The number of matches this `Group` contains.
+  size_t count_{0};
   // The limit and count per `GroupId`.
   GroupIdLimitsAndCounts group_id_limits_and_counts_;
   // The matches this `Group` contains.

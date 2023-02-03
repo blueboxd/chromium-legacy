@@ -18,8 +18,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace display {
-namespace test {
+namespace display::test {
 
 namespace {
 
@@ -2121,7 +2120,7 @@ TEST_F(ConfigureDisplaysTaskTest,
       log_.GetActionsAndClear());
 }
 
-// Tests a nested MST configuration in which after a successful modset on the
+// Tests a nested MST configuration in which after a successful modeset on the
 // root branch device (i.e. two external displays connected to a single MST hub)
 // one display is removed from the original MST hub, connected to a second MST
 // hub together with a third display, and then the second MST hub is connected
@@ -2583,5 +2582,4 @@ TEST_F(ConfigureDisplaysTaskTest, CloseLidThenOpenLid) {
             log_.GetActionsAndClear());
 }
 
-}  // namespace test
-}  // namespace display
+}  // namespace display::test

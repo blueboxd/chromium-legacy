@@ -18,6 +18,7 @@
 #include "ui/views/view.h"
 
 namespace views {
+class Checkbox;
 class ImageButton;
 class ImageView;
 class Label;
@@ -39,26 +40,26 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
    public:
     enum class LinkType { PRIVACY_POLICY, TERMS_OF_SERVICE };
 
-    // Called when:
-    // 1. A user either selects the account from the multi-account chooser or
-    // clicks the "continue" button. (auto_signin == false)
-    // 2. Auto sign-in is triggered. (auto_signin == true)
-    // Takes `account` as well as `idp_data` since passing `account_id` is
-    // insufficient in the multiple IDP case. The caller should pass a cref, as
-    // these objects are owned by the observer.
+    // Called when a user either selects the account from the multi-account
+    // chooser or clicks the "continue" button.
+    // Takes `account` as well as `idp_display_data` since passing `account_id`
+    // is insufficient in the multiple IDP case. The caller should pass a cref,
+    // as these objects are owned by the observer.
     virtual void OnAccountSelected(
         const content::IdentityRequestAccount& account,
-        const IdentityProviderDisplayData& idp_data,
-        bool auto_signin) = 0;
+        const IdentityProviderDisplayData& idp_display_data,
+        const ui::Event& event) = 0;
 
     // Called when the user clicks "privacy policy" or "terms of service" link.
-    virtual void OnLinkClicked(LinkType link_type, const GURL& url) = 0;
+    virtual void OnLinkClicked(LinkType link_type,
+                               const GURL& url,
+                               const ui::Event& event) = 0;
 
     // Called when the user clicks "back" button.
     virtual void OnBackButtonClicked() = 0;
 
     // Called when the user clicks "close" button.
-    virtual void OnCloseButtonClicked() = 0;
+    virtual void OnCloseButtonClicked(const ui::Event& event) = 0;
   };
 
   METADATA_HEADER(AccountSelectionBubbleView);
@@ -66,23 +67,24 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
       const std::u16string& rp_for_display,
       const absl::optional<std::u16string>& idp_title,
       blink::mojom::RpContext rp_context,
+      bool show_auto_signin_checkbox,
       views::View* anchor_view,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       Observer* observer);
   ~AccountSelectionBubbleView() override;
 
   // AccountSelectionBubbleViewInterface:
-  void ShowAccountPicker(
-      const std::vector<IdentityProviderDisplayData>& idp_data_list,
-      bool show_back_button) override;
+  void ShowMultiAccountPicker(const std::vector<IdentityProviderDisplayData>&
+                                  idp_display_data_list) override;
   void ShowVerifyingSheet(const content::IdentityRequestAccount& account,
-                          const IdentityProviderDisplayData& idp_data,
+                          const IdentityProviderDisplayData& idp_display_data,
                           const std::u16string& title) override;
 
   void ShowSingleAccountConfirmDialog(
       const std::u16string& rp_for_display,
       const content::IdentityRequestAccount& account,
-      const IdentityProviderDisplayData& idp_data) override;
+      const IdentityProviderDisplayData& idp_display_data,
+      bool show_back_button) override;
 
   void ShowFailureDialog(const std::u16string& rp_for_display,
                          const std::u16string& idp_for_display) override;
@@ -99,22 +101,17 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
   std::unique_ptr<views::View> CreateHeaderView(const std::u16string& title,
                                                 bool has_idp_icon);
 
-  // Returns a View containing the account chooser, i.e. everything that goes
-  // below the horizontal separator on the initial FedCM bubble.
-  std::unique_ptr<views::View> CreateAccountChooser(
-      const std::vector<IdentityProviderDisplayData>& idp_data_list);
-
   // Returns a View for single account chooser. It contains the account
   // information, disclosure text and a button for the user to confirm the
-  // selection. The size of the `idp_data.accounts` vector must be 1.
+  // selection. The size of the `idp_display_data.accounts` vector must be 1.
   std::unique_ptr<views::View> CreateSingleAccountChooser(
-      const IdentityProviderDisplayData& idp_data,
+      const IdentityProviderDisplayData& idp_display_data,
       const content::IdentityRequestAccount& account);
 
   // Returns a View for multiple account chooser. It contains the info for each
   // account in a button, so the user can pick an account.
   std::unique_ptr<views::View> CreateMultipleAccountChooser(
-      const std::vector<IdentityProviderDisplayData>& idp_data_list);
+      const std::vector<IdentityProviderDisplayData>& idp_display_data_list);
 
   // Creates a row containing the IDP icon as well as the IDP ETLD+1. Used in
   // the multi IDP scenario, when the user is selecting from multiple accounts.
@@ -128,7 +125,7 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
   // not.
   std::unique_ptr<views::View> CreateAccountRow(
       const content::IdentityRequestAccount& account,
-      const IdentityProviderDisplayData& idp_data,
+      const IdentityProviderDisplayData& idp_display_data,
       bool should_hover);
 
   // Updates the header title, the header icon visibility and the header back
@@ -160,8 +157,8 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
   // chooser.
   base::flat_map<GURL, gfx::ImageSkia> idp_images_;
 
-  // Whether the dialog has been populated via either ShowAccountPicker() or
-  // ShowVerifyingSheet().
+  // Whether the dialog has been populated via either ShowMultiAccountPicker()
+  // or ShowVerifyingSheet().
   bool has_sheet_{false};
 
   // View containing the logo of the identity provider and the title.
@@ -178,6 +175,12 @@ class AccountSelectionBubbleView : public views::BubbleDialogDelegateView,
 
   // View containing the continue button.
   raw_ptr<views::MdTextButton> continue_button_ = nullptr;
+
+  // Auto sign-in opt-out checkbox.
+  raw_ptr<views::Checkbox> auto_signin_checkbox_ = nullptr;
+
+  // Whether to show the auto sign-in opt-out checkbox;
+  bool show_auto_signin_checkbox_{false};
 
   // Observes events on AccountSelectionBubbleView.
   raw_ptr<Observer> observer_{nullptr};

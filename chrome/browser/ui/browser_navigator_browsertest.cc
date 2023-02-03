@@ -8,7 +8,6 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -44,7 +43,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_frame_navigation_observer.h"
@@ -52,7 +50,6 @@
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/resource_request_body.h"
-#include "third_party/blink/public/common/features.h"
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "components/captive_portal/content/captive_portal_tab_helper.h"
@@ -450,7 +447,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopup) {
   NavigateParams params(MakeNavigateParams());
   params.disposition = WindowOpenDisposition::NEW_POPUP;
-  params.window_bounds = gfx::Rect(0, 0, 200, 200);
+  params.window_features.bounds = gfx::Rect(0, 0, 200, 200);
   // Wait for new popup to to load and gain focus.
   ui_test_utils::NavigateToURL(&params);
 
@@ -476,7 +473,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopup_ExtensionId) {
   NavigateParams params(MakeNavigateParams());
   params.disposition = WindowOpenDisposition::NEW_POPUP;
   params.app_id = "extensionappid";
-  params.window_bounds = gfx::Rect(0, 0, 200, 200);
+  params.window_features.bounds = gfx::Rect(0, 0, 200, 200);
   // Wait for new popup to to load and gain focus.
   ui_test_utils::NavigateToURL(&params);
 
@@ -499,12 +496,12 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupFromPopup) {
   // Open a popup.
   NavigateParams params1(MakeNavigateParams());
   params1.disposition = WindowOpenDisposition::NEW_POPUP;
-  params1.window_bounds = gfx::Rect(0, 0, 200, 200);
+  params1.window_features.bounds = gfx::Rect(0, 0, 200, 200);
   Navigate(&params1);
   // Open another popup.
   NavigateParams params2(MakeNavigateParams(params1.browser));
   params2.disposition = WindowOpenDisposition::NEW_POPUP;
-  params2.window_bounds = gfx::Rect(0, 0, 200, 200);
+  params2.window_features.bounds = gfx::Rect(0, 0, 200, 200);
   Navigate(&params2);
 
   // Navigate() should have opened a new normal popup window.
@@ -527,7 +524,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   Browser* app_browser = CreateEmptyBrowserForApp(browser()->profile());
   NavigateParams params(MakeNavigateParams(app_browser));
   params.disposition = WindowOpenDisposition::NEW_POPUP;
-  params.window_bounds = gfx::Rect(0, 0, 200, 200);
+  params.window_features.bounds = gfx::Rect(0, 0, 200, 200);
   Navigate(&params);
 
   // Navigate() should have opened a new TYPE_APP_POPUP window with no toolbar.
@@ -551,12 +548,12 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupFromAppPopup) {
   // Open an app popup.
   NavigateParams params1(MakeNavigateParams(app_browser));
   params1.disposition = WindowOpenDisposition::NEW_POPUP;
-  params1.window_bounds = gfx::Rect(0, 0, 200, 200);
+  params1.window_features.bounds = gfx::Rect(0, 0, 200, 200);
   Navigate(&params1);
   // Now open another app popup.
   NavigateParams params2(MakeNavigateParams(params1.browser));
   params2.disposition = WindowOpenDisposition::NEW_POPUP;
-  params2.window_bounds = gfx::Rect(0, 0, 200, 200);
+  params2.window_features.bounds = gfx::Rect(0, 0, 200, 200);
   Navigate(&params2);
 
   // Navigate() should have opened a new popup app window.
@@ -586,7 +583,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
 IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupUnfocused) {
   NavigateParams params(MakeNavigateParams());
   params.disposition = WindowOpenDisposition::NEW_POPUP;
-  params.window_bounds = gfx::Rect(0, 0, 200, 200);
+  params.window_features.bounds = gfx::Rect(0, 0, 200, 200);
   params.window_action = NavigateParams::SHOW_WINDOW_INACTIVE;
   // Wait for new popup to load (and gain focus if the test fails).
   ui_test_utils::NavigateToURL(&params);
@@ -608,7 +605,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewPopupTrusted) {
   NavigateParams params(MakeNavigateParams());
   params.disposition = WindowOpenDisposition::NEW_POPUP;
   params.trusted_source = true;
-  params.window_bounds = gfx::Rect(0, 0, 200, 200);
+  params.window_features.bounds = gfx::Rect(0, 0, 200, 200);
   // Wait for new popup to to load and gain focus.
   ui_test_utils::NavigateToURL(&params);
 
@@ -629,7 +626,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
   NavigateParams params(MakeNavigateParams());
   params.disposition = WindowOpenDisposition::NEW_POPUP;
   params.is_captive_portal_popup = true;
-  params.window_bounds = gfx::Rect(0, 0, 200, 200);
+  params.window_features.bounds = gfx::Rect(0, 0, 200, 200);
   // Wait for new popup to to load and gain focus.
   ui_test_utils::NavigateToURL(&params);
 
@@ -1022,7 +1019,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, DISABLED_TargetContents_Popup) {
   NavigateParams params(MakeNavigateParams());
   params.disposition = WindowOpenDisposition::NEW_POPUP;
   params.contents_to_insert = CreateWebContents(false);
-  params.window_bounds = gfx::Rect(10, 10, 500, 500);
+  params.window_features.bounds = gfx::Rect(10, 10, 500, 500);
   Navigate(&params);
 
   // Navigate() should have opened a new popup window.
@@ -1031,20 +1028,20 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, DISABLED_TargetContents_Popup) {
   EXPECT_TRUE(params.browser->window()->IsToolbarVisible());
 
   // The web platform is weird. The window bounds specified in
-  // |params.window_bounds| are used as follows:
+  // `params.window_features.bounds` are used as follows:
   // - the origin is used to position the window
   // - the size is used to size the WebContents of the window.
   // As such the position of the resulting window will always match
-  // params.window_bounds.origin(), but its size will not. We need to match
-  // the size against the selected tab's view's container size.
+  // `params.window_features.bounds.origin()`, but its size will not. We need to
+  // match the size against the selected tab's view's container size.
   // Only Windows positions the window according to
-  // |params.window_bounds.origin()| - on Mac the window is offset from the
-  // opener and on Linux it always opens at 0,0.
-  EXPECT_EQ(params.window_bounds.origin(),
+  // `params.window_features.bounds.origin()` - on Mac the window is offset from
+  // the opener and on Linux it always opens at 0,0.
+  EXPECT_EQ(params.window_features.bounds.origin(),
             params.browser->window()->GetRestoredBounds().origin());
   // All platforms should respect size however provided width > 400 (Mac has a
   // minimum window width of 400).
-  EXPECT_EQ(params.window_bounds.size(),
+  EXPECT_EQ(params.window_features.bounds.size(),
             params.navigated_or_inserted_contents->GetContainerBounds().size());
 
   // We should have two windows, the new popup and the browser() provided by the
@@ -1859,20 +1856,16 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, SubFrameNavigationUIData) {
 }
 #endif
 
-//  Helper class to enable picture in picture V2 for those tests that need it.
-//  Once the feature is enabled permanently, these can be merged back to
-//  BrowserNavigatorTest instead.
-class BrowserNavigatorWithPictureInPictureTest : public BrowserNavigatorTest {
-  base::test::ScopedFeatureList scoped_feature_list_{
-      blink::features::kDocumentPictureInPictureAPI};
-};
-
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorWithPictureInPictureTest,
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_PictureInPicture_Open) {
+  // Create the params for the PiP request.
+  auto pip_options = blink::mojom::PictureInPictureWindowOptions::New();
+  pip_options->initial_aspect_ratio = 0.5;
+  pip_options->lock_aspect_ratio = true;
+
   // The WebContents holds the parameters from the PiP request.
   WebContents::CreateParams web_contents_params(browser()->profile());
-  web_contents_params.initial_picture_in_picture_aspect_ratio = 0.5;
-  web_contents_params.lock_picture_in_picture_aspect_ratio = true;
+  web_contents_params.picture_in_picture_options = *pip_options;
 
   // Opening a picture in picture window should create a new browser.
   NavigateParams params(MakeNavigateParams(browser()));
@@ -1886,30 +1879,41 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorWithPictureInPictureTest,
 
   // The window should have respected the initial aspect ratio.
   const gfx::Rect override_bounds = params.browser->override_bounds();
-  const float aspect_ratio = static_cast<float>(override_bounds.width()) /
-                             static_cast<float>(override_bounds.height());
-  EXPECT_FLOAT_EQ(0.5, aspect_ratio);
+  const double aspect_ratio = static_cast<double>(override_bounds.width()) /
+                              static_cast<double>(override_bounds.height());
+  EXPECT_DOUBLE_EQ(0.5, aspect_ratio);
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorWithPictureInPictureTest,
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
+                       Disposition_PictureInPicture_OpenWithWidthAndHeight) {
+  // Give both an aspect ratio and a width/height that don't match. The
+  // width/height should take precedence.
+  auto pip_options = blink::mojom::PictureInPictureWindowOptions::New();
+  pip_options->width = 600;
+  pip_options->height = 500;
+  pip_options->initial_aspect_ratio = 0.5;
+  WebContents::CreateParams web_contents_params(browser()->profile());
+  web_contents_params.picture_in_picture_options = *pip_options;
+
+  // Opening a picture in picture window should create a new browser.
+  NavigateParams params(MakeNavigateParams(browser()));
+  params.disposition = WindowOpenDisposition::NEW_PICTURE_IN_PICTURE;
+  params.contents_to_insert = WebContents::Create(web_contents_params);
+  Navigate(&params);
+
+  // The window should use the width and height and ignore the aspect ratio.
+  const gfx::Rect override_bounds = params.browser->override_bounds();
+  EXPECT_EQ(600, override_bounds.width());
+  EXPECT_EQ(500, override_bounds.height());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
                        Disposition_PictureInPicture_CantFromAnotherPip) {
   // Make sure that attempting to open a picture in picture window from a
   // picture in picture window fails.
   Browser* pip = CreateEmptyBrowserForType(Browser::TYPE_PICTURE_IN_PICTURE,
                                            browser()->profile());
   NavigateParams params(MakeNavigateParams(pip));
-  params.disposition = WindowOpenDisposition::NEW_PICTURE_IN_PICTURE;
-  Navigate(&params);
-
-  EXPECT_EQ(params.browser, nullptr);
-}
-
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       Disposition_PictureInPicture_FeatureMustBeEnabled) {
-  // Creating a picture in picture window should not work if the feature is off.
-  ASSERT_FALSE(base::FeatureList::IsEnabled(
-      blink::features::kDocumentPictureInPictureAPI));
-  NavigateParams params(MakeNavigateParams(browser()));
   params.disposition = WindowOpenDisposition::NEW_PICTURE_IN_PICTURE;
   Navigate(&params);
 

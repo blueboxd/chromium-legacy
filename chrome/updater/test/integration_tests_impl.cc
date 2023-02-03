@@ -36,7 +36,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/task/single_thread_task_runner_thread_mode.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
@@ -199,7 +198,8 @@ void ExpectSequence(UpdaterScope scope,
                     const std::string& install_data_index,
                     int event_type,
                     const base::Version& from_version,
-                    const base::Version& to_version) {
+                    const base::Version& to_version,
+                    bool is_update_check_only) {
   base::FilePath test_data_path;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_path));
   base::FilePath crx_path = test_data_path.Append(FILE_PATH_LITERAL("updater"))
@@ -226,19 +226,22 @@ void ExpectSequence(UpdaterScope scope,
                         test_server->base_url().spec(), to_version, crx_path,
                         kDoNothingCRXRun, {}));
 
-  // Second request: update download.
-  std::string crx_bytes;
-  base::ReadFileToString(crx_path, &crx_bytes);
-  test_server->ExpectOnce({base::BindRepeating(RequestMatcherRegex, "")},
-                          crx_bytes);
+  if (!is_update_check_only) {
+    // Second request: update download.
+    std::string crx_bytes;
+    base::ReadFileToString(crx_path, &crx_bytes);
+    test_server->ExpectOnce({base::BindRepeating(RequestMatcherRegex, "")},
+                            crx_bytes);
+  }
 
   // Third request: event ping.
   test_server->ExpectOnce(
       {base::BindRepeating(
            RequestMatcherRegex,
-           base::StringPrintf(R"(.*"eventresult":1,"eventtype":%d,)"
+           base::StringPrintf(R"(.*"eventresult":%d,"eventtype":%d,)"
                               R"("nextversion":"%s","previousversion":"%s".*)",
-                              event_type, to_version.GetString().c_str(),
+                              !is_update_check_only, event_type,
+                              to_version.GetString().c_str(),
                               from_version.GetString().c_str())),
        GetScopePredicate(scope)},
       ")]}'\n");
@@ -304,17 +307,17 @@ void PrintLog(UpdaterScope scope) {
   std::string contents;
   absl::optional<base::FilePath> path = GetDataDirPath(scope);
   EXPECT_TRUE(path);
-  VLOG(0) << "Contents of updater.log for " << GetTestName() << " in "
-          << path.value() << ":";
   if (path &&
       base::ReadFileToString(path->AppendASCII("updater.log"), &contents)) {
+    VLOG(0) << "Contents of updater.log for " << GetTestName() << " in "
+            << path.value() << ":";
     const std::string demarcation(72, '=');
     VLOG(0) << demarcation;
     VLOG(0) << contents;
-    VLOG(0) << "End contents of updater.log.";
+    VLOG(0) << "End contents of updater.log for " << GetTestName() << ".";
     VLOG(0) << demarcation;
   } else {
-    VLOG(0) << "Failed to read updater.log file.";
+    VLOG(0) << "No updater.log at " << path.value() << " for " << GetTestName();
   }
 }
 
@@ -326,8 +329,9 @@ void PrintLog(UpdaterScope scope) {
 void CopyLog(const base::FilePath& src_dir) {
   // TODO(crbug.com/1159189): copy other test artifacts.
   base::FilePath dest_dir = GetLogDestinationDir();
+  const base::FilePath log_path = src_dir.AppendASCII("updater.log");
   if (!dest_dir.empty() && base::PathExists(dest_dir) &&
-      base::PathExists(src_dir)) {
+      base::PathExists(log_path)) {
     dest_dir = dest_dir.AppendASCII(GetTestName());
     EXPECT_TRUE(base::CreateDirectory(dest_dir));
     const base::FilePath dest_file_path = [dest_dir]() {
@@ -337,7 +341,6 @@ void CopyLog(const base::FilePath& src_dir) {
       }
       return path;
     }();
-    const base::FilePath log_path = src_dir.AppendASCII("updater.log");
     VLOG(0) << "Copying updater.log file. From: " << log_path
             << ". To: " << dest_file_path;
     EXPECT_TRUE(base::CopyFile(log_path, dest_file_path));
@@ -374,7 +377,13 @@ void Update(UpdaterScope scope,
   scoped_refptr<UpdateService> update_service = CreateUpdateServiceProxy(scope);
   base::RunLoop loop;
   update_service->Update(
-      app_id, install_data_index, UpdateService::Priority::kForeground,
+      app_id, install_data_index,
+  // TODO(crbug.com/1396103): mojo interface changes will be done in separate
+  // CL.
+#if BUILDFLAG(IS_WIN)
+      /*do_update_check_only=*/false,
+#endif  // BUILDFLAG(IS_WIN)
+      UpdateService::Priority::kForeground,
       UpdateService::PolicySameVersionUpdate::kNotAllowed, base::DoNothing(),
       base::BindLambdaForTesting(
           [&loop](UpdateService::Result result_unused) { loop.Quit(); }));
@@ -569,6 +578,16 @@ void ExpectSelfUpdateSequence(UpdaterScope scope, ScopedServer* test_server) {
       ")]}'\n");
 }
 
+void ExpectUpdateCheckSequence(UpdaterScope scope,
+                               ScopedServer* test_server,
+                               const std::string& app_id,
+                               const std::string& install_data_index,
+                               const base::Version& from_version,
+                               const base::Version& to_version) {
+  ExpectSequence(scope, test_server, app_id, install_data_index, 3,
+                 from_version, to_version, /*is_update_check_only*/ true);
+}
+
 void ExpectUpdateSequence(UpdaterScope scope,
                           ScopedServer* test_server,
                           const std::string& app_id,
@@ -576,7 +595,7 @@ void ExpectUpdateSequence(UpdaterScope scope,
                           const base::Version& from_version,
                           const base::Version& to_version) {
   ExpectSequence(scope, test_server, app_id, install_data_index, 3,
-                 from_version, to_version);
+                 from_version, to_version, /*is_update_check_only*/ false);
 }
 
 void ExpectInstallSequence(UpdaterScope scope,
@@ -586,7 +605,7 @@ void ExpectInstallSequence(UpdaterScope scope,
                            const base::Version& from_version,
                            const base::Version& to_version) {
   ExpectSequence(scope, test_server, app_id, install_data_index, 2,
-                 from_version, to_version);
+                 from_version, to_version, /*is_update_check_only*/ false);
 }
 
 // Runs multiple cycles of instantiating the update service, calling
@@ -619,10 +638,7 @@ void StressUpdateService(UpdaterScope scope) {
           UpdaterScope scope,
           scoped_refptr<base::SequencedTaskRunner> task_runner,
           LoopClosure loop_closure) {
-        auto service_task_runner =
-            base::ThreadPool::CreateSingleThreadTaskRunner(
-                {}, base::SingleThreadTaskRunnerThreadMode::DEDICATED);
-        service_task_runner->PostDelayedTask(
+        base::ThreadPool::CreateSequencedTaskRunner({})->PostDelayedTask(
             FROM_HERE,
             base::BindLambdaForTesting([scope, task_runner, loop_closure]() {
               auto update_service = CreateUpdateServiceProxy(scope);
@@ -673,8 +689,13 @@ void CallServiceUpdate(UpdaterScope updater_scope,
 
   base::RunLoop loop;
   service_proxy->Update(
-      app_id, install_data_index, UpdateService::Priority::kForeground,
-      policy_same_version_update,
+      app_id, install_data_index,
+  // TODO(crbug.com/1396103): mojo interface changes will be done in separate
+  // CL.
+#if BUILDFLAG(IS_WIN)
+      /*do_update_check_only=*/false,
+#endif  // BUILDFLAG(IS_WIN)
+      UpdateService::Priority::kForeground, policy_same_version_update,
       base::BindLambdaForTesting([](const UpdateService::UpdateState&) {}),
       base::BindLambdaForTesting([&](UpdateService::Result result) {
         EXPECT_EQ(result, UpdateService::Result::kSuccess);

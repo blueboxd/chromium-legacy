@@ -83,6 +83,7 @@ class DOMRectList;
 class DOMStringMap;
 class DOMTokenList;
 class DisplayLockContext;
+class DisplayStyle;
 class Document;
 class EditContext;
 class ElementAnimations;
@@ -593,7 +594,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void DetachLayoutTree(bool performing_reattach = false) override;
 
   virtual LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout);
-  virtual bool LayoutObjectIsNeeded(const ComputedStyle&) const;
+  virtual bool LayoutObjectIsNeeded(const DisplayStyle&) const;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) const;
 
   const ComputedStyle* ParentComputedStyle() const;
 
@@ -1499,6 +1501,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   inline void UpdateCallbackSelectors(const ComputedStyle* old_style,
                                       const ComputedStyle* new_style);
+  inline void NotifyIfMatchedDocumentRulesSelectorsChanged(
+      const ComputedStyle* old_style,
+      const ComputedStyle* new_style);
 
   // Clone is private so that non-virtual CloneElementWithChildren and
   // CloneElementWithoutChildren are used instead.

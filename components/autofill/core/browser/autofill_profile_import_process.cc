@@ -153,12 +153,13 @@ void ProfileImportProcess::DetermineProfileImportType() {
 
       // Determine if the existing profile is blocked for updates.
       // If the personal data manager is not available the profile is considered
-      // as not blocked.
+      // as not blocked. Also, updates can be disabled by a feature flag.
       bool is_blocked_for_update =
-          personal_data_manager_
-              ? personal_data_manager_->IsProfileUpdateBlocked(
-                    existing_profile->guid())
-              : false;
+          personal_data_manager_->IsProfileUpdateBlocked(
+              existing_profile->guid()) ||
+          base::FeatureList::IsEnabled(
+              features::kAutofillDisableProfileUpdates);
+
       if (is_blocked_for_update) {
         ++number_of_blocked_profile_updates_;
       }
@@ -177,12 +178,17 @@ void ProfileImportProcess::DetermineProfileImportType() {
       continue;
     }
     // If the profile changed but all settings-visible values are maintained,
-    // the profile can be updated silently.
-    if (existing_profile->source() ==
-            AutofillProfile::Source::kLocalOrSyncable ||
-        features::kAutofillEnableSilentUpdatesForAccountProfiles.Get()) {
+    // the profile can be updated silently. Silent updates can also be disabled
+    // using a feature flag.
+    if ((existing_profile->source() ==
+             AutofillProfile::Source::kLocalOrSyncable ||
+         features::kAutofillEnableSilentUpdatesForAccountProfiles.Get()) &&
+        !base::FeatureList::IsEnabled(
+            features::kAutofillDisableSilentProfileUpdates)) {
       merged_profile.set_modification_date(AutofillClock::Now());
       updated_profiles_.emplace_back(merged_profile);
+    } else {
+      ++number_of_unchanged_profiles;
     }
   }
 
@@ -435,11 +441,16 @@ void ProfileImportProcess::CollectMetrics(ukm::UkmRecorder* ukm_recorder,
       AutofillMetrics::LogNewProfileWithIgnoredCountryImportDecision(
           user_decision_);
     }
+    AutofillMetrics::LogNewProfileNumberOfAutocompleteUnrecognizedFields(
+        import_metadata_.num_autocomplete_unrecognized_fields);
+
     LogUkmMetrics(num_edited_fields);
   } else if (import_type_ == AutofillProfileImportType::kConfirmableMerge ||
              import_type_ ==
                  AutofillProfileImportType::kConfirmableMergeAndSilentUpdate) {
     AutofillMetrics::LogProfileUpdateImportDecision(user_decision_);
+    AutofillMetrics::LogProfileUpdateNumberOfAutocompleteUnrecognizedFields(
+        import_metadata_.num_autocomplete_unrecognized_fields);
 
     DCHECK(merge_candidate_.has_value() && import_candidate_.has_value());
     // For all update prompts, log the field types and total number of fields

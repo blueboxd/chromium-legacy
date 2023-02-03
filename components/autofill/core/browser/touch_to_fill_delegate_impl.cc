@@ -6,10 +6,11 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "components/autofill/core/browser/autofill_browser_util.h"
-#include "components/autofill/core/browser/autofill_driver.h"
+#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_suggestion_generator.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/form_types.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
 
@@ -35,7 +36,6 @@ bool TouchToFillDelegateImpl::TryToShowTouchToFill(const FormData& form,
   query_form_ = form;
   query_field_ = field;
   // Trigger only for a credit card field/form.
-  // TODO(crbug.com/1247698): Clarify field/form requirements.
   if (manager_->GetPopupType(form, field) != PopupType::kCreditCards)
     return false;
   // Trigger only on supported platforms.
@@ -44,6 +44,13 @@ bool TouchToFillDelegateImpl::TryToShowTouchToFill(const FormData& form,
 
   TouchToFillCreditCardTriggerOutcome outcome =
       TouchToFillCreditCardTriggerOutcome::kShown;
+  // Trigger only for complete forms (contining the fields for the card number
+  // and the card expiration date).
+  FormStructure* form_structure =
+      manager_->FindCachedFormById(form.global_id());
+  if (form_structure && !FormHasAllCreditCardFields(*form_structure)) {
+    outcome = TouchToFillCreditCardTriggerOutcome::kIncompleteForm;
+  }
   // Trigger only if not shown before.
   if (ttf_credit_card_state_ != TouchToFillState::kShouldShow) {
     outcome = TouchToFillCreditCardTriggerOutcome::kShownBefore;
@@ -71,7 +78,7 @@ bool TouchToFillDelegateImpl::TryToShowTouchToFill(const FormData& form,
     outcome = TouchToFillCreditCardTriggerOutcome::kNoValidCards;
   }
   // Trigger only if the UI is available.
-  if (!manager_->driver()->CanShowAutofillUi()) {
+  if (!manager_->CanShowAutofillUi()) {
     outcome = TouchToFillCreditCardTriggerOutcome::kCannotShowAutofillUi;
   }
   // Finally try showing the surface
@@ -90,6 +97,8 @@ bool TouchToFillDelegateImpl::TryToShowTouchToFill(const FormData& form,
   ttf_credit_card_state_ = TouchToFillState::kIsShowing;
   manager_->client()->HideAutofillPopup(
       PopupHidingReason::kOverlappingWithTouchToFillSurface);
+  manager_->DidShowSuggestions(/*has_autofill_suggestions=*/true, form, field);
+
   return true;
 }
 
@@ -109,8 +118,8 @@ void TouchToFillDelegateImpl::Reset() {
   ttf_credit_card_state_ = TouchToFillState::kShouldShow;
 }
 
-AutofillDriver* TouchToFillDelegateImpl::GetDriver() {
-  return manager_->driver();
+AutofillManager* TouchToFillDelegateImpl::GetManager() {
+  return manager_;
 }
 
 bool TouchToFillDelegateImpl::ShouldShowScanCreditCard() {
@@ -143,7 +152,7 @@ void TouchToFillDelegateImpl::SuggestionSelected(std::string unique_id) {
   CreditCard* card = pdm->GetCreditCardByGUID(unique_id);
   manager_->FillOrPreviewCreditCardForm(mojom::RendererFormDataAction::kFill,
                                         query_form_, query_field_, card);
-  manager_->SetSuggestionOriginMetricState(
+  manager_->SetAutofillSuggestionMethod(
       AutofillSuggestionMethod::KTouchToFillCreditCard);
 }
 

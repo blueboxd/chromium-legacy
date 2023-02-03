@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_list.h"
 #include "base/functional/callback.h"
 #include "base/time/time.h"
 #include "components/metrics/metrics_log_store.h"
@@ -133,11 +134,6 @@ class MetricsServiceClient {
   // Called when loading state changed, e.g. start/stop loading.
   virtual void LoadingStateChanged(bool is_loading) {}
 
-  // Called on renderer crashes in some embedders (e.g., those that do not use
-  // //content and thus do not have //content's notification system available
-  // as a mechanism for observing renderer crashes).
-  virtual void OnRendererProcessCrash() {}
-
   // Returns whether metrics reporting is managed by policy.
   virtual bool IsReportingPolicyManaged();
 
@@ -145,8 +141,8 @@ class MetricsServiceClient {
   // shown during first-run.
   virtual EnableMetricsDefault GetMetricsReportingDefaultState();
 
-  // Returns whether cellular logic is enabled for metrics reporting.
-  virtual bool IsUMACellularUploadLogicEnabled();
+  // Return true iff the system is currently on a cellular connection.
+  virtual bool IsOnCellularConnection();
 
   // Returns whether the allowlist for external experiment ids is enabled. Some
   // embedders like WebLayer disable it. For Chrome, it should be enabled.
@@ -172,6 +168,9 @@ class MetricsServiceClient {
 
   // Checks if the cloned install detector says that client ids should be reset.
   virtual bool ShouldResetClientIdsOnClonedInstall();
+
+  virtual base::CallbackListSubscription AddOnClonedInstallDetectedCallback(
+      base::OnceClosure callback);
 
   // Specifies local log storage requirements and restrictions.
   virtual MetricsLogStore::StorageLimits GetStorageLimits() const;

@@ -37,6 +37,7 @@
 #include "net/dns/public/resolve_error_info.h"
 #include "net/log/net_log_with_source.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "extensions/browser/api/socket/app_firewall_hole_manager.h"
@@ -565,8 +566,10 @@ void SocketReadFunction::OnCompleted(int bytes_read,
   base::Value::Dict result;
   result.Set(kResultCodeKey, bytes_read);
   base::span<const uint8_t> data_span;
-  if (bytes_read > 0)
-    data_span = base::as_bytes(base::make_span(io_buffer->data(), bytes_read));
+  if (bytes_read > 0) {
+    data_span = base::as_bytes(
+        base::make_span(io_buffer->data(), static_cast<size_t>(bytes_read)));
+  }
   result.Set(kDataKey, base::Value(data_span));
   Respond(OneArgument(base::Value(std::move(result))));
 }
@@ -639,8 +642,10 @@ void SocketRecvFromFunction::OnCompleted(int bytes_read,
   base::Value::Dict result;
   result.Set(kResultCodeKey, bytes_read);
   base::span<const uint8_t> data_span;
-  if (bytes_read > 0)
-    data_span = base::as_bytes(base::make_span(io_buffer->data(), bytes_read));
+  if (bytes_read > 0) {
+    data_span = base::as_bytes(
+        base::make_span(io_buffer->data(), static_cast<size_t>(bytes_read)));
+  }
   result.Set(kDataKey, base::Value(data_span));
   result.Set(kAddressKey, address);
   result.Set(kPortKey, port);
@@ -1005,12 +1010,12 @@ ExtensionFunction::ResponseAction SocketGetJoinedGroupsFunction::Work() {
     return RespondNow(ErrorWithCode(-1, kPermissionError));
   }
 
-  base::Value values(base::Value::Type::LIST);
+  base::Value::List values;
   auto* udp_socket = static_cast<UDPSocket*>(socket);
   for (const std::string& group : udp_socket->GetJoinedGroups()) {
     values.Append(group);
   }
-  return RespondNow(OneArgument(std::move(values)));
+  return RespondNow(OneArgument(base::Value(std::move(values))));
 }
 
 SocketSecureFunction::SocketSecureFunction() = default;

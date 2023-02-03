@@ -85,6 +85,8 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
     // The transition animation from a tab to the tab switcher.
     private AnimatorSet mTabToSwitcherAnimation;
     private boolean mIsAnimatingHide;
+    @Nullable
+    private Runnable mDeferredAnimationRunnable;
 
     private TabListSceneLayer mSceneLayer;
     private final StartSurface mStartSurface;
@@ -271,21 +273,48 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
         if (isShowingStartSurfaceHomepage) {
             quick = getCarouselOrSingleTabListDelegate().prepareTabSwitcherView();
         } else {
+            mStartSurface.beforeShowTabSwitcherView();
             quick = getGridTabListDelegate().prepareTabSwitcherView();
         }
 
         // Skip animation when there is no tab in current tab model or If it's showing
         // start surface, we don't show the shrink tab animatio.
         boolean isCurrentTabModelEmpty = mTabModelSelector.getCurrentModel().getCount() == 0;
-        animate = animate && !isCurrentTabModelEmpty && !isShowingStartSurfaceHomepage;
+        final boolean shouldAnimate =
+                animate && !isCurrentTabModelEmpty && !isShowingStartSurfaceHomepage;
 
         if (TabUiFeatureUtilities.isTabletGridTabSwitcherPolishEnabled(getContext())) {
-            showOverviewWithTranslateUp(animate);
+            showOverviewWithTranslateUp(shouldAnimate);
         } else {
-            showOverviewWithTabShrink(animate,
-                    ()
-                            -> getGridTabListDelegate().getThumbnailLocationOfCurrentTab(false),
-                    isShowingStartSurfaceHomepage, quick);
+            if (isShowingStartSurfaceHomepage) {
+                mStartSurface.showOverview(shouldAnimate);
+                return;
+            }
+            // crbug/1412375: Callers of LayoutManager#showLayout(LayoutType.TAB_SWITCHER) may
+            // not have set the correct StartSurfaceState leading to the transition animation
+            // stalling. setStartSurfaceState(StartSurfaceState.SHOWING_TABSWITCHER) changes the
+            // GTS to be visible, i.e. calls setSecondaryTasksSurfaceVisibility(Visible).
+            // Without this behavior getGridTabListDelegate().runAnimationOnNextLayout() below
+            // won't run as the SecondaryTasksSurface which is the parent view of
+            // TabListRecyclerView remains invisible.
+            // This is a band-aid fix which won't be required once we launch the refactoring.
+            if (mStartSurface.getStartSurfaceState() != StartSurfaceState.SHOWING_TABSWITCHER) {
+                mStartSurface.setStartSurfaceState(StartSurfaceState.SHOWING_TABSWITCHER);
+            }
+            // Ensure the SceneLayer image for the GTS is in the correct position by deferring until
+            // the next layout pass.
+            mDeferredAnimationRunnable = () -> {
+                showOverviewWithTabShrink(shouldAnimate, () -> {
+                    return getGridTabListDelegate().getThumbnailLocationOfCurrentTab(false);
+                }, isShowingStartSurfaceHomepage, quick);
+            };
+            getGridTabListDelegate().runAnimationOnNextLayout(() -> {
+                if (mDeferredAnimationRunnable != null) {
+                    Runnable deferred = mDeferredAnimationRunnable;
+                    mDeferredAnimationRunnable = null;
+                    deferred.run();
+                }
+            });
         }
     }
 
@@ -435,6 +464,11 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
     @Override
     protected void forceAnimationToFinish() {
         super.forceAnimationToFinish();
+        if (mDeferredAnimationRunnable != null) {
+            Runnable deferred = mDeferredAnimationRunnable;
+            mDeferredAnimationRunnable = null;
+            deferred.run();
+        }
         if (mTabToSwitcherAnimation != null) {
             if (mTabToSwitcherAnimation.isRunning()) {
                 mTabToSwitcherAnimation.end();

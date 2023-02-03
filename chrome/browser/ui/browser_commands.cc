@@ -49,6 +49,7 @@
 #include "chrome/browser/ui/autofill/payments/manage_migration_ui_controller.h"
 #include "chrome/browser/ui/autofill/payments/offer_notification_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/save_iban_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/virtual_card_enroll_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/virtual_card_manual_fallback_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/save_update_address_profile_bubble_controller_impl.h"
@@ -183,6 +184,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/apps/intent_helper/supported_links_infobar_delegate.h"
+#include "chromeos/ui/wm/features.h"
 #endif
 
 #if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
@@ -1269,6 +1271,14 @@ void SaveCreditCard(Browser* browser) {
   controller->ReshowBubble();
 }
 
+void SaveIBAN(Browser* browser) {
+  WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  autofill::SaveIbanBubbleControllerImpl* controller =
+      autofill::SaveIbanBubbleControllerImpl::FromWebContents(web_contents);
+  controller->EnsureBubbleShown();
+}
+
 void MigrateLocalCards(Browser* browser) {
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
@@ -1846,6 +1856,13 @@ void PromptToNameWindow(Browser* browser) {
   chrome::ShowWindowNamePrompt(browser);
 }
 
+#if BUILDFLAG(IS_CHROMEOS)
+void ToggleMultitaskMenu(Browser* browser) {
+  DCHECK(chromeos::wm::features::IsFloatWindowEnabled());
+  browser->window()->ToggleMultitaskMenu();
+}
+#endif
+
 void ToggleCommander(Browser* browser) {
   commander::Commander::Get()->ToggleForBrowser(browser);
 }
@@ -1874,9 +1891,7 @@ bool ShouldInterceptChromeURLNavigationInIncognito(Browser* browser,
                  .Resolve(chrome::kClearBrowserDataSubPage);
 
   bool show_history_disclaimer_dialog =
-      url == GURL(chrome::kChromeUIHistoryURL) &&
-      base::FeatureList::IsEnabled(
-          features::kUpdateHistoryEntryPointsInIncognito);
+      url == GURL(chrome::kChromeUIHistoryURL);
 
   return show_clear_browsing_data_dialog || show_history_disclaimer_dialog;
 }
@@ -1887,8 +1902,6 @@ void ProcessInterceptedChromeURLNavigationInIncognito(Browser* browser,
                  .Resolve(chrome::kClearBrowserDataSubPage)) {
     ShowIncognitoClearBrowsingDataDialog(browser);
   } else if (url == GURL(chrome::kChromeUIHistoryURL)) {
-    DCHECK(base::FeatureList::IsEnabled(
-        features::kUpdateHistoryEntryPointsInIncognito));
     ShowIncognitoHistoryDisclaimerDialog(browser);
   } else {
     NOTREACHED();

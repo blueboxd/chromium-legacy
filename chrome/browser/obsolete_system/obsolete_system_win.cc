@@ -19,7 +19,7 @@ namespace {
 // prevents obsolete-system warnings from appearing when Chrome is run in
 // compatibility mode on modern versions of Windows.
 base::win::Version GetRealOSVersion() {
-  return base::win::OSInfo::GetInstance()->Kernel32Version();
+  return base::win::OSInfo::Kernel32Version();
 }
 
 bool IsObsoleteOsVersion() {
@@ -28,35 +28,39 @@ bool IsObsoleteOsVersion() {
 
 }  // namespace
 
-// static
-bool ObsoleteSystem::IsObsoleteNowOrSoon() {
+namespace ObsoleteSystem {
+
+bool IsObsoleteNowOrSoon() {
   return IsObsoleteOsVersion();
 }
 
-// static
-std::u16string ObsoleteSystem::LocalizedObsoleteString() {
+std::u16string LocalizedObsoleteString() {
   const auto version = GetRealOSVersion();
-  if (version == base::win::Version::WIN7)
+  if (version == base::win::Version::WIN7) {
     return l10n_util::GetStringUTF16(IDS_WIN_7_OBSOLETE);
-  if (version == base::win::Version::WIN8)
+  }
+  if (version == base::win::Version::WIN8) {
     return l10n_util::GetStringUTF16(IDS_WIN_8_OBSOLETE);
-  if (version == base::win::Version::WIN8_1)
+  }
+  if (version == base::win::Version::WIN8_1) {
     return l10n_util::GetStringUTF16(IDS_WIN_8_1_OBSOLETE);
+  }
   return l10n_util::GetStringUTF16(IDS_WIN_XP_VISTA_OBSOLETE);
 }
 
-// static
-bool ObsoleteSystem::IsEndOfTheLine() {
+bool IsEndOfTheLine() {
   // M109 was the last milestone to support Win 7/8/8.1, the last deprecated
   // Windows version. Future deprecations should update this to the last
   // milestone that supports the soon-to-be-deprecated Windows version.
   return CHROME_VERSION_MAJOR >= 109;
 }
 
-// static
-const char* ObsoleteSystem::GetLinkURL() {
+const char* GetLinkURL() {
   const auto version = GetRealOSVersion();
-  if (version < base::win::Version::WIN7)
+  if (version < base::win::Version::WIN7) {
     return chrome::kWindowsXPVistaDeprecationURL;
+  }
   return chrome::kWindows78DeprecationURL;
 }
+
+}  // namespace ObsoleteSystem

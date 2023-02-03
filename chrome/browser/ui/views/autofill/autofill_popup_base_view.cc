@@ -109,32 +109,8 @@ int AutofillPopupBaseView::GetHorizontalPadding() {
   return GetHorizontalMargin();
 }
 
-SkColor AutofillPopupBaseView::GetBackgroundColor() const {
-  return GetColorProvider()->GetColor(ui::kColorDropdownBackground);
-}
-
-SkColor AutofillPopupBaseView::GetForegroundColor() const {
-  return GetColorProvider()->GetColor(ui::kColorDropdownForeground);
-}
-
-SkColor AutofillPopupBaseView::GetSelectedBackgroundColor() const {
-  return GetColorProvider()->GetColor(ui::kColorDropdownBackgroundSelected);
-}
-
-SkColor AutofillPopupBaseView::GetSelectedForegroundColor() const {
-  return GetColorProvider()->GetColor(ui::kColorDropdownForegroundSelected);
-}
-
-SkColor AutofillPopupBaseView::GetFooterBackgroundColor() const {
-  return GetColorProvider()->GetColor(ui::kColorBubbleFooterBackground);
-}
-
 ui::ColorId AutofillPopupBaseView::GetSeparatorColorId() const {
   return ui::kColorMenuSeparator;
-}
-
-SkColor AutofillPopupBaseView::GetWarningColor() const {
-  return GetColorProvider()->GetColor(ui::kColorAlertHighSeverity);
 }
 
 AutofillPopupBaseView::AutofillPopupBaseView(
@@ -244,7 +220,8 @@ void AutofillPopupBaseView::NotifyAXSelection(View* selected_view) {
   constexpr auto kDerivedClasses = base::MakeFixedFlatSet<base::StringPiece>(
       {"AutofillPopupSuggestionView", "PasswordPopupSuggestionView",
        "AutofillPopupFooterView", "AutofillPopupSeparatorView",
-       "AutofillPopupWarningView", "AutofillPopupBaseView"});
+       "AutofillPopupWarningView", "AutofillPopupBaseView",
+       "PasswordGenerationPopupViewViews::GeneratedPasswordBox"});
   DCHECK(kDerivedClasses.contains(selected_view->GetClassName()))
       << "If you add a new derived class from AutofillPopupRowView, add it "
          "here and to onSelection(evt) in "
@@ -477,13 +454,7 @@ gfx::NativeView AutofillPopupBaseView::container_view() {
 }
 
 BEGIN_METADATA(AutofillPopupBaseView, views::WidgetDelegateView)
-ADD_READONLY_PROPERTY_METADATA(SkColor, BackgroundColor)
-ADD_READONLY_PROPERTY_METADATA(SkColor, ForegroundColor)
-ADD_READONLY_PROPERTY_METADATA(SkColor, SelectedBackgroundColor)
-ADD_READONLY_PROPERTY_METADATA(SkColor, SelectedForegroundColor)
-ADD_READONLY_PROPERTY_METADATA(SkColor, FooterBackgroundColor)
 ADD_READONLY_PROPERTY_METADATA(ui::ColorId, SeparatorColorId)
-ADD_READONLY_PROPERTY_METADATA(SkColor, WarningColor)
 ADD_READONLY_PROPERTY_METADATA(gfx::Rect, ContentAreaBounds)
 END_METADATA
 

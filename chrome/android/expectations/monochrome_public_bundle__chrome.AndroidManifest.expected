@@ -502,6 +502,11 @@
       <intent-filter>  # DIFF-ANCHOR: 8f70c92f
         <action android:name="android.intent.action.SEARCH"/>
       </intent-filter>  # DIFF-ANCHOR: 8f70c92f
+      <intent-filter>  # DIFF-ANCHOR: 4ee601b7
+        <action android:name="android.intent.action.SEND"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <data android:mimeType="text/plain"/>
+      </intent-filter>  # DIFF-ANCHOR: 4ee601b7
       <intent-filter>  # DIFF-ANCHOR: 13c9b0a8
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.BROWSABLE"/>
@@ -831,6 +836,10 @@
         <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
       </intent-filter>  # DIFF-ANCHOR: e8cce90c
     </receiver>  # DIFF-ANCHOR: 9015e3cf
+    <receiver  # DIFF-ANCHOR: 2553238b
+        android:name="org.chromium.chrome.browser.webapps.WebApkInstallBroadcastReceiver"
+        android:exported="false">
+    </receiver>  # DIFF-ANCHOR: 2553238b
     <receiver  # DIFF-ANCHOR: c787586e
         android:name="org.chromium.components.background_task_scheduler.internal.BackgroundTaskBroadcastReceiver"
         android:exported="false">

@@ -406,11 +406,11 @@ _BANNED_IOS_OBJC_FUNCTIONS = (
       (
         '+[UIImage systemImageNamed:] should not be used to create symbols.',
         'Instead use a wrapper defined in:',
-        'ios/chrome/browser/ui/icons/chrome_symbol.h'
+        'ios/chrome/browser/ui/icons/symbol_helpers.h'
       ),
       True,
       excluded_paths=(
-        'ios/chrome/browser/ui/icons/chrome_symbol.mm',
+        'ios/chrome/browser/ui/icons/symbol_helpers.mm',
       ),
     ),
 )
@@ -1449,6 +1449,16 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
         # Exceptions to this rule should have a fuzzer.
       ],
     ),
+  BanRule(
+    r'/\b#include "base/atomicops\.h"\b',
+    (
+      'Do not use base::subtle atomics, but std::atomic, which are simpler to '
+      'use, have better understood, clearer and richer semantics, and are '
+      'harder to mis-use. See details in base/atomicops.h.'
+    ),
+    False,
+    [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+  ),
 )
 
 _BANNED_MOJOM_PATTERNS : Sequence[BanRule] = (
@@ -1614,7 +1624,7 @@ _KNOWN_ROBOTS = set(
                     'lacros-version-skew-roller', 'skylab-test-cros-roller',
                     'infra-try-recipes-tester', 'lacros-tracking-roller',
                     'lacros-sdk-version-roller', 'chrome-automated-expectation',
-                    'chromium-automated-expectation')
+                    'chromium-automated-expectation', 'chrome-branch-day')
   ) | set('%s@skia-public.iam.gserviceaccount.com' % s
           for s in ('chromium-autoroll', 'chromium-release-autoroll')
   ) | set('%s@skia-corp.google.com.iam.gserviceaccount.com' % s
@@ -2889,6 +2899,7 @@ def CheckSpamLogging(input_api, output_api):
             r"^chromecast/",
             r"^components/browser_watcher/dump_stability_report_main_win\.cc$",
             r"^components/media_control/renderer/media_playback_options\.cc$",
+            r"^components/policy/core/common/policy_logger\.cc$",
             r"^components/viz/service/display/"
             r"overlay_strategy_underlay_cast\.cc$",
             r"^components/zucchini/.*",
@@ -2901,7 +2912,7 @@ def CheckSpamLogging(input_api, output_api):
             r"^extensions/renderer/logging_native_handler\.cc$",
             r"^fuchsia_web/common/init_logging\.cc$",
             r"^fuchsia_web/runners/common/web_component\.cc$",
-            r"^fuchsia_web/shell/.*\.cc$",
+            r"^fuchsia_web/shell/.*_shell\.cc$",
             r"^headless/app/headless_shell\.cc$",
             r"^ipc/ipc_logging\.cc$",
             r"^native_client_sdk/",
@@ -6686,8 +6697,10 @@ def CheckBatchAnnotation(input_api, output_api):
         results.append(
             output_api.PresubmitPromptWarning(
                 """
-Instrumentation tests should use either @Batch or @DoNotBatch. If tests are not
-safe to run in batch, please use @DoNotBatch with reasons.
+Instrumentation tests should use either @Batch or @DoNotBatch. Use
+@Batch(Batch.PER_CLASS) in most cases. Use @Batch(Batch.UNIT_TESTS) when tests
+have no side-effects. If the tests are not safe to run in batch, please use
+@DoNotBatch with reasons.
 """, missing_annotation_errors))
     if extra_annotation_errors:
         results.append(

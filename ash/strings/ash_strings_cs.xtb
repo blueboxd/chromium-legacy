@@ -162,10 +162,8 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="1771761307086386028">Posunout doprava</translation>
 <translation id="1774796056689732716">Kalendář, <ph name="CURRENT_MONTH_YEAR" />, je vybráno datum <ph name="DATE" />.</translation>
 <translation id="1787955149152357925">Vyp</translation>
-<translation id="1797271123677381264">Zapomenuté heslo</translation>
 <translation id="1807246157184219062">Světlé</translation>
 <translation id="181103072419391116">Síla signálu: <ph name="SIGNAL_STRENGTH" />, spravováno vaším administrátorem</translation>
-<translation id="1812997170047690955">Co je na obrazovce?</translation>
 <translation id="1816896987747843206">Umožňuje přístup k fotoaparátu všem aplikacím a webům s příslušným oprávněním</translation>
 <translation id="1823280932251546115">Stavový panel, čas <ph name="TIME" />,
         <ph name="BATTERY" />
@@ -291,6 +289,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="2501920221385095727">Jedním prstem</translation>
 <translation id="2509468283778169019">CAPS LOCK je zapnutý</translation>
 <translation id="2515586267016047495">Alt</translation>
+<translation id="2526581474998477112">Odemknout okna</translation>
 <translation id="2542089167727451762">Klepněte na profilovou fotku</translation>
 <translation id="255671100581129685">Asistent Google není ve veřejné relaci k dispozici.</translation>
 <translation id="256712445991462162">zabudovaná lupa</translation>
@@ -320,6 +319,7 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="2704781753052663061">Připojit se k dalším sítím Wi-Fi</translation>
 <translation id="2705001408393684014">Přepnout mikrofon. <ph name="STATE_TEXT" /></translation>
 <translation id="2706462751667573066">Nahoru</translation>
+<translation id="2710984741481549981">Zamknout okna</translation>
 <translation id="2718395828230677721">Noční režim</translation>
 <translation id="2726420622004325180">Aby telefon mohl sloužit jako hotspot, musí v něm být zapnutá mobilní data</translation>
 <translation id="2727175239389218057">Odpovědět</translation>
@@ -420,9 +420,11 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="3289674678944039601">Nabíjení pomocí adaptéru</translation>
 <translation id="3290356915286466215">Nezabezpečeno</translation>
 <translation id="3294437725009624529">Host</translation>
+<translation id="3298690094479023523">Váš PIN nebo heslo se stále nepodařilo ověřit. Zkuste to znovu.</translation>
 <translation id="3307642347673023554">Přepnuto na režim notebooku</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> se i nadále bude moci přihlásit.</translation>
 <translation id="3321628682574733415">Nesprávný kód rodiče</translation>
+<translation id="332827762492701193">Oznámení jsou skryta</translation>
 <translation id="3339826665088060472">Záznam obrazovky, nástroje k pořizování snímků a záznamu obrazovky</translation>
 <translation id="3340978935015468852">nastavení</translation>
 <translation id="3341303451326249809">Snímek obrazovky byl pořízen</translation>
@@ -559,6 +561,7 @@ Připojte zařízení k napájení.</translation>
 <translation id="4017989525502048489">Laserové ukazovátko</translation>
 <translation id="401993194061514265">Značka není k dispozici. Znovu otevřete Screencast.</translation>
 <translation id="4021716437419160885">Posunout dolů</translation>
+<translation id="4024840464866786680">Pokud jste PIN a heslo zapomněli nebo jste nedávno změnili heslo účtu Google, zkuste tohoto uživatele obnovit.</translation>
 <translation id="4028481283645788203">Pro lepší zabezpečení je vyžadováno heslo</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Sdílíte svou obrazovku</translation>
@@ -577,10 +580,12 @@ Připojte zařízení k napájení.</translation>
 <translation id="4130035430755296270">Umístěním kurzoru zobrazíte další možnosti rozvržení.</translation>
 <translation id="4136724716305260864">Do východu slunce zapnuto</translation>
 <translation id="4146833061457621061">Přehrát hudbu</translation>
+<translation id="4150201353443180367">Displej</translation>
 <translation id="4165275524535002941">Kabel možná nepodporuje displeje</translation>
 <translation id="4177913004758410636">{0,plural, =1{Do jednoho dne zařízení aktualizujte}few{Do # dní zařízení aktualizujte}many{Do # dne zařízení aktualizujte}other{Do # dní zařízení aktualizujte}}</translation>
 <translation id="4181841719683918333">Jazyky</translation>
 <translation id="4192112279662688596">nebo</translation>
+<translation id="4193857202545160520">Zobrazit kliknutí a klíče</translation>
 <translation id="4195814663415092787">Pokračovat tam, kde jste přestali</translation>
 <translation id="4195877955194704651">Tlačítko automatických kliknutí</translation>
 <translation id="4197790712631116042">Vypnuto</translation>
@@ -697,10 +702,12 @@ Připojte zařízení k napájení.</translation>
 <translation id="4735944890391795473">Plocha 12</translation>
 <translation id="473775607612524610">Aktualizovat</translation>
 <translation id="4740516757091333363">Smazat uloženou plochu?</translation>
+<translation id="4747410141429390146">Pokud oznámení chcete zobrazit, odemkněte zařízení</translation>
 <translation id="4752784485658729358">Je povoleno pouze 6 uložených ploch. Pokud chcete uložit novou, některou odstraňte.</translation>
 <translation id="4759238208242260848">Stažené soubory</translation>
 <translation id="4762573482154983647">Skrýt aplikace</translation>
 <translation id="4774338217796918551">Vrať se v <ph name="COME_BACK_TIME" />.</translation>
+<translation id="4776584068981882959">Heslo se stále nedaří ověřit. Zkuste to znovu.</translation>
 <translation id="4776917500594043016">Heslo pro účet <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Obchod Play</translation>
 <translation id="4778095205580009397">Asistent Google není v ukázkové relaci k dispozici.</translation>
@@ -730,6 +737,8 @@ Připojte zařízení k napájení.</translation>
 <translation id="4919841137949306064">Aplikace <ph name="APP_NAME" /> používá vaši kameru</translation>
 <translation id="492453977506755176">Klávesa režimu nahrávání</translation>
 <translation id="4925542575807923399">Správce tohoto účtu vyžaduje, aby se tento účet v relaci multiprofilu přihlásil jako první.</translation>
+<translation id="4929163402621253029">Mluvíte? Nejste slyšet. Další informace</translation>
+<translation id="4936329710968938986">Všichni, vypnuto</translation>
 <translation id="4938176435186993759">Skrýt všechny návrhy</translation>
 <translation id="4945196315133970626">Vypnout oznámení</translation>
 <translation id="4946376291507881335">Zachytit</translation>
@@ -763,6 +772,7 @@ Připojte zařízení k napájení.</translation>
 <translation id="5107522548814527560">Web</translation>
 <translation id="5111318697104479778"><ph name="DESC" />, <ph name="STRENGTH" /></translation>
 <translation id="5117590920725113268">Zobrazit další měsíc</translation>
+<translation id="5127986747308934633">Vaše zařízení ovládá administrátor</translation>
 <translation id="5136175204352732067">Je připojena jiná klávesnice</translation>
 <translation id="5147567197700016471">Odemknuto</translation>
 <translation id="5150070631291639005">Nastavení soukromí</translation>
@@ -837,6 +847,7 @@ Připojte zařízení k napájení.</translation>
 <translation id="5536723544185013515">Nedávné aplikace, můžete je procházet pomocí kláves se šipkami vlevo a vpravo</translation>
 <translation id="553675580533261935">Ukončení návštěvy</translation>
 <translation id="5537725057119320332">Odeslat</translation>
+<translation id="5546397813406633847">Obnovit uživatele</translation>
 <translation id="554893713779400387">Přepnout diktování</translation>
 <translation id="5558091555391176027">Přepnout vysokou viditelnost pro sdílení nablízko</translation>
 <translation id="5560420195677022218">Zobrazovat na zařízení <ph name="DEVICE_TYPE" /> oznámení z telefonu</translation>
@@ -853,6 +864,7 @@ Připojte zařízení k napájení.</translation>
 <translation id="5618148318840095371">Připojili jsme vás k lepší síti</translation>
 <translation id="5619862035903135339">Zásady administrátora záznam obrazovky zakazují</translation>
 <translation id="5625955975703555628">LTE+</translation>
+<translation id="5627392655516693966">Heslo se nepodařilo ověřit. Zkuste to znovu.</translation>
 <translation id="5648021990716966815">Konektor mikrofonu</translation>
 <translation id="5652575806481723716">Aplikace <ph name="FOCUSED_APP_NAME" /> vyžaduje vaši pozornost.</translation>
 <translation id="5662075790140998213">Plocha 10</translation>
@@ -871,7 +883,9 @@ Připojte zařízení k napájení.</translation>
 <translation id="5707775774148071965">Vaše zařízení podporuje vyšší přenosovou rychlost než kabel. Výkon zařízení může být omezen.</translation>
 <translation id="5710450975648804523">Režim Nerušit je zapnutý</translation>
 <translation id="571295407079589142">Mobilní data jsou vypnuta</translation>
+<translation id="5727460725221669831">Pokud jste heslo zapomněli nebo jste nedávno změnili heslo účtu Google, zkuste tohoto uživatele obnovit.</translation>
 <translation id="573413375004481890">Toto zařízení nemohlo podporovat všechny vaše obrazovky, jedna proto byla odpojena</translation>
+<translation id="5740328398383587084">Sdílení nablízko</translation>
 <translation id="574392208103952083">Střední</translation>
 <translation id="5744083938413354016">Přetažení klepnutím</translation>
 <translation id="5745612484876805746">Noční režim se zapíná automaticky za soumraku</translation>
@@ -991,6 +1005,7 @@ Připojte zařízení k napájení.</translation>
 <translation id="639644700271529076">CAPS LOCK je vypnutý</translation>
 <translation id="6406704438230478924">altgr</translation>
 <translation id="6417265370957905582">Asistent Google</translation>
+<translation id="641867537956679916">Váš administrátor se přihlásil, aby mohl vyřešit problém. Zařízení budete moci používat, až vám administrátor kontrolu nad ním vrátí.</translation>
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, síla signálu: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Vymazat všechna oznámení</translation>
 <translation id="643147933154517414">Vše je hotovo</translation>
@@ -1279,6 +1294,7 @@ Nová instalace</translation>
 <translation id="79341161159229895">Správci účtu: <ph name="FIRST_PARENT_EMAIL" /> a <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="793716872548410480">Stisknutím kláves <ph name="SHORTCUT_KEY_NAME" /> + V zobrazíte schránku. Ve schránce je uloženo posledních pět zkopírovaných položek.</translation>
 <translation id="7942349550061667556">Červená</translation>
+<translation id="7944023924886109030">Zobrazit všechny události pro dnešek</translation>
 <translation id="7963992254934562106">Zdroj: <ph name="PHONE_NAME" /></translation>
 <translation id="7968693143708939792">Vyberte složku…</translation>
 <translation id="7977927628060636163">Vyhledávání mobilních sítí...</translation>
@@ -1380,6 +1396,7 @@ Nová instalace</translation>
 <translation id="8477270416194247200">Vypnete jej stisknutím kombinace kláves Alt + Hledat nebo klávesy Shift.</translation>
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> rozlišení <ph name="SPECIFIED_RESOLUTION" /> nepodporuje. Rozlišení bylo změněno na <ph name="FALLBACK_RESOLUTION" />. Chcete-li změny ponechat, potvrďte je. Předchozí nastavení bude obnoveno za <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8496402167048257517">Zobrazit nastavení sdílení nablízko</translation>
+<translation id="8507563469658346379">Všichni, <ph name="REMAINING_TIME" /></translation>
 <translation id="85123341071060231">Bluetooth v Chromebooku je vypnuté. Pokud chcete odemknout Chromebook, zadejte heslo.</translation>
 <translation id="8513108775083588393">Autom. otáčení</translation>
 <translation id="851458219935658693">Zobrazit okna z aktuální plochy, je vybrán přepínač</translation>

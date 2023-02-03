@@ -49,8 +49,6 @@ aggregate_vector_icons("chrome_vector_icons") {
     "drag_handle.icon",
     "eol.icon",
     "extension_crashed.icon",
-    "eye.icon",
-    "eye_crossed.icon",
     "file_download_shelf.icon",
     "fingerprint.icon",
     "forward_arrow_touch.icon",
@@ -222,6 +220,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     sources += [
       "autocorrect_undo.icon",
       "full_restore_notification.icon",
+      "game_controls_gamepad.icon",
       "mouse_left_click_edit.icon",
       "mouse_left_click_view.icon",
       "mouse_right_click_edit.icon",

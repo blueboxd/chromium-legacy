@@ -144,6 +144,10 @@ The JSON schema is as follows.
             // Required URL from which the response was sent.
             "url": "https://reporting.example",
 
+            // Whether the source will be processed with debug permission
+            // enabled. Defaults to false.
+            "debug_permission": true,
+
             "response": {
               // Required dictionary data to register a source.
               "Attribution-Reporting-Register-Source": {
@@ -214,6 +218,10 @@ The JSON schema is as follows.
           {
             // Required URL from which the response was sent.
             "url": "https://reporting.example",
+
+            // Whether the trigger will be processed with debug permission
+            // enabled. Defaults to false.
+            "debug_permission": true,
 
             "response": {
               "Attribution-Reporting-Register-Trigger": {
@@ -371,6 +379,20 @@ The JSON schema is as follows.
           // Debug key set on the trigger. Omitted if not set.
           "trigger_debug_key": "789"
         }
+      }
+    ],
+
+    "verbose_debug_reports": [
+      {
+        // Upper bound time at which the report would have been sent in
+        // milliseconds since the UNIX epoch.
+        "report_time": "123",
+
+        // URL to which the report would have been sent.
+        "report_url": "https://reporting.example/.well-known/attribution-reporting/debug/verbose"
+
+        // The body of the report.
+        "payload": [...]
       }
     ]
   }

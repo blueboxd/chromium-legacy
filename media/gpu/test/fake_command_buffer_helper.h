@@ -49,6 +49,9 @@ class FakeCommandBufferHelper : public CommandBufferHelper {
 #if BUILDFLAG(IS_WIN)
   gpu::DXGISharedHandleManager* GetDXGISharedHandleManager() override;
 #endif
+
+  gpu::MemoryTypeTracker* GetMemoryTypeTracker() override;
+  gpu::SharedImageManager* GetSharedImageManager() override;
   bool HasStub() override;
   bool MakeContextCurrent() override;
   std::unique_ptr<gpu::SharedImageRepresentationFactoryRef> Register(
@@ -68,7 +71,7 @@ class FakeCommandBufferHelper : public CommandBufferHelper {
   bool BindClientManagedImage(GLuint service_id, gl::GLImage* image) override;
 #endif
   gpu::Mailbox CreateLegacyMailbox(GLuint service_id) override;
-  void SetWillDestroyStubCB(WillDestroyStubCB will_destroy_stub_cb) override;
+  void AddWillDestroyStubCB(WillDestroyStubCB callback) override;
   bool IsPassthrough() const override;
   bool SupportsTextureRectangle() const override;
 #endif
@@ -88,7 +91,7 @@ class FakeCommandBufferHelper : public CommandBufferHelper {
   std::set<GLuint> service_ids_;
   std::map<gpu::SyncToken, base::OnceClosure> waits_;
 
-  WillDestroyStubCB will_destroy_stub_cb_;
+  std::vector<WillDestroyStubCB> will_destroy_stub_callbacks_;
 };
 
 }  // namespace media

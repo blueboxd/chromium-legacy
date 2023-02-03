@@ -196,6 +196,7 @@
 <translation id="2713444072780614174">Gwyn</translation>
 <translation id="2717139507051041123">Galluogi'r modd lliw tywyll</translation>
 <translation id="2740531572673183784">Iawn</translation>
+<translation id="2744221223678373668">Cafodd ei rannu â'r defnyddiwr eisoes</translation>
 <translation id="2751739896257479635">Dilysiad Cam 2 EAP</translation>
 <translation id="2783010256799387990">PASIWYD</translation>
 <translation id="2789486458103222910">Iawn</translation>
@@ -270,6 +271,7 @@
 <translation id="3583278742022654445">Cryfder signal gwan. Rhowch gynnig ar symud yn agosach at ffynhonnell y signal Wi-Fi.</translation>
 <translation id="3595596368722241419">Mae'r batri yn llawn</translation>
 <translation id="3600339377155080675">Adlewyrchu sgrîn</translation>
+<translation id="3602290021589620013">Rhagolwg</translation>
 <translation id="3603829704940252505">Rhithffurf</translation>
 <translation id="3604713164406837697">Newid y papur wal</translation>
 <translation id="360565022852130722">Diogelir y rhwydwaith Wi-Fi gyda'r protocol gwan WEP 802.1x</translation>
@@ -293,6 +295,7 @@
 <translation id="385051799172605136">Nôl</translation>
 <translation id="3858860766373142691">Enw</translation>
 <translation id="3862598938296403232">Mae angen disgrifiad</translation>
+<translation id="3865289341173661845">Nid yw cynnwys help ar gael.</translation>
 <translation id="3865414814144988605">Cydraniad</translation>
 <translation id="3866249974567520381">Disgrifiad</translation>
 <translation id="387301095347517405">Nifer o weithiau y mae eich batri wedi mynd drwy gylch gwefru llawn</translation>
@@ -315,6 +318,7 @@
 <translation id="4044093238444069296">Methu â chysylltu'r porth</translation>
 <translation id="4046123991198612571">Trac nesaf</translation>
 <translation id="404928562651467259">RHYBUDD</translation>
+<translation id="4054683689023980771">Wrthi'n lawrlwytho llun</translation>
 <translation id="4060260348856573701">APN newydd</translation>
 <translation id="4093865285251893588">Llun proffil</translation>
 <translation id="409427325554347132">Cadw manylion y prawf</translation>
@@ -449,8 +453,6 @@
 <translation id="5168185087976003268">Iechyd y batri</translation>
 <translation id="5170568018924773124">Dangos yn y ffolder</translation>
 <translation id="5190187232518914472">Ail-fyw eich hoff atgofion. I ychwanegu neu olygu albymau, ewch i <ph name="LINK_BEGIN" />Google Photos<ph name="LINK_END" />.</translation>
-<translation id="5212543919916444558">Ni allaf ddod o hyd i unrhyw beth ar eich sgrîn y gallaf helpu ag ef.
-Rhowch gynnig ar dapio'r meic i ofyn unrhyw beth i fi.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Allgofnodi</translation>
 <translation id="522307662484862935">Peidio â chynnwys cyfeiriad e-bost</translation>
@@ -703,6 +705,7 @@ Rhowch gynnig ar dapio'r meic i ofyn unrhyw beth i fi.</translation>
 <translation id="7497215489070763236">Tystysgrif CA y gweinydd</translation>
 <translation id="7502658306369382406">Cyfeiriad IPv6</translation>
 <translation id="7515998400212163428">Android</translation>
+<translation id="7528507600602050979">Nid yw cynnwys help ar gael</translation>
 <translation id="7535791657097741517">Troi'r thema olau ymlaen</translation>
 <translation id="7550715992156305117">Arferion Diagnostig</translation>
 <translation id="7551123448725492271">Mae'r ddyfais yn ddyfais sain.</translation>

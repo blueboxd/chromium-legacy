@@ -15,11 +15,10 @@ import {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggl
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {IronCollapseElement} from 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {fakeMetricsPrivate, MetricsTracker} from 'chrome://webui-test/metrics_test_support.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 import {isVisible} from 'chrome://webui-test/test_util.js';
-
-import {fakeMetricsPrivate, MetricsTracker} from '../../metrics_test_support.js';
 
 import {assertNotStyle, assertStyle, installMock} from './test_support.js';
 
@@ -299,5 +298,32 @@ suite('CardsTest', () => {
       assertEquals(
           1, metrics.count('NewTabPage.Modules.Disabled', 'chrome_cart'));
     });
+  });
+
+  test('only animates after initialization', async () => {
+    // Arrange.
+    customizeCards = document.createElement('customize-chrome-cards');
+    document.body.appendChild(customizeCards);
+
+    // Assert (no animation before initialize).
+    assertTrue(getCollapseElement().noAnimation!);
+
+    // Act (initialize).
+    callbackRouterRemote.setModulesSettings(
+        [{id: 'foo', name: 'Foo', enabled: true}], /*modulesManaged=*/ false,
+        /*modulesVisible=*/ true);
+    await callbackRouterRemote.$.flushForTesting();
+
+    // Assert (animation after initialize).
+    assertFalse(getCollapseElement().noAnimation!);
+
+    // Act (update).
+    callbackRouterRemote.setModulesSettings(
+        [{id: 'bar', name: 'Bar', enabled: true}], /*modulesManaged=*/ false,
+        /*modulesVisible=*/ true);
+    await callbackRouterRemote.$.flushForTesting();
+
+    // Assert (still animation after update).
+    assertFalse(getCollapseElement().noAnimation!);
   });
 });

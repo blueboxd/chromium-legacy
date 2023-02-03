@@ -30,16 +30,8 @@ constexpr char kUserActionReloadDefault[] = "reloadDefault";
 constexpr char kUserActionRetry[] = "retry";
 
 bool ShouldPrepareForRecovery(const AccountId& account_id) {
-  if (!features::IsCryptohomeRecoveryFlowEnabled() || !account_id.is_valid()) {
+  if (!features::IsCryptohomeRecoveryEnabled() || !account_id.is_valid()) {
     return false;
-  }
-
-  // Always return `true` if the testing switch is set. It will allow to test
-  // the recovery without triggering the real recovery conditions which may be
-  // difficult as of now.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForceCryptohomeRecoveryForTesting)) {
-    return true;
   }
 
   // Cryptohome recovery is probably needed when password is entered incorrectly
@@ -98,6 +90,16 @@ void GaiaScreen::LoadOnline(const AccountId& account) {
   }
   view_->SetGaiaPath(gaia_path);
   view_->SetReauthRequestToken(std::string());
+
+  // Always fetch Gaia reauth request token if the testing switch is set. It
+  // will allow to test the recovery without triggering the real recovery
+  // conditions which may be difficult as of now.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceCryptohomeRecoveryForTesting)) {
+    DCHECK(features::IsCryptohomeRecoveryEnabled());
+    FetchGaiaReauthToken(account);
+    return;
+  }
 
   if (ShouldPrepareForRecovery(account)) {
     auto user_context = std::make_unique<UserContext>();
@@ -216,14 +218,17 @@ void GaiaScreen::OnGetAuthFactorsConfiguration(
   bool is_configured =
       config.HasConfiguredFactor(cryptohome::AuthFactorType::kRecovery);
   if (is_configured) {
-    gaia_reauth_token_fetcher_ =
-        std::make_unique<GaiaReauthTokenFetcher>(base::BindOnce(
-            &GaiaScreen::OnGaiaReauthTokenFetched,
-            weak_ptr_factory_.GetWeakPtr(), user_context->GetAccountId()));
-    gaia_reauth_token_fetcher_->Fetch();
+    FetchGaiaReauthToken(user_context->GetAccountId());
   } else {
     view_->LoadGaiaAsync(user_context->GetAccountId());
   }
+}
+
+void GaiaScreen::FetchGaiaReauthToken(const AccountId& account) {
+  gaia_reauth_token_fetcher_ = std::make_unique<GaiaReauthTokenFetcher>(
+      base::BindOnce(&GaiaScreen::OnGaiaReauthTokenFetched,
+                     weak_ptr_factory_.GetWeakPtr(), account));
+  gaia_reauth_token_fetcher_->Fetch();
 }
 
 void GaiaScreen::OnGaiaReauthTokenFetched(const AccountId& account,

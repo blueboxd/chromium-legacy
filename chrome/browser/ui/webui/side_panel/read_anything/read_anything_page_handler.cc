@@ -72,8 +72,9 @@ void ReadAnythingPageHandler::AccessibilityEventReceived(
 }
 
 void ReadAnythingPageHandler::OnActiveAXTreeIDChanged(
-    const ui::AXTreeID& tree_id) {
-  page_->OnActiveAXTreeIDChanged(tree_id);
+    const ui::AXTreeID& tree_id,
+    const ukm::SourceId& ukm_source_id) {
+  page_->OnActiveAXTreeIDChanged(tree_id, ukm_source_id);
 }
 
 void ReadAnythingPageHandler::OnAXTreeDestroyed(const ui::AXTreeID& tree_id) {
@@ -98,8 +99,21 @@ void ReadAnythingPageHandler::OnReadAnythingThemeChanged(
                              background_skcolor, line_spacing, letter_spacing));
 }
 
-void ReadAnythingPageHandler::OnLinkClicked(const GURL& url,
-                                            bool open_in_new_tab) {
-  if (delegate_)
-    delegate_->OnLinkClicked(url, open_in_new_tab);
+void ReadAnythingPageHandler::OnLinkClicked(const ui::AXTreeID& target_tree_id,
+                                            ui::AXNodeID target_node_id) {
+  if (delegate_) {
+    delegate_->OnLinkClicked(target_tree_id, target_node_id);
+  }
+}
+
+void ReadAnythingPageHandler::OnSelectionChange(
+    const ui::AXTreeID& target_tree_id,
+    ui::AXNodeID anchor_node_id,
+    int anchor_offset,
+    ui::AXNodeID focus_node_id,
+    int focus_offset) {
+  if (delegate_) {
+    delegate_->OnSelectionChange(target_tree_id, anchor_node_id, anchor_offset,
+                                 focus_node_id, focus_offset);
+  }
 }

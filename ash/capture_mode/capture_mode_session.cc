@@ -584,7 +584,9 @@ CaptureModeSession::CaptureModeSession(CaptureModeController* controller,
       is_in_projector_mode_(projector_mode),
       cursor_setter_(std::make_unique<CursorSetter>()),
       focus_cycler_(std::make_unique<CaptureModeSessionFocusCycler>(this)),
-      capture_toast_controller_(this) {}
+      capture_toast_controller_(this) {
+  DCHECK(current_root_);
+}
 
 CaptureModeSession::~CaptureModeSession() = default;
 
@@ -608,15 +610,17 @@ void CaptureModeSession::Initialize() {
   // Note that some windows gets destroyed when they lose the capture (e.g. a
   // window created for capturing events while drag-drop in progress), so we
   // need to account for that.
-  auto* capture_client = aura::client::GetCaptureClient(current_root_);
-  input_capture_window_ = capture_client->GetCaptureWindow();
-  if (input_capture_window_) {
-    aura::WindowTracker tracker({input_capture_window_});
-    capture_client->ReleaseCapture(input_capture_window_);
-    if (tracker.windows().empty())
-      input_capture_window_ = nullptr;
-    else
-      input_capture_window_->AddObserver(this);
+  if (auto* capture_client = aura::client::GetCaptureClient(current_root_)) {
+    input_capture_window_ = capture_client->GetCaptureWindow();
+    if (input_capture_window_) {
+      aura::WindowTracker tracker({input_capture_window_});
+      capture_client->ReleaseCapture(input_capture_window_);
+      if (tracker.windows().empty()) {
+        input_capture_window_ = nullptr;
+      } else {
+        input_capture_window_->AddObserver(this);
+      }
+    }
   }
 
   SetLayer(std::make_unique<ui::Layer>(ui::LAYER_TEXTURED));
@@ -694,8 +698,10 @@ void CaptureModeSession::Shutdown() {
   TabletModeController::Get()->RemoveObserver(this);
   if (input_capture_window_) {
     input_capture_window_->RemoveObserver(this);
-    aura::client::GetCaptureClient(current_root_)
-        ->SetCapture(input_capture_window_);
+    if (auto* client = aura::client::GetCaptureClient(
+            input_capture_window_->GetRootWindow())) {
+      client->SetCapture(input_capture_window_);
+    }
   }
 
   // This may happen if we hit esc while dragging.
@@ -849,7 +855,7 @@ void CaptureModeSession::OnWaitingForDlpConfirmationEnded(bool reshow_uis) {
     ShowAllUis();
 }
 
-void CaptureModeSession::SetSettingsMenuShown(bool shown) {
+void CaptureModeSession::SetSettingsMenuShown(bool shown, bool by_key_event) {
   capture_mode_bar_view_->SetSettingsMenuShown(shown);
 
   if (!shown) {
@@ -882,7 +888,10 @@ void CaptureModeSession::SetSettingsMenuShown(bool shown) {
     OnCaptureFolderMayHaveChanged();
 
     parent->layer()->StackAtTop(capture_mode_settings_widget_->GetLayer());
-    focus_cycler_->OnSettingsMenuWidgetCreated();
+    focus_cycler_->OnMenuOpened(
+        capture_mode_settings_widget_.get(),
+        CaptureModeSessionFocusCycler::FocusGroup::kPendingSettings,
+        by_key_event);
 
     if (capture_label_widget_ && capture_label_widget_->IsVisible()) {
       // Hide CaptureLabel view if it overlaps with CaptureMode settings view.
@@ -1716,9 +1725,11 @@ void CaptureModeSession::DoPerformCapture() {
   controller_->PerformCapture();  // `this` can be deleted after this.
 }
 
-void CaptureModeSession::OnRecordingTypeDropDownButtonPressed() {
-  SetRecordingTypeMenuShown(!recording_type_menu_widget_ ||
-                            !recording_type_menu_widget_->IsVisible());
+void CaptureModeSession::OnRecordingTypeDropDownButtonPressed(
+    const ui::Event& event) {
+  SetRecordingTypeMenuShown(
+      !recording_type_menu_widget_ || !recording_type_menu_widget_->IsVisible(),
+      event.IsKeyEvent());
 }
 
 gfx::Rect CaptureModeSession::GetSelectedWindowBounds() const {
@@ -2869,9 +2880,11 @@ void CaptureModeSession::MaybeUpdateCameraPreviewBounds() {
   }
 }
 
-void CaptureModeSession::SetRecordingTypeMenuShown(bool shown) {
+void CaptureModeSession::SetRecordingTypeMenuShown(bool shown,
+                                                   bool by_key_event) {
   if (!shown) {
     recording_type_menu_widget_.reset();
+    recording_type_menu_view_ = nullptr;
     return;
   }
 
@@ -2893,16 +2906,21 @@ void CaptureModeSession::SetRecordingTypeMenuShown(bool shown) {
         RecordingTypeMenuView::GetIdealScreenBounds(
             capture_label_widget_->GetWindowBoundsInScreen()),
         "RecordingTypeMenuWidget"));
-    recording_type_menu_widget_->SetContentsView(
-        std::make_unique<RecordingTypeMenuView>(base::BindRepeating(
-            &CaptureModeSession::SetRecordingTypeMenuShown,
-            weak_ptr_factory_.GetWeakPtr(), /*shown=*/false)));
+    recording_type_menu_view_ = recording_type_menu_widget_->SetContentsView(
+        std::make_unique<RecordingTypeMenuView>(
+            base::BindRepeating(&CaptureModeSession::SetRecordingTypeMenuShown,
+                                weak_ptr_factory_.GetWeakPtr(), /*shown=*/false,
+                                /*by_key_event=*/false)));
 
     auto* menu_window = recording_type_menu_widget_->GetNativeWindow();
     parent->StackChildAtTop(menu_window);
 
     menu_window->SetTitle(l10n_util::GetStringUTF16(
         IDS_ASH_SCREEN_CAPTURE_RECORDING_TYPE_MENU_A11Y_TITLE));
+    focus_cycler_->OnMenuOpened(
+        recording_type_menu_widget_.get(),
+        CaptureModeSessionFocusCycler::FocusGroup::kPendingRecordingType,
+        by_key_event);
   }
 
   recording_type_menu_widget_->Show();

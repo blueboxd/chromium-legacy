@@ -6,8 +6,11 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_get_animations_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_keyframe_animation_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_timeline_range.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_timeline_range_offset.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_keyframeanimationoptions_unrestricteddouble.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_keyframeeffectoptions_unrestricteddouble.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_string_timelinerangeoffset.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
@@ -17,11 +20,16 @@
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
 #include "third_party/blink/renderer/core/animation/timing.h"
 #include "third_party/blink/renderer/core/animation/timing_input.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/resolver/css_to_style_map.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/permissions_policy/layout_animations_policy.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/geometry/calculation_value.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
@@ -60,6 +68,55 @@ V8UnionKeyframeEffectOptionsOrUnrestrictedDouble* CoerceEffectOptions(
   }
   NOTREACHED();
   return nullptr;
+}
+
+TimelineOffset ConvertRangeOffset(
+    Element* element,
+    const V8UnionStringOrTimelineRangeOffset* range_offset,
+    double default_percent,
+    ExceptionState& exception_state) {
+  TimelineOffset result;
+  if (range_offset->IsString()) {
+    absl::optional<TimelineOffset> parsed_timeline_offset =
+        TimelineOffset::Create(element, range_offset->GetAsString(),
+                               exception_state);
+    if (parsed_timeline_offset) {
+      // TODO(kevers): Keep track of style dependent value in order to
+      // re-resolve on a style update.
+      return parsed_timeline_offset.value();
+    }
+    result.name = TimelineOffset::NamedRange::kNone;
+    result.offset = Length(default_percent, Length::Type::kPercent);
+  } else {
+    TimelineRangeOffset* value = range_offset->GetAsTimelineRangeOffset();
+    result.name = value->hasRangeName() ? value->rangeName().AsEnum()
+                                        : TimelineOffset::NamedRange::kNone;
+    if (value->hasOffset()) {
+      CSSNumericValue* offset = value->offset();
+      const CSSPrimitiveValue* css_value =
+          DynamicTo<CSSPrimitiveValue>(offset->ToCSSValue());
+
+      if (!css_value || (!css_value->IsPx() && !css_value->IsPercentage() &&
+                         !css_value->IsCalculatedPercentageWithLength())) {
+        exception_state.ThrowTypeError(
+            "CSSNumericValue must be a length or percentage for animation "
+            "range.");
+        return result;
+      }
+
+      if (css_value->IsPx()) {
+        result.offset = Length::Fixed(css_value->GetDoubleValue());
+      } else if (css_value->IsPercentage()) {
+        result.offset = Length::Percent(css_value->GetDoubleValue());
+      } else {
+        DCHECK(css_value->IsCalculatedPercentageWithLength());
+        result.offset = TimelineOffset::ResolveLength(element, css_value);
+      }
+    } else {
+      result.offset = Length::Percent(default_percent);
+    }
+  }
+  return result;
 }
 
 }  // namespace
@@ -107,6 +164,18 @@ Animation* Animatable::animate(
     return nullptr;
 
   animation->setId(options_dict->id());
+
+  // ViewTimeline options.
+  if (options_dict->hasRangeStart() &&
+      RuntimeEnabledFeatures::CSSScrollTimelineEnabled()) {
+    animation->SetRangeStart(ConvertRangeOffset(
+        element, options_dict->rangeStart(), 0, exception_state));
+  }
+  if (options_dict->hasRangeEnd() &&
+      RuntimeEnabledFeatures::CSSScrollTimelineEnabled()) {
+    animation->SetRangeEnd(ConvertRangeOffset(element, options_dict->rangeEnd(),
+                                              100, exception_state));
+  }
   return animation;
 }
 

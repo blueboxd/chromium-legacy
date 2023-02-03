@@ -62,12 +62,10 @@ class SkiaOutputDeviceBufferQueue::OverlayData {
 
   OverlayData(std::unique_ptr<gpu::OverlayImageRepresentation> representation,
               std::unique_ptr<gpu::OverlayImageRepresentation::ScopedReadAccess>
-                  scoped_read_access,
-              bool is_root_render_pass)
+                  scoped_read_access)
       : representation_(std::move(representation)),
         scoped_read_access_(std::move(scoped_read_access)),
-        ref_(1),
-        is_root_render_pass_(is_root_render_pass) {
+        ref_(1) {
     DCHECK(representation_);
     DCHECK(scoped_read_access_);
   }
@@ -77,7 +75,7 @@ class SkiaOutputDeviceBufferQueue::OverlayData {
   ~OverlayData() { Reset(); }
 
   OverlayData& operator=(OverlayData&& other) {
-    DCHECK(is_root_render_pass_ || !IsInUseByWindowServer());
+    DCHECK(!IsInUseByWindowServer());
     DCHECK(!ref_);
     DCHECK(!scoped_read_access_);
     DCHECK(!representation_);
@@ -85,20 +83,13 @@ class SkiaOutputDeviceBufferQueue::OverlayData {
     representation_ = std::move(other.representation_);
     ref_ = other.ref_;
     other.ref_ = 0;
-    is_root_render_pass_ = other.is_root_render_pass_;
     return *this;
   }
 
   bool IsInUseByWindowServer() const {
-#if BUILDFLAG(IS_MAC)
-    if (!scoped_read_access_) {
+#if BUILDFLAG(IS_APPLE)
+    if (!scoped_read_access_)
       return false;
-    }
-    // The root render pass buffers are managed by SkiaRenderer so we don't care
-    // if they're in use by the window server.
-    if (is_root_render_pass_) {
-      return false;
-    }
     return scoped_read_access_->IsInUseByWindowServer();
 #else
     return false;
@@ -112,7 +103,7 @@ class SkiaOutputDeviceBufferQueue::OverlayData {
     if (ref_ > 1) {
       --ref_;
     } else if (ref_ == 1) {
-      DCHECK(is_root_render_pass_ || !IsInUseByWindowServer());
+      DCHECK(!IsInUseByWindowServer());
       Reset();
     }
   }
@@ -126,8 +117,6 @@ class SkiaOutputDeviceBufferQueue::OverlayData {
     return scoped_read_access_.get();
   }
 
-  bool IsRootRenderPass() { return is_root_render_pass_; }
-
  private:
   void Reset() {
     scoped_read_access_.reset();
@@ -139,7 +128,6 @@ class SkiaOutputDeviceBufferQueue::OverlayData {
   std::unique_ptr<gpu::OverlayImageRepresentation::ScopedReadAccess>
       scoped_read_access_;
   int ref_ = 0;
-  bool is_root_render_pass_ = false;
 };
 
 SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
@@ -152,6 +140,7 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
                        memory_tracker,
                        did_swap_buffer_complete_callback),
       presenter_(std::move(presenter)),
+      workarounds_(deps->GetGpuDriverBugWorkarounds()),
       context_state_(deps->GetSharedContextState()),
       representation_factory_(representation_factory) {
 #if BUILDFLAG(IS_OZONE)
@@ -333,7 +322,6 @@ void SkiaOutputDeviceBufferQueue::SchedulePrimaryPlane(
 
 SkiaOutputDeviceBufferQueue::OverlayData*
 SkiaOutputDeviceBufferQueue::GetOrCreateOverlayData(const gpu::Mailbox& mailbox,
-                                                    bool is_root_render_pass,
                                                     bool* is_existing) {
   if (is_existing)
     *is_existing = false;
@@ -367,9 +355,8 @@ SkiaOutputDeviceBufferQueue::GetOrCreateOverlayData(const gpu::Mailbox& mailbox,
   }
 
   bool result;
-  std::tie(it, result) =
-      overlays_.emplace(std::move(shared_image), std::move(shared_image_access),
-                        is_root_render_pass);
+  std::tie(it, result) = overlays_.emplace(std::move(shared_image),
+                                           std::move(shared_image_access));
   DCHECK(result);
   DCHECK(it->unique());
 
@@ -408,8 +395,8 @@ void SkiaOutputDeviceBufferQueue::ScheduleOverlays(
 
     OutputPresenter::ScopedOverlayAccess* access = nullptr;
     bool overlay_has_been_submitted;
-    auto* overlay_data = GetOrCreateOverlayData(
-        mailbox, overlay.is_root_render_pass, &overlay_has_been_submitted);
+    auto* overlay_data =
+        GetOrCreateOverlayData(mailbox, &overlay_has_been_submitted);
     if (overlay_data) {
       access = overlay_data->scoped_read_access();
       pending_overlay_mailboxes_.emplace_back(mailbox);
@@ -505,7 +492,7 @@ void SkiaOutputDeviceBufferQueue::PostSubBuffer(
     DCHECK(submitted_image_);
   }
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
   presenter_->SetCALayerErrorCode(frame.ca_layer_error_code);
 #endif
 
@@ -570,49 +557,58 @@ void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
   for (const auto& mailbox : overlay_mailboxes) {
     auto it = overlays_.find(mailbox);
     DCHECK(it != overlays_.end());
-    if (!result.release_fence.is_null())
-      it->scoped_read_access()->SetReleaseFence(result.release_fence.Clone());
-
     it->Unref();
   }
 
-  // Code below can destroy last representation of the overlay shared image. On
-  // MacOS it needs context to be current.
+  bool need_gl_context = false;
 #if BUILDFLAG(IS_APPLE)
   // TODO(vasilyt): We shouldn't need this after we stop using
   // GLImageBacking as backing.
-  if (!context_state_->MakeCurrent(nullptr)) {
-    for (auto& overlay : overlays_) {
-      overlay.OnContextLost();
-    }
+  need_gl_context = true;
+#elif BUILDFLAG(IS_OZONE)
+  // GL textures are cached in OzoneImageBacking with this workaround and when
+  // overlay representations are destroyed, backing may get destroyed leading to
+  // GL texture destruction. This destruction needs GL context current.
+  if (workarounds_.cache_texture_in_ozone_backing) {
+    need_gl_context = true;
   }
 #endif
 
-  std::vector<gpu::Mailbox> released_overlays;
-  auto on_overlay_release =
-#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
-      [&released_overlays](const OverlayData& overlay) {
-        // Right now, only macOS needs to return maliboxes of released
-        // overlays, so SkiaRenderer can unlock resources for them.
-        released_overlays.push_back(overlay.mailbox());
-      };
-#else
-      [](const OverlayData& overlay) {};
-#endif
+  // Code below can destroy last representation of the overlay shared image. On
+  // MacOS and Ozone platforms it needs context to be current.
+  if (need_gl_context) {
+    if (!context_state_->MakeCurrent(nullptr)) {
+      for (auto& overlay : overlays_) {
+        overlay.OnContextLost();
+      }
+    }
+  }
 
+  [[maybe_unused]] std::vector<gpu::Mailbox> released_overlays;
   // Go through backings of all overlays, and release overlay backings which are
   // not used.
-  base::EraseIf(overlays_, [&on_overlay_release](auto& overlay) {
+  base::EraseIf(overlays_, [&result, &released_overlays](auto& overlay) {
     if (!overlay.unique()) {
       return false;
     }
+
     if (overlay.IsInUseByWindowServer()) {
       return false;
     }
-    // The root render pass buffers are managed by SkiaRenderer so we don't need
-    // to explicitly return them via callback.
-    if (!overlay.IsRootRenderPass()) {
-      on_overlay_release(overlay);
+
+    // Right now, only macOS and LaCros needs to return maliboxes of released
+    // overlays, so SkiaRenderer can unlock resources for them.
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)
+    released_overlays.push_back(overlay.mailbox());
+#else
+    (void)released_overlays;
+#endif
+    // Setting fences on overlays every frame can be very costly for delegated
+    // compositing where we have an overlay for each visible quad. So we only
+    // set the release fence here iff this is the last 'Unref' call.
+    if (!result.release_fence.is_null()) {
+      overlay.scoped_read_access()->SetReleaseFence(
+          result.release_fence.Clone());
     }
     overlay.Unref();
     return true;

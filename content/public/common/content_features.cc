@@ -114,6 +114,13 @@ BASE_FEATURE(kBackForwardCacheEntryTimeout,
              "BackForwardCacheEntryTimeout",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables controlling the time to live for pages in the BackForwardCache.
+// The time to live is defined by the param 'time_to_live_seconds'; if this
+// param is not specified then this feature is ignored and the default is used.
+BASE_FEATURE(kBackForwardCacheTimeToLiveControl,
+             "BackForwardCacheTimeToLiveControl",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enable back/forward cache for screen reader users. This flag should be
 // removed once the https://crbug.com/1271450 is resolved.
 BASE_FEATURE(kEnableBackForwardCacheForScreenReader,
@@ -576,6 +583,14 @@ BASE_FEATURE(kIsolatedWebApps,
              "IsolatedWebApps",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enable support for IWA Controlled Frame. This gates allowing IWAs to provide
+// a functional Controlled Frame tag to IWA apps.
+// See https://github.com/chasephillips/controlled-frame/blob/main/EXPLAINER.md
+// for more info.
+BASE_FEATURE(kIwaControlledFrame,
+             "IwaControlledFrame",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables process isolation of fenced content (content inside fenced frames)
 // from non-fenced content. See
 // https://github.com/WICG/fenced-frame/blob/master/explainer/process_isolation.md
@@ -985,11 +1000,15 @@ const base::FeatureParam<ServiceWorkerBypassFetchHandlerTarget>
         ServiceWorkerBypassFetchHandlerTarget::kMainResource,
         &service_worker_bypass_fetch_handler_target_options};
 
-// Define origins to bypass ServiceWorker. Origins are expected to be passed as
-// a comma separated string. e.g. https://example1.test,https://example2.test
+// The set of ServiceWorker to bypass while making navigation request.
+// They are represented by a comma separated list of HEX encoded SHA256 hash of
+// the ServiceWorker's scripts.
+// e.g.
+// 9685C8DE399237BDA6FF3AD0F281E9D522D46BB0ECFACE05E98D2B9AAE51D1EF,
+// 20F0D78B280E40C0A17ABB568ACF4BDAFFB9649ADA75B0675F962B3F4FC78EA4
 const base::FeatureParam<std::string>
-    kServiceWorkerBypassFetchHandlerBypassedOrigins{
-        &kServiceWorkerBypassFetchHandler, "origins_to_bypass", ""};
+    kServiceWorkerBypassFetchHandlerBypassedHashStrings{
+        &kServiceWorkerBypassFetchHandler, "script_checksum_to_bypass", ""};
 
 // Enables skipping the service worker fetch handler if the fetch handler is
 // identified as ignorable.

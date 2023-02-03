@@ -119,6 +119,12 @@ export interface PasswordManagerProxy {
   getInsecureCredentials(): Promise<chrome.passwordsPrivate.PasswordUiEntry[]>;
 
   /**
+   * Requests the latest information about insecure credentials.
+   */
+  getCredentialsWithReusedPassword():
+      Promise<chrome.passwordsPrivate.PasswordUiEntryList[]>;
+
+  /**
    * Requests the start of the bulk password check.
    */
   startBulkPasswordCheck(): Promise<void>;
@@ -152,11 +158,38 @@ export interface PasswordManagerProxy {
       reason: chrome.passwordsPrivate.PlaintextReason): Promise<string>;
 
   /**
+   * Should remove the saved password and notify that the list has changed.
+   * @param id The id for the password entry being removed. No-op if |id| is not
+   *     in the list.
+   * @param fromStores The store from which credential should be removed.
+   */
+  removeSavedPassword(
+      id: number, fromStores: chrome.passwordsPrivate.PasswordStoreSet): void;
+
+  /**
    * Should remove the blocked site and notify that the list has changed.
    * @param id The id for the blocked url entry being removed. No-op if |id|
    *     is not in the list.
    */
   removeBlockedSite(id: number): void;
+
+  /**
+   * Dismisses / mutes the |insecureCredential| in the passwords store.
+   */
+  muteInsecureCredential(insecureCredential:
+                             chrome.passwordsPrivate.PasswordUiEntry): void;
+
+  /**
+   * Restores / unmutes the |insecureCredential| in the passwords store.
+   */
+  unmuteInsecureCredential(insecureCredential:
+                               chrome.passwordsPrivate.PasswordUiEntry): void;
+
+  /**
+   * Should undo the last saved password or exception removal and notify that
+   * the list has changed.
+   */
+  undoRemoveSavedPasswordOrException(): void;
 
   /**
    * Queries the status of any ongoing export.
@@ -185,6 +218,12 @@ export interface PasswordManagerProxy {
    * Cancels the export in progress.
    */
   cancelExportPasswords(): void;
+
+  /**
+   * Switches Biometric authentication before filling state after
+   * successful authentication.
+   */
+  switchBiometricAuthBeforeFillingState(): void;
 }
 
 /**
@@ -251,6 +290,10 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
     return chrome.passwordsPrivate.getInsecureCredentials();
   }
 
+  getCredentialsWithReusedPassword() {
+    return chrome.passwordsPrivate.getCredentialsWithReusedPassword();
+  }
+
   startBulkPasswordCheck() {
     return chrome.passwordsPrivate.startPasswordCheck();
   }
@@ -274,8 +317,27 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
     return chrome.passwordsPrivate.requestPlaintextPassword(id, reason);
   }
 
+  removeSavedPassword(
+      id: number, fromStores: chrome.passwordsPrivate.PasswordStoreSet) {
+    chrome.passwordsPrivate.removeSavedPassword(id, fromStores);
+  }
+
   removeBlockedSite(id: number) {
     chrome.passwordsPrivate.removePasswordException(id);
+  }
+
+  muteInsecureCredential(insecureCredential:
+                             chrome.passwordsPrivate.PasswordUiEntry) {
+    chrome.passwordsPrivate.muteInsecureCredential(insecureCredential);
+  }
+
+  unmuteInsecureCredential(insecureCredential:
+                               chrome.passwordsPrivate.PasswordUiEntry) {
+    chrome.passwordsPrivate.unmuteInsecureCredential(insecureCredential);
+  }
+
+  undoRemoveSavedPasswordOrException() {
+    chrome.passwordsPrivate.undoRemoveSavedPasswordOrException();
   }
 
   requestExportProgressStatus() {
@@ -299,6 +361,10 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
 
   cancelExportPasswords() {
     chrome.passwordsPrivate.cancelExportPasswords();
+  }
+
+  switchBiometricAuthBeforeFillingState() {
+    chrome.passwordsPrivate.switchBiometricAuthBeforeFillingState();
   }
 
   static getInstance(): PasswordManagerProxy {

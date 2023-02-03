@@ -15,9 +15,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_utils.h"
+#include "components/autofill/core/browser/data_model/borrowed_transliterator.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_l10n_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/libphonenumber/phonenumber_api.h"
 
@@ -180,12 +182,15 @@ int32_t NormalizingIterator::GetNextChar() {
 
 // Sorts |profiles| by ranking score.
 void SortProfilesByRankingScore(std::vector<AutofillProfile*>* profiles) {
+  // TODO(crbug.com/1411114): Remove code duplication for sorting profiles.
   base::Time comparison_time = AutofillClock::Now();
-  std::sort(
-      profiles->begin(), profiles->end(),
-      [comparison_time](const AutofillProfile* a, const AutofillProfile* b) {
-        return a->HasGreaterRankingThan(b, comparison_time);
-      });
+  if (profiles->size() > 1) {
+    std::sort(
+        profiles->begin(), profiles->end(),
+        [comparison_time](const AutofillProfile* a, const AutofillProfile* b) {
+          return a->HasGreaterRankingThan(b, comparison_time);
+        });
+  }
 }
 
 }  // namespace
@@ -370,12 +375,9 @@ bool AutofillProfileComparator::AreMergeable(const AutofillProfile& p1,
                                              const AutofillProfile& p2) const {
   // Sorted in order to relative expense of the tests to fail early and cheaply
   // if possible.
+  // Emails go last, since their comparison logic triggers ICU code, which can
+  // trigger the loading of locale-specific rules.
   DVLOG(1) << "Comparing profiles:\np1 = " << p1 << "\np2 = " << p2;
-
-  if (!HaveMergeableEmailAddresses(p1, p2)) {
-    DVLOG(1) << "Different email addresses.";
-    return false;
-  }
 
   if (!HaveMergeableCompanyNames(p1, p2)) {
     DVLOG(1) << "Different email company names.";
@@ -394,6 +396,11 @@ bool AutofillProfileComparator::AreMergeable(const AutofillProfile& p1,
 
   if (!HaveMergeableAddresses(p1, p2)) {
     DVLOG(1) << "Different addresses.";
+    return false;
+  }
+
+  if (!HaveMergeableEmailAddresses(p1, p2)) {
+    DVLOG(1) << "Different email addresses.";
     return false;
   }
 
@@ -826,15 +833,18 @@ std::string AutofillProfileComparator::MergeProfile(
   // non verified profiles get deduped among themselves before reaching the
   // verified profiles.
   // TODO(crbug.com/620521): Remove the check for verified from the sort.
+  // TODO(crbug.com/1411114): Remove code duplication for sorting profiles.
   base::Time comparison_time = AutofillClock::Now();
-  std::sort(
-      existing_profile_copies.begin(), existing_profile_copies.end(),
-      [comparison_time](const AutofillProfile& a, const AutofillProfile& b) {
-        if (a.IsVerified() != b.IsVerified())
-          return !a.IsVerified();
-        return a.HasGreaterRankingThan(&b, comparison_time);
-      });
-
+  if (existing_profile_copies.size() > 1) {
+    std::sort(
+        existing_profile_copies.begin(), existing_profile_copies.end(),
+        [comparison_time](const AutofillProfile& a, const AutofillProfile& b) {
+          if (a.IsVerified() != b.IsVerified()) {
+            return !a.IsVerified();
+          }
+          return a.HasGreaterRankingThan(&b, comparison_time);
+        });
+  }
   // Set to true if |existing_profile_copies| already contains an equivalent
   // profile.
   bool matching_profile_found = false;
@@ -999,7 +1009,7 @@ bool AutofillProfileComparator::HaveMergeableEmailAddresses(
   const std::u16string& email_1 = p1.GetInfo(EMAIL_ADDRESS, app_locale_);
   const std::u16string& email_2 = p2.GetInfo(EMAIL_ADDRESS, app_locale_);
   return email_1.empty() || email_2.empty() ||
-         case_insensitive_compare_.StringsEqual(email_1, email_2);
+         l10n::CaseInsensitiveCompare().StringsEqual(email_1, email_2);
 }
 
 bool AutofillProfileComparator::HaveMergeableCompanyNames(

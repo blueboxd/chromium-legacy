@@ -211,27 +211,32 @@ const char* FetchHandlerTypeToSuffix(
 
 // This function merges SHA256 checksum hash strings in
 // ServiceWokrerResourceRecord and return a single hash string.
-std::string MergeResourceRecordSHA256ScriptChecksum(
+absl::optional<std::string> MergeResourceRecordSHA256ScriptChecksum(
     const ServiceWorkerScriptCacheMap& script_cache_map) {
   const std::unique_ptr<crypto::SecureHash> checksum =
       crypto::SecureHash::Create(crypto::SecureHash::SHA256);
-  std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources;
-  script_cache_map.GetResources(&resources);
+  std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources =
+      script_cache_map.GetResources();
   // Sort |resources| by |sha256_checksum| value not to make the merged value
   // inconsistent based on the script order.
   std::sort(resources.begin(), resources.end(),
             [](const storage::mojom::ServiceWorkerResourceRecordPtr& record1,
                const storage::mojom::ServiceWorkerResourceRecordPtr& record2) {
-              return record1->sha256_checksum.value() <
-                     record2->sha256_checksum.value();
+              if (record1->sha256_checksum && record2->sha256_checksum) {
+                return *record1->sha256_checksum < *record2->sha256_checksum;
+              }
+              return record1->sha256_checksum.has_value();
             });
 
   for (auto& resource : resources) {
+    if (!resource->sha256_checksum) {
+      return absl::nullopt;
+    }
     // This may not be the case because we use the fixed length string, but
     // insert a delimiter here to distinguish following cases to avoid hash
     // value collisions: ab,cdef vs abcd,ef
     const std::string checksum_with_delimiter =
-        resource->sha256_checksum.value() + "|";
+        *resource->sha256_checksum + "|";
     checksum->Update(checksum_with_delimiter.data(),
                      checksum_with_delimiter.size());
   }
@@ -1332,7 +1337,7 @@ void ServiceWorkerVersion::OnStarted(
   // ServiceWorkerVersion::SetResources() isn't called and
   // |sha256_script_checksum_| should be empty. Calculate the checksum string
   // with the script newly added/updated in |script_cache_map_|.
-  if (sha256_script_checksum_.empty()) {
+  if (!sha256_script_checksum_) {
     sha256_script_checksum_ =
         MergeResourceRecordSHA256ScriptChecksum(script_cache_map_);
   }
@@ -2108,20 +2113,17 @@ void ServiceWorkerVersion::StartWorkerInternal() {
     params->policy_container =
         policy_container_host_->CreatePolicyContainerForBlink();
 
-    if (base::FeatureList::IsEnabled(
-            features::kPrivateNetworkAccessForWorkers)) {
-      if (!client_security_state_) {
-        client_security_state_ = network::mojom::ClientSecurityState::New();
-      }
-      client_security_state_->ip_address_space =
-          policy_container_host_->ip_address_space();
-      client_security_state_->is_web_secure_context =
-          policy_container_host_->policies().is_web_secure_context;
-      client_security_state_->private_network_request_policy =
-          DerivePrivateNetworkRequestPolicy(
-              policy_container_host_->policies(),
-              PrivateNetworkRequestContext::kWorker);
+    if (!client_security_state_) {
+      client_security_state_ = network::mojom::ClientSecurityState::New();
     }
+    client_security_state_->ip_address_space =
+        policy_container_host_->ip_address_space();
+    client_security_state_->is_web_secure_context =
+        policy_container_host_->policies().is_web_secure_context;
+    client_security_state_->private_network_request_policy =
+        DerivePrivateNetworkRequestPolicy(
+            policy_container_host_->policies(),
+            PrivateNetworkRequestContext::kWorker);
   }
 
   embedded_worker_->Start(std::move(params),
@@ -2703,14 +2705,11 @@ ServiceWorkerVersion::RebindStorageReference() {
     case ServiceWorkerRegistration::Status::kIntact:
       break;
     case ServiceWorkerRegistration::Status::kUninstalling:
-    case ServiceWorkerRegistration::Status::kUninstalled: {
-      std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources;
-      script_cache_map_.GetResources(&resources);
-      for (auto& resource : resources) {
+    case ServiceWorkerRegistration::Status::kUninstalled:
+      for (auto& resource : script_cache_map_.GetResources()) {
         purgeable_resources.push_back(resource->resource_id);
       }
       break;
-    }
   }
 
   remote_reference_.reset();
@@ -2723,7 +2722,7 @@ void ServiceWorkerVersion::SetResources(
     const std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>&
         resources) {
   DCHECK_EQ(status_, NEW);
-  DCHECK(sha256_script_checksum_.empty());
+  DCHECK(!sha256_script_checksum_);
   script_cache_map_.SetResources(resources);
   sha256_script_checksum_ =
       MergeResourceRecordSHA256ScriptChecksum(script_cache_map_);

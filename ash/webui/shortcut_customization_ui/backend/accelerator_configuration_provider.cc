@@ -18,16 +18,12 @@
 #include "ash/webui/shortcut_customization_ui/backend/accelerator_layout_table.h"
 #include "ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom.h"
 #include "base/check.h"
-#include "base/containers/fixed_flat_map.h"
 #include "base/containers/flat_map.h"
-#include "base/strings/string_split.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "mojo/public/cpp/bindings/clone_traits.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote_set.h"
 #include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/events/keyboard_capability.h"
@@ -139,8 +135,7 @@ const base::flat_map<ui::KeyboardCode, std::u16string>& GetKeyDisplayMap() {
           {ui::KeyboardCode::VKEY_DICTATE, u"ToggleDictation"},
           {ui::KeyboardCode::VKEY_WLAN, u"ToggleWifi"},
           {ui::KeyboardCode::VKEY_EMOJI_PICKER, u"EmojiPicker"},
-          {ui::KeyboardCode::VKEY_SPACE,
-           l10n_util::GetStringUTF16(IDS_SHORTCUT_CUSTOMIZATION_KEY_SPACE)},
+          {ui::KeyboardCode::VKEY_SPACE, u"Space"},
           {ui::KeyboardCode::VKEY_TAB,
            l10n_util::GetStringUTF16(IDS_SHORTCUT_CUSTOMIZATION_KEY_TAB)},
           {ui::KeyboardCode::VKEY_ESCAPE,
@@ -321,6 +316,20 @@ void AcceleratorConfigurationProvider::UpdateKeyboards() {
 void AcceleratorConfigurationProvider::InitializeNonConfigurableAccelerators(
     NonConfigurableActionsMap mapping) {
   non_configurable_actions_mapping_ = std::move(mapping);
+  for (const auto& [ambient_action_id, accelerators_details] :
+       non_configurable_actions_mapping_) {
+    if (accelerators_details.IsStandardAccelerator()) {
+      DCHECK(!accelerators_details.replacements.has_value());
+      DCHECK(!accelerators_details.message_id.has_value());
+      for (const auto& accelerator :
+           accelerators_details.accelerators.value()) {
+        const uint32_t action_id = static_cast<uint32_t>(ambient_action_id);
+        non_configurable_accelerator_to_id_.InsertNew(
+            std::make_pair(accelerator, action_id));
+        id_to_non_configurable_accelerators_[action_id].push_back(accelerator);
+      }
+    }
+  }
   NotifyAcceleratorsUpdated();
 }
 

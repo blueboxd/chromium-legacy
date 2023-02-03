@@ -34,7 +34,13 @@ class ReadAnythingPageHandler : public read_anything::mojom::PageHandler,
    public:
     virtual void OnUIReady() = 0;
     virtual void OnUIDestroyed() = 0;
-    virtual void OnLinkClicked(const GURL& url, bool open_in_new_tab) = 0;
+    virtual void OnLinkClicked(const ui::AXTreeID& target_tree_id,
+                               const ui::AXNodeID& target_node_id) = 0;
+    virtual void OnSelectionChange(const ui::AXTreeID& target_tree_id,
+                                   const ui::AXNodeID& anchor_node_id,
+                                   int anchor_offset,
+                                   const ui::AXNodeID& focus_node_id,
+                                   int focus_offset) = 0;
   };
 
   ReadAnythingPageHandler(
@@ -46,12 +52,19 @@ class ReadAnythingPageHandler : public read_anything::mojom::PageHandler,
   ~ReadAnythingPageHandler() override;
 
   // read_anything::mojom::PageHandler:
-  void OnLinkClicked(const GURL& url, bool open_in_new_tab) override;
+  void OnLinkClicked(const ui::AXTreeID& target_tree_id,
+                     ui::AXNodeID target_node_id) override;
+  void OnSelectionChange(const ui::AXTreeID& target_tree_id,
+                         ui::AXNodeID anchor_node_id,
+                         int anchor_offset,
+                         ui::AXNodeID focus_node_id,
+                         int focus_offset) override;
 
   // ReadAnythingModel::Observer:
   void AccessibilityEventReceived(
       const content::AXEventNotificationDetails& details) override;
-  void OnActiveAXTreeIDChanged(const ui::AXTreeID& tree_id) override;
+  void OnActiveAXTreeIDChanged(const ui::AXTreeID& tree_id,
+                               const ukm::SourceId& ukm_source_id) override;
   void OnAXTreeDestroyed(const ui::AXTreeID& tree_id) override;
   void OnReadAnythingThemeChanged(
       const std::string& font_name,

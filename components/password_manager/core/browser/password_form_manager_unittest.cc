@@ -36,6 +36,7 @@
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/mock_password_change_success_tracker.h"
 #include "components/password_manager/core/browser/mock_webauthn_credentials_delegate.h"
+#include "components/password_manager/core/browser/passkey_credential.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -457,8 +458,8 @@ class PasswordFormManagerTest : public testing::Test,
         .WillByDefault(Return(url::Origin::Create(observed_form_.url)));
     ON_CALL(client_, GetWebAuthnCredentialsDelegateForDriver)
         .WillByDefault(Return(&webauthn_credentials_delegate_));
-    ON_CALL(webauthn_credentials_delegate_, GetWebAuthnSuggestions)
-        .WillByDefault(ReturnRef(webauthn_suggestions_));
+    ON_CALL(webauthn_credentials_delegate_, GetPasskeys)
+        .WillByDefault(ReturnRef(passkeys_));
 
     fetcher_ = std::make_unique<FakeFormFetcher>();
     fetcher_->Fetch();
@@ -484,7 +485,7 @@ class PasswordFormManagerTest : public testing::Test,
   MockPasswordManagerClient client_;
   MockPasswordManagerDriver driver_;
   MockWebAuthnCredentialsDelegate webauthn_credentials_delegate_;
-  absl::optional<std::vector<autofill::Suggestion>> webauthn_suggestions_;
+  absl::optional<std::vector<PasskeyCredential>> passkeys_;
 
   // Define |fetcher_| before |form_manager_|, because the former needs to
   // outlive the latter.
@@ -581,10 +582,8 @@ TEST_P(PasswordFormManagerTest, Autofill) {
   EXPECT_FALSE(fill_data.wait_for_username);
 #endif
 
-  EXPECT_EQ(observed_form_.fields[1].name, fill_data.username_field.name);
-  EXPECT_EQ(saved_match_.username_value, fill_data.username_field.value);
-  EXPECT_EQ(observed_form_.fields[2].name, fill_data.password_field.name);
-  EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
+  EXPECT_EQ(saved_match_.username_value, fill_data.preferred_login.username);
+  EXPECT_EQ(saved_match_.password_value, fill_data.preferred_login.password);
 }
 
 TEST_P(PasswordFormManagerTest, AutofillNotMoreThan5Times) {
@@ -625,8 +624,8 @@ TEST_P(PasswordFormManagerTest, AutofillSignUpForm) {
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
 
   task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_TRUE(fill_data.password_field.unique_renderer_id.is_null());
-  EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
+  EXPECT_TRUE(fill_data.password_element_renderer_id.is_null());
+  EXPECT_EQ(saved_match_.password_value, fill_data.preferred_login.password);
 #if BUILDFLAG(IS_IOS)
   EXPECT_EQ(observed_form_.unique_renderer_id,
             generation_data.form_renderer_id);
@@ -681,8 +680,8 @@ TEST_P(PasswordFormManagerTest, AutofillWithBlocklistedMatch) {
   task_environment_.FastForwardUntilNoTasksRemain();
 
   EXPECT_EQ(observed_form_.url, fill_data.url);
-  EXPECT_EQ(saved_match_.username_value, fill_data.username_field.value);
-  EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
+  EXPECT_EQ(saved_match_.username_value, fill_data.preferred_login.username);
+  EXPECT_EQ(saved_match_.password_value, fill_data.preferred_login.password);
 }
 
 TEST_P(PasswordFormManagerTest, SetSubmitted) {
@@ -1761,16 +1760,12 @@ TEST_P(PasswordFormManagerTest, FillForm) {
     form_manager_->FillForm(form, {});
     task_environment_.FastForwardUntilNoTasksRemain();
 
-    EXPECT_EQ(form.fields[kUsernameFieldIndex].name,
-              fill_data.username_field.name);
     EXPECT_EQ(form.fields[kUsernameFieldIndex].unique_renderer_id,
-              fill_data.username_field.unique_renderer_id);
-    EXPECT_EQ(saved_match_.username_value, fill_data.username_field.value);
-    EXPECT_EQ(form.fields[kPasswordFieldIndex].name,
-              fill_data.password_field.name);
+              fill_data.username_element_renderer_id);
+    EXPECT_EQ(saved_match_.username_value, fill_data.preferred_login.username);
     EXPECT_EQ(form.fields[kPasswordFieldIndex].unique_renderer_id,
-              fill_data.password_field.unique_renderer_id);
-    EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
+              fill_data.password_element_renderer_id);
+    EXPECT_EQ(saved_match_.password_value, fill_data.preferred_login.password);
 
     base::HistogramTester histogram_tester;
     form_manager_.reset();
@@ -1805,9 +1800,9 @@ TEST_P(PasswordFormManagerTest, FillFormWaitForServerPredictions) {
 
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(changed_form.fields[kUsernameFieldIndex].unique_renderer_id,
-            fill_data.username_field.unique_renderer_id);
+            fill_data.username_element_renderer_id);
   EXPECT_EQ(changed_form.fields[kPasswordFieldIndex].unique_renderer_id,
-            fill_data.password_field.unique_renderer_id);
+            fill_data.password_element_renderer_id);
 
   base::HistogramTester histogram_tester;
   form_manager_.reset();
@@ -1844,9 +1839,9 @@ TEST_P(PasswordFormManagerTest, UpdateFormWaitForServerPredictions) {
   // Check new fill task trigger form filling
   task_environment_.FastForwardUntilNoTasksRemain();
   EXPECT_EQ(changed_form.fields[kUsernameFieldIndex].unique_renderer_id,
-            fill_data.username_field.unique_renderer_id);
+            fill_data.username_element_renderer_id);
   EXPECT_EQ(changed_form.fields[kPasswordFieldIndex].unique_renderer_id,
-            fill_data.password_field.unique_renderer_id);
+            fill_data.password_element_renderer_id);
 }
 
 TEST_P(PasswordFormManagerTest, Update) {

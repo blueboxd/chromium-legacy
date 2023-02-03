@@ -15,6 +15,7 @@ import {LocaleOutputHelper} from '../common/locale_output_helper.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
 import {PermissionChecker} from '../common/permission_checker.js';
+import {SettingsManager} from '../common/settings_manager.js';
 import {QueueMode, TtsSpeechProperties} from '../common/tts_types.js';
 import {JaPhoneticMap} from '../third_party/tamachiyomi/ja_phonetic_map.js';
 
@@ -41,6 +42,7 @@ import {BackgroundKeyboardHandler} from './keyboard_handler.js';
 import {LiveRegions} from './live_regions.js';
 import {EventStreamLogger} from './logging/event_stream_logger.js';
 import {LogStore} from './logging/log_store.js';
+import {LogUrlWatcher} from './logging/log_url_watcher.js';
 import {MathHandler} from './math_handler.js';
 import {MediaAutomationHandler} from './media_automation_handler.js';
 import {Output} from './output/output.js';
@@ -109,9 +111,10 @@ export class Background extends ChromeVoxState {
   }
 
   static async init() {
-    // Initialize storage, braille, prefs, TTS, and legacy background page
-    // first.
+    // Initialize storage, settings, braille, prefs, TTS, and legacy background
+    // page first.
     await LocalStorage.init();
+    await SettingsManager.init();
     BrailleBackground.init();
     ChromeVoxPrefs.init();
     ChromeVoxRange.init();
@@ -134,6 +137,7 @@ export class Background extends ChromeVoxState {
     LiveRegions.init();
     LocaleOutputHelper.init();
     LogStore.init();
+    LogUrlWatcher.init();
     PageLoadSoundHandler.init();
     PanelBackground.init();
     RangeAutomationHandler.init();

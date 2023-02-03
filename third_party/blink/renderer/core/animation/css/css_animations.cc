@@ -103,6 +103,7 @@ namespace {
 // properties.
 StringKeyframeVector ProcessKeyframesRule(
     const StyleRuleKeyframes* keyframes_rule,
+    const TreeScope* tree_scope,
     const Document& document,
     const ComputedStyle* parent_style,
     TimingFunction* default_timing_function,
@@ -116,20 +117,20 @@ StringKeyframeVector ProcessKeyframesRule(
 
   for (wtf_size_t i = 0; i < style_keyframes.size(); ++i) {
     const StyleRuleKeyframe* style_keyframe = style_keyframes[i].Get();
-    auto* keyframe = MakeGarbageCollected<StringKeyframe>();
+    auto* keyframe = MakeGarbageCollected<StringKeyframe>(tree_scope);
     const Vector<KeyframeOffset>& offsets = style_keyframe->Keys();
     DCHECK(!offsets.empty());
     bool drop_keyframe = false;
     // If keyframe doesn't have a named range offset, act as before, we don't
     // care if we have a timeline at this point or not in this case.
-    if (offsets[0].name == Timing::TimelineNamedRange::kNone) {
+    if (offsets[0].name == TimelineOffset::NamedRange::kNone) {
       keyframe->SetOffset(offsets[0].percent);
     } else {
       // No matter what the timeline is, we have named range keyframes.
       has_named_range_keyframes = true;
 
       if (timeline && timeline->IsViewTimeline()) {
-        Timing::TimelineOffset timeline_offset(
+        TimelineOffset timeline_offset(
             offsets[0].name, Length::Percent(100 * offsets[0].percent));
         double fractional_offset =
             To<ViewTimeline>(timeline)->ToFractionalOffset(timeline_offset);
@@ -188,13 +189,13 @@ StringKeyframeVector ProcessKeyframesRule(
     }
     // The last keyframe specified at a given offset is used.
     for (wtf_size_t j = 1; j < offsets.size(); ++j) {
-      if (offsets[j].name == Timing::TimelineNamedRange::kNone) {
+      if (offsets[j].name == TimelineOffset::NamedRange::kNone) {
         keyframes.push_back(
             To<StringKeyframe>(keyframe->CloneWithOffset(offsets[j].percent)));
       } else {
         has_named_range_keyframes = true;
         if (timeline && timeline->IsViewTimeline()) {
-          Timing::TimelineOffset timeline_offset(
+          TimelineOffset timeline_offset(
               offsets[j].name, Length::Percent(100 * offsets[j].percent));
           double fractional_offset =
               To<ViewTimeline>(timeline)->ToFractionalOffset(timeline_offset);
@@ -299,8 +300,9 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   //    abort this procedure. In this case no animation is generated, and any
   //    existing animation matching name is canceled.
 
-  const StyleRuleKeyframes* keyframes_rule =
+  StyleResolver::FindKeyframesRuleResult find_result =
       resolver->FindKeyframesRule(&element, &animating_element, name);
+  const StyleRuleKeyframes* keyframes_rule = find_result.rule;
   DCHECK(keyframes_rule);
 
   // 4. Let keyframes be an empty sequence of keyframe objects.
@@ -322,8 +324,8 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   //    result in reverse applying the following steps:
   bool has_named_range_keyframes = false;
   keyframes = ProcessKeyframesRule(
-      keyframes_rule, element.GetDocument(), parent_style,
-      default_timing_function, writing_direction.GetWritingMode(),
+      keyframes_rule, find_result.tree_scope, element.GetDocument(),
+      parent_style, default_timing_function, writing_direction.GetWritingMode(),
       writing_direction.Direction(), timeline, has_named_range_keyframes);
 
   double last_offset = 1;
@@ -1204,12 +1206,16 @@ void CSSAnimations::CalculateAnimationUpdate(
       timing.timing_function = Timing().timing_function;
 
       StyleRuleKeyframes* keyframes_rule =
-          resolver->FindKeyframesRule(&element, &animating_element, name);
+          resolver->FindKeyframesRule(&element, &animating_element, name).rule;
       if (!keyframes_rule)
         continue;  // Cancel the animation if there's no style rule for it.
 
       const StyleTimeline& style_timeline = animation_data->GetTimeline(i);
 
+      const absl::optional<TimelineOffset>& range_start =
+          animation_data->GetRepeated(animation_data->RangeStartList(), i);
+      const absl::optional<TimelineOffset>& range_end =
+          animation_data->GetRepeated(animation_data->RangeEndList(), i);
       const EffectModel::CompositeOperation composite =
           animation_data->GetComposition(i);
 
@@ -1308,7 +1314,9 @@ void CSSAnimations::CalculateAnimationUpdate(
                 existing_animation->style_rule_version ||
             existing_animation->specified_timing != specified_timing ||
             is_paused != was_paused || logical_property_mapping_change ||
-            timeline != existing_animation->Timeline()) {
+            timeline != existing_animation->Timeline() ||
+            range_start != existing_animation->RangeStart() ||
+            range_end != existing_animation->RangeEnd()) {
           DCHECK(!is_animation_style_change);
           absl::optional<AnimationTimeDelta> inherited_time;
           absl::optional<AnimationTimeDelta> timeline_duration;
@@ -1363,7 +1371,7 @@ void CSSAnimations::CalculateAnimationUpdate(
                   timing, is_paused, inherited_time, timeline_duration,
                   animation->playbackRate()),
               specified_timing, keyframes_rule, timeline,
-              animation_data->PlayStateList());
+              animation_data->PlayStateList(), range_start, range_end);
           if (toggle_pause_state)
             update.ToggleAnimationIndexPaused(existing_animation_index);
         }
@@ -1390,7 +1398,7 @@ void CSSAnimations::CalculateAnimationUpdate(
                                           composite, i, timeline),
                 timing, is_paused, inherited_time, timeline_duration, 1.0),
             specified_timing, keyframes_rule, timeline,
-            animation_data->PlayStateList());
+            animation_data->PlayStateList(), range_start, range_end);
       }
     }
   }
@@ -1678,6 +1686,12 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
       entry.animation->setTimeline(entry.timeline);
       To<CSSAnimation>(*entry.animation).ResetIgnoreCSSTimeline();
     }
+    if (entry.animation->GetRangeStart() != entry.range_start) {
+      entry.animation->SetRangeStart(entry.range_start);
+    }
+    if (entry.animation->GetRangeEnd() != entry.range_end) {
+      entry.animation->SetRangeEnd(entry.range_end);
+    }
 
     running_animations_[entry.index]->Update(entry);
     entry.animation->Update(kTimingUpdateOnDemand);
@@ -1712,6 +1726,8 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     if (inert_animation->Paused())
       animation->pause();
     animation->resetIgnoreCSSPlayState();
+    animation->SetRangeStart(entry.range_start);
+    animation->SetRangeEnd(entry.range_end);
     animation->Update(kTimingUpdateOnDemand);
 
     running_animations_.push_back(

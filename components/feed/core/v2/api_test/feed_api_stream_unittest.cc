@@ -11,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "components/feed/core/common/pref_names.h"
+#include "components/feed/core/proto/v2/wire/feed_entry_point_source.pb.h"
 #include "components/feed/core/proto/v2/wire/feed_query.pb.h"
 #include "components/feed/core/proto/v2/wire/info_card.pb.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
@@ -2905,6 +2906,22 @@ TEST_F(FeedApiTest, ReportUserSettingsFromMetadataWaaOffDpOn) {
                                 UserSettingsOnStart::kSignedInWaaOffDpOn, 1);
 }
 
+TEST_F(FeedStreamTestForAllStreamTypes, ManualRefreshWithoutSurfaceIsAborted) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestForYouSurface surface(stream_.get());
+  WaitForIdleTaskQueue();
+  surface.Detach();
+  WaitForIdleTaskQueue();
+  surface.Clear();
+
+  CallbackReceiver<bool> callback;
+  stream_->ManualRefresh(surface.GetStreamType(), callback.Bind());
+  WaitForIdleTaskQueue();
+  // Refresh fails, and surface is not updated.
+  EXPECT_EQ(absl::optional<bool>(false), callback.GetResult());
+  EXPECT_EQ("", surface.DescribeUpdates());
+}
+
 TEST_F(FeedStreamTestForAllStreamTypes, ManualRefreshInterestFeedSuccess) {
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
   TestForYouSurface surface(stream_.get());
@@ -3452,7 +3469,10 @@ TEST_F(FeedApiTest, InfoCardTrackingActions) {
   // Chrome restart. This is used to test that info card tracking states are
   // sent in the initial page load when stream model is not loaded yet.
   response_translator_.InjectResponse(MakeTypicalRefreshModelState());
+  surface.Detach();
   CreateStream();
+  surface.Attach(stream_.get());
+  WaitForIdleTaskQueue();
   stream_->ManualRefresh(StreamType(StreamKind::kForYou), base::DoNothing());
   WaitForIdleTaskQueue();
 
@@ -3928,6 +3948,49 @@ TEST_F(FeedApiTest, SingleWebFeed_AttachMultiple) {
 
   EXPECT_TRUE(stream_->GetModel(stream_type_A));
   EXPECT_FALSE(stream_->GetModel(stream_type_B));
+}
+
+TEST_F(FeedApiTest, SingleWebFeed_EntryPointSetInSurface) {
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+
+  StreamType stream_type_A(StreamKind::kSingleWebFeed, "A");
+
+  TestSingleWebFeedSurface single_web_feed_surface_menu(
+      stream_.get(), "A", SingleWebFeedEntryPoint::kMenu);
+
+  WaitForIdleTaskQueue();
+
+  EXPECT_EQ(SingleWebFeedEntryPoint::kMenu,
+            single_web_feed_surface_menu.GetSingleWebFeedEntryPoint());
+
+  EXPECT_TRUE(network_.query_request_sent);
+  ASSERT_EQ(feedwire::FeedEntryPointSource::CHROME_SINGLE_WEB_FEED_MENU,
+            network_.query_request_sent->feed_request()
+                .feed_query()
+                .feed_entry_point_data()
+                .feed_entry_point_source_value());
+
+  single_web_feed_surface_menu.Detach();
+
+  WaitForModelToAutoUnload();
+  task_environment_.FastForwardBy(base::Seconds(70));
+  WaitForIdleTaskQueue();
+
+  response_translator_.InjectResponse(MakeTypicalInitialModelState());
+  TestSingleWebFeedSurface single_web_feed_surface_attribution(
+      stream_.get(), "A", SingleWebFeedEntryPoint::kAttribution);
+
+  WaitForIdleTaskQueue();
+
+  EXPECT_EQ(SingleWebFeedEntryPoint::kAttribution,
+            single_web_feed_surface_attribution.GetSingleWebFeedEntryPoint());
+
+  EXPECT_TRUE(network_.query_request_sent);
+  ASSERT_EQ(feedwire::FeedEntryPointSource::CHROME_SINGLE_WEB_FEED_ATTRIBUTION,
+            network_.query_request_sent->feed_request()
+                .feed_query()
+                .feed_entry_point_data()
+                .feed_entry_point_source_value());
 }
 
 TEST_F(FeedApiTest, CheckDuplicatedContents) {

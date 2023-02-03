@@ -250,6 +250,8 @@ void AddStrings(content::WebUIDataSource* source) {
       {"googlePhotosLabel", IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS},
       {"googlePhotosError", IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_ERROR},
       {"googlePhotosTryAgain", IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_TRY_AGAIN},
+      {"googlePhotosAlbumShared",
+       IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_ALBUM_SHARED},
       {"googlePhotosAlbumsTabLabel",
        IDS_PERSONALIZATION_APP_GOOGLE_PHOTOS_ALBUMS_TAB},
       {"googlePhotosPhotosTabLabel",
@@ -357,9 +359,6 @@ void PersonalizationAppUI::BindInterface(
 }
 
 void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
-  source->AddBoolean("fullScreenPreviewEnabled",
-                     features::IsWallpaperFullScreenPreviewEnabled());
-
   source->AddBoolean("isGooglePhotosIntegrationEnabled",
                      wallpaper_provider_->IsEligibleForGooglePhotos());
 
@@ -376,16 +375,11 @@ void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
       features::IsRgbKeyboardEnabled() &&
           Shell::Get()->rgb_keyboard_manager()->IsRgbKeyboardSupported());
 
-  source->AddBoolean("isAvatarsCloudMigrationEnabled",
-                     features::IsAvatarsCloudMigrationEnabled());
-
-  source->AddBoolean("isJellyEnabled", features::IsJellyEnabled());
-
   source->AddBoolean("isScreenSaverPreviewEnabled",
                      features::IsScreenSaverPreviewEnabled());
 
-  source->AddBoolean("isAmbientSubpageUiChangeEnabled",
-                     features::IsAmbientSubpageUIChangeEnabled());
+  source->AddBoolean("isPersonalizationJellyEnabled",
+                     features::IsPersonalizationJellyEnabled());
 
   // TODO(b/258838122): update when the screen saver policy code is ready.
   source->AddBoolean("isAmbientModeManaged", false);

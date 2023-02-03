@@ -282,6 +282,8 @@ void SetFlags(IsolateHolder::ScriptMode mode,
       "--no-enable-experimental-regexp-engine-on-excessive-backtracks");
   SetV8FlagsIfOverridden(features::kV8TurboFastApiCalls,
                          "--turbo-fast-api-calls", "--no-turbo-fast-api-calls");
+  SetV8FlagsIfOverridden(features::kV8MegaDomIC, "--mega-dom-ic",
+                         "--no-mega-dom-ic");
   SetV8FlagsIfOverridden(features::kV8Maglev, "--maglev", "--no-maglev");
   SetV8FlagsIfOverridden(features::kV8Sparkplug, "--sparkplug",
                          "--no-sparkplug");
@@ -313,27 +315,13 @@ void SetFlags(IsolateHolder::ScriptMode mode,
     }
   }
 
-  if (base::FeatureList::IsEnabled(features::kV8ScriptAblation)) {
-    if (int delay = features::kV8ScriptDelayMs.Get()) {
-      SetV8FlagsFormatted("--script-delay=%i", delay);
-    }
-    if (int delay = features::kV8ScriptDelayOnceMs.Get()) {
-      SetV8FlagsFormatted("--script-delay-once=%i", delay);
-    }
-    if (double fraction = features::kV8ScriptDelayFraction.Get()) {
-      SetV8FlagsFormatted("--script-delay-fraction=%f", fraction);
-    }
-  }
-
   // Make sure aliases of kV8SlowHistograms only enable the feature to
   // avoid contradicting settings between multiple finch experiments.
   bool any_slow_histograms_alias =
       base::FeatureList::IsEnabled(
           features::kV8SlowHistogramsCodeMemoryWriteProtection) ||
       base::FeatureList::IsEnabled(features::kV8SlowHistogramsSparkplug) ||
-      base::FeatureList::IsEnabled(
-          features::kV8SlowHistogramsSparkplugAndroid) ||
-      base::FeatureList::IsEnabled(features::kV8SlowHistogramsScriptAblation);
+      base::FeatureList::IsEnabled(features::kV8SlowHistogramsSparkplugAndroid);
   if (any_slow_histograms_alias) {
     SetV8Flags("--slow-histograms");
   } else {
@@ -364,6 +352,12 @@ void SetFlags(IsolateHolder::ScriptMode mode,
   SetV8FlagsIfOverridden(features::kV8UseLibmTrigFunctions,
                          "--use-libm-trig-functions",
                          "--no-use-libm-trig-functions");
+
+  // WebAssembly features.
+
+  SetV8FlagsIfOverridden(features::kWebAssemblyTailCall,
+                         "--experimental-wasm-return-call",
+                         "--no-experimental-wasm-return-call");
 
   if (js_command_line_flags.empty())
     return;

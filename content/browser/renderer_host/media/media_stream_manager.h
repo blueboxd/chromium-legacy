@@ -126,6 +126,10 @@ class CONTENT_EXPORT MediaStreamManager
       const blink::MediaStreamDevice& device,
       const blink::mojom::MediaStreamStateChange new_state)>;
 
+  using DeviceCaptureConfigurationChangeCallback =
+      base::RepeatingCallback<void(const std::string& label,
+                                   const blink::MediaStreamDevice& device)>;
+
   using DeviceCaptureHandleChangeCallback =
       base::RepeatingCallback<void(const std::string& label,
                                    const blink::MediaStreamDevice& device)>;
@@ -217,6 +221,8 @@ class CONTENT_EXPORT MediaStreamManager
       DeviceStoppedCallback device_stopped_cb,
       DeviceChangedCallback device_changed_cb,
       DeviceRequestStateChangeCallback device_request_state_change_cb,
+      DeviceCaptureConfigurationChangeCallback
+          device_capture_configuration_change_cb,
       DeviceCaptureHandleChangeCallback device_capture_handle_change_cb);
 
   // Accesses an existing open device, identified by |device_session_id|,
@@ -234,6 +240,8 @@ class CONTENT_EXPORT MediaStreamManager
       DeviceStoppedCallback device_stopped_cb,
       DeviceChangedCallback device_changed_cb,
       DeviceRequestStateChangeCallback device_request_state_change_cb,
+      DeviceCaptureConfigurationChangeCallback
+          device_capture_configuration_change_cb,
       DeviceCaptureHandleChangeCallback device_capture_handle_change_cb);
 
   // Cancel an open request identified by |page_request_id| for the given frame.
@@ -420,6 +428,8 @@ class CONTENT_EXPORT MediaStreamManager
                                   int requester_id,
                                   const base::UnguessableToken& session_id,
                                   const base::UnguessableToken& transfer_id);
+
+  void OnCaptureConfigurationChanged(const base::UnguessableToken& session_id);
 
   void OnRegionCaptureRectChanged(
       const base::UnguessableToken& session_id,
@@ -728,7 +738,7 @@ class CONTENT_EXPORT MediaStreamManager
   void MaybeStartTrackingCaptureHandleConfig(
       const std::string& label,
       const blink::MediaStreamDevice& captured_device,
-      GlobalRenderFrameHostId capturer);
+      DeviceRequest& request);
 
   // Stop tracking capture-handle changes for tab-capture.
   void MaybeStopTrackingCaptureHandleConfig(
@@ -739,12 +749,7 @@ class CONTENT_EXPORT MediaStreamManager
   void MaybeUpdateTrackedCaptureHandleConfigs(
       const std::string& label,
       const blink::mojom::StreamDevicesSet& new_stream_devices_set,
-      GlobalRenderFrameHostId capturer);
-
-  // Receive a new capture-handle from the CaptureHandleManager.
-  void OnCaptureHandleChange(const std::string& label,
-                             blink::mojom::MediaStreamType type,
-                             media::mojom::CaptureHandlePtr capture_handle);
+      DeviceRequest& request);
 
   bool ShouldUseFakeUIProxy(blink::mojom::MediaStreamType stream_type) const;
 

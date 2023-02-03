@@ -126,6 +126,9 @@ CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
 
   if (!card.card_art_url().empty())
     result.set_card_art_url(GURL(card.card_art_url()));
+
+  result.set_product_description(base::UTF8ToUTF16(card.product_description()));
+
   return result;
 }
 
@@ -308,6 +311,9 @@ void SetAutofillWalletSpecificsFromServerCard(
 
   if (!card.card_art_url().is_empty())
     wallet_card->set_card_art_url(card.card_art_url().spec());
+
+  wallet_card->set_product_description(
+      base::UTF16ToUTF8(card.product_description()));
 }
 
 void SetAutofillWalletSpecificsFromPaymentsCustomerData(
@@ -357,21 +363,22 @@ void SetAutofillWalletUsageSpecificsFromAutofillWalletUsageData(
     DCHECK(
         IsVirtualCardUsageDataSet(wallet_usage_data.virtual_card_usage_data()));
 
-    wallet_usage_specifics->mutable_virtual_card_usage_data()
-        ->set_instrument_id(
-            wallet_usage_data.virtual_card_usage_data().instrument_id.value());
+    wallet_usage_specifics->set_guid(
+        *wallet_usage_data.virtual_card_usage_data().usage_data_id());
 
     wallet_usage_specifics->mutable_virtual_card_usage_data()
-        ->set_virtual_card_last_four(wallet_usage_data.virtual_card_usage_data()
-                                         .virtual_card_last_four.value());
+        ->set_instrument_id(
+            *wallet_usage_data.virtual_card_usage_data().instrument_id());
+
+    wallet_usage_specifics->mutable_virtual_card_usage_data()
+        ->set_virtual_card_last_four(
+            base::UTF16ToUTF8(*wallet_usage_data.virtual_card_usage_data()
+                                   .virtual_card_last_four()));
 
     wallet_usage_specifics->mutable_virtual_card_usage_data()->set_merchant_url(
         wallet_usage_data.virtual_card_usage_data()
-            .merchant_origin.Serialize());
-
-    wallet_usage_specifics->mutable_virtual_card_usage_data()
-        ->set_merchant_app_package(
-            wallet_usage_data.virtual_card_usage_data().merchant_app_package);
+            .merchant_origin()
+            .Serialize());
   }
 }
 
@@ -478,6 +485,24 @@ AutofillOfferData AutofillOfferDataFromOfferSpecifics(
         offer_specifics.promo_code_offer_data().promo_code());
     return offer_data;
   }
+}
+
+VirtualCardUsageData VirtualCardUsageDataFromUsageSpecifics(
+    const sync_pb::AutofillWalletUsageSpecifics& usage_specifics) {
+  const sync_pb::AutofillWalletUsageSpecifics::VirtualCardUsageData
+      virtual_card_usage_data_specifics =
+          usage_specifics.virtual_card_usage_data();
+  DCHECK(usage_specifics.has_guid() && IsVirtualCardUsageDataSpecificsValid(
+                                           virtual_card_usage_data_specifics));
+
+  return VirtualCardUsageData(
+      VirtualCardUsageData::UsageDataId(usage_specifics.guid()),
+      VirtualCardUsageData::InstrumentId(
+          virtual_card_usage_data_specifics.instrument_id()),
+      VirtualCardUsageData::VirtualCardLastFour(base::UTF8ToUTF16(
+          virtual_card_usage_data_specifics.virtual_card_last_four())),
+      url::Origin::Create(
+          GURL(virtual_card_usage_data_specifics.merchant_url())));
 }
 
 AutofillProfile ProfileFromSpecifics(
@@ -679,15 +704,22 @@ bool IsOfferSpecificsValid(const sync_pb::AutofillOfferSpecifics specifics) {
          has_promo_code;
 }
 
+bool IsVirtualCardUsageDataSpecificsValid(
+    const sync_pb::AutofillWalletUsageSpecifics::VirtualCardUsageData&
+        specifics) {
+  // Ensure fields are present and in correct format.
+  return specifics.has_instrument_id() &&
+         specifics.has_virtual_card_last_four() &&
+         specifics.virtual_card_last_four().length() == 4 &&
+         specifics.has_merchant_url() &&
+         !url::Origin::Create(GURL(specifics.merchant_url())).opaque();
+}
+
 bool IsVirtualCardUsageDataSet(
     const VirtualCardUsageData& virtual_card_usage_data) {
-  // Check for all fields except instrument_id as the integer value can be
-  // anything. Last four and either the merchant_origin or merchant_app_package
-  // must be present.
-  return virtual_card_usage_data.instrument_id.value() != 0 &&
-         !virtual_card_usage_data.virtual_card_last_four.value().empty() &&
-         (!virtual_card_usage_data.merchant_origin.opaque() ||
-          !virtual_card_usage_data.merchant_app_package.empty());
+  return *virtual_card_usage_data.instrument_id() != 0 &&
+         !virtual_card_usage_data.usage_data_id()->empty() &&
+         !virtual_card_usage_data.virtual_card_last_four()->empty();
 }
 
 }  // namespace autofill

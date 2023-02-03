@@ -13,6 +13,7 @@ struct TouchscreenDevice;
 }  // namespace ui
 
 namespace display {
+
 class ManagedDisplayInfo;
 
 namespace test {
@@ -35,11 +36,11 @@ class DISPLAY_MANAGER_EXPORT TouchDeviceManagerTestApi {
   // device |device|.
   void Associate(int64_t display_id, const ui::TouchscreenDevice& device);
 
-  // Returns the count of touch devices currently asosicated with the display
+  // Returns the count of touch devices currently associated with the display
   // |info|.
   std::size_t GetTouchDeviceCount(const ManagedDisplayInfo& info) const;
 
-  // Returns true if the display |info| and touch device |device| are currenlty
+  // Returns true if the display |info| and touch device |device| are currently
   // associated.
   bool AreAssociated(const ManagedDisplayInfo& info,
                      const ui::TouchscreenDevice& device) const;
@@ -54,5 +55,7 @@ class DISPLAY_MANAGER_EXPORT TouchDeviceManagerTestApi {
 };
 
 }  // namespace test
+
 }  // namespace display
+
 #endif  // UI_DISPLAY_MANAGER_TEST_TOUCH_DEVICE_MANAGER_TEST_API_H_

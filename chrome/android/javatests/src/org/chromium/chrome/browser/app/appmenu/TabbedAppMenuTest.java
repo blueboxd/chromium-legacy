@@ -31,12 +31,12 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.bookmarks.PowerBookmarkUtils;
+import org.chromium.chrome.browser.commerce.ShoppingFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.layouts.LayoutTestUtils;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.layouts.animation.CompositorAnimationHandler;
-import org.chromium.chrome.browser.read_later.ReadingListUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUtils.UseDesktopUserAgentCaller;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
@@ -109,6 +109,7 @@ public class TabbedAppMenuTest {
         ActivityTestUtils.clearActivityOrientation(mActivityTestRule.getActivity());
 
         CompositorAnimationHandler.setTestingMode(false);
+        ShoppingFeatures.setShoppingListEligibleForTesting(null);
     }
 
     /**
@@ -246,7 +247,6 @@ public class TabbedAppMenuTest {
     @SmallTest
     @Feature({"Browser", "Main", "Bookmark", "RenderTest"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @EnableFeatures({ChromeFeatureList.BOOKMARKS_REFRESH + ":bookmark_in_app_menu/false"})
     public void testBookmarkMenuItem() throws IOException {
         PropertyModel bookmarkStarPropertyModel = AppMenuTestSupport.getMenuItemPropertyModel(
                 mActivityTestRule.getAppMenuCoordinator(), R.id.bookmark_this_page_id);
@@ -399,8 +399,12 @@ public class TabbedAppMenuTest {
     @SmallTest
     @Feature({"Browser", "Main"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @EnableFeatures({ChromeFeatureList.BOOKMARKS_REFRESH + ":bookmark_in_app_menu/true"})
+    @EnableFeatures({ChromeFeatureList.BOOKMARKS_REFRESH})
     public void testAddBookmarkMenuItem() throws IOException {
+        ShoppingFeatures.setShoppingListEligibleForTesting(true);
+        TestThreadUtils.runOnUiThreadBlocking(() -> mAppMenuHandler.hideAppMenu());
+        showAppMenuAndAssertMenuShown();
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         int addBookmark = AppMenuTestSupport.findIndexOfMenuItemById(
                 mActivityTestRule.getAppMenuCoordinator(), R.id.add_bookmark_menu_id);
         Assert.assertNotEquals("No add bookmark found.", -1, addBookmark);
@@ -410,11 +414,9 @@ public class TabbedAppMenuTest {
     @SmallTest
     @Feature({"Browser", "Main", "RenderTest"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @EnableFeatures({ChromeFeatureList.BOOKMARKS_REFRESH + "<Study"})
-    @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
-            "force-fieldtrial-params=Study.Group:bookmark_in_app_menu/true"})
-    public void
-    testEditBookmarkMenuItem() throws IOException {
+    @EnableFeatures({ChromeFeatureList.BOOKMARKS_REFRESH})
+    public void testEditBookmarkMenuItem() throws IOException {
+        ShoppingFeatures.setShoppingListEligibleForTesting(true);
         TestThreadUtils.runOnUiThreadBlocking(() -> mAppMenuHandler.hideAppMenu());
         AppMenuPropertiesDelegateImpl.setPageBookmarkedForTesting(true);
         showAppMenuAndAssertMenuShown();
@@ -433,56 +435,6 @@ public class TabbedAppMenuTest {
                 getListView().getChildAt(editBookmarkMenuItemIndex), "edit_bookmark_list_item");
 
         AppMenuPropertiesDelegateImpl.setPageBookmarkedForTesting(null);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Browser", "Main"})
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @EnableFeatures({ChromeFeatureList.READ_LATER + "<Study"})
-    @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
-            "force-fieldtrial-params=Study.Group:reading_list_in_app_menu/true"})
-    public void
-    testAddReadingListMenuItem() throws IOException {
-        TestThreadUtils.runOnUiThreadBlocking(() -> mAppMenuHandler.hideAppMenu());
-        ReadingListUtils.setReadingListSupportedForTesting(true);
-        showAppMenuAndAssertMenuShown();
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-
-        int addToReadingList = AppMenuTestSupport.findIndexOfMenuItemById(
-                mActivityTestRule.getAppMenuCoordinator(), R.id.add_to_reading_list_menu_id);
-        Assert.assertNotEquals("No add reading list item found.", -1, addToReadingList);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Browser", "Main", "RenderTest"})
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @EnableFeatures({ChromeFeatureList.READ_LATER + "<Study"})
-    @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
-            "force-fieldtrial-params=Study.Group:reading_list_in_app_menu/true"})
-    public void
-    testDeleteReadingListMenuItem() throws IOException {
-        TestThreadUtils.runOnUiThreadBlocking(() -> mAppMenuHandler.hideAppMenu());
-        AppMenuPropertiesDelegateImpl.setPageInReadingListForTesting(true);
-        ReadingListUtils.setReadingListSupportedForTesting(true);
-        showAppMenuAndAssertMenuShown();
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-
-        PropertyModel deleteReadingListPropertyModel = AppMenuTestSupport.getMenuItemPropertyModel(
-                mActivityTestRule.getAppMenuCoordinator(), R.id.delete_from_reading_list_menu_id);
-        Assert.assertEquals("Delete reading list item should be tint blue.",
-                R.color.default_icon_color_accent1_tint_list,
-                deleteReadingListPropertyModel.get(AppMenuItemProperties.ICON_COLOR_RES));
-
-        int deleteFromReadingList = AppMenuTestSupport.findIndexOfMenuItemById(
-                mActivityTestRule.getAppMenuCoordinator(), R.id.delete_from_reading_list_menu_id);
-        Assert.assertNotEquals("No delete reading list item found.", -1, deleteFromReadingList);
-        mRenderTestRule.render(
-                getListView().getChildAt(deleteFromReadingList), "delete_reading_list_menu_item");
-
-        AppMenuPropertiesDelegateImpl.setPageInReadingListForTesting(null);
-        ReadingListUtils.setReadingListSupportedForTesting(null);
     }
 
     private void showAppMenuAndAssertMenuShown() {

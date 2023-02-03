@@ -49,8 +49,8 @@ class ContentAutofillDriverFactory : public content::WebContentsObserver,
   // Creates a factory for a WebContents object.
   //
   // The `driver_init_hook` is called whenever a driver is constructed, so it
-  // may configure the driver. In particular, it may create and set the driver's
-  // AutofillManager.
+  // may configure the driver. In particular, it must create and set the
+  // driver's AutofillManager.
   static void CreateForWebContentsAndDelegate(
       content::WebContents* contents,
       AutofillClient* client,
@@ -91,7 +91,7 @@ class ContentAutofillDriverFactory : public content::WebContentsObserver,
   std::unique_ptr<ContentAutofillDriver> CreateDriver(
       content::RenderFrameHost* rfh);
 
-  const raw_ptr<AutofillClient, DanglingUntriaged> client_;
+  raw_ptr<AutofillClient, DanglingUntriaged> client_;
   DriverInitCallback driver_init_hook_;
 
   // Routes events between different drivers.

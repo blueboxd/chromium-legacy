@@ -753,7 +753,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // AXContext associated with this document. When all associated
   // AXContexts are deleted, the AXObjectCache will be removed.
   AXObjectCache* ExistingAXObjectCache() const;
-  bool HasAXObjectCache() const;
   Document& AXObjectCacheOwner() const;
   void ClearAXObjectCache();
 
@@ -1473,8 +1472,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // https://html.spec.whatwg.org/multipage/iframe-embed-object.html#the-embed-element
   void DelayLoadEventUntilLayoutTreeUpdate();
 
-  const EventPath::NodePath& GetOrCalculateEventNodePath(Node& node);
-
   const DocumentTiming& GetTiming() const { return document_timing_; }
 
   bool ShouldMarkFontPerformance() const {
@@ -1537,10 +1534,12 @@ class CORE_EXPORT Document : public ContainerNode,
   void AttachCompositorTimeline(cc::AnimationTimeline*) const;
 
   void AddToTopLayer(Element*, const Element* before = nullptr);
-  void RemoveFromTopLayer(Element*);
+  void RemoveFromTopLayerImmediately(Element*);
   const HeapVector<Member<Element>>& TopLayerElements() const {
     return top_layer_elements_;
   }
+  void ScheduleForTopLayerRemoval(Element*);
+  bool RemoveFinishedTopLayerElements();
 
   HTMLDialogElement* ActiveModalDialog() const;
 
@@ -1633,12 +1632,13 @@ class CORE_EXPORT Document : public ContainerNode,
   static void SetForceSynchronousParsingForTesting(bool);
   static bool ForceSynchronousParsingForTesting();
 
+#if DCHECK_IS_ON()
   void IncrementNodeCount() { node_count_++; }
   void DecrementNodeCount() {
     DCHECK_GT(node_count_, 0);
     node_count_--;
   }
-  int NodeCount() const { return node_count_; }
+#endif  // DCHECK_IS_ON()
 
   SnapCoordinator& GetSnapCoordinator();
   void PerformScrollSnappingTasks();
@@ -1933,6 +1933,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void ResetAgent(Agent& agent);
 
+  bool PendingTopLayerUpdate() const { return pending_top_layer_update_; }
+
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
 
@@ -2195,7 +2197,7 @@ class CORE_EXPORT Document : public ContainerNode,
                             // over base_url_ (but not base_element_url_).
 
   // Used in FallbackBaseURL() to provide the base URL for srcdoc documents,
-  // which is the parent's base URL at the time the navigation was initiated.
+  // which is the initiator's base URL at the time the navigation was initiated.
   // Separate from the base_url_* fields because the fallback base URL should
   // not take precedence over things like <base>.
   // Note: this currently is only used when IsolateSandboxedIframes is enabled.
@@ -2394,6 +2396,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // stack and is thus the one that will be visually on top.
   HeapVector<Member<Element>> top_layer_elements_;
 
+  // top_layer_elements_ to be removed when top-layer computes to none.
+  HeapHashSet<Member<Element>> top_layer_elements_pending_removal_;
+
   // The stack of currently-displayed `popover=auto` elements. Elements in the
   // stack go from earliest (bottom-most) to latest (top-most).
   HeapVector<Member<HTMLElement>> popover_stack_;
@@ -2457,7 +2462,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Member<IntersectionObserverController> intersection_observer_controller_;
 
-  int node_count_;
+#if DCHECK_IS_ON()
+  int node_count_ = 0;
+#endif
 
   Member<SnapCoordinator> snap_coordinator_;
 
@@ -2473,20 +2480,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // Tracks and reports metrics of attempted font match attempts (both
   // successful and not successful) by the page.
   std::unique_ptr<FontMatchingMetrics> font_matching_metrics_;
-
-  // For a given node, cache the vector of nodes that defines its EventPath so
-  // all events dispatched on this node won't get recalculated. This cache uses
-  // a LRU strategy and gets cleared when the DOM tree version changes.
-  uint64_t event_node_path_dom_tree_version_;
-  using EventNodePathCache =
-      HeapHashMap<Member<Node>, Member<EventPath::NodePath>>;
-  using EventNodePathCacheKeyList = HeapLinkedHashSet<Member<Node>>;
-  EventNodePathCache event_node_path_cache_;
-  EventNodePathCacheKeyList event_node_path_cache_key_list_;
-  // If we only want to cache one event path, we can avoid using the heap hash
-  // map and hash set.
-  Member<Node> latest_cached_event_node_;
-  Member<EventPath::NodePath> latest_cached_event_node_path_;
 
 #if DCHECK_IS_ON()
   unsigned slot_assignment_recalc_forbidden_recursion_depth_ = 0;
@@ -2578,6 +2571,11 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<RenderBlockingResourceManager> render_blocking_resource_manager_;
 
   bool rendering_has_begun_ = false;
+
+  // Set to true if we are in awaiting an UpdateStyleAndLayoutTree() that is
+  // after removing an element from the top layer. Only used for sanity checking
+  // pending animation updates in StyleForLayoutObject().
+  bool pending_top_layer_update_ = false;
 
   DeclarativeShadowRootAllowState declarative_shadow_root_allow_state_ =
       DeclarativeShadowRootAllowState::kNotSet;

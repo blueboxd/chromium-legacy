@@ -218,6 +218,29 @@
       ]
     },
   },
+  '13-x64-emulator': {
+    '$mixin_append': {
+      'args': [
+        '--avd-config=../../tools/android/avd/proto/generic_android33.textpb',
+      ],
+    },
+    'swarming': {
+      # soft affinity so that bots with caches will be picked first
+      'optional_dimensions': {
+        '60': [
+          {
+            'caches': 'generic_android33',
+          }
+        ],
+      },
+      'named_caches': [
+        {
+          'name': 'generic_android33',
+          'path': '.android_emulator/generic_android33',
+        },
+      ]
+    },
+  },
   'android_r': {
     'swarming': {
       'dimensions': {
@@ -317,6 +340,39 @@
           'gce': '1',
           'os': 'Ubuntu-18.04',
           'pool': 'chrome.tests',
+        }
+      ],
+      'optional_dimensions': {
+        '60': [
+          {
+            'caches': 'cros_vm',
+          }
+        ],
+      },
+      # See the 'chromeos-amd64-generic' mixin above for the purpose of this
+      # cache.
+      'named_caches': [
+        {
+          'name': 'cros_vm',
+          'path': 'magic_cros_vm_cache',
+        },
+      ],
+    },
+    '$mixin_append': {
+      'args': [
+        '--magic-vm-cache=magic_cros_vm_cache',
+      ],
+    },
+  },
+  'chromeos-betty-finch': {
+    'swarming': {
+      'dimension_sets': [
+        {
+          'cpu': 'x86',
+          'kvm': '1',
+          'gce': '1',
+          'os': 'Ubuntu-18.04',
+          'pool': 'chrome.tests.finch',
         }
       ],
       'optional_dimensions': {
@@ -505,13 +561,6 @@
         '--code-coverage-dir=${ISOLATED_OUTDIR}'
       ],
     },
-  },
-  'fuchsia-test-workstation': {
-    '$mixin_append': {
-      'args': [
-        '--custom-image=workstation_eng.qemu-x64',
-      ],
-    }
   },
   'fuchsia_logs': {
     '$mixin_append': {

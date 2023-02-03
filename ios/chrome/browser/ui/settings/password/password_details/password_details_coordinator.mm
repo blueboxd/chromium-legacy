@@ -10,6 +10,7 @@
 #import "components/password_manager/core/browser/password_manager_metrics_util.h"
 #import "components/password_manager/core/browser/ui/affiliated_group.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
+#import "components/password_manager/core/common/password_manager_features.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/credential_provider_promo/features.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -200,14 +201,25 @@
   [self.alertCoordinator start];
 }
 
-// TODO(crbug.com/1359392): Remove this when flag is cleaned up.
+// TODO(crbug.com/1359392): Remove this when flag is cleaned up. This method is
+// called by the bottom delete button in the Password Details that is not used
+// when the password grouping is enabled.
 - (void)showPasswordDeleteDialogWithOrigin:(NSString*)origin
                        compromisedPassword:(BOOL)compromisedPassword {
-  [self showPasswordDeleteDialogWithOrigin:origin
-                       compromisedPassword:compromisedPassword
-                                  forIndex:0
-                                anchorView:nil  // use bottom bar delete button
-                                anchorRect:CGRect()];
+  NSString* message;
+  if (origin.length > 0) {
+    int stringID = compromisedPassword
+                       ? IDS_IOS_DELETE_COMPROMISED_PASSWORD_DESCRIPTION
+                       : IDS_IOS_DELETE_PASSWORD_DESCRIPTION;
+    message =
+        l10n_util::GetNSStringF(stringID, base::SysNSStringToUTF16(origin));
+  }
+  [self showPasswordDeleteDialogWithTitle:nil
+                                  message:message
+                      compromisedPassword:compromisedPassword
+                                 forIndex:0
+                               anchorView:nil  // use bottom bar delete button
+                               anchorRect:CGRect()];
 }
 
 - (void)showPasswordEditDialogWithOrigin:(NSString*)origin {
@@ -257,11 +269,12 @@
   if (it != self.mediator.credentials.end()) {
     int index = std::distance(self.mediator.credentials.begin(), it);
     DCHECK((unsigned long)index < self.mediator.credentials.size());
-    [self showPasswordDeleteDialogWithOrigin:password.origin
-                         compromisedPassword:password.isCompromised
-                                    forIndex:index
-                                  anchorView:anchorView
-                                  anchorRect:anchorRect];
+
+    [self showPasswordDeleteDialogWithOrigins:password.origins
+                          compromisedPassword:password.isCompromised
+                                     forIndex:index
+                                   anchorView:anchorView
+                                   anchorRect:anchorRect];
   }
 }
 
@@ -292,26 +305,17 @@
 // TODO(crbug.com/1359392): By convention, passing nil for `anchorView` means
 // to use the delete button in the bottom bar as the anchor. This is a temporary
 // hack and will be removed when `kPasswordsGrouping` is enabled by default.
-- (void)showPasswordDeleteDialogWithOrigin:(NSString*)origin
-                       compromisedPassword:(BOOL)compromisedPassword
-                                  forIndex:(int)index
-                                anchorView:(UIView*)anchorView
-                                anchorRect:(CGRect)anchorRect {
-  NSString* message;
-
-  if (origin.length > 0) {
-    int stringID = compromisedPassword
-                       ? IDS_IOS_DELETE_COMPROMISED_PASSWORD_DESCRIPTION
-                       : IDS_IOS_DELETE_PASSWORD_DESCRIPTION;
-    message =
-        l10n_util::GetNSStringF(stringID, base::SysNSStringToUTF16(origin));
-  }
-
+- (void)showPasswordDeleteDialogWithTitle:(NSString*)title
+                                  message:(NSString*)message
+                      compromisedPassword:(BOOL)compromisedPassword
+                                 forIndex:(int)index
+                               anchorView:(UIView*)anchorView
+                               anchorRect:(CGRect)anchorRect {
   if (anchorView) {
     self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
         initWithBaseViewController:self.viewController
                            browser:self.browser
-                             title:nil
+                             title:title
                            message:message
                               rect:anchorRect
                               view:anchorView];
@@ -319,15 +323,21 @@
     self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
         initWithBaseViewController:self.viewController
                            browser:self.browser
-                             title:nil
+                             title:title
                            message:message
                      barButtonItem:self.viewController.deleteButton];
   }
 
   __weak __typeof(self) weakSelf = self;
 
+  NSString* deleteButtonString =
+      l10n_util::GetNSString(base::FeatureList::IsEnabled(
+                                 password_manager::features::kPasswordsGrouping)
+                                 ? IDS_IOS_DELETE_ACTION_TITLE
+                                 : IDS_IOS_CONFIRM_PASSWORD_DELETION);
+
   [self.actionSheetCoordinator
-      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CONFIRM_PASSWORD_DELETION)
+      addItemWithTitle:deleteButtonString
                 action:^{
                   [weakSelf passwordDeletionConfirmedForCompromised:
                                 compromisedPassword
@@ -341,6 +351,64 @@
                  style:UIAlertActionStyleCancel];
 
   [self.actionSheetCoordinator start];
+}
+
+// Show delete dialog with an array of origins.
+- (void)showPasswordDeleteDialogWithOrigins:(NSArray<NSString*>*)origins
+                        compromisedPassword:(BOOL)compromisedPassword
+                                   forIndex:(int)index
+                                 anchorView:(UIView*)anchorView
+                                 anchorRect:(CGRect)anchorRect {
+  DCHECK(origins.count >= 1);
+  NSString* title;
+  NSString* message;
+  if (origins.count == 1) {
+    title =
+        l10n_util::GetNSStringF(IDS_IOS_DELETE_PASSWORD_TITLE_FOR_SINGLE_URL,
+                                base::SysNSStringToUTF16(origins[0]));
+    // Message: Your <URL 1> account won't be deleted.
+    message = l10n_util::GetNSStringF(
+        IDS_IOS_DELETE_PASSWORD_DESCRIPTION_FOR_SINGLE_URL,
+        base::SysNSStringToUTF16(origins[0]));
+  } else {
+    NSString* countStr =
+        [[NSNumber numberWithInteger:origins.count] stringValue];
+    title =
+        l10n_util::GetNSStringF(IDS_IOS_DELETE_PASSWORD_TITLE_FOR_MULTI_GROUPS,
+                                base::SysNSStringToUTF16(countStr));
+    if (origins.count == 2) {
+      // Message: Password for <URL 1> and <URL 2> will be deleted. Your
+      // accounts won't be deleted.
+      message = l10n_util::GetNSStringF(
+          IDS_IOS_DELETE_PASSWORD_DESCRIPTION_FOR_TWO_URLS,
+          base::SysNSStringToUTF16(origins[0]),
+          base::SysNSStringToUTF16(origins[1]));
+    } else if (origins.count == 3) {
+      // Message: Password for <URL 1>, <URL 2> and <URL 3> will be deleted.
+      // Your accounts won't be deleted.
+      message = l10n_util::GetNSStringF(
+          IDS_IOS_DELETE_PASSWORD_DESCRIPTION_FOR_THREE_URLS,
+          base::SysNSStringToUTF16(origins[0]),
+          base::SysNSStringToUTF16(origins[1]),
+          base::SysNSStringToUTF16(origins[2]));
+    } else {
+      // Message: Password for <URL 1>, <URL 2> and <number> others will be
+      // deleted. Your accounts won't be deleted.
+      NSString* leftoverCountStr =
+          [[NSNumber numberWithInteger:(origins.count - 2)] stringValue];
+      message = l10n_util::GetNSStringF(
+          IDS_IOS_DELETE_PASSWORD_DESCRIPTION_FOR_MULTI_URLS,
+          base::SysNSStringToUTF16(origins[0]),
+          base::SysNSStringToUTF16(origins[1]),
+          base::SysNSStringToUTF16(leftoverCountStr));
+    }
+  }
+  [self showPasswordDeleteDialogWithTitle:title
+                                  message:message
+                      compromisedPassword:compromisedPassword
+                                 forIndex:index
+                               anchorView:anchorView
+                               anchorRect:anchorRect];
 }
 
 // Notifies delegate about password deletion and records metric if needed.

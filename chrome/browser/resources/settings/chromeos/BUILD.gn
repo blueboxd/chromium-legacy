@@ -43,7 +43,6 @@ if (optimize_webui) {
       "chrome://resources/ash/common/cellular_setup/mojo_interface_provider.js",
       "chrome://resources/ash/common/hotspot/cros_hotspot_config.js",
       "chrome://resources/ash/common/network/mojo_interface_provider.js",
-      "chrome://resources/js/cr.js",
       "chrome://resources/mojo/chromeos/ash/services/cellular_setup/public/mojom/cellular_setup.mojom-webui.js",
       "chrome://resources/mojo/chromeos/ash/services/cellular_setup/public/mojom/esim_manager.mojom-webui.js",
       "chrome://resources/mojo/chromeos/ash/services/auth_factor_config/public/mojom/auth_factor_config.mojom-webui.js",
@@ -53,7 +52,6 @@ if (optimize_webui) {
       "chrome://resources/mojo/chromeos/ash/services/nearby/public/mojom/nearby_share_target_types.mojom-webui.js",
       "chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js",
       "chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js",
-      "chrome://resources/mojo/mojo/public/js/bindings.js",
       "chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-webui.js",
       "chrome://resources/mojo/mojo/public/mojom/base/time.mojom-webui.js",
       "chrome://resources/mojo/services/network/public/mojom/ip_address.mojom-webui.js",
@@ -68,11 +66,12 @@ ts_library("build_ts") {
   tsconfig_base = "tsconfig_base.json"
   deps = [
     "//third_party/polymer/v3_0:library",
-    "//ui/webui/resources:library",
     "//ui/webui/resources/cr_components/app_management:build_ts",
     "//ui/webui/resources/cr_components/color_change_listener:build_ts",
     "//ui/webui/resources/cr_components/localized_link:build_ts",
     "//ui/webui/resources/cr_components/managed_footnote:build_ts",
+    "//ui/webui/resources/cr_elements:build_ts",
+    "//ui/webui/resources/js:build_ts",
     "//ui/webui/resources/mojo:library",
   ]
   extra_deps = [
@@ -81,7 +80,14 @@ ts_library("build_ts") {
     ":generate_mojom_webui",
     ":preprocess",
     "//ash/webui/common/resources:generate_definitions",
+    "//chrome/browser/resources/nearby_share:generate_definitions",
     "//chrome/browser/resources/nearby_share/shared:preprocess",
+  ]
+  path_mappings = [
+    # Additional path mappings for Nearby share Mojo files
+    "/mojo/nearby_share*|" + rebase_path(
+            "$root_gen_dir/chrome/browser/resources/nearby_share/preprocessed/mojom-webui/chrome/browser/ui/webui/nearby_share/nearby_share*",
+            target_gen_dir),
   ]
   definitions = ts_definition_files
   root_dir = tsc_input_dir
@@ -266,13 +272,7 @@ generate_grd("build_grd") {
 # TODO(crbug/1315757) Gradually remove closure compilation for subfolders/pages
 # that are migrated to TypeScript
 group("closure_compile_module") {
-  deps = [
-    ":closure_compile_local_module",
-    "multidevice_page:closure_compile_module",
-    "os_a11y_page:closure_compile_module",
-    "os_people_page:closure_compile_module",
-    "os_privacy_page:closure_compile_module",
-  ]
+  deps = [ ":closure_compile_local_module" ]
 }
 
 js_type_check("closure_compile_local_module") {
@@ -281,8 +281,6 @@ js_type_check("closure_compile_local_module") {
 
   deps = [
     ":deep_linking_behavior",
-    ":find_shortcut_behavior",
-    ":global_scroll_target_behavior",
     ":icon",
     ":lazy_load",
     ":metrics_recorder",
@@ -290,9 +288,7 @@ js_type_check("closure_compile_local_module") {
     ":os_route",
     ":os_settings",
     ":os_settings_routes",
-    ":prefs_behavior",
     ":route_observer_behavior",
-    ":route_origin_behavior",
     ":router",
   ]
 }
@@ -317,23 +313,6 @@ js_library("deep_linking_behavior") {
     "//ash/webui/common/resources:assert",
     "//ash/webui/common/resources:load_time_data.m",
     "//chrome/browser/ui/webui/settings/chromeos/constants:mojom_webui_js",
-  ]
-}
-
-js_library("find_shortcut_behavior") {
-  deps = [
-    "//ash/webui/common/resources:assert",
-    "//ash/webui/common/resources:cr.m",
-    "//ash/webui/common/resources:keyboard_shortcut_list_js",
-    "//ash/webui/common/resources:util",
-  ]
-}
-
-js_library("global_scroll_target_behavior") {
-  deps = [
-    ":route_observer_behavior",
-    ":router",
-    "//ash/webui/common/resources:promise_resolver",
   ]
 }
 
@@ -365,22 +344,10 @@ js_library("os_settings_routes") {
   ]
 }
 
-js_library("prefs_behavior") {
-  deps = [ "//ash/webui/common/resources:assert" ]
-  externs_list = [ "$externs_path/settings_private.js" ]
-}
-
 js_library("route_observer_behavior") {
   deps = [
     ":router",
     "//ash/webui/common/resources:assert",
-  ]
-}
-
-js_library("route_origin_behavior") {
-  deps = [
-    ":os_route",
-    "//ash/webui/common/resources:cr.m",
   ]
 }
 

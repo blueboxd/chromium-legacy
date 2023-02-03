@@ -53,6 +53,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extension_web_contents_observer.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/guest_view/guest_view_feature_util.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_content_script_manager.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
@@ -364,6 +365,7 @@ void WebViewGuest::CreateWebContents(std::unique_ptr<GuestViewBase> owned_this,
   WebContents::CreateParams params(browser_context(),
                                    std::move(guest_site_instance));
   params.guest_delegate = this;
+  SetCreateParams(create_params, params);
   std::unique_ptr<WebContents> new_contents = WebContents::Create(params);
 
   // Grant access to the origin of the embedder to the guest process. This
@@ -399,6 +401,48 @@ void WebViewGuest::DidInitialize(const base::Value::Dict& create_params) {
   PushWebViewStateToIOThread(web_contents()->GetPrimaryMainFrame());
 
   ApplyAttributes(create_params);
+}
+
+void WebViewGuest::MaybeRecreateGuestContents(
+    content::WebContents* embedder_web_contents) {
+  if (!AreWebviewMPArchBehaviorsEnabled(browser_context())) {
+    return;
+  }
+
+  DCHECK(GetCreateParams().has_value());
+  auto& [create_params, web_contents_create_params] = *GetCreateParams();
+  DCHECK_EQ(web_contents_create_params.guest_delegate, this);
+  auto new_web_contents_create_params = web_contents_create_params;
+  new_web_contents_create_params.renderer_initiated_creation = false;
+
+  if (!new_web_contents_create_params.opener_suppressed) {
+    owner_web_contents()->GetPrimaryMainFrame()->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kWarning,
+        "A <webview> is being attached to a window other than the window of "
+        "its opener <webview>. The window reference the opener <webview> "
+        "obtained from window.open will be invalidated. To debug whether this "
+        "is causing breakage, see "
+        "chrome://flags/#enable-webview-tag-mparch-behavior. The "
+        "ChromeAppsWebViewPermissiveBehaviorAllowed enterprise policy may be "
+        "used to temporarily revert this behavior.");
+  }
+
+  ClearOwnedGuestContents();
+  SetNewOwnerWebContents(embedder_web_contents);
+
+  std::unique_ptr<WebContents> new_contents =
+      WebContents::Create(new_web_contents_create_params);
+  InitWithWebContents(create_params, new_contents.get());
+  TakeGuestContentsOwnership(std::move(new_contents));
+
+  // The original guest main frame had a pending navigation which was discarded.
+  // We'll need to trigger the intended navigation in the new guest contents,
+  // but we need to wait until later in the attachment process, after the state
+  // related to the WebRequest API is set up.
+  recreate_initial_nav_ = base::BindOnce(
+      &WebViewGuest::LoadURLWithParams, weak_ptr_factory_.GetWeakPtr(),
+      new_web_contents_create_params.initial_popup_url, content::Referrer(),
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, /*force_navigation=*/true);
 }
 
 void WebViewGuest::ClearCodeCache(base::Time remove_since,
@@ -1058,11 +1102,14 @@ void WebViewGuest::WillAttachToEmbedder() {
   // TODO(alexmos): This may be redundant with the call in
   // RenderFrameCreated() and should be cleaned up.
   PushWebViewStateToIOThread(web_contents()->GetPrimaryMainFrame());
+
+  if (recreate_initial_nav_) {
+    SignalWhenReady(std::move(recreate_initial_nav_));
+  }
 }
 
 bool WebViewGuest::RequiresSslInterstitials() const {
-  return !base::FeatureList::IsEnabled(
-      extensions_features::kWebviewTagMPArchBehavior);
+  return !AreWebviewMPArchBehaviorsEnabled(browser_context());
 }
 
 content::JavaScriptDialogManager* WebViewGuest::GetJavaScriptDialogManager(

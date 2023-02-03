@@ -19,6 +19,7 @@
 #include "chrome/browser/ash/arc/input_overlay/arc_input_overlay_ukm.h"
 #include "chrome/browser/ash/arc/input_overlay/arc_input_overlay_uma.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_id_manager.h"
+#include "chrome/browser/ash/arc/input_overlay/util.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -111,11 +112,6 @@ Action* FindActionWithOverlapInputElement(
       return action.get();
   }
   return nullptr;
-}
-
-bool AllowReposition() {
-  return ash::features::IsArcInputOverlayAlphaV2Enabled() ||
-         ash::features::IsArcInputOverlayBetaEnabled();
 }
 
 bool ProcessKeyEventOnFocusedMenuEntry(const ui::KeyEvent& event) {
@@ -607,6 +603,12 @@ ui::EventDispatchDetails TouchInjector::RewriteEvent(
 
   if (display_mode_ != DisplayMode::kView)
     return SendEvent(continuation, &event);
+
+  if (display_overlay_controller_ && display_mode_ == DisplayMode::kView) {
+    display_overlay_controller_->SetMenuEntryHoverState(
+        LocatedEventOnMenuEntry(event, content_bounds_,
+                                /*press_required=*/false));
+  }
 
   // |display_overlay_controller_| is null for unittest.
   if (display_overlay_controller_ &&

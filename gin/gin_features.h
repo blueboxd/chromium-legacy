@@ -32,19 +32,15 @@ GIN_EXPORT BASE_DECLARE_FEATURE(kV8OffThreadFinalization);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8OptimizeJavascript);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8PerContextMarkingWorklist);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8ReduceConcurrentMarkingTasks);
-GIN_EXPORT BASE_DECLARE_FEATURE(kV8ScriptAblation);
-GIN_EXPORT extern const base::FeatureParam<double> kV8ScriptDelayFraction;
-GIN_EXPORT extern const base::FeatureParam<int> kV8ScriptDelayMs;
-GIN_EXPORT extern const base::FeatureParam<int> kV8ScriptDelayOnceMs;
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8ShortBuiltinCalls);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8SlowHistograms);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8SlowHistogramsCodeMemoryWriteProtection);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8SlowHistogramsSparkplug);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8SlowHistogramsSparkplugAndroid);
-GIN_EXPORT BASE_DECLARE_FEATURE(kV8SlowHistogramsScriptAblation);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8Sparkplug);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8SparkplugNeedsShortBuiltinCalls);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8TurboFastApiCalls);
+GIN_EXPORT BASE_DECLARE_FEATURE(kV8MegaDomIC);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8DelayMemoryReducer);
 GIN_EXPORT BASE_DECLARE_FEATURE(kV8UseLibmTrigFunctions);
 GIN_EXPORT extern const base::FeatureParam<base::TimeDelta>
@@ -53,6 +49,7 @@ GIN_EXPORT BASE_DECLARE_FEATURE(kJavaScriptSymbolAsWeakMapKey);
 GIN_EXPORT BASE_DECLARE_FEATURE(kJavaScriptChangeArrayByCopy);
 GIN_EXPORT BASE_DECLARE_FEATURE(kJavaScriptRabGsab);
 GIN_EXPORT BASE_DECLARE_FEATURE(kJavaScriptStringIsWellFormed);
+GIN_EXPORT BASE_DECLARE_FEATURE(kWebAssemblyTailCall);
 
 }  // namespace features
 

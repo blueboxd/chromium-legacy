@@ -55,13 +55,13 @@ class IOSChromePasswordCheckManager
   class Observer : public base::CheckedObserver {
    public:
     virtual void PasswordCheckStatusChanged(PasswordCheckState state) {}
-    virtual void CompromisedCredentialsChanged() {}
+    virtual void InsecureCredentialsChanged() {}
   };
 
-  // Requests to start a check for compromised passwords.
+  // Requests to start a check for insecure passwords.
   void StartPasswordCheck();
 
-  // Stops checking for compromised passwords.
+  // Stops checking for insecure passwords.
   void StopPasswordCheck();
 
   // Returns the current state of the password check.
@@ -111,6 +111,8 @@ class IOSChromePasswordCheckManager
   void OnCredentialDone(const password_manager::LeakCheckCredential& credential,
                         password_manager::IsLeaked is_leaked) override;
 
+  void OnWeakOrReuseCheckFinished();
+
   void NotifyPasswordCheckStatusChanged();
 
   // Remembers whether a password check is running right now.
@@ -127,7 +129,7 @@ class IOSChromePasswordCheckManager
   // passwords.
   password_manager::SavedPasswordsPresenter saved_passwords_presenter_;
 
-  // Used to obtain the list of compromised credentials.
+  // Used to obtain the list of insecure credentials.
   password_manager::InsecureCredentialsManager insecure_credentials_manager_;
 
   // Adapter used to start, monitor and stop a bulk leak check.
@@ -145,6 +147,9 @@ class IOSChromePasswordCheckManager
   // Time when password check was started. Used to calculate delay in case
   // when password check run less than 3 seconds.
   base::Time start_time_;
+
+  // Store when the last weak or reuse check was completed.
+  base::Time last_completed_weak_or_reuse_check_;
 
   // A scoped observer for `saved_passwords_presenter_`.
   base::ScopedObservation<password_manager::SavedPasswordsPresenter,

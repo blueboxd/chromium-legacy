@@ -540,6 +540,7 @@ const CGFloat kFaviconBadgeSideLength = 24;
   view.editable = NO;
   view.selectable = NO;
   view.scrollEnabled = NO;
+  view.backgroundColor = [UIColor colorNamed:kPrimaryBackgroundColor];
   return view;
 }
 
@@ -687,7 +688,9 @@ const CGFloat kFaviconBadgeSideLength = 24;
   secondaryActionButton.contentEdgeInsets =
       UIEdgeInsetsMake(kButtonVerticalInsets, 0, kButtonVerticalInsets, 0);
   [secondaryActionButton setBackgroundColor:[UIColor clearColor]];
-  UIColor* titleColor = [UIColor colorNamed:kBlueColor];
+  UIColor* titleColor = [UIColor colorNamed:self.secondaryActionTextColor
+                                                ? self.secondaryActionTextColor
+                                                : kBlueColor];
   [secondaryActionButton setTitleColor:titleColor
                               forState:UIControlStateNormal];
   secondaryActionButton.titleLabel.font =

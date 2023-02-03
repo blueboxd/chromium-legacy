@@ -24,7 +24,6 @@ namespace {
 // TODO(b/162365553) Remove when shill constants are added.
 constexpr char kShillApnId[] = "id";
 constexpr char kShillApnAuthenticationType[] = "authentication_type";
-constexpr char kShillApnTypes[] = "apn_types";
 
 const FieldTranslationEntry eap_fields[] = {
     {::onc::eap::kAnonymousIdentity, shill::kEapAnonymousIdentityProperty},
@@ -188,10 +187,12 @@ const FieldTranslationEntry cellular_apn_fields[] = {
     {::onc::cellular_apn::kLocalizedName, shill::kApnLocalizedNameProperty},
     {::onc::cellular_apn::kLanguage, shill::kApnLanguageProperty},
     {::onc::cellular_apn::kAttach, shill::kApnAttachProperty},
-    {::onc::cellular_apn::kIpType, shill::kApnIpTypeProperty},
+    // This field is converted during translation, see onc_translator_*.
+    // {::onc::cellular_apn::kIpType, shill::kApnIpTypeProperty},
     {::onc::cellular_apn::kId, kShillApnId},
     {::onc::cellular_apn::kAuthenticationType, kShillApnAuthenticationType},
-    {::onc::cellular_apn::kApnTypes, kShillApnTypes},
+    // This field is converted during translation, see onc_translator_*.
+    // {::onc::cellular_apn::kApnTypes, shill::kApnTypesProperty},
     {nullptr}};
 
 const FieldTranslationEntry cellular_found_network_fields[] = {
@@ -438,6 +439,13 @@ const StringTranslationEntry kIKEv2AuthenticationTypeTable[] = {
     {::onc::ipsec::kPSK, shill::kIKEv2AuthenticationTypePSK},
     {::onc::ipsec::kCert, shill::kIKEv2AuthenticationTypeCert},
     {::onc::ipsec::kEAP, shill::kIKEv2AuthenticationTypeEAP},
+    {nullptr}};
+
+const StringTranslationEntry kApnIpTypeTranslationTable[] = {
+    {::onc::cellular_apn::kIpTypeAutomatic, ""},
+    {::onc::cellular_apn::kIpTypeIpv4, shill::kApnIpTypeV4},
+    {::onc::cellular_apn::kIpTypeIpv6, shill::kApnIpTypeV6},
+    {::onc::cellular_apn::kIpTypeIpv4Ipv6, shill::kApnIpTypeV4V6},
     {nullptr}};
 
 // This must contain only Shill Device properties and no Service properties.

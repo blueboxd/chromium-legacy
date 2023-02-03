@@ -26,14 +26,15 @@ bool Group::CanAdd(const AutocompleteMatch& match) const {
     return false;
   }
   const auto& limit_and_count = group_id_limits_and_counts_.at(group_id);
-  // Check this `Group`s total limit and the limit the particular `group_id`.
-  return matches_.size() < limit_ &&
-         limit_and_count.count < limit_and_count.limit;
+  // Check this `Group`'s total limit and the limit for the `group_id`.
+  return count_ < limit_ && limit_and_count.count < limit_and_count.limit;
 }
 
 void Group::Add(const AutocompleteMatch& match) {
   DCHECK(CanAdd(match));
   matches_.push_back(match);
+  count_++;
+  DCHECK_EQ(count_, matches_.size());
   group_id_limits_and_counts_[match.suggestion_group_id.value()].count++;
 }
 

@@ -35,11 +35,19 @@ let BridgeEntry;
 export const BridgeConstants = {};
 
 /** @public {!BridgeEntry} */
+BridgeConstants.Braille = {
+  TARGET: 'Braille',
+  Action: {
+    BACK_TRANSLATE: 'backTranslate',
+  },
+};
+
+/** @public {!BridgeEntry} */
 BridgeConstants.BrailleBackground = {
   TARGET: 'BrailleBackground',
   Action: {
-    BACK_TRANSLATE: 'backTranslate',
     REFRESH_BRAILLE_TABLE: 'refreshBrailleTable',
+    WRITE: 'write',
   },
 };
 
@@ -99,6 +107,18 @@ BridgeConstants.GestureCommandHandler = {
   TARGET: 'GestureCommandHandler',
   Action: {
     SET_ENABLED: 'setEnabled',
+  },
+};
+
+/** @public {!BridgeEntry} */
+BridgeConstants.LearnMode = {
+  TARGET: 'LearnMode',
+  Action: {
+    CLEAR_TOUCH_EXPLORE_OUTPUT_TIME: 'clearTouchExploreOutputTime',
+    ON_ACCESSIBILITY_GESTURE: 'onAccessibilityGesture',
+    ON_BRAILLE_KEY_EVENT: 'onBrailleKeyEvent',
+    ON_KEY_DOWN: 'onKeyDown',
+    ON_KEY_UP: 'onKeyUp',
   },
 };
 

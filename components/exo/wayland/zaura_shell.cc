@@ -688,7 +688,19 @@ void AuraSurface::ShowTooltip(const char* text,
   auto* tooltip_controller = ash::Shell::Get()->tooltip_controller();
   tooltip_controller->SetShowTooltipDelay(window, show_delay);
   tooltip_controller->SetHideTooltipTimeout(window, hide_delay);
-  tooltip_controller->UpdateTooltip(window);
+
+  switch (trigger) {
+    case ZAURA_SURFACE_TOOLTIP_TRIGGER_CURSOR:
+      tooltip_controller->UpdateTooltip(window);
+      break;
+    case ZAURA_SURFACE_TOOLTIP_TRIGGER_KEYBOARD:
+      tooltip_controller->UpdateTooltipFromKeyboardWithAnchorPoint(position,
+                                                                   window);
+      break;
+    default:
+      VLOG(2) << "Unknown aura-shell tooltip trigger type: " << trigger;
+      tooltip_controller->UpdateTooltip(window);
+  }
 }
 
 void AuraSurface::HideTooltip() {
@@ -1087,6 +1099,7 @@ const uint32_t kFixedBugIds[] = {
     1358908,
     1400226,
     1402158,
+    1405471,
 };
 
 // Implements aura shell interface and monitors workspace state needed
@@ -1205,10 +1218,6 @@ class WaylandAuraShell : public ash::DesksController::Observer,
     if (wl_resource_get_version(aura_shell_resource_) <
         ZAURA_SHELL_ACTIVATED_SINCE_VERSION)
       return;
-    if (gained_active_surface == lost_active_surface &&
-        last_has_focused_client_ == has_focused_client)
-      return;
-    last_has_focused_client_ = has_focused_client;
 
     wl_resource* gained_active_surface_resource =
         gained_active_surface ? GetSurfaceResource(gained_active_surface)
@@ -1231,6 +1240,12 @@ class WaylandAuraShell : public ash::DesksController::Observer,
         wl_resource_get_client(lost_active_surface_resource) != client) {
       lost_active_surface_resource = nullptr;
     }
+
+    if (gained_active_surface_resource == lost_active_surface_resource &&
+        last_has_focused_client_ == has_focused_client) {
+      return;
+    }
+    last_has_focused_client_ = has_focused_client;
 
     zaura_shell_send_activated(aura_shell_resource_,
                                gained_active_surface_resource,

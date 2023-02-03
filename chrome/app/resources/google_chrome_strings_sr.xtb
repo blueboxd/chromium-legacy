@@ -55,7 +55,6 @@
 <translation id="1874309113135274312">Google Chrome бета (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome је застарео</translation>
 <translation id="1919130412786645364">Дозволи пријављивање у Chrome</translation>
-<translation id="1952239763774043237">Да бисте добијали будућа Google Chrome ажурирања, треба вам macOS 10.13 или новија верзија. Овај рачунар користи macOS 10.12.</translation>
 <translation id="1953553007165777902">Преузима се... Још <ph name="MINUTE" /> мин</translation>
 <translation id="2018528049276128029">Сваки профил задржава сопствене Chrome податке, попут обележивача, историје, лозинки и другог садржаја</translation>
 <translation id="2018879682492276940">Инсталација није успела. Пробајте поново.</translation>
@@ -188,6 +187,7 @@
 <translation id="4335235004908507846">Chrome може да вас штити од упада у податке, неисправних додатака и других проблема</translation>
 <translation id="4343195214584226067">Додатак <ph name="EXTENSION_NAME" /> је додат у Chrome</translation>
 <translation id="4384570495110188418">Chrome не може да вам проверава лозинке зато што нисте пријављени</translation>
+<translation id="4393248995085527349">Да бисте добијали будућа Google Chrome ажурирања, треба вам macOS 10.15 или новија верзија. Овај рачунар користи macOS 10.13.</translation>
 <translation id="4427306783828095590">Побољшана заштита нуди више могућности за блокирање „пецања“ и малвера</translation>
 <translation id="4450664632294415862">Chrome – пријављивање на мрежу – <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Друга радња у Google Chrome-у је у току. Пробајте поново касније.</translation>
@@ -217,7 +217,6 @@
 <translation id="4970880042055371251">Верзија Chrome ОС-а</translation>
 <translation id="4970947549776831107">Chrome је блокирао овај фајл јер је овај тип фајла опасан</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
-<translation id="5037581483200764584">Да бисте добијали будућа Google Chrome ажурирања, треба вам macOS 10.13 или новија верзија. Овај рачунар користи ОС X 10.11.</translation>
 <translation id="5098668839038261629">Када је ово укључено, бићете и одјављени из Chrome-а</translation>
 <translation id="5132929315877954718">Откријте одличне апликације, игре, додатке и теме за Google Chrome.</translation>
 <translation id="5139423532931106058">Прилагодите Chrome профил</translation>
@@ -259,6 +258,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="5941711191222866238">Умањи</translation>
 <translation id="5941830788786076944">Подесите Google Chrome као подразумевани прегледач</translation>
 <translation id="6003112304606738118">Преузима се... Још <ph name="HOURS" /> ч</translation>
+<translation id="6010556343189461180">Да бисте добијали будућа Google Chrome ажурирања, треба вам macOS 10.15 или новија верзија. Овај рачунар користи macOS 10.14.</translation>
 <translation id="6022388122721048220">{0,plural, =0{Chrome ће се сада затворити.}=1{Chrome ће се затворити за 1 секунду.}one{Chrome ће се затворити за # секунду.}few{Chrome ће се затворити за # секунде.}other{Chrome ће се затворити за # секунди.}}</translation>
 <translation id="6040143037577758943">Затвори</translation>
 <translation id="6070348360322141662">Google Chrome ће шифровати податке ради додатне сигурности</translation>
@@ -421,6 +421,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="922152298093051471">Прилагодите Chrome</translation>
 <translation id="93760716455950538">Рестартујте Chrome OS Flex</translation>
 <translation id="940313311831216333">Да бисте приступали Chrome садржају на свим уређајима, пријавите се, па укључите синхронизацију.</translation>
+<translation id="943390475793766444">Chrome препоручује скенирање овог фајла јер може да буде опасан.</translation>
 <translation id="989369509083708165">Google Chrome је подразумевани прегледач</translation>
 <translation id="989816563149873169">Помоћу пречице <ph name="SHORTCUT" /> можете да прелазите са једног Chrome профила на други</translation>
 </translationbundle>

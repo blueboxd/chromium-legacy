@@ -37,9 +37,9 @@
 #include "base/allocator/partition_allocator/tagging.h"
 #include "build/build_config.h"
 
-#if BUILDFLAG(STARSCAN)
-#include "base/allocator/partition_allocator/starscan/state_bitmap.h"
-#endif  // BUILDFLAG(STARSCAN)
+#if BUILDFLAG(USE_STARSCAN)
+#include "base/allocator/partition_allocator/starscan/pcscan.h"
+#endif
 
 namespace partition_alloc::internal {
 
@@ -74,7 +74,7 @@ template <bool thread_safe>
   PA_IMMEDIATE_CRASH();  // Not required, kept as documentation.
 }
 
-#if !PA_CONFIG(HAS_64_BITS_POINTERS) && BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
+#if !BUILDFLAG(HAS_64_BIT_POINTERS) && BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 // |start| has to be aligned to kSuperPageSize, but |end| doesn't. This means
 // that a partial super page is allowed at the end. Since the block list uses
 // kSuperPageSize granularity, a partial super page is considered blocked if
@@ -93,7 +93,7 @@ bool AreAllowedSuperPagesForBRPPool(uintptr_t start, uintptr_t end) {
   }
   return true;
 }
-#endif  // !PA_CONFIG(HAS_64_BITS_POINTERS) &&
+#endif  // !BUILDFLAG(HAS_64_BIT_POINTERS) &&
         // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
 // Reserves |requested_size| worth of super pages from the specified pool.
@@ -123,7 +123,7 @@ uintptr_t ReserveMemoryFromPool(pool_handle pool,
 
   // In 32-bit mode, when allocating from BRP pool, verify that the requested
   // allocation honors the block list. Find a better address otherwise.
-#if !PA_CONFIG(HAS_64_BITS_POINTERS) && BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
+#if !BUILDFLAG(HAS_64_BIT_POINTERS) && BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
   if (pool == kBRPPoolHandle) {
     constexpr int kMaxRandomAddressTries = 10;
     for (int i = 0; i < kMaxRandomAddressTries; ++i) {
@@ -172,10 +172,10 @@ uintptr_t ReserveMemoryFromPool(pool_handle pool,
       reserved_address = 0;
     }
   }
-#endif  // !PA_CONFIG(HAS_64_BITS_POINTERS) &&
+#endif  // !BUILDFLAG(HAS_64_BIT_POINTERS) &&
         // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
 
-#if !PA_CONFIG(HAS_64_BITS_POINTERS)
+#if !BUILDFLAG(HAS_64_BIT_POINTERS)
   // Only mark the region as belonging to the pool after it has passed the
   // blocklist check in order to avoid a potential race with destructing a
   // raw_ptr<T> object that points to non-PA memory in another thread.
@@ -284,7 +284,7 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
     {
       // Reserving memory from the pool is actually not a syscall on 64 bit
       // platforms.
-#if !PA_CONFIG(HAS_64_BITS_POINTERS)
+#if !BUILDFLAG(HAS_64_BIT_POINTERS)
       ScopedSyscallTimer timer{root};
 #endif
       reservation_start = ReserveMemoryFromPool(pool, 0, reservation_size);
@@ -434,7 +434,7 @@ SlotSpanMetadata<thread_safe>* PartitionDirectMap(
 
       {
         ScopedSyscallTimer timer{root};
-#if !PA_CONFIG(HAS_64_BITS_POINTERS)
+#if !BUILDFLAG(HAS_64_BIT_POINTERS)
         AddressPoolManager::GetInstance().MarkUnused(pool, reservation_start,
                                                      reservation_size);
 #endif
@@ -792,7 +792,7 @@ PA_ALWAYS_INLINE uintptr_t PartitionBucket<thread_safe>::InitializeSuperPage(
       (is_direct_mapped()
            ? 0
            : ReservedTagBitmapSize() + ReservedFreeSlotBitmapSize());
-#if BUILDFLAG(STARSCAN)
+#if BUILDFLAG(USE_STARSCAN)
   PA_DCHECK(SuperPageStateBitmapAddr(super_page) == state_bitmap);
   const size_t state_bitmap_reservation_size =
       root->IsQuarantineAllowed() ? ReservedStateBitmapSize() : 0;
@@ -804,7 +804,7 @@ PA_ALWAYS_INLINE uintptr_t PartitionBucket<thread_safe>::InitializeSuperPage(
   uintptr_t payload = state_bitmap + state_bitmap_reservation_size;
 #else
   uintptr_t payload = state_bitmap;
-#endif  // BUILDFLAG(STARSCAN)
+#endif  // BUILDFLAG(USE_STARSCAN)
 
   root->next_partition_page = payload;
   root->next_partition_page_end = root->next_super_page - PartitionPageSize();
@@ -914,7 +914,7 @@ PA_ALWAYS_INLINE uintptr_t PartitionBucket<thread_safe>::InitializeSuperPage(
   // sure to register the super-page after it has been fully initialized.
   // Otherwise, the concurrent scanner may try to access |extent->root| which
   // could be not initialized yet.
-#if BUILDFLAG(STARSCAN)
+#if BUILDFLAG(USE_STARSCAN)
   if (root->IsQuarantineEnabled()) {
     {
       ScopedSyscallTimer timer{root};
@@ -925,7 +925,7 @@ PA_ALWAYS_INLINE uintptr_t PartitionBucket<thread_safe>::InitializeSuperPage(
     }
     PCScan::RegisterNewSuperPage(root, super_page);
   }
-#endif  // BUILDFLAG(STARSCAN)
+#endif  // BUILDFLAG(USE_STARSCAN)
 
 #if BUILDFLAG(USE_FREESLOT_BITMAP)
   // Commit the pages for freeslot bitmap.

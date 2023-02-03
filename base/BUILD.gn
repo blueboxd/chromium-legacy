@@ -122,9 +122,12 @@ if (is_win) {
   # ldflags in GN aren't automatically inherited.
   config("base_win_linker_flags") {
     ldflags = [
+      # Linking with shcore.lib causes the shcore api forwarder dll to load.
+      "/DELAYLOAD:api-ms-win-shcore-scaling-l1-1-1.dll",
       "/DELAYLOAD:cfgmgr32.dll",
       "/DELAYLOAD:powrprof.dll",
       "/DELAYLOAD:setupapi.dll",
+      "/DELAYLOAD:shcore.dll",
     ]
   }
 }
@@ -1277,8 +1280,8 @@ component("base") {
       "mac/dispatch_source_mach.h",
       "mac/foundation_util.h",
       "mac/foundation_util.mm",
-      "mac/launch_services_util.h",
-      "mac/launch_services_util.mm",
+      "mac/launch_application.h",
+      "mac/launch_application.mm",
       "mac/launchd.cc",
       "mac/launchd.h",
       "mac/mac_logging.h",
@@ -2110,6 +2113,7 @@ component("base") {
       "powrprof.lib",
       "propsys.lib",
       "setupapi.lib",
+      "shcore.lib",
       "userenv.lib",
       "wbemuuid.lib",
       "winmm.lib",
@@ -2168,6 +2172,7 @@ component("base") {
       "synchronization/waitable_event_watcher_posix.cc",
       "threading/platform_thread_internal_posix.cc",
     ]
+    sources += [ "system/sys_info_apple.mm" ]
   }
 
   # Linux.
@@ -3080,6 +3085,7 @@ test("base_unittests") {
     "allocator/dispatcher/testing/observer_mock.h",
     "allocator/dispatcher/testing/tools.h",
     "allocator/dispatcher/tls_unittest.cc",
+    "allocator/partition_allocator/pointers/raw_ptr_test_support.h",
     "allocator/partition_allocator/pointers/raw_ptr_unittest.cc",
     "allocator/partition_allocator/pointers/raw_ref_unittest.cc",
     "at_exit_unittest.cc",
@@ -3698,6 +3704,7 @@ test("base_unittests") {
   if (is_ios) {
     sources += [
       "ios/device_util_unittest.mm",
+      "ios/scoped_critical_action_unittest.mm",
       "ios/weak_nsobject_unittest.mm",
     ]
 

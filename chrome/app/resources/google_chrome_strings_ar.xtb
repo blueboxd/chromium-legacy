@@ -53,7 +53,6 @@
 <translation id="1874309113135274312">‏الإصدار التجريبي من Google Chrome‏ (mDNS-In)</translation>
 <translation id="1877026089748256423">‏إصدار Chrome قديم</translation>
 <translation id="1919130412786645364">‏السماح بتسجيل الدخول إلى Chrome</translation>
-<translation id="1952239763774043237">‏للحصول على تحديثات Google Chrome في المستقبل، يجب استخدام جهاز يعمل بنظام التشغيل macOS 10.13 أو إصدار أحدث. يعمل هذا الكمبيوتر بنظام التشغيل macOS 10.12.</translation>
 <translation id="1953553007165777902">جارٍ التنزيل… عدد الدقائق المتبقّية: <ph name="MINUTE" /></translation>
 <translation id="2018528049276128029">‏يحتفظ كل ملف شخصي بالمعلومات الخاصة به على Chrome، مثل الإشارات المرجعية والسجلّ وكلمات المرور وغير ذلك.</translation>
 <translation id="2018879682492276940">تعذّر التثبيت. يُرجى إعادة المحاولة.</translation>
@@ -186,6 +185,7 @@
 <translation id="4335235004908507846">‏يستطيع Chrome مساعدتك في الحفاظ على أمان معلوماتك من عمليات اختراق البيانات والإضافات الضارة وغيرها من المشاكل.</translation>
 <translation id="4343195214584226067">‏تمت إضافة <ph name="EXTENSION_NAME" /> إلى Chrome</translation>
 <translation id="4384570495110188418">‏يتعذّر على Chrome التحقّق من كلمات المرور لأنك لم تسجّل الدخول.</translation>
+<translation id="4393248995085527349">‏للحصول على تحديثات Google Chrome في المستقبل، يجب استخدام جهاز يعمل بنظام التشغيل macOS 10.15 أو إصدار أحدث. يعمل هذا الكمبيوتر بنظام التشغيل macOS 10.13.</translation>
 <translation id="4427306783828095590">يؤدي تفعيل إعداد "الحماية المُحسَّنة" إلى حظر التصيّد الاحتيالي والبرامج الضارّة.</translation>
 <translation id="4450664632294415862">‏Chrome - تسجيل الدخول إلى الشبكة - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">‏عملية أخرى على Google Chrome قيد التقدم. يُرجى المحاولة مرة أخرى لاحقًا.</translation>
@@ -215,7 +215,6 @@
 <translation id="4970880042055371251">‏إصدار نظام التشغيل Chrome</translation>
 <translation id="4970947549776831107">‏حَظَر Chrome هذا الملف لأنّه ملف خطير.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
-<translation id="5037581483200764584">‏للحصول على تحديثات Google Chrome في المستقبل، يجب استخدام جهاز يعمل بنظام التشغيل macOS 10.13 أو إصدار أحدث. يعمل هذا الكمبيوتر بنظام التشغيل OS X 10.11.</translation>
 <translation id="5098668839038261629">‏عند تفعيل هذا الخيار، سيتم تسجيل خروجك أيضًا من Chrome.</translation>
 <translation id="5132929315877954718">‏يمكنك اكتشاف تطبيقات، وألعاب، وإضافات، ومظاهر رائعة لمتصفح Google Chrome.</translation>
 <translation id="5139423532931106058">‏تخصيص ملفك الشخصي في Chrome</translation>
@@ -255,6 +254,7 @@
 <translation id="5941711191222866238">تصغير</translation>
 <translation id="5941830788786076944">‏جعل Google Chrome المتصفّح التلقائي</translation>
 <translation id="6003112304606738118">جارٍ التنزيل… الساعات المتبقّية: <ph name="HOURS" /></translation>
+<translation id="6010556343189461180">‏للحصول على تحديثات Google Chrome في المستقبل، يجب استخدام جهاز يعمل بنظام التشغيل macOS 10.15 أو إصدار أحدث. يعمل هذا الكمبيوتر بنظام التشغيل macOS 10.14.</translation>
 <translation id="6022388122721048220">{0,plural, =0{‏سيتم الآن إغلاق متصفِّح Chrome.}=1{‏سيتم إغلاق متصفِّح Chrome بعد ثانية واحدة.}two{‏سيتم إغلاق متصفِّح Chrome ثانيتَين.}few{‏سيتم إغلاق متصفِّح Chrome بعد # ثوانٍ.}many{‏سيتم إغلاق متصفِّح Chrome بعد # ثانيةً.}other{‏سيتم إغلاق متصفِّح Chrome بعد # ثانية.}}</translation>
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="6070348360322141662">‏لمزيد من الأمان، سيشفِّر Google Chrome بياناتك</translation>
@@ -413,6 +413,7 @@
 <translation id="922152298093051471">‏تخصيص Chrome</translation>
 <translation id="93760716455950538">‏إعادة تشغيل نظام التشغيل ChromeOS Flex</translation>
 <translation id="940313311831216333">‏للوصول من خلال جميع أجهزتك إلى بياناتك في Chrome، عليك تسجيل الدخول وتفعيل المزامنة.</translation>
+<translation id="943390475793766444">‏ينصح متصفِّح Chrome بفحص هذا الملف لأنّه قد يكون خطيرًا.</translation>
 <translation id="989369509083708165">‏Google Chrome هو متصفحك التلقائي</translation>
 <translation id="989816563149873169">‏يعمل الاختصار <ph name="SHORTCUT" /> على التبديل بين الملفات الشخصية على Chrome.</translation>
 </translationbundle>

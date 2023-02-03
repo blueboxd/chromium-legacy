@@ -76,9 +76,14 @@ def _RunCompiler(args,
       f.write(' '.join(source_files))
     cmd += ['@' + source_files_rsp_path]
 
+    # Explicitly set JAVA_HOME since some bots do not have this already set.
+    env = os.environ.copy()
+    env['JAVA_HOME'] = build_utils.JAVA_HOME
+
     logging.debug('Build command %s', cmd)
     start = time.time()
     build_utils.CheckOutput(cmd,
+                            env=env,
                             print_stdout=args.chromium_code,
                             fail_on_output=args.warnings_as_errors)
     logging.info('Kotlin compilation took %ss', time.time() - start)
@@ -144,6 +149,16 @@ def main(argv):
   if args.gomacc_path:
     kotlinc_cmd.append(args.gomacc_path)
   kotlinc_cmd.append(build_utils.KOTLINC_PATH)
+
+  kotlinc_cmd += [
+      '-no-jdk',  # Avoid depending on the bundled JDK.
+      # Avoid depending on the bundled Kotlin stdlib. This may have a version
+      # skew with the one in //third_party/android_deps (which is the one we
+      # prefer to use).
+      '-no-stdlib',
+      # Avoid depending on the bundled Kotlin reflect libs.
+      '-no-reflect',
+  ]
 
   if args.generated_dir:
     # Delete any stale files in the generated directory. The purpose of

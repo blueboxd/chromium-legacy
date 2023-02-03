@@ -35,6 +35,7 @@
 #include "chrome/browser/lifetime/application_lifetime_desktop.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
+#include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_link_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
@@ -55,6 +56,7 @@
 #include "components/guest_view/browser/guest_view_manager_factory.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_link_manager.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/browser/db/fake_database_manager.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
@@ -101,6 +103,7 @@
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "extensions/browser/guest_view/guest_view_feature_util.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #include "extensions/browser/process_map.h"
@@ -890,11 +893,6 @@ INSTANTIATE_TEST_SUITE_P(WebViewTests,
 
 // The following test suites are created to group tests based on specific
 // features of <webview>.
-using WebViewNewWindowTest = WebViewTest;
-INSTANTIATE_TEST_SUITE_P(WebViewTests,
-                         WebViewNewWindowTest,
-                         testing::Bool(),
-                         WebViewTest::DescribeParams);
 using WebViewSizeTest = WebViewTest;
 INSTANTIATE_TEST_SUITE_P(WebViewTests,
                          WebViewSizeTest,
@@ -915,6 +913,90 @@ INSTANTIATE_TEST_SUITE_P(WebViewTests,
                          WebViewAccessibilityTest,
                          testing::Bool(),
                          WebViewTest::DescribeParams);
+
+// Used to test that enterprise policy can revert MPArch related changes. For
+// ease of testing, instead of further parameterizing the tests which actually
+// exercise the behaviour differences, we only check the method which computes
+// whether the changes take effect.
+class WebViewPolicyTest : public policy::PolicyTest {
+ public:
+  WebViewPolicyTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        extensions_features::kWebviewTagMPArchBehavior);
+  }
+
+  void SetPermissiveBehaviorPolicy(bool allowed) {
+    policy::PolicyMap policies;
+    SetPolicy(&policies,
+              policy::key::kChromeAppsWebViewPermissiveBehaviorAllowed,
+              base::Value(allowed));
+    UpdateProviderPolicy(policies);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(WebViewPolicyTest, MPArchBehaviorRevertedByPolicy) {
+  SetPermissiveBehaviorPolicy(true);
+
+  EXPECT_FALSE(
+      extensions::AreWebviewMPArchBehaviorsEnabled(browser()->profile()));
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewPolicyTest,
+                       ExplicitlyDisabledBehaviorPolicyHasNoEffect) {
+  SetPermissiveBehaviorPolicy(false);
+
+  EXPECT_TRUE(
+      extensions::AreWebviewMPArchBehaviorsEnabled(browser()->profile()));
+}
+
+class WebViewNewWindowTest
+    : public WebViewTestBase,
+      public testing::WithParamInterface<testing::tuple<bool, bool>> {
+ public:
+  WebViewNewWindowTest() {
+    auto [is_site_isolation_enabled, mparch_newwindow_restriction] = GetParam();
+    std::vector<base::test::FeatureRef> enabled_features, disabled_features;
+    if (is_site_isolation_enabled) {
+      enabled_features.push_back(features::kSiteIsolationForGuests);
+    } else {
+      disabled_features.push_back(features::kSiteIsolationForGuests);
+    }
+
+    if (mparch_newwindow_restriction) {
+      enabled_features.push_back(
+          extensions_features::kWebviewTagMPArchBehavior);
+    } else {
+      disabled_features.push_back(
+          extensions_features::kWebviewTagMPArchBehavior);
+    }
+
+    scoped_feature_list_.InitWithFeatures(std::move(enabled_features),
+                                          std::move(disabled_features));
+  }
+  ~WebViewNewWindowTest() override = default;
+
+  static std::string DescribeParams(
+      const testing::TestParamInfo<ParamType>& info) {
+    auto [is_site_isolation_enabled, mparch_newwindow_restriction] = info.param;
+    return base::StringPrintf(
+        "SiteIsolationForGuests%s_NewWindow%s",
+        is_site_isolation_enabled ? "Enabled" : "Disabled",
+        mparch_newwindow_restriction ? "Restricted" : "Legacy");
+  }
+
+  bool IsNewWindowRestricted() { return testing::get<1>(GetParam()); }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(WebViewNewWindowTests,
+                         WebViewNewWindowTest,
+                         testing::Combine(testing::Bool(), testing::Bool()),
+                         WebViewNewWindowTest::DescribeParams);
 
 class WebViewDPITest : public WebViewTest {
  protected:
@@ -1648,21 +1730,10 @@ IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest, Shim_TestNewWindowNoReferrerLink) {
 
 IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest,
                        Shim_TestWebViewAndEmbedderInNewWindow) {
-  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
-
-  // Launch the app and wait until it's ready to load a test.
-  LoadAndLaunchPlatformApp("web_view/shim", "Launched");
-
+  TestHelper("testWebViewAndEmbedderInNewWindow", "web_view/shim",
+             NEEDS_TEST_SERVER);
   content::WebContents* embedder_web_contents = GetFirstAppWindowWebContents();
   ASSERT_TRUE(embedder_web_contents);
-
-  // Run the test and wait until the guest WebContents is available and has
-  // finished loading.
-  ExtensionTestMessageListener done_listener("TEST_PASSED");
-  done_listener.set_failure_message("TEST_FAILED");
-  EXPECT_TRUE(content::ExecuteScript(
-      embedder_web_contents, "runTest('testWebViewAndEmbedderInNewWindow')"));
-  ASSERT_TRUE(done_listener.WaitUntilSatisfied());
 
   // Make sure opener and owner for the empty_guest source are different.
   // In general, we should have two guests and two embedders and all four
@@ -1692,6 +1763,27 @@ IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest,
           ->GetPrimaryMainFrame();
   ASSERT_TRUE(empty_guest_opener);
   ASSERT_NE(empty_guest_opener, empty_guest_embedder->GetPrimaryMainFrame());
+
+  // The JS part of this test, we've already checked the opener relationship of
+  // the two webviews. We also need to check the window reference from the
+  // initial window.open call in the opener. We need to do this from the C++
+  // part in order to run script in the main world.
+  EXPECT_EQ(true,
+            content::EvalJs(new_window_guest_frame, "!!window.newWindow"));
+  if (IsNewWindowRestricted()) {
+    EXPECT_EQ(false, content::EvalJs(new_window_guest_frame,
+                                     "!!window.newWindow.location.href"));
+  } else {
+    EXPECT_EQ(empty_guest_frame->GetLastCommittedURL(),
+              content::EvalJs(new_window_guest_frame,
+                              "window.newWindow.location.href"));
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest,
+                       Shim_TestWebViewAndEmbedderInNewWindow_Noopener) {
+  TestHelper("testWebViewAndEmbedderInNewWindow_Noopener", "web_view/shim",
+             NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest,

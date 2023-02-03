@@ -76,6 +76,7 @@ import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
@@ -114,6 +115,7 @@ import org.chromium.chrome.features.tasks.TasksSurfaceProperties;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -582,7 +584,7 @@ public class StartSurfaceMediatorUnitTest {
     }
 
     @Test
-    // TODO(crbug.com/1347089): removes this test once the Start surface refactoring is enabled.
+    // TODO(crbug.com/1315676): removes this test once the Start surface refactoring is enabled.
     // This is because the StartSurfaceMediator is no longer responsible for the transition between
     // the Start surface and the Tab switcher.
     @DisableFeatures(ChromeFeatureList.START_SURFACE_REFACTOR)
@@ -711,7 +713,7 @@ public class StartSurfaceMediatorUnitTest {
     }
 
     @Test
-    // TODO(crbug.com/1347089): removes this test once the Start surface refactoring is enabled.
+    // TODO(crbug.com/1315676): removes this test once the Start surface refactoring is enabled.
     // This is because the StartSurfaceMediator is no longer responsible for the transition between
     // the Start surface and the Tab switcher.
     @DisableFeatures(ChromeFeatureList.START_SURFACE_REFACTOR)
@@ -1028,6 +1030,18 @@ public class StartSurfaceMediatorUnitTest {
     }
 
     @Test
+    public void testResetFeedInstanceState() {
+        String instanceState = "state";
+        StartSurfaceUserData.getInstance().saveFeedInstanceState(instanceState);
+        assertTrue(StartSurfaceUserData.hasInstanceForTesting());
+        assertEquals(StartSurfaceUserData.getInstance().restoreFeedInstanceState(), instanceState);
+
+        StartSurfaceUserData.reset();
+        assertTrue(StartSurfaceUserData.hasInstanceForTesting());
+        assertNull(StartSurfaceUserData.getInstance().restoreFeedInstanceState());
+    }
+
+    @Test
     public void defaultStateSinglePane() {
         doReturn(false).when(mTabModelSelector).isIncognitoSelected();
         doReturn(mVoiceRecognitionHandler).when(mOmniboxStub).getVoiceRecognitionHandler();
@@ -1085,7 +1099,7 @@ public class StartSurfaceMediatorUnitTest {
     }
 
     @Test
-    // TODO(crbug.com/1347089): removes this test once the Start surface refactoring is enabled.
+    // TODO(crbug.com/1315676): removes this test once the Start surface refactoring is enabled.
     // This is because the StartSurfaceMediator is no longer responsible for the transition between
     // the Start surface and the Tab switcher.
     @DisableFeatures(ChromeFeatureList.START_SURFACE_REFACTOR)
@@ -1536,7 +1550,7 @@ public class StartSurfaceMediatorUnitTest {
 
     @Test
     @EnableFeatures({ChromeFeatureList.BACK_GESTURE_REFACTOR})
-    // TODO(crbug.com/1347089): removes this test once the Start surface refactoring is enabled.
+    // TODO(crbug.com/1315676): removes this test once the Start surface refactoring is enabled.
     // This is because the StartSurfaceMediator is no longer responsible for the transition between
     // the Start surface and the Tab switcher.
     @DisableFeatures(ChromeFeatureList.START_SURFACE_REFACTOR)
@@ -1619,7 +1633,7 @@ public class StartSurfaceMediatorUnitTest {
      * showing and the Tab switcher has been created.
      */
     @Test
-    // TODO(crbug.com/1347089): Removes this test after the refactoring is enabled by default. This
+    // TODO(crbug.com/1315676): Removes this test after the refactoring is enabled by default. This
     // is because the SecondaryTasksSurface will go away.
     @DisableFeatures({ChromeFeatureList.START_SURFACE_REFACTOR})
     public void testBackPressHandlerOnStartSurfaceWithTabSwitcherCreated() {
@@ -1689,19 +1703,28 @@ public class StartSurfaceMediatorUnitTest {
         doReturn(false).when(mCarouselOrSingleTabSwitcherModuleController).isDialogVisible();
 
         doReturn(true).when(mSecondaryTasksSurfaceController).isDialogVisible();
-        mediator.onBackPressed();
+        doReturn(true).when(mSecondaryTasksSurfaceController).onBackPressed();
+        int startSurface =
+                BackPressManager.getHistogramValueForTesting(BackPressHandler.Type.START_SURFACE);
+        MetricsUtils.HistogramDelta startSurfaceBackPressRecord = new MetricsUtils.HistogramDelta(
+                BackPressManager.getHistogramForTesting(), startSurface);
+        Assert.assertTrue(mediator.onBackPressed());
         verify(mCarouselOrSingleTabSwitcherModuleController, never()).onBackPressed();
         verify(mSecondaryTasksSurfaceController).onBackPressed();
+        Assert.assertEquals(1, startSurfaceBackPressRecord.getDelta());
 
         doReturn(false).when(mSecondaryTasksSurfaceController).isDialogVisible();
-        verify(mSecondaryTasksSurfaceController).onBackPressed();
+        doReturn(false).when(mSecondaryTasksSurfaceController).onBackPressed();
+        Assert.assertFalse(verify(mSecondaryTasksSurfaceController).onBackPressed());
+        Assert.assertEquals(1, startSurfaceBackPressRecord.getDelta());
 
         mediator.setStartSurfaceState(StartSurfaceState.SHOWN_HOMEPAGE);
         mediator.setStartSurfaceState(StartSurfaceState.SHOWN_TABSWITCHER);
         Assert.assertEquals(StartSurfaceState.SHOWN_TABSWITCHER, mediator.getStartSurfaceState());
-        mediator.onBackPressed();
+        Assert.assertTrue(mediator.onBackPressed());
         Assert.assertEquals("Should return to home page on back press.",
                 StartSurfaceState.SHOWN_HOMEPAGE, mediator.getStartSurfaceState());
+        Assert.assertEquals(2, startSurfaceBackPressRecord.getDelta());
     }
 
     /**

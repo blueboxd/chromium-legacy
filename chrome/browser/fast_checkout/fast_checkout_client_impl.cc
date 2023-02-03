@@ -10,7 +10,7 @@
 #include "chrome/browser/fast_checkout/fast_checkout_personal_data_helper_impl.h"
 #include "chrome/browser/fast_checkout/fast_checkout_trigger_validator_impl.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
-#include "components/autofill/content/browser/content_autofill_driver.h"
+#include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -21,12 +21,13 @@ FastCheckoutClientImpl::FastCheckoutClientImpl(
     : content::WebContentsUserData<FastCheckoutClientImpl>(*web_contents),
       autofill_client_(
           autofill::ChromeAutofillClient::FromWebContents(web_contents)),
+      fetcher_(FastCheckoutCapabilitiesFetcherFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext())),
       personal_data_helper_(
           std::make_unique<FastCheckoutPersonalDataHelperImpl>(web_contents)),
       trigger_validator_(std::make_unique<FastCheckoutTriggerValidatorImpl>(
           autofill_client_,
-          FastCheckoutCapabilitiesFetcherFactory::GetForBrowserContext(
-              web_contents->GetBrowserContext()),
+          fetcher_,
           personal_data_helper_.get())) {}
 
 FastCheckoutClientImpl::~FastCheckoutClientImpl() {
@@ -40,25 +41,23 @@ bool FastCheckoutClientImpl::TryToStart(
     const GURL& url,
     const autofill::FormData& form,
     const autofill::FormFieldData& field,
-    autofill::AutofillDriver* autofill_driver) {
-  autofill::ContentAutofillDriver* content_autofill_driver =
-      static_cast<autofill::ContentAutofillDriver*>(autofill_driver);
-
-  if (!content_autofill_driver) {
+    base::WeakPtr<autofill::AutofillManager> autofill_manager) {
+  if (!autofill_manager) {
     return false;
   }
 
   if (!trigger_validator_->ShouldRun(form, field, fast_checkout_ui_state_,
-                                     is_running_, content_autofill_driver)) {
+                                     is_running_, autofill_manager)) {
     return false;
   }
 
-  autofill_driver_ = content_autofill_driver;
-  url_ = url;
+  autofill_manager_ = autofill_manager;
+  origin_ = url::Origin::Create(url);
   is_running_ = true;
   personal_data_manager_observation_.Observe(
       personal_data_helper_->GetPersonalDataManager());
 
+  SetFormsToFill();
   SetShouldSuppressKeyboard(true);
 
   fast_checkout_controller_ = CreateFastCheckoutController();
@@ -78,8 +77,8 @@ void FastCheckoutClientImpl::ShowFastCheckoutUI() {
 }
 
 void FastCheckoutClientImpl::SetShouldSuppressKeyboard(bool suppress) {
-  if (autofill_driver_) {
-    autofill_driver_->SetShouldSuppressKeyboard(suppress);
+  if (autofill_manager_) {
+    autofill_manager_->SetShouldSuppressKeyboard(suppress);
   }
 }
 
@@ -91,6 +90,9 @@ void FastCheckoutClientImpl::OnRunComplete() {
 
 void FastCheckoutClientImpl::Stop(bool allow_further_runs) {
   if (allow_further_runs) {
+    forms_to_fill_.clear();
+    selected_autofill_profile_.reset();
+    selected_credit_card_.reset();
     fast_checkout_ui_state_ = FastCheckoutUIState::kNotShownYet;
   } else if (IsShowing()) {
     fast_checkout_ui_state_ = FastCheckoutUIState::kWasShown;
@@ -104,12 +106,7 @@ void FastCheckoutClientImpl::Stop(bool allow_further_runs) {
   // stops.
   SetShouldSuppressKeyboard(false);
 
-  // There is one `ContentAutofillDriver` instance per frame but only one
-  // instance of this class per `WebContents`. Reset `autofill_driver_` here to
-  // avoid the issue of having a non-null, invalid pointer. This method is
-  // (also) called from `~BrowserAutofillManager()` which is owned by
-  // `ContentAutofillDriver`.
-  autofill_driver_ = nullptr;
+  autofill_manager_ = nullptr;
 }
 
 bool FastCheckoutClientImpl::IsShowing() const {
@@ -133,13 +130,26 @@ void FastCheckoutClientImpl::OnHidden() {
 void FastCheckoutClientImpl::OnOptionsSelected(
     std::unique_ptr<autofill::AutofillProfile> selected_profile,
     std::unique_ptr<autofill::CreditCard> selected_credit_card) {
-  // TODO(crbug.com/1334642): Signal that FC options have been selected.
   OnHidden();
+  selected_autofill_profile_ = std::move(selected_profile);
+  selected_credit_card_ = std::move(selected_credit_card);
+}
+
+void FastCheckoutClientImpl::SetFormsToFill() {
+  if (!fetcher_) {
+    return;
+  }
+  DCHECK(forms_to_fill_.empty());
+  for (autofill::FormSignature form_signature :
+       fetcher_->GetFormsToFill(origin_)) {
+    forms_to_fill_.emplace(form_signature, FillingState::kNotFilled);
+  }
 }
 
 void FastCheckoutClientImpl::OnDismiss() {
   OnHidden();
   Stop(/*allow_further_runs=*/false);
+  forms_to_fill_.clear();
 }
 
 void FastCheckoutClientImpl::OnPersonalDataChanged() {

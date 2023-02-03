@@ -7,11 +7,10 @@
  * text to speech.
  */
 
-import {LocalStorage} from '../../common/local_storage.js';
 import {Msgs} from '../common/msgs.js';
+import {SettingsManager} from '../common/settings_manager.js';
+import {TtsInterface} from '../common/tts_interface.js';
 import * as ttsTypes from '../common/tts_types.js';
-
-import {TtsInterface} from './tts_interface.js';
 
 /**
  * @typedef {{
@@ -231,7 +230,7 @@ export class AbstractTts {
   preprocess(text, properties) {
     if (text.length === 1 && text.toLowerCase() !== text) {
       // Describe capital letters according to user's setting.
-      if (LocalStorage.get('capitalStrategy') === 'increasePitch') {
+      if (SettingsManager.get('capitalStrategy') === 'increasePitch') {
         // Closure doesn't allow the use of for..in or [] with structs, so
         // convert to a pure JSON object.
         const CAPITAL = ttsTypes.Personality.CAPITAL.toJSON();
@@ -240,12 +239,13 @@ export class AbstractTts {
             properties[prop] = CAPITAL[prop];
           }
         }
-      } else if (LocalStorage.get('capitalStrategy') === 'announceCapitals') {
+      } else if (
+          SettingsManager.get('capitalStrategy') === 'announceCapitals') {
         text = Msgs.getMsg('announce_capital_letter', [text]);
       }
     }
 
-    if (LocalStorage.get('usePitchChanges') === 'false') {
+    if (!SettingsManager.get('usePitchChanges')) {
       delete properties.relativePitch;
     }
 

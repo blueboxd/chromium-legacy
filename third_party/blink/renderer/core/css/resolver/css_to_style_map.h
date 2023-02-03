@@ -39,7 +39,6 @@ class CSSValue;
 class StyleResolverState;
 class NinePieceImage;
 class BorderImageLengthBox;
-class ScopedCSSValue;
 
 class CSSToStyleMap {
   STATIC_ONLY(CSSToStyleMap);
@@ -82,13 +81,13 @@ class CSSToStyleMap {
                                            const CSSValue&);
   static AtomicString MapAnimationName(StyleResolverState&, const CSSValue&);
   static StyleTimeline MapAnimationTimeline(StyleResolverState&,
-                                            const ScopedCSSValue&);
+                                            const CSSValue&);
   static EAnimPlayState MapAnimationPlayState(StyleResolverState&,
                                               const CSSValue&);
-  static absl::optional<Timing::TimelineOffset> MapAnimationRangeStart(
+  static absl::optional<TimelineOffset> MapAnimationRangeStart(
       StyleResolverState&,
       const CSSValue&);
-  static absl::optional<Timing::TimelineOffset> MapAnimationRangeEnd(
+  static absl::optional<TimelineOffset> MapAnimationRangeEnd(
       StyleResolverState&,
       const CSSValue&);
   static EffectModel::CompositeOperation MapAnimationComposition(

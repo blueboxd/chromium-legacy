@@ -38,6 +38,38 @@
 
 namespace WTF {
 
+// A hash traits type is required for a type when the type is used as the key
+// or value of a HashTable-based classes. See documentation in
+// GenericHashTraitsBase for the HashTraits API.
+//
+// A hash traits type can be defined as
+// - a specialization of the HashTraits template, which will be automatically
+//   used, or
+// - a standalone hash traits type, which should be passed as the *Traits
+//   template parameters of HashTable-based classes.
+// The former is preferred if the hash traits defines the default hash behavior
+// of the type. The latter is suitable when a type has multiple hash behaviors,
+// e.g. CaseFoldingHashTraits defines an alternative hash behavior of strings.
+//
+// This file contains definitions of hash traits for integral types,
+// floating-point types, enums, raw and smart pointers, std::pair, etc.
+// These types can be used as hash key or value directly.
+//
+// This file also contains hash traits types that can be used as the base class
+// of hash traits of other types.
+//
+// A simple hash traits type for a key type can be like:
+//   template <>
+//   HashTraits<KeyType> : GenericHashTraits<KeyType> {
+//     static unsigned GetHash(const KeyType& key) { ...; }
+//     static KeyType EmptyValue() { ...; }
+//     static KeyType DeletedValue() { ...; }
+//   };
+//
+// A hash traits type for a value type can be even simpler. See documentation
+// in GenericHashTraitsBase for which functions/flags are for key types only
+// (i.e. not needed for a value type).
+//
 template <typename T>
 struct HashTraits;
 
@@ -50,6 +82,7 @@ struct GenericHashTraitsBase {
   using TraitType = T;
 
   // Type for functions that do not take ownership, such as contains.
+  // If overridden, the type must be assignable to T.
   using PeekInType = const T&;
 
   // Types for iterators.
@@ -58,20 +91,17 @@ struct GenericHashTraitsBase {
   using IteratorReferenceType = T&;
   using IteratorConstReferenceType = const T&;
 
-  template <typename IncomingValueType>
-  static void Store(IncomingValueType&& value, T& storage) {
-    storage = std::forward<IncomingValueType>(value);
-  }
-
   // Type for return value of functions that do not transfer ownership, such
   // as get.
   using PeekOutType = T;
   static const T& Peek(const T& value) { return value; }
 
   // Computes the hash code.
+  // This is for key types only.
   static unsigned GetHash(const T&) = delete;
 
   // Whether two values are equal. By default, operator== is used.
+  // This is for key types only.
   static bool Equal(const T& a, const T& b) { return a == b; }
 
   // When this is true, the hash table can optimize lookup operations by
@@ -83,6 +113,7 @@ struct GenericHashTraitsBase {
   // is an empty or a deleted value. When T is a pointer type, Equal(a, b) can
   // dereference a and b safely without checking if a or b is nullptr or an
   // invalid pointer that represents the deleted value.
+  // This is for key types only.
   static constexpr bool kSafeToCompareToEmptyOrDeleted = true;
 
   // Defines the empty value which is used to fill unused slots in the hash
@@ -113,17 +144,27 @@ struct GenericHashTraitsBase {
   // and ConstructDeletedValue() when the deleted value can be represented with
   // a value that can be safely and trivially compared/assigned to another
   // value.
+  // This is for key types only.
+  // NOTE: The destructor of the returned value *may not* be called, so the
+  // value should not own any dynamically allocated resources.
   static T DeletedValue() = delete;
 
   // Checks if a given value is a deleted value. If this is defined, the hash
   // table will call this function (through IsHashTraitsDeletedValue()) to check
   // if a slot is deleted. Otherwise `v == DeletedValue()` will be used.
+  // This is for key types only.
   static bool IsDeletedValue(const T& v) = delete;
 
   // Constructs a deleted value in-place in the given memory space.
+  // When this is called, T's destructor on the slot has been called, so this
+  // function should not call destructor again (e.g. by assigning a value
+  // to `slot`), unless T is trivially destructible.
   // This must be defined if IsDeletedValue() is defined, and will be called
   // through ConstructHashTraitsDeletedValue(). Otherwise
   // `slot = DeletedValue()` will be used.
+  // This is for key types only.
+  // NOTE: The destructor of the constructed value *will not* be called, so the
+  // value should not own any dynamically allocated resources.
   static void ConstructDeletedValue(T& slot) = delete;
 
   // The starting table size. Can be overridden when we know beforehand that a
@@ -290,10 +331,6 @@ struct GenericHashTraits<scoped_refptr<P>>
   typedef scoped_refptr<P>& IteratorReferenceType;
   typedef const scoped_refptr<P>& IteratorConstReferenceType;
 
-  static void Store(scoped_refptr<P> value, scoped_refptr<P>& storage) {
-    storage = std::move(value);
-  }
-
   typedef P* PeekOutType;
   static PeekOutType Peek(const scoped_refptr<P>& value) { return value.get(); }
 
@@ -325,10 +362,6 @@ struct GenericHashTraits<std::unique_ptr<T>>
   static bool IsEmptyValue(const std::unique_ptr<T>& value) { return !value; }
 
   using PeekInType = T*;
-
-  static void Store(std::unique_ptr<T>&& value, std::unique_ptr<T>& storage) {
-    storage = std::move(value);
-  }
 
   using PeekOutType = T*;
   static PeekOutType Peek(const std::unique_ptr<T>& value) {
@@ -392,8 +425,7 @@ namespace internal {
 
 template <typename Traits, typename Enabled = void>
 struct HashTraitsEmptyValueChecker {
-  template <typename T>
-  static bool IsEmptyValue(const T& value) {
+  static bool IsEmptyValue(const typename Traits::TraitType& value) {
     return value == Traits::EmptyValue();
   }
 };
@@ -404,20 +436,18 @@ struct HashTraitsEmptyValueChecker<
         std::is_same_v<decltype(Traits::IsEmptyValue(
                            std::declval<typename Traits::TraitType>())),
                        bool>>> {
-  template <typename T>
-  static bool IsEmptyValue(const T& value) {
+  static bool IsEmptyValue(const typename Traits::TraitType& value) {
     return Traits::IsEmptyValue(value);
   }
 };
 
 template <typename Traits, typename Enabled = void>
 struct HashTraitsDeletedValueHelper {
-  template <typename T>
-  static bool IsDeletedValue(const T& value) {
+  static bool IsDeletedValue(const typename Traits::TraitType& value) {
     return value == Traits::DeletedValue();
   }
-  template <typename T>
-  static void ConstructDeletedValue(T& slot) {
+  static void ConstructDeletedValue(typename Traits::TraitType& slot) {
+    static_assert(std::is_trivially_destructible_v<typename Traits::TraitType>);
     slot = Traits::DeletedValue();
   }
 };
@@ -428,14 +458,12 @@ struct HashTraitsDeletedValueHelper<
         std::is_same_v<decltype(Traits::IsDeletedValue(
                            std::declval<typename Traits::TraitType>())),
                        bool>>> {
-  template <typename T>
-  static bool IsDeletedValue(const T& value) {
+  static bool IsDeletedValue(const typename Traits::TraitType& value) {
     return Traits::IsDeletedValue(value);
   }
   // Traits must also define ConstructDeletedValue() if it defines
   // IsDeletedValue().
-  template <typename T>
-  static void ConstructDeletedValue(T& slot) {
+  static void ConstructDeletedValue(typename Traits::TraitType& slot) {
     Traits::ConstructDeletedValue(slot);
   }
 };
@@ -471,7 +499,7 @@ inline bool IsHashTraitsEmptyOrDeletedValue(const T& value) {
 
 // A HashTraits type for T to delegate all HashTraits API to a field.
 template <typename T,
-          auto T::*field,
+          auto field,
           typename FieldTraits = HashTraits<
               std::remove_reference_t<decltype(std::declval<T>().*field)>>>
 struct OneFieldHashTraits : GenericHashTraits<T> {
@@ -517,8 +545,8 @@ struct OneFieldHashTraits : GenericHashTraits<T> {
 // A HashTraits type for T to delegate all HashTraits API to two fields.
 template <
     typename T,
-    auto T::*first_field,
-    auto T::*second_field,
+    auto first_field,
+    auto second_field,
     typename FirstTraits = HashTraits<
         std::remove_reference_t<decltype(std::declval<T>().*first_field)>>,
     typename SecondTraits = HashTraits<
@@ -543,7 +571,7 @@ struct TwoFieldsHashTraits : OneFieldHashTraits<T, first_field, FirstTraits> {
     return T(FirstTraits::EmptyValue(), SecondTraits::EmptyValue());
   }
 
-  static bool IsEmptyValue(const TraitType& value) {
+  static bool IsEmptyValue(const T& value) {
     return IsHashTraitsEmptyValue<FirstTraits>(value.*first_field) &&
            IsHashTraitsEmptyValue<SecondTraits>(value.*second_field);
   }
@@ -591,43 +619,6 @@ struct PairHashTraits : TwoFieldsHashTraits<P,
 template <typename First, typename Second>
 struct HashTraits<std::pair<First, Second>>
     : public PairHashTraits<HashTraits<First>, HashTraits<Second>> {};
-
-template <typename KeyTypeArg, typename ValueTypeArg>
-struct KeyValuePair {
-  typedef KeyTypeArg KeyType;
-  typedef ValueTypeArg ValueType;
-
-  template <typename IncomingKeyType, typename IncomingValueType>
-  KeyValuePair(IncomingKeyType&& key, IncomingValueType&& value)
-      : key(std::forward<IncomingKeyType>(key)),
-        value(std::forward<IncomingValueType>(value)) {}
-
-  template <typename OtherKeyType, typename OtherValueType>
-  KeyValuePair(KeyValuePair<OtherKeyType, OtherValueType>&& other)
-      : key(std::move(other.key)), value(std::move(other.value)) {}
-
-  KeyTypeArg key;
-  ValueTypeArg value;
-};
-
-template <typename K, typename V>
-struct IsWeak<KeyValuePair<K, V>>
-    : std::integral_constant<bool, IsWeak<K>::value || IsWeak<V>::value> {};
-
-template <typename KeyTraitsArg,
-          typename ValueTraitsArg,
-          typename P = KeyValuePair<typename KeyTraitsArg::TraitType,
-                                    typename ValueTraitsArg::TraitType>>
-struct KeyValuePairHashTraits
-    : TwoFieldsHashTraits<P, &P::key, &P::value, KeyTraitsArg, ValueTraitsArg> {
-  using TraitType = P;
-  using KeyTraits = KeyTraitsArg;
-  using ValueTraits = ValueTraitsArg;
-};
-
-template <typename Key, typename Value>
-struct HashTraits<KeyValuePair<Key, Value>>
-    : public KeyValuePairHashTraits<HashTraits<Key>, HashTraits<Value>> {};
 
 // Shortcut of HashTraits<T>::GetHash(), which can deduct T automatically.
 template <typename T>

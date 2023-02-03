@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/common/chrome_features.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/chromeos_ui_constants.h"
 #include "chromeos/ui/base/tablet_state.h"
@@ -191,8 +192,11 @@ void BrowserNonClientFrameViewChromeOS::Init() {
        browser_view()->AppUsesWindowControlsOverlay() ||
        browser_view()->AppUsesBorderlessMode())) {
     // Add the container for extra web app buttons (e.g app menu button).
-    set_web_app_frame_toolbar(
-        AddChildView(std::make_unique<WebAppFrameToolbarView>(browser_view())));
+    if (!base::FeatureList::IsEnabled(
+            features::kWebAppFrameToolbarInBrowserView)) {
+      set_web_app_frame_toolbar(AddChildView(
+          std::make_unique<WebAppFrameToolbarView>(browser_view())));
+    }
     if (AppIsBorderlessPwa())
       UpdateBorderlessModeEnabled();
   }
@@ -207,6 +211,33 @@ gfx::Rect BrowserNonClientFrameViewChromeOS::GetBoundsForTabStripRegion(
   return gfx::Rect(left_inset, GetTopInset(restored),
                    std::max(0, width() - left_inset - GetTabStripRightInset()),
                    tabstrip_minimum_size.height());
+}
+
+gfx::Rect BrowserNonClientFrameViewChromeOS::GetBoundsForWebAppFrameToolbar(
+    const gfx::Size& toolbar_preferred_size) const {
+  if (!GetShowCaptionButtons() || AppIsBorderlessPwa()) {
+    return gfx::Rect();
+  }
+  if (browser_view()->browser()->is_type_app_popup() &&
+      !browser_view()->AppUsesWindowControlsOverlay() &&
+      !browser_view()->AppUsesBorderlessMode()) {
+    return gfx::Rect();
+  }
+
+  const int x = GetToolbarLeftInset();
+  const int available_width = caption_button_container_->x() - x;
+  int painted_height = GetTopInset(false);
+  if (browser_view()->GetTabStripVisible()) {
+    painted_height += browser_view()->tabstrip()->GetPreferredSize().height();
+  }
+  return gfx::Rect(x, 0, std::max(0, available_width), painted_height);
+}
+
+void BrowserNonClientFrameViewChromeOS::LayoutWebAppWindowTitle(
+    const gfx::Rect& available_space,
+    views::Label& window_title_label) const {
+  // No window titles on Chrome OS, so just hide the window title.
+  window_title_label.SetVisible(false);
 }
 
 int BrowserNonClientFrameViewChromeOS::GetTopInset(bool restored) const {
@@ -239,6 +270,10 @@ int BrowserNonClientFrameViewChromeOS::GetTopInset(bool restored) const {
     header_height = std::max(
         header_height, web_app_frame_toolbar()->GetPreferredSize().height());
   }
+  auto toolbar_size = browser_view()->GetWebAppFrameToolbarPreferredSize();
+  if (!toolbar_size.IsEmpty()) {
+    header_height = std::max(header_height, toolbar_size.height());
+  }
   if (browser_view()->GetTabStripVisible())
     return header_height - browser_view()->GetTabStripHeight();
 
@@ -249,11 +284,6 @@ int BrowserNonClientFrameViewChromeOS::GetTopInset(bool restored) const {
 
 int BrowserNonClientFrameViewChromeOS::GetThemeBackgroundXInset() const {
   return BrowserFrameHeaderChromeOS::GetThemeBackgroundXInset();
-}
-
-void BrowserNonClientFrameViewChromeOS::UpdateFrameColor() {
-  OnUpdateFrameColor();
-  BrowserNonClientFrameView::UpdateFrameColor();
 }
 
 void BrowserNonClientFrameViewChromeOS::UpdateThrobber(bool running) {
@@ -379,10 +409,8 @@ void BrowserNonClientFrameViewChromeOS::ResetWindowControls() {
 
 void BrowserNonClientFrameViewChromeOS::WindowControlsOverlayEnabledChanged() {
   bool enabled = browser_view()->IsWindowControlsOverlayEnabled();
-  web_app_frame_toolbar()->OnWindowControlsOverlayEnabledChanged();
   caption_button_container_->OnWindowControlsOverlayEnabledChanged(
       enabled, GetFrameHeaderColor(browser_view()->IsActive()));
-  browser_view()->InvalidateLayout();
 }
 
 void BrowserNonClientFrameViewChromeOS::UpdateWindowIcon() {
@@ -428,12 +456,14 @@ void BrowserNonClientFrameViewChromeOS::LayoutWindowControlsOverlay() {
 }
 
 void BrowserNonClientFrameViewChromeOS::UpdateBorderlessModeEnabled() {
-  web_app_frame_toolbar()->UpdateBorderlessModeEnabled();
+  if (web_app_frame_toolbar()) {
+    web_app_frame_toolbar()->UpdateBorderlessModeEnabled();
+  }
   caption_button_container_->UpdateBorderlessModeEnabled(
       browser_view()->IsBorderlessModeEnabled());
 }
 
-bool BrowserNonClientFrameViewChromeOS::AppIsBorderlessPwa() {
+bool BrowserNonClientFrameViewChromeOS::AppIsBorderlessPwa() const {
   return browser_view()->GetIsWebAppType() &&
          browser_view()->AppUsesBorderlessMode() &&
          browser_view()->IsBorderlessModeEnabled();
@@ -466,6 +496,8 @@ void BrowserNonClientFrameViewChromeOS::Layout() {
                                                  caption_button_container_->x(),
                                                  0, painted_height);
     }
+  } else if (AppIsBorderlessPwa()) {
+    UpdateBorderlessModeEnabled();
   }
 
   BrowserNonClientFrameView::Layout();
@@ -693,6 +725,11 @@ void BrowserNonClientFrameViewChromeOS::OnWindowPropertyChanged(
   }
 
   if (key == chromeos::kWindowStateTypeKey) {
+    // Update window controls when window state changes as whether or not these
+    // are shown can depend on the window state (e.g. hiding the caption buttons
+    // in non-immersive full screen mode, see crbug.com/1336470).
+    ResetWindowControls();
+
     // Update the window controls if we are entering or exiting float state.
     const bool enter_floated = IsFloated();
     const bool exit_floated = static_cast<chromeos::WindowStateType>(old) ==
@@ -702,7 +739,6 @@ void BrowserNonClientFrameViewChromeOS::OnWindowPropertyChanged(
 
     if (frame_header_)
       frame_header_->OnFloatStateChanged();
-    ResetWindowControls();
 
     if (!chromeos::TabletState::Get()->InTabletMode())
       return;
@@ -819,17 +855,31 @@ void BrowserNonClientFrameViewChromeOS::AddedToWidget() {
 }
 
 bool BrowserNonClientFrameViewChromeOS::GetShowCaptionButtons() const {
-  return GetShowCaptionButtonsWhenNotInOverview() && !GetOverviewMode() &&
-         !GetHideCaptionButtonsForFullscreen() && !UseWebUITabStrip();
+  if (GetOverviewMode()) {
+    return false;
+  }
+
+  return GetShowCaptionButtonsWhenNotInOverview();
 }
 
 bool BrowserNonClientFrameViewChromeOS::GetShowCaptionButtonsWhenNotInOverview()
     const {
-  if (UsePackagedAppHeaderStyle(browser_view()->browser()))
+  if (GetHideCaptionButtonsForFullscreen()) {
+    return false;
+  }
+
+  // Show the caption buttons for packaged apps which support immersive mode.
+  if (UsePackagedAppHeaderStyle(browser_view()->browser())) {
     return true;
-  if (!chromeos::TabletState::Get()->InTabletMode())
-    return true;
-  return IsFloated();
+  }
+
+  // Browsers in tablet mode still show their caption buttons in float state,
+  // even with the webUI tab strip.
+  if (chromeos::TabletState::Get()->InTabletMode()) {
+    return IsFloated();
+  }
+
+  return !UseWebUITabStrip();
 }
 
 int BrowserNonClientFrameViewChromeOS::GetToolbarLeftInset() const {
@@ -881,8 +931,15 @@ bool BrowserNonClientFrameViewChromeOS::GetShouldPaint() const {
 void BrowserNonClientFrameViewChromeOS::OnAddedToOrRemovedFromOverview() {
   const bool should_show_caption_buttons = GetShowCaptionButtons();
   caption_button_container_->SetVisible(should_show_caption_buttons);
-  if (web_app_frame_toolbar())
+  if (web_app_frame_toolbar()) {
     web_app_frame_toolbar()->SetVisible(should_show_caption_buttons);
+  }
+  if (base::FeatureList::IsEnabled(
+          features::kWebAppFrameToolbarInBrowserView)) {
+    // The WebAppFrameToolbarView is part of the BrowserView, so make sure the
+    // BrowserView is re-layed out to take into account these changes.
+    browser_view()->InvalidateLayout();
+  }
 }
 
 std::unique_ptr<chromeos::FrameHeader>

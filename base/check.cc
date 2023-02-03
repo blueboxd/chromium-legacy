@@ -198,6 +198,8 @@ NotReachedError NotReachedError::NotReached(const char* file, int line) {
 }
 
 void NotReachedError::TriggerNotReached() {
+  // This triggers a NOTREACHED() error as the returned NotReachedError goes out
+  // of scope.
   NotReached("", -1);
 }
 

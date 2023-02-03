@@ -11,6 +11,8 @@
 #include "base/build_time.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/no_destructor.h"
@@ -26,7 +28,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/google/google_brand.h"
-#include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/upgrade_detector/build_state.h"
 #include "chrome/browser/upgrade_detector/get_installed_version.h"
 #include "chrome/common/chrome_switches.h"
@@ -69,7 +70,9 @@ constexpr auto kOutdatedBuildDetectorPeriod = base::Days(1);
 constexpr auto kOutdatedBuildAge = base::Days(7) * 8;
 
 constexpr bool ShouldDetectOutdatedBuilds() {
-#if BUILDFLAG(ENABLE_UPDATE_NOTIFICATIONS)
+#if BUILDFLAG(ENABLE_UPDATE_NOTIFICATIONS) && !BUILDFLAG(IS_CHROMEOS)
+  // Outdated build detection is not relevant on ChromeOS platforms where
+  // updates are handled differently than on other desktop platforms.
   return true;
 #else
   return false;
@@ -202,13 +205,6 @@ void UpgradeDetectorImpl::StartOutdatedBuildDetector() {
   if (!base::FeatureList::IsEnabled(kOutdatedBuildDetector))
     return;
 
-  // Don't detect outdated builds for obsolete operating systems when new builds
-  // are no longer available.
-  if (ObsoleteSystem::IsObsoleteNowOrSoon() &&
-      ObsoleteSystem::IsEndOfTheLine()) {
-    return;
-  }
-
   // Don't show the bubble if we have a brand code that is NOT organic, unless
   // an outdated build is being simulated by command line switches.
   if (!simulating_outdated_) {
@@ -256,7 +252,13 @@ void UpgradeDetectorImpl::DetectOutdatedInstall() {
 
   if (network_time.is_null() || build_date_.is_null() ||
       build_date_ > network_time) {
-    NOTREACHED();
+    // TODO(crbug.com/1407664): Figure out why this is failing and either fix it
+    // and turn the conditional above into a CHECK or document how this can fail
+    // in the wild and either keep the DumpWithoutCrashing() or remove it.
+    base::Time build_date = build_date_;
+    base::debug::Alias(&network_time);
+    base::debug::Alias(&build_date);
+    base::debug::DumpWithoutCrashing();
     return;
   }
 

@@ -831,9 +831,11 @@ export class FileTable extends Table {
     if (locationInfo && locationInfo.isDriveBased) {
       label.appendChild(filelist.renderInlineStatus(this.ownerDocument));
     }
-    const isDlpRestricted = !!metadata.isDlpRestricted;
-    if (isDlpRestricted) {
-      label.appendChild(this.renderDlpManagedIcon_());
+    if (!util.isJellyEnabled()) {
+      const isDlpRestricted = !!metadata.isDlpRestricted;
+      if (isDlpRestricted) {
+        label.appendChild(this.renderDlpManagedIcon_());
+      }
     }
     return label;
   }
@@ -883,11 +885,12 @@ export class FileTable extends Table {
    * @private
    */
   updateSize_(div, entry) {
-    const metadata =
-        this.metadataModel_.getCache([entry], ['size', 'hosted'])[0];
+    const metadata = this.metadataModel_.getCache(
+        [entry], ['size', 'hosted', 'contentMimeType'])[0];
     const size = metadata.size;
-    const hosted = metadata.hosted;
-    div.textContent = this.formatter_.formatSize(size, hosted);
+    const special = metadata.hosted ||
+        FileType.isEncrypted(entry, metadata.contentMimeType);
+    div.textContent = this.formatter_.formatSize(size, special);
   }
 
   /**
@@ -924,9 +927,24 @@ export class FileTable extends Table {
   renderDate_(entry, columnId, table) {
     const div = /** @type {!HTMLDivElement} */
         (this.ownerDocument.createElement('div'));
-    div.className = 'date';
 
-    this.updateDate_(div, entry);
+    if (util.isJellyEnabled()) {
+      div.className = 'dateholder';
+      const label = /** @type {!HTMLDivElement} */
+          (this.ownerDocument.createElement('div'));
+      div.appendChild(label);
+      label.className = 'date';
+      this.updateDate_(label, entry);
+      const metadata =
+          this.metadataModel_.getCache([entry], ['isDlpRestricted'])[0];
+      const isDlpRestricted = !!metadata.isDlpRestricted;
+      if (isDlpRestricted) {
+        div.appendChild(this.renderDlpManagedIcon_());
+      }
+    } else {
+      div.className = 'date';
+      this.updateDate_(div, entry);
+    }
     return div;
   }
 

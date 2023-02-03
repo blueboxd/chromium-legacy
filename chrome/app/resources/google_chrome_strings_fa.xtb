@@ -51,7 +51,6 @@
 <translation id="1874309113135274312">‏Google Chrome نسخه بتا (mDNS-In)</translation>
 <translation id="1877026089748256423">‏نسخه Chrome قدیمی است</translation>
 <translation id="1919130412786645364">‏مجاز کردن ورود به سیستم Chrome</translation>
-<translation id="1952239763774043237">‏برای دریافت به‌روزرسانی‌های آتی Google Chrome، باید macOS نسخه ۱۰.۱۳ یا بالاتر داشته باشید. این رایانه از macOS نسخه ۱۰.۱۲ استفاده می‌کند.</translation>
 <translation id="1953553007165777902">درحال بارگیری… <ph name="MINUTE" /> دقیقه باقی مانده است</translation>
 <translation id="2018528049276128029">‏هرکدام از نمایه‌های Chrome دارای اطلاعات مختص خودش است (مثل نشانک‌ها، سابقه، گذرواژه‌ها، و غیره)</translation>
 <translation id="2018879682492276940">نصب تکمیل نشد. لطفاً دوباره امتحان کنید.</translation>
@@ -184,6 +183,7 @@
 <translation id="4335235004908507846">‏Chrome می‌تواند به ایمن ماندن شما در برابر نقض داده، افزونه‌های مخرب، و خطرهای دیگر کمک کند</translation>
 <translation id="4343195214584226067">‏<ph name="EXTENSION_NAME" /> به Chrome اضافه شده است</translation>
 <translation id="4384570495110188418">‏چون به سیستم وارد نشده‌اید، Chrome نمی‌تواند گذرواژه‌هایتان را بررسی کند</translation>
+<translation id="4393248995085527349">‏برای دریافت به‌روزرسانی‌های بعدی Google Chrome، باید macOS نسخه ۱۰.۱۵ یا بالاتر داشته باشید. این رایانه از macOS نسخه ۱۰.۱۳ استفاده می‌کند.</translation>
 <translation id="4427306783828095590">«محافظت بهبودیافته» کارهای بیشتری برای مسدود کردن رمزگیری و بدافزار انجام می‌دهد</translation>
 <translation id="4450664632294415862">‏Chrome - ورود به سیستم شبکه - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">‏عملکرد دیگری در Google Chrome درحال انجام است. لطفاً بعداً دوباره امتحان کنید.</translation>
@@ -213,7 +213,6 @@
 <translation id="4970880042055371251">‏نسخه ChromeOS</translation>
 <translation id="4970947549776831107">‏Chrome این فایل را مسدود کرد زیرا این نوع فایل خطرناک است</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
-<translation id="5037581483200764584">‏برای دریافت به‌روزرسانی‌های آتی Google Chrome، باید macOS نسخه ۱۰.۱۳ یا بالاتر داشته باشید. این رایانه از OS X نسخه ۱۰.۱۱ استفاده می‌کند.</translation>
 <translation id="5098668839038261629">‏وقتی روشن باشد، از سیستم Chrome نیز خارج خواهید شد</translation>
 <translation id="5132929315877954718">‏برنامه‌های کاربردی، بازی‌ها، افزونه‌ها و طرح‌های زمینه فوق‌العاده را برای Google Chrome کاوش کنید.</translation>
 <translation id="5139423532931106058">‏سفارشی کردن نمایه Chrome</translation>
@@ -251,6 +250,7 @@
 <translation id="5941711191222866238">کوچک کردن</translation>
 <translation id="5941830788786076944">‏Google Chrome مرورگر پیش‌فرض شود</translation>
 <translation id="6003112304606738118">درحال بارگیری… <ph name="HOURS" /> ساعت باقی مانده است</translation>
+<translation id="6010556343189461180">‏برای دریافت به‌روزرسانی‌های بعدی Google Chrome، باید macOS نسخه ۱۰.۱۵ یا بالاتر داشته باشید. این رایانه از macOS نسخه ۱۰.۱۴ استفاده می‌کند.</translation>
 <translation id="6022388122721048220">{0,plural, =0{‏Chrome اکنون بسته می‌شود.}=1{‏Chrome تا یک ثانیه دیگر بسته می‌شود.}one{‏Chrome تا # ثانیه دیگر بسته می‌شود.}other{‏Chrome تا # ثانیه دیگر بسته می‌شود.}}</translation>
 <translation id="6040143037577758943">بستن</translation>
 <translation id="6070348360322141662">‏برای امنیت بیشتر، Google Chrome داده‌های شما را رمزگذاری می‌کند</translation>
@@ -413,6 +413,7 @@
 <translation id="922152298093051471">‏سفارشی کردن Chrome</translation>
 <translation id="93760716455950538">‏بازراه‌اندازی ChromeOS Flex</translation>
 <translation id="940313311831216333">‏برای دسترسی به چیزهای Chrome در همه دستگاه‌هایتان، به سیستم وارد شوید، سپس همگام‌سازی را روشن کنید.</translation>
+<translation id="943390475793766444">‏Chrome توصیه می‌کند این فایل را اسکن کنید زیرا ممکن است خطرناک باشد.</translation>
 <translation id="989369509083708165">‏Google Chrome مرورگر پیش‌فرضتان است</translation>
 <translation id="989816563149873169">‏با <ph name="SHORTCUT" /> می‌توانید بین نمایه‌های Chrome جابه‌جا شوید</translation>
 </translationbundle>

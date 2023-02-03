@@ -1333,7 +1333,6 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoOnlyChild: {
       if (IsTransitionPseudoElement(context.pseudo_id)) {
         DCHECK(element.IsDocumentElement());
-        DCHECK_NE(context.pseudo_id, kPseudoIdViewTransition);
         DCHECK(context.pseudo_argument);
 
         auto* transition =
@@ -1443,8 +1442,16 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoIs:
     case CSSSelector::kPseudoWhere:
     case CSSSelector::kPseudoAny:
-    case CSSSelector::kPseudoParent:
       return MatchesAnyInList(context, selector.SelectorListOrParent(), result);
+    case CSSSelector::kPseudoParent: {
+      const CSSSelector* parent = selector.SelectorListOrParent();
+      if (parent == nullptr) {
+        // & at top level matches like :scope.
+        return CheckPseudoScope(context, result);
+      } else {
+        return MatchesAnyInList(context, parent, result);
+      }
+    }
     case CSSSelector::kPseudoAutofill:
     case CSSSelector::kPseudoWebKitAutofill: {
       auto* html_form_element = DynamicTo<HTMLFormControlElement>(&element);
@@ -1816,6 +1823,10 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         return !toggle->ValueMatches(State(0));
       }
     }
+    case CSSSelector::kPseudoParentUnparsed:
+      // Only kept around for parsing; can never match anything
+      // (because we don't know what it's supposed to mean).
+      return false;
     case CSSSelector::kPseudoUnknown:
     default:
       NOTREACHED();

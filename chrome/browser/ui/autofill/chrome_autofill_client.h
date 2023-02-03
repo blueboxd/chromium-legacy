@@ -12,6 +12,7 @@
 #include "base/functional/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/autofill_gstatic_reader.h"
 #include "chrome/browser/profiles/profile.h"
@@ -77,7 +78,7 @@ class ChromeAutofillClient
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   IBANManager* GetIBANManager() override;
   MerchantPromoCodeManager* GetMerchantPromoCodeManager() override;
-  CreditCardCVCAuthenticator* GetCVCAuthenticator() override;
+  CreditCardCvcAuthenticator* GetCvcAuthenticator() override;
   CreditCardOtpAuthenticator* GetOtpAuthenticator() override;
   PrefService* GetPrefs() override;
   const PrefService* GetPrefs() const override;
@@ -181,9 +182,10 @@ class ChromeAutofillClient
       AddressProfileSavePromptCallback callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
-  bool TryToShowFastCheckout(const FormData& form,
-                             const FormFieldData& field,
-                             AutofillDriver* driver) override;
+  bool TryToShowFastCheckout(
+      const FormData& form,
+      const FormFieldData& field,
+      base::WeakPtr<AutofillManager> autofill_manager) override;
   void HideFastCheckout(bool allow_further_runs) override;
   bool IsFastCheckoutSupported() override;
   bool IsShowingFastCheckoutUI() override;
@@ -224,7 +226,6 @@ class ChromeAutofillClient
   void DidFillOrPreviewField(const std::u16string& autofilled_value,
                              const std::u16string& profile_full_name) override;
   bool IsContextSecure() const override;
-  bool ShouldShowSigninPromo() override;
   void ExecuteCommand(int id) override;
   void OpenPromoCodeOfferDetailsURL(const GURL& url) override;
   LogManager* GetLogManager() const override;
@@ -253,15 +254,17 @@ class ChromeAutofillClient
   }
 
 #if !BUILDFLAG(IS_ANDROID)
-  // ZoomObserver implementation.
+  // ZoomObserver:
+  void OnZoomControllerDestroyed() override;
   void OnZoomChanged(
       const zoom::ZoomController::ZoomChangedEventData& data) override;
-#endif  // !BUILDFLAG(IS_ANDROID)
+#endif
+
+ protected:
+  explicit ChromeAutofillClient(content::WebContents* web_contents);
 
  private:
   friend class content::WebContentsUserData<ChromeAutofillClient>;
-
-  explicit ChromeAutofillClient(content::WebContents* web_contents);
 
   Profile* GetProfile() const;
   bool IsMultipleAccountUser();
@@ -269,10 +272,13 @@ class ChromeAutofillClient
   std::u16string GetAccountHolderEmail();
   bool SupportsConsentlessExecution(const url::Origin& origin);
 
+  // These members are initialized lazily in their respective getters.
+  // Therefore, do not access the members directly.
   std::unique_ptr<payments::PaymentsClient> payments_client_;
-  std::unique_ptr<CreditCardCVCAuthenticator> cvc_authenticator_;
+  std::unique_ptr<CreditCardCvcAuthenticator> cvc_authenticator_;
   std::unique_ptr<CreditCardOtpAuthenticator> otp_authenticator_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
+
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
   std::unique_ptr<LogManager> log_manager_;
   FormInteractionsFlowId flow_id_{};
@@ -291,6 +297,11 @@ class ChromeAutofillClient
   AutofillErrorDialogControllerImpl autofill_error_dialog_controller_;
   std::unique_ptr<AutofillProgressDialogControllerImpl>
       autofill_progress_dialog_controller_;
+
+#if !BUILDFLAG(IS_ANDROID)
+  base::ScopedObservation<zoom::ZoomController, zoom::ZoomObserver>
+      zoom_observation_{this};
+#endif
 
   // True if and only if the associated web_contents() is currently focused.
   bool has_focus_ = false;

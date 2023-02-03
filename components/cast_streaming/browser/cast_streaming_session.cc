@@ -82,8 +82,10 @@ CastStreamingSession::ReceiverSessionClient::ReceiverSessionClient(
 
   if (renderer_controls) {
     playback_command_dispatcher_ = std::make_unique<PlaybackCommandDispatcher>(
-        task_runner,
-        std::move(renderer_controls.value().control_configuration));
+        task_runner, std::move(renderer_controls.value().control_configuration),
+        base::BindRepeating(
+            &CastStreamingSession::ReceiverSessionClient::OnFlushUntil,
+            weak_factory_.GetWeakPtr()));
     playback_command_dispatcher_->RegisterCommandSource(
         std::move(renderer_controls.value().external_renderer_controls));
   }
@@ -335,19 +337,25 @@ void CastStreamingSession::ReceiverSessionClient::OnReceiversDestroying(
     playback_command_dispatcher_->OnRemotingSessionEnded();
   }
 
+  preloaded_audio_buffer_ = absl::nullopt;
+  preloaded_video_buffer_ = absl::nullopt;
+
   switch (reason) {
     case ReceiversDestroyingReason::kEndOfSession:
       client_->OnSessionEnded();
       break;
     case ReceiversDestroyingReason::kRenegotiated:
       if (playback_command_dispatcher_) {
-        DCHECK(!is_flush_pending_);
-
-        DVLOG(1) << "Calling Flush()";
-        is_flush_pending_ = true;
-        playback_command_dispatcher_->Flush(base::BindOnce(
-            &CastStreamingSession::ReceiverSessionClient::OnFlushComplete,
-            weak_factory_.GetWeakPtr()));
+        if (is_flush_pending_) {
+          DLOG(WARNING)
+              << "Skipping call to Flush() because one is already in progress";
+        } else {
+          DVLOG(1) << "Calling Flush()";
+          is_flush_pending_ = true;
+          playback_command_dispatcher_->Flush(base::BindOnce(
+              &CastStreamingSession::ReceiverSessionClient::OnFlushComplete,
+              weak_factory_.GetWeakPtr()));
+        }
       }
       client_->OnSessionReinitializationPending();
       break;
@@ -361,6 +369,17 @@ void CastStreamingSession::ReceiverSessionClient::OnFlushComplete() {
   is_flush_pending_ = false;
   if (start_session_cb_) {
     std::move(start_session_cb_).Run();
+  }
+}
+
+void CastStreamingSession::ReceiverSessionClient::OnFlushUntil(
+    uint32_t audio_count,
+    uint32_t video_count) {
+  if (audio_consumer_) {
+    audio_consumer_->FlushUntil(audio_count);
+  }
+  if (video_consumer_) {
+    video_consumer_->FlushUntil(video_count);
   }
 }
 

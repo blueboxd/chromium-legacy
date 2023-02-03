@@ -697,6 +697,9 @@ const char kLacrosChromePath[] = "lacros-chrome-path";
 // 2. A terminal to start lacros-chrome with a debugger.
 const char kLacrosMojoSocketForTesting[] = "lacros-mojo-socket-for-testing";
 
+// When this flag is set, the lacros-selection policy is ignored.
+const char kLacrosSelectionPolicyIgnore[] = "lacros-selection-policy-ignore";
+
 // Start Chrome in RMA mode. Launches RMA app automatically.
 // kRmaNotAllowed switch takes priority over this one.
 const char kLaunchRma[] = "launch-rma";
@@ -786,12 +789,16 @@ const char kOobeTimezoneOverrideForTests[] = "oobe-timezone-override-for-tests";
 const char kOobeTriggerSyncTimeoutForTests[] =
     "oobe-trigger-sync-timeout-for-tests";
 
-// Removes the condition that a network has had to existed for at least two
-// weeks and allows the user to provide the frequency at which the
-// HiddenNetworkHandler class checks for and removes wrongly hidden networks.
-// The frequency should be provided in seconds, should follow the format
-// "--force-hidden-network-migration=#", and should be >= 1.
-const char kForceHiddenNetworkMigration[] = "force-hidden-network-migration";
+// Controls how often the HiddenNetworkHandler class checks for wrongly hidden
+// networks. The interval should be provided in seconds, should follow the
+// format "--hidden-network-migration-interval=#", and should be >= 1.
+const char kHiddenNetworkMigrationInterval[] =
+    "hidden-network-migration-interval";
+
+// Sets how long a wrongly hidden network must have existed in order to be
+// considered for removal. The interval should be provided in days, should
+// follow the format "--hidden-network-migration-age=#", and should be >= 0.
+const char kHiddenNetworkMigrationAge[] = "hidden-network-migration-age";
 
 // If set to "true", the profile requires policy during restart (policy load
 // must succeed, otherwise session restart should fail).

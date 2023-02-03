@@ -227,7 +227,7 @@ static_library("test_support") {
   }
 }
 
-if (!is_android && !is_fuchsia && !is_chromeos_ash) {
+if (!is_android && !is_fuchsia && !is_chromeos_ash && !is_ios) {
   proto_library("gl_lpm_fuzzer_proto") {
     sources = [ "command_buffer/tests/lpm/gl_lpm_fuzzer.proto" ]
 
@@ -307,6 +307,7 @@ test("gl_tests") {
     "command_buffer/service/shared_image/shared_image_representation_unittest.cc",
     "command_buffer/service/shared_image/test_utils.cc",
     "command_buffer/service/shared_image/test_utils.h",
+    "command_buffer/service/shared_image/wrapped_sk_image_backing_factory_unittest.cc",
     "command_buffer/tests/compressed_texture_test.cc",
     "command_buffer/tests/es3_misc_functions_unittest.cc",
     "command_buffer/tests/gl_bgra_mipmap_unittest.cc",
@@ -577,10 +578,8 @@ test("gpu_unittests") {
     "ipc/common/gpu_memory_buffer_impl_test_template.h",
     "ipc/common/mojom_traits_unittest.cc",
     "ipc/host/gpu_disk_cache_unittest.cc",
-    "ipc/service/gpu_channel_manager_unittest.cc",
     "ipc/service/gpu_channel_test_common.cc",
     "ipc/service/gpu_channel_test_common.h",
-    "ipc/service/gpu_channel_unittest.cc",
     "ipc/service/gpu_watchdog_thread_unittest.cc",
   ]
 
@@ -658,6 +657,8 @@ test("gpu_unittests") {
       "command_buffer/service/gles2_cmd_decoder_passthrough_unittest_drawing.cc",
       "command_buffer/service/gles2_cmd_decoder_passthrough_unittest_framebuffers.cc",
       "command_buffer/service/gles2_cmd_decoder_passthrough_unittest_textures.cc",
+      "ipc/service/gpu_channel_manager_unittest.cc",
+      "ipc/service/gpu_channel_unittest.cc",
     ]
   }
 

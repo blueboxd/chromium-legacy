@@ -14,6 +14,7 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
+#import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
@@ -32,7 +33,6 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_view_controller.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_view_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/suggested_actions/suggested_actions_delegate.h"
@@ -169,8 +169,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 @property(nonatomic, strong) UIControl* scrimView;
 @property(nonatomic, weak) TabGridTopToolbar* topToolbar;
 @property(nonatomic, weak) TabGridBottomToolbar* bottomToolbar;
-// Bool informing if the confirmation action sheet is displayed.
-@property(nonatomic, assign) BOOL closeAllConfirmationDisplayed;
 @property(nonatomic, assign) TabGridConfiguration configuration;
 // Setting the current page doesn't scroll the scroll view; use
 // -scrollToPage:animated: for that.
@@ -226,7 +224,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
     _pageConfiguration = tabGridPageConfiguration;
-    _closeAllConfirmationDisplayed = NO;
     _dragSeesionInProgress = NO;
 
     switch (_pageConfiguration) {
@@ -462,12 +459,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (GridTransitionLayout*)transitionLayout:(TabGridPage)activePage {
-  GridViewController* gridViewController =
-      [self gridViewControllerForPage:activePage];
-  if (!gridViewController)
+  GridTransitionLayout* layout = [self transitionLayoutForPage:activePage];
+  if (!layout) {
     return nil;
-
-  GridTransitionLayout* layout = [gridViewController transitionLayout];
+  }
   layout.frameChanged = !CGRectEqualToRect(self.view.frame, self.initialFrame);
   return layout;
 }
@@ -983,6 +978,83 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 #pragma mark - Private
+
+// Returns transition layout for the provided `page`.
+- (GridTransitionLayout*)transitionLayoutForPage:(TabGridPage)page {
+  switch (page) {
+    case TabGridPageIncognitoTabs:
+      return [self.incognitoTabsViewController transitionLayout];
+    case TabGridPageRegularTabs:
+      return [self transitionLayoutForRegularTabsPage];
+    case TabGridPageRemoteTabs:
+      return nil;
+  }
+}
+
+// Returns transition layout provider for the regular tabs page.
+- (GridTransitionLayout*)transitionLayoutForRegularTabsPage {
+  GridTransitionLayout* regularTabsTransitionLayout =
+      [self.regularTabsViewController transitionLayout];
+
+  if (IsPinnedTabsEnabled()) {
+    GridTransitionLayout* pinnedTabsTransitionLayout =
+        [self.pinnedTabsViewController transitionLayout];
+
+    return [self combineTransitionLayout:pinnedTabsTransitionLayout
+                    withTransitionLayout:regularTabsTransitionLayout];
+  }
+
+  return regularTabsTransitionLayout;
+}
+
+// Combines two transition layouts into one. The `primaryLayout` has the
+// priority over `secondaryLayout`. This means that in case there are two
+// activeItems and/or two selectionItems available, only the ones from
+// `primaryLayout` would be picked for a combined layout.
+- (GridTransitionLayout*)
+    combineTransitionLayout:(GridTransitionLayout*)primaryLayout
+       withTransitionLayout:(GridTransitionLayout*)secondaryLayout {
+  NSArray<GridTransitionItem*>* primaryInactiveItems =
+      primaryLayout.inactiveItems;
+  NSArray<GridTransitionItem*>* secondaryInactiveItems =
+      secondaryLayout.inactiveItems;
+
+  NSArray<GridTransitionItem*>* inactiveItems =
+      [self combineInactiveItems:primaryInactiveItems
+               withInactiveItems:secondaryInactiveItems];
+
+  GridTransitionActiveItem* primaryActiveItem = primaryLayout.activeItem;
+  GridTransitionActiveItem* secondaryActiveItem = secondaryLayout.activeItem;
+
+  // Prefer primary active item.
+  GridTransitionActiveItem* activeItem =
+      primaryActiveItem ? primaryActiveItem : secondaryActiveItem;
+
+  GridTransitionItem* primarySelectionItem = primaryLayout.selectionItem;
+  GridTransitionItem* secondarySelectionItem = secondaryLayout.selectionItem;
+
+  // Prefer primary selection item.
+  GridTransitionItem* selectionItem =
+      primarySelectionItem ? primarySelectionItem : secondarySelectionItem;
+
+  return [GridTransitionLayout layoutWithInactiveItems:inactiveItems
+                                            activeItem:activeItem
+                                         selectionItem:selectionItem];
+}
+
+// Combines two arrays of inactive items into one. The `primaryInactiveItems`
+// (if any) would be placed in the front of the resulting array, whether the
+// `secondaryInactiveItems` would be placed in the back.
+- (NSArray<GridTransitionItem*>*)
+    combineInactiveItems:(NSArray<GridTransitionItem*>*)primaryInactiveItems
+       withInactiveItems:(NSArray<GridTransitionItem*>*)secondaryInactiveItems {
+  if (primaryInactiveItems == nil) {
+    primaryInactiveItems = @[];
+  }
+
+  return [primaryInactiveItems
+      arrayByAddingObjectsFromArray:secondaryInactiveItems];
+}
 
 // Hides the thumb strip's plus sign button by translating it away and making it
 // transparent.
@@ -1645,17 +1717,14 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 - (void)configureDoneButtonBasedOnPage:(TabGridPage)page {
   const BOOL tabsPresent = [self tabsPresentForPage:page];
 
-  if (!self.closeAllConfirmationDisplayed)
-    self.topToolbar.pageControl.userInteractionEnabled = YES;
+  self.topToolbar.pageControl.userInteractionEnabled = YES;
 
   // The Done button should have the same behavior as the other buttons on the
   // top Toolbar.
   BOOL incognitoTabsNeedsAuth =
       (self.currentPage == TabGridPageIncognitoTabs &&
        self.incognitoTabsViewController.contentNeedsAuthentication);
-  BOOL doneEnabled = tabsPresent &&
-                     self.topToolbar.pageControl.userInteractionEnabled &&
-                     !incognitoTabsNeedsAuth;
+  BOOL doneEnabled = tabsPresent && !incognitoTabsNeedsAuth;
   [self.topToolbar setDoneButtonEnabled:doneEnabled];
   [self.bottomToolbar setDoneButtonEnabled:doneEnabled];
 }
@@ -1675,8 +1744,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // Disables the done button on bottom toolbar if a disabled tab view is
 // presented.
 - (void)configureDoneButtonOnDisabledPage {
-  if (!self.closeAllConfirmationDisplayed)
-    self.topToolbar.pageControl.userInteractionEnabled = YES;
+  self.topToolbar.pageControl.userInteractionEnabled = YES;
   [self.bottomToolbar setDoneButtonEnabled:NO];
   [self.topToolbar setDoneButtonEnabled:NO];
 }
@@ -2275,9 +2343,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   self.topToolbar.pageControl.pinnedTabCount = count;
 }
 
-- (void)pinnedTabsViewControllerDidHide {
+- (void)pinnedTabsViewControllerVisibilityDidChange:
+    (PinnedTabsViewController*)pinnedTabsViewController {
   UIEdgeInsets inset = [self calculateInsetForRegularGridView];
-
   [UIView animateWithDuration:kPinnedViewInsetAnimationTime
                    animations:^{
                      self.regularTabsViewController.gridView.contentInset =

@@ -29,6 +29,7 @@
 #include "net/base/network_anonymization_key.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/test/test_dns_util.h"
 
 namespace extensions {
@@ -137,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(SocketsTcpApiTest, SocketTcpExtensionTLS) {
   // EmbeddedTestServer won't be recognized, so inject mock cert verifier
   // through the test helper interface.
   mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
-  content::GetNetworkService()->BindTestInterface(
+  content::GetNetworkService()->BindTestInterfaceForTesting(
       network_service_test.BindNewPipeAndPassReceiver());
   mojo::ScopedAllowSyncCallForTesting allow_sync_call;
   network_service_test->MockCertVerifierSetDefaultResult(net::OK);

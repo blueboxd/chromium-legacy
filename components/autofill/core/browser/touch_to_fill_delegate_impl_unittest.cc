@@ -29,16 +29,6 @@ namespace autofill {
 
 namespace {
 
-class MockAutofillDriver : public TestAutofillDriver {
- public:
-  MockAutofillDriver() = default;
-  MockAutofillDriver(const MockAutofillDriver&) = delete;
-  MockAutofillDriver& operator=(const MockAutofillDriver&) = delete;
-  ~MockAutofillDriver() override = default;
-
-  MOCK_METHOD(bool, CanShowAutofillUi, (), (const, override));
-};
-
 class MockAutofillClient : public TestAutofillClient {
  public:
   MockAutofillClient() = default;
@@ -108,9 +98,16 @@ class MockBrowserAutofillManager : public TestBrowserAutofillManager {
                const FormFieldData& field,
                const CreditCard* credit_card));
   MOCK_METHOD(void,
-              SetSuggestionOriginMetricState,
+              SetAutofillSuggestionMethod,
               (AutofillSuggestionMethod state),
               (override));
+  MOCK_METHOD(void,
+              DidShowSuggestions,
+              (bool has_autofill_suggestions,
+               const FormData& form,
+               const FormFieldData& field),
+              (override));
+  MOCK_METHOD(bool, CanShowAutofillUi, (), (const, override));
 };
 
 }  // namespace
@@ -118,13 +115,10 @@ class MockBrowserAutofillManager : public TestBrowserAutofillManager {
 class TouchToFillDelegateImplUnitTest : public testing::Test {
  protected:
   void SetUp() override {
-    test::CreateTestCreditCardFormData(&form_, /*is_https=*/true,
-                                       /*use_month_type=*/false);
-
     autofill_client_.SetPrefs(test::PrefServiceForTesting());
     autofill_client_.GetPersonalDataManager()->SetPrefService(
         autofill_client_.GetPrefs());
-    autofill_driver_ = std::make_unique<NiceMock<MockAutofillDriver>>();
+    autofill_driver_ = std::make_unique<TestAutofillDriver>();
     browser_autofill_manager_ =
         std::make_unique<NiceMock<MockBrowserAutofillManager>>(
             autofill_driver_.get(), &autofill_client_);
@@ -145,7 +139,8 @@ class TouchToFillDelegateImplUnitTest : public testing::Test {
         .WillByDefault(Return(PopupType::kCreditCards));
     ON_CALL(autofill_client_, IsTouchToFillCreditCardSupported)
         .WillByDefault(Return(true));
-    ON_CALL(*autofill_driver_, CanShowAutofillUi).WillByDefault(Return(true));
+    ON_CALL(*browser_autofill_manager_, CanShowAutofillUi)
+        .WillByDefault(Return(true));
     ON_CALL(autofill_client_, ShowTouchToFillCreditCard)
         .WillByDefault(Return(true));
     // Calling HideTouchToFillCreditCard in production code leads to that
@@ -158,6 +153,10 @@ class TouchToFillDelegateImplUnitTest : public testing::Test {
             delegate->OnDismissed(/*dismissed_by_user=*/false);
           }
         });
+
+    test::CreateTestCreditCardFormData(&form_, /*is_https=*/true,
+                                       /*use_month_type=*/false);
+    browser_autofill_manager_->OnFormsSeen({form_}, {});
   }
 
   void TryToShowTouchToFill(bool expected_success) {
@@ -165,6 +164,7 @@ class TouchToFillDelegateImplUnitTest : public testing::Test {
                 HideAutofillPopup(
                     PopupHidingReason::kOverlappingWithTouchToFillSurface))
         .Times(expected_success ? 1 : 0);
+
     EXPECT_EQ(expected_success,
               touch_to_fill_delegate_->TryToShowTouchToFill(form_, field_));
     EXPECT_EQ(expected_success,
@@ -177,7 +177,7 @@ class TouchToFillDelegateImplUnitTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   test::AutofillEnvironment autofill_environment_;
   NiceMock<MockAutofillClient> autofill_client_;
-  std::unique_ptr<NiceMock<MockAutofillDriver>> autofill_driver_;
+  std::unique_ptr<TestAutofillDriver> autofill_driver_;
   std::unique_ptr<MockBrowserAutofillManager> browser_autofill_manager_;
   raw_ptr<TouchToFillDelegateImpl> touch_to_fill_delegate_;
   base::HistogramTester histogram_tester_;
@@ -186,6 +186,7 @@ class TouchToFillDelegateImplUnitTest : public testing::Test {
 TEST_F(TouchToFillDelegateImplUnitTest, TryToShowTouchToFillSucceeds) {
   ASSERT_FALSE(touch_to_fill_delegate_->IsShowingTouchToFill());
 
+  EXPECT_CALL(*browser_autofill_manager_, DidShowSuggestions);
   TryToShowTouchToFill(/*expected_success=*/true);
   histogram_tester_.ExpectUniqueSample(
       kUmaTouchToFillCreditCardTriggerOutcome,
@@ -199,6 +200,24 @@ TEST_F(TouchToFillDelegateImplUnitTest,
       .WillOnce(Return(PopupType::kAddresses));
 
   TryToShowTouchToFill(/*expected_success=*/false);
+}
+
+TEST_F(TouchToFillDelegateImplUnitTest,
+       TryToShowTouchToFillFailsForIncompleteForm) {
+  form_.fields.clear();
+  FormFieldData field;
+  test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
+  form_.fields.push_back(field);
+
+  browser_autofill_manager_->OnFormsSeen({form_}, {});
+
+  ASSERT_FALSE(touch_to_fill_delegate_->IsShowingTouchToFill());
+
+  TryToShowTouchToFill(/*expected_success=*/false);
+
+  histogram_tester_.ExpectUniqueSample(
+      kUmaTouchToFillCreditCardTriggerOutcome,
+      TouchToFillCreditCardTriggerOutcome::kIncompleteForm, 1);
 }
 
 TEST_F(TouchToFillDelegateImplUnitTest,
@@ -216,9 +235,12 @@ TEST_F(TouchToFillDelegateImplUnitTest,
   test::CreateTestCreditCardFormData(&form_, /*is_https=*/false,
                                      /*use_month_type=*/false);
 
+  browser_autofill_manager_->OnFormsSeen({form_}, {});
+
   ASSERT_FALSE(touch_to_fill_delegate_->IsShowingTouchToFill());
 
   TryToShowTouchToFill(/*expected_success=*/false);
+
   histogram_tester_.ExpectUniqueSample(
       kUmaTouchToFillCreditCardTriggerOutcome,
       TouchToFillCreditCardTriggerOutcome::kFormOrClientNotSecure, 1);
@@ -366,7 +388,8 @@ TEST_F(TouchToFillDelegateImplUnitTest,
 TEST_F(TouchToFillDelegateImplUnitTest,
        TryToShowTouchToFillFailsIfCanNotShowUi) {
   ASSERT_FALSE(touch_to_fill_delegate_->IsShowingTouchToFill());
-  EXPECT_CALL(*autofill_driver_, CanShowAutofillUi).WillOnce(Return(false));
+  EXPECT_CALL(*browser_autofill_manager_, CanShowAutofillUi)
+      .WillOnce(Return(false));
 
   TryToShowTouchToFill(/*expected_success=*/false);
   histogram_tester_.ExpectUniqueSample(
@@ -534,7 +557,7 @@ TEST_F(TouchToFillDelegateImplUnitTest, CardSelectionFillsCardForm) {
   TryToShowTouchToFill(/*expected_success=*/true);
 
   EXPECT_CALL(*browser_autofill_manager_, FillOrPreviewCreditCardForm);
-  EXPECT_CALL(*browser_autofill_manager_, SetSuggestionOriginMetricState);
+  EXPECT_CALL(*browser_autofill_manager_, SetAutofillSuggestionMethod);
   touch_to_fill_delegate_->SuggestionSelected(credit_card.server_id());
 }
 

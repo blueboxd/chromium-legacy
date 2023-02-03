@@ -77,6 +77,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -323,6 +324,11 @@ public class FeedStream implements Stream {
             }
         }
 
+        @Override
+        public void openWebFeed(String webFeedName) {
+            mActionDelegate.openWebFeed(webFeedName);
+        }
+
         private void openSuggestionUrl(
                 String url, int disposition, boolean inGroup, OpenUrlOptions openOptions) {
             boolean inNewTab = (disposition == WindowOpenDisposition.NEW_BACKGROUND_TAB
@@ -358,6 +364,62 @@ public class FeedStream implements Stream {
         @Override
         public void showSignInPrompt() {
             mActionDelegate.showSignInActivity();
+        }
+    }
+
+    // Tracks in-progress work, primarily for work done by xsurface.
+    class InProgressWorkTracker {
+        private int mNextWorkId;
+        private final HashSet<Integer> mActiveWork = new HashSet<>();
+        private final ObservableSupplierImpl<Boolean> mWorkPending = new ObservableSupplierImpl<>();
+
+        InProgressWorkTracker() {
+            // ObservableSupplierImpl holds null by default.
+            mWorkPending.set(false);
+        }
+
+        /**
+         * Record that background work has begun, returns a runnable to be called when work is
+         * complete.
+         */
+        Runnable addWork() {
+            int id = mNextWorkId++;
+            mActiveWork.add(id);
+            mWorkPending.set(true);
+            return () -> finishWork(id);
+        }
+
+        /** postTask to call runnable after all in-progress work is complete. */
+        void postTaskAfterWorkComplete(Runnable runnable) {
+            if (!mWorkPending.get()) {
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT, runnable);
+            } else {
+                new DoneWatcher(runnable);
+            }
+        }
+
+        /** Calls a runnable with postTask when mWorkPending is false. */
+        private class DoneWatcher implements Callback<Boolean> {
+            private final Runnable mDelegate;
+
+            DoneWatcher(Runnable runnable) {
+                mDelegate = runnable;
+                mWorkPending.addObserver(this);
+            }
+
+            @Override
+            public void onResult(Boolean workPending) {
+                if (!workPending) {
+                    PostTask.postTask(UiThreadTaskTraits.DEFAULT, mDelegate);
+                    mWorkPending.removeObserver(this);
+                };
+            }
+        }
+        private void finishWork(int workId) {
+            mActiveWork.remove(workId);
+            if (mActiveWork.isEmpty()) {
+                mWorkPending.set(false);
+            }
         }
     }
 
@@ -447,11 +509,11 @@ public class FeedStream implements Stream {
                     new SnackbarManager.SnackbarController() {
                         @Override
                         public void onAction(Object actionData) {
-                            delegateController.onAction();
+                            delegateController.onAction(mInProgressWorkTracker.addWork());
                         }
                         @Override
                         public void onDismissNoAction(Object actionData) {
-                            delegateController.onDismissNoAction();
+                            delegateController.onDismissNoAction(mInProgressWorkTracker.addWork());
                         }
                     };
 
@@ -572,6 +634,7 @@ public class FeedStream implements Stream {
     // Snackbar (and post-Follow dialog) controller used exclusively for handling in-feed
     // post-Follow and post-Unfollow UX.
     WebFeedSnackbarController mWebFeedSnackbarController;
+    InProgressWorkTracker mInProgressWorkTracker = new InProgressWorkTracker();
 
     // For loading more content.
     private int mAccumulatedDySinceLastLoadMore;
@@ -621,6 +684,9 @@ public class FeedStream implements Stream {
      * @param feedAutoplaySettingsDelegate The delegate to invoke autoplay settings.
      * @param actionDelegate Implements some Feed actions.
      * @param helpAndFeedbackLauncher A HelpAndFeedbackLauncher.
+     * @param feedContentFirstLoadWatcher a listener for events about feed loading.
+     * @param streamsMediator the mediator for multiple streams.
+     * @param singleWebFeedParameters the parameters needed to create a single web feed.
      */
     public FeedStream(Activity activity, SnackbarManager snackbarManager,
             BottomSheetController bottomSheetController, boolean isPlaceholderShown,
@@ -628,13 +694,16 @@ public class FeedStream implements Stream {
             int streamKind, FeedAutoplaySettingsDelegate feedAutoplaySettingsDelegate,
             FeedActionDelegate actionDelegate, HelpAndFeedbackLauncher helpAndFeedbackLauncher,
             FeedContentFirstLoadWatcher feedContentFirstLoadWatcher,
-            Stream.StreamsMediator streamsMediator, byte[] webFeedId) {
+            Stream.StreamsMediator streamsMediator,
+            SingleWebFeedParameters singleWebFeedParameters) {
         mActivity = activity;
         mStreamKind = streamKind;
         mReliabilityLoggingBridge = new FeedReliabilityLoggingBridge();
         if (streamKind == StreamKind.SINGLE_WEB_FEED) {
-            mNativeFeedStream = FeedStreamJni.get().initWebFeed(
-                    this, webFeedId, mReliabilityLoggingBridge.getNativePtr());
+            mNativeFeedStream =
+                    FeedStreamJni.get().initWebFeed(this, singleWebFeedParameters.getWebFeedId(),
+                            mReliabilityLoggingBridge.getNativePtr(),
+                            singleWebFeedParameters.getEntryPoint());
         } else {
             mNativeFeedStream = FeedStreamJni.get().init(
                     this, streamKind, mReliabilityLoggingBridge.getNativePtr());
@@ -776,13 +845,17 @@ public class FeedStream implements Stream {
         }
     }
 
-    @Override
-    public void unbind(boolean shouldPlaceSpacer) {
-        // Dismiss any snackbars. It's important we do this now so that xsurface can respond to
-        // these events before the content is removed.
+    // Dismiss any snackbars. Note that dismissal of snackbars sometimes triggers work in
+    // xsurface.
+    private void dismissSnackbars() {
         for (SnackbarManager.SnackbarController controller : mSnackbarControllers) {
             mSnackManager.dismissSnackbars(controller);
         }
+    }
+
+    @Override
+    public void unbind(boolean shouldPlaceSpacer) {
+        dismissSnackbars();
         mSnackbarControllers.clear();
         mWebFeedSnackbarController.dismissSnackbars();
 
@@ -834,7 +907,8 @@ public class FeedStream implements Stream {
 
     @Override
     public void triggerRefresh(Callback<Boolean> callback) {
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
+        dismissSnackbars();
+        mInProgressWorkTracker.postTaskAfterWorkComplete(() -> {
             if (mRenderer != null) {
                 mRenderer.onPullToRefreshStarted();
             }
@@ -1290,6 +1364,10 @@ public class FeedStream implements Stream {
         return mUnreadContentObserver;
     }
 
+    InProgressWorkTracker getInProgressWorkTrackerForTesting() {
+        return mInProgressWorkTracker;
+    }
+
     // Scroll state can't be restored until enough items are added to the recycler view adapter.
     // Attempts to restore scroll state every time new items are added to the adapter.
     class RestoreScrollObserver extends RecyclerView.AdapterDataObserver {
@@ -1379,8 +1457,8 @@ public class FeedStream implements Stream {
     public interface Natives {
         long init(FeedStream caller, @StreamKind int streamKind,
                 long nativeFeedReliabilityLoggingBridge);
-        long initWebFeed(
-                FeedStream caller, byte[] webFeedId, long nativeFeedReliabilityLoggingBridge);
+        long initWebFeed(FeedStream caller, byte[] webFeedId,
+                long nativeFeedReliabilityLoggingBridge, int entryPoint);
         void reportFeedViewed(long nativeFeedStream, FeedStream caller);
         void reportSliceViewed(long nativeFeedStream, FeedStream caller, String sliceId);
         void reportPageLoaded(long nativeFeedStream, FeedStream caller, boolean inNewTab);

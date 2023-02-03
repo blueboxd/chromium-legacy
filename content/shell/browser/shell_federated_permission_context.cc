@@ -22,6 +22,7 @@ ShellFederatedPermissionContext::GetApiPermissionStatus(
              : PermissionStatus::BLOCKED_VARIATIONS;
 }
 
+// FederatedIdentityApiPermissionContextDelegate
 void ShellFederatedPermissionContext::RecordDismissAndEmbargo(
     const url::Origin& relying_party_embedder) {}
 
@@ -31,6 +32,16 @@ void ShellFederatedPermissionContext::RemoveEmbargoAndResetCounts(
 bool ShellFederatedPermissionContext::ShouldCompleteRequestImmediately() const {
   return switches::IsRunWebTestsSwitchPresent();
 }
+
+// FederatedIdentityAutoSigninPermissionContextDelegate
+bool ShellFederatedPermissionContext::HasAutoSigninPermission() {
+  return auto_signin_permission_;
+}
+
+void ShellFederatedPermissionContext::AddIdpSigninStatusObserver(
+    IdpSigninStatusObserver* observer) {}
+void ShellFederatedPermissionContext::RemoveIdpSigninStatusObserver(
+    IdpSigninStatusObserver* observer) {}
 
 // FederatedIdentityActiveSessionPermissionContextDelegate
 bool ShellFederatedPermissionContext::HasActiveSession(

@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/invalidatable_interpolation.h"
+#include "third_party/blink/renderer/core/css/cascade_layer_map.h"
 #include "third_party/blink/renderer/core/css/container_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_default_style_sheets.h"
@@ -71,7 +72,6 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_stats.h"
 #include "third_party/blink/renderer/core/css/resolver/style_rule_usage_tracker.h"
-#include "third_party/blink/renderer/core/css/scoped_css_value.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_rule_import.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
@@ -431,6 +431,22 @@ static CSSPropertyValueSet* ForcedColorsUserAgentDeclarations() {
       (MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode)));
   if (decl->IsEmpty()) {
     decl->SetProperty(CSSPropertyID::kColor, *CSSInheritedValue::Create());
+  }
+  return decl;
+}
+
+// UA rule: * { top-layer: none !important }
+static CSSPropertyValueSet* UniversalTopLayerUserAgentDeclaration() {
+  DEFINE_STATIC_LOCAL(
+      Persistent<MutableCSSPropertyValueSet>, decl,
+      (MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode)));
+
+  DCHECK(RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled());
+
+  if (decl->IsEmpty()) {
+    decl->SetProperty(CSSPropertyID::kTopLayer,
+                      *CSSIdentifierValue::Create(CSSValueID::kNone),
+                      true /* important */);
   }
   return decl;
 }
@@ -1324,22 +1340,33 @@ void StyleResolver::ApplyBaseStyleNoCache(
   // rules that are relevant for the element exist in the stylesheet.
   GetDocument().GetStyleEngine().EnsureUAStyleForElement(*element);
 
-  if (!style_request.IsPseudoStyleRequest() && IsForcedColorsModeEnabled()) {
-    cascade.MutableMatchResult().AddMatchedProperties(
-        ForcedColorsUserAgentDeclarations());
-  }
+  if (!style_request.IsPseudoStyleRequest()) {
+    if (IsForcedColorsModeEnabled()) {
+      cascade.MutableMatchResult().AddMatchedProperties(
+          ForcedColorsUserAgentDeclarations());
+    }
 
-  // This adds a CSSInitialColorValue to the cascade for the document
-  // element. The CSSInitialColorValue will resolve to a color-scheme
-  // sensitive color in Color::ApplyValue. It is added at the start of the
-  // MatchResult such that subsequent declarations (even from the UA sheet)
-  // get a higher priority.
-  //
-  // TODO(crbug.com/1046753): Remove this when canvastext is supported.
-  if (!style_request.IsPseudoStyleRequest() &&
-      element == state.GetDocument().documentElement()) {
-    cascade.MutableMatchResult().AddMatchedProperties(
-        DocumentElementUserAgentDeclarations());
+    // UA rule: * { top-layer: none !important }
+    // Implemented here because DCHECKs ensures we don't add universal rules to
+    // the UA sheets. Note that this is a universal rule in any namespace.
+    // Adding this to the html.css would only do the override in the HTML
+    // namespace since the sheet has a default namespace.
+    if (RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled()) {
+      cascade.MutableMatchResult().AddMatchedProperties(
+          UniversalTopLayerUserAgentDeclaration());
+    }
+
+    // This adds a CSSInitialColorValue to the cascade for the document
+    // element. The CSSInitialColorValue will resolve to a color-scheme
+    // sensitive color in Color::ApplyValue. It is added at the start of the
+    // MatchResult such that subsequent declarations (even from the UA sheet)
+    // get a higher priority.
+    //
+    // TODO(crbug.com/1046753): Remove this when canvastext is supported.
+    if (element == state.GetDocument().documentElement()) {
+      cascade.MutableMatchResult().AddMatchedProperties(
+          DocumentElementUserAgentDeclarations());
+    }
   }
 
   ElementRuleCollector collector(state.ElementContext(), style_recalc_context,
@@ -1432,6 +1459,12 @@ void StyleResolver::ApplyBaseStyleNoCache(
       match_result.PseudoElementStyles());
 
   ApplyCallbackSelectors(state);
+  if (element->IsLink() && (element->HasTagName(html_names::kATag) ||
+                            element->HasTagName(html_names::kAreaTag))) {
+    // TODO(crbug.com/1371522): Revisit scoping root used after
+    // https://github.com/WICG/nav-speculation/issues/240 is resolved.
+    ApplyDocumentRulesSelectors(state, &GetDocument());
+  }
 
   // Cache our original display.
   state.StyleBuilder().SetOriginalDisplay(state.StyleBuilder().Display());
@@ -1510,7 +1543,7 @@ void StyleResolver::ApplyBaseStyle(
             inline_style->PropertyAt(property_idx);
         StyleBuilder::ApplyProperty(
             property.Name(), state,
-            ScopedCSSValue(property.Value(), &GetDocument()));
+            property.Value().EnsureScopedValue(&GetDocument()));
       }
     }
 
@@ -1616,17 +1649,14 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForPage(
                            nullptr /* StyleRecalcContext */,
                            StyleRequest(initial_style.get()));
 
+  const ComputedStyle* document_style = GetDocument().GetComputedStyle();
   ComputedStyleBuilder builder = CreateComputedStyleBuilder();
-  const ComputedStyle* root_element_style =
-      state.RootElementStyle() ? state.RootElementStyle()
-                               : GetDocument().GetComputedStyle();
-  DCHECK(root_element_style);
-  builder.InheritFrom(*root_element_style);
+  builder.InheritFrom(*document_style);
   state.SetStyle(builder.TakeStyle());
 
   STACK_UNINITIALIZED StyleCascade cascade(state);
 
-  PageRuleCollector collector(root_element_style, page_index, page_name,
+  PageRuleCollector collector(document_style, page_index, page_name,
                               cascade.MutableMatchResult());
 
   collector.MatchPageRules(
@@ -1907,7 +1937,7 @@ bool StyleResolver::ApplyAnimatedStyle(StyleResolverState& state,
   return apply;
 }
 
-StyleRuleKeyframes* StyleResolver::FindKeyframesRule(
+StyleResolver::FindKeyframesRuleResult StyleResolver::FindKeyframesRule(
     const Element* element,
     const Element* animating_element,
     const AtomicString& animation_name) {
@@ -1921,14 +1951,14 @@ StyleRuleKeyframes* StyleResolver::FindKeyframesRule(
   for (auto& resolver : resolvers) {
     if (StyleRuleKeyframes* keyframes_rule =
             resolver->KeyframeStylesForAnimation(animation_name)) {
-      return keyframes_rule;
+      return FindKeyframesRuleResult{keyframes_rule, &resolver->GetTreeScope()};
     }
   }
 
   if (StyleRuleKeyframes* keyframes_rule =
           GetDocument().GetStyleEngine().KeyframeStylesForAnimation(
               animation_name)) {
-    return keyframes_rule;
+    return FindKeyframesRuleResult{keyframes_rule, nullptr};
   }
 
   // Match UA keyframe rules after user and author rules.
@@ -1943,13 +1973,13 @@ StyleRuleKeyframes* StyleResolver::FindKeyframesRule(
   };
   ForEachUARulesForElement(*animating_element, nullptr, func);
   if (matched_keyframes_rule) {
-    return matched_keyframes_rule;
+    return FindKeyframesRuleResult{matched_keyframes_rule, nullptr};
   }
 
   for (auto& resolver : resolvers) {
     resolver->SetHasUnresolvedKeyframesRule();
   }
-  return nullptr;
+  return FindKeyframesRuleResult();
 }
 
 void StyleResolver::InvalidateMatchedPropertiesCache() {
@@ -2196,7 +2226,7 @@ FilterOperations StyleResolver::ComputeFilterOperations(
   state.SetStyle(ComputedStyle::Clone(*parent));
 
   StyleBuilder::ApplyProperty(GetCSSPropertyFilter(), state,
-                              ScopedCSSValue(filter_value, &GetDocument()));
+                              filter_value.EnsureScopedValue(&GetDocument()));
 
   state.LoadPendingResources();
 
@@ -2310,27 +2340,9 @@ void StyleResolver::CascadeAndApplyMatchedProperties(StyleResolverState& state,
 }
 
 void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
-  RuleSet* watched_selectors_rule_set =
-      GetDocument().GetStyleEngine().WatchedSelectorsRuleSet();
-  if (!watched_selectors_rule_set) {
-    return;
-  }
-
-  MatchResult match_result;
-  ElementRuleCollector collector(state.ElementContext(), StyleRecalcContext(),
-                                 selector_filter_, match_result,
-                                 state.StyleBuilder().InsideLink());
-  collector.SetMode(SelectorChecker::kCollectingStyleRules);
-
-  MatchRequest match_request(watched_selectors_rule_set);
-  collector.CollectMatchingRules(match_request);
-  collector.SortAndTransferMatchedRules();
-
-  if (tracker_) {
-    AddMatchedRulesToTracker(collector);
-  }
-
-  StyleRuleList* rules = collector.MatchedStyleRuleList();
+  StyleRuleList* rules = CollectMatchingRulesFromRuleSet(
+      state, GetDocument().GetStyleEngine().WatchedSelectorsRuleSet(),
+      /*scope=*/nullptr);
   if (!rules) {
     return;
   }
@@ -2339,11 +2351,47 @@ void StyleResolver::ApplyCallbackSelectors(StyleResolverState& state) {
   }
 }
 
+void StyleResolver::ApplyDocumentRulesSelectors(StyleResolverState& state,
+                                                ContainerNode* scope) {
+  StyleRuleList* rules = CollectMatchingRulesFromRuleSet(
+      state, GetDocument().GetStyleEngine().DocumentRulesSelectorsRuleSet(),
+      scope);
+  if (!rules) {
+    return;
+  }
+  for (auto rule : *rules) {
+    state.StyleBuilder().AddDocumentRulesSelector(rule);
+  }
+}
+
+StyleRuleList* StyleResolver::CollectMatchingRulesFromRuleSet(
+    StyleResolverState& state,
+    RuleSet* rule_set,
+    ContainerNode* scope) {
+  if (!rule_set) {
+    return nullptr;
+  }
+
+  MatchResult match_result;
+  ElementRuleCollector collector(state.ElementContext(), StyleRecalcContext(),
+                                 selector_filter_, match_result,
+                                 state.StyleBuilder().InsideLink());
+  collector.SetMode(SelectorChecker::kCollectingStyleRules);
+  MatchRequest match_request(rule_set, scope);
+  collector.CollectMatchingRules(match_request);
+  collector.SortAndTransferMatchedRules();
+
+  if (tracker_) {
+    AddMatchedRulesToTracker(collector);
+  }
+  return collector.MatchedStyleRuleList();
+}
+
 // Font properties are also handled by FontStyleResolver outside the main
 // thread. If you add/remove properties here, make sure they are also properly
 // handled by FontStyleResolver.
-void StyleResolver::ComputeFont(Element& element,
-                                ComputedStyle* style,
+Font StyleResolver::ComputeFont(Element& element,
+                                ComputedStyle& style,
                                 const CSSPropertyValueSet& property_set) {
   static const CSSProperty* properties[6] = {
       &GetCSSPropertyFontSize(),        &GetCSSPropertyFontFamily(),
@@ -2354,8 +2402,8 @@ void StyleResolver::ComputeFont(Element& element,
   // TODO(timloh): This is weird, the style is being used as its own parent
   StyleResolverState state(GetDocument(), element,
                            nullptr /* StyleRecalcContext */,
-                           StyleRequest(style));
-  state.SetStyle(style);
+                           StyleRequest(&style));
+  state.SetStyle(&style);
   if (const ComputedStyle* parent_style = element.GetComputedStyle()) {
     state.SetParentStyle(parent_style);
   }
@@ -2363,14 +2411,15 @@ void StyleResolver::ComputeFont(Element& element,
   for (const CSSProperty* property : properties) {
     // TODO(futhark): If we start supporting fonts on ShadowRoot.fonts in
     // addition to Document.fonts, we need to pass the correct TreeScope instead
-    // of GetDocument() in the ScopedCSSValue below.
+    // of GetDocument() in the EnsureScopedValue below.
     StyleBuilder::ApplyProperty(
         *property, state,
-        ScopedCSSValue(
-            *property_set.GetPropertyCSSValue(property->PropertyID()),
-            &GetDocument()));
+        property_set.GetPropertyCSSValue(property->PropertyID())
+            ->EnsureScopedValue(&GetDocument()));
   }
   state.UpdateFont();
+  scoped_refptr<const ComputedStyle> font_style = state.TakeStyle();
+  return font_style->GetFont();
 }
 
 void StyleResolver::UpdateMediaType() {

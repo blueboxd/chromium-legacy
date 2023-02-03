@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_options.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/device_reauth/mock_biometric_authenticator.h"
 #include "components/password_manager/core/browser/mock_password_feature_manager.h"
@@ -236,7 +237,7 @@ class MockAutofillClient : public autofill::AutofillClient {
               TryToShowFastCheckout,
               (const autofill::FormData&,
                const autofill::FormFieldData&,
-               autofill::AutofillDriver*),
+               base::WeakPtr<autofill::AutofillManager>),
               (override));
   MOCK_METHOD(void, HideFastCheckout, (bool), (override));
   MOCK_METHOD(bool, IsShowingFastCheckoutUI, (), (override));
@@ -283,7 +284,6 @@ class MockAutofillClient : public autofill::AutofillClient {
               (const std::u16string&, const std::u16string&),
               (override));
   MOCK_METHOD(bool, IsContextSecure, (), (const, override));
-  MOCK_METHOD(bool, ShouldShowSigninPromo, (), (override));
   MOCK_METHOD(void, ExecuteCommand, (int), (override));
   MOCK_METHOD(autofill::LogManager*, GetLogManager, (), (const, override));
   MOCK_METHOD(const autofill::AutofillAblationStudy&,

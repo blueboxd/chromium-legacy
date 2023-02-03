@@ -6,15 +6,20 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "components/omnibox/browser/autocomplete_input.h"
+#include "components/omnibox/browser/fake_autocomplete_provider_client.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
+#include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/omnibox_event.pb.h"
 
 using CacheEntry = ZeroSuggestCacheService::CacheEntry;
 
@@ -76,8 +81,7 @@ TEST_F(ZeroSuggestCacheServiceTest, CacheStartsEmpty) {
 
 TEST_F(ZeroSuggestCacheServiceTest, StoreResponsePopulatesCache) {
   ZeroSuggestCacheService cache_svc(GetPrefs(), 1);
-  cache_svc.StoreZeroSuggestResponse("https://www.google.com",
-                                     CacheEntry("foo"));
+  cache_svc.StoreZeroSuggestResponse("https://www.google.com", "foo");
   EXPECT_FALSE(cache_svc.IsCacheEmpty());
 }
 
@@ -89,20 +93,20 @@ TEST_F(ZeroSuggestCacheServiceTest, StoreResponseRecordsMemoryUsageHistogram) {
   const std::string response = "foo";
   const std::string histogram = "Omnibox.ZeroSuggestProvider.CacheMemoryUsage";
 
-  cache_svc.StoreZeroSuggestResponse(page_url, CacheEntry(response));
+  cache_svc.StoreZeroSuggestResponse(page_url, response);
   EXPECT_EQ(cache_svc.ReadZeroSuggestResponse(page_url).response_json,
             response);
   histogram_tester.ExpectTotalCount(histogram, 1);
 
-  cache_svc.StoreZeroSuggestResponse(page_url, CacheEntry(""));
+  cache_svc.StoreZeroSuggestResponse(page_url, "");
   EXPECT_EQ(cache_svc.ReadZeroSuggestResponse(page_url).response_json, "");
   histogram_tester.ExpectTotalCount(histogram, 2);
 
-  cache_svc.StoreZeroSuggestResponse("", CacheEntry(response));
+  cache_svc.StoreZeroSuggestResponse("", response);
   EXPECT_EQ(cache_svc.ReadZeroSuggestResponse("").response_json, response);
   histogram_tester.ExpectTotalCount(histogram, 3);
 
-  cache_svc.StoreZeroSuggestResponse("", CacheEntry(""));
+  cache_svc.StoreZeroSuggestResponse("", "");
   EXPECT_EQ(cache_svc.ReadZeroSuggestResponse("").response_json, "");
   histogram_tester.ExpectTotalCount(histogram, 4);
 }
@@ -114,11 +118,11 @@ TEST_F(ZeroSuggestCacheServiceTest, StoreResponseUpdatesExistingEntry) {
   const std::string old_response = "foo";
   const std::string new_response = "bar";
 
-  cache_svc.StoreZeroSuggestResponse(page_url, CacheEntry(old_response));
+  cache_svc.StoreZeroSuggestResponse(page_url, old_response);
   EXPECT_EQ(cache_svc.ReadZeroSuggestResponse(page_url).response_json,
             old_response);
 
-  cache_svc.StoreZeroSuggestResponse(page_url, CacheEntry(new_response));
+  cache_svc.StoreZeroSuggestResponse(page_url, new_response);
   EXPECT_EQ(cache_svc.ReadZeroSuggestResponse(page_url).response_json,
             new_response);
 }
@@ -143,21 +147,21 @@ TEST_F(ZeroSuggestCacheServiceTest, StoreResponseNotifiesObservers) {
   EXPECT_EQ(other_goog_observer.GetData().response_json, "");
   EXPECT_EQ(fb_observer.GetData().response_json, "");
 
-  cache_svc.StoreZeroSuggestResponse(goog_url, CacheEntry("foo"));
+  cache_svc.StoreZeroSuggestResponse(goog_url, "foo");
 
   // Only the relevant observers should have been notified.
   EXPECT_EQ(goog_observer.GetData().response_json, "foo");
   EXPECT_EQ(other_goog_observer.GetData().response_json, "foo");
   EXPECT_EQ(fb_observer.GetData().response_json, "");
 
-  cache_svc.StoreZeroSuggestResponse(fb_url, CacheEntry("bar"));
+  cache_svc.StoreZeroSuggestResponse(fb_url, "bar");
 
   // Only the relevant observer should have been notified.
   EXPECT_EQ(goog_observer.GetData().response_json, "foo");
   EXPECT_EQ(other_goog_observer.GetData().response_json, "foo");
   EXPECT_EQ(fb_observer.GetData().response_json, "bar");
 
-  cache_svc.StoreZeroSuggestResponse(goog_url, CacheEntry("eggs"));
+  cache_svc.StoreZeroSuggestResponse(goog_url, "eggs");
 
   // The relevant observers should have received an updated value.
   EXPECT_EQ(goog_observer.GetData().response_json, "eggs");
@@ -165,7 +169,7 @@ TEST_F(ZeroSuggestCacheServiceTest, StoreResponseNotifiesObservers) {
   EXPECT_EQ(fb_observer.GetData().response_json, "bar");
 
   cache_svc.RemoveObserver(&fb_observer);
-  cache_svc.StoreZeroSuggestResponse(fb_url, CacheEntry("spam"));
+  cache_svc.StoreZeroSuggestResponse(fb_url, "spam");
 
   // The relevant observer should NOT have been notified (since it was removed
   // prior to updating the cache).
@@ -181,8 +185,8 @@ TEST_F(ZeroSuggestCacheServiceTest, LeastRecentItemIsEvicted) {
   TestCacheEntry entry2 = {"https://www.google.com", "bar"};
   TestCacheEntry entry3 = {"https://www.example.com", "eggs"};
 
-  cache_svc.StoreZeroSuggestResponse(entry1.url, CacheEntry(entry1.response));
-  cache_svc.StoreZeroSuggestResponse(entry2.url, CacheEntry(entry2.response));
+  cache_svc.StoreZeroSuggestResponse(entry1.url, entry1.response);
+  cache_svc.StoreZeroSuggestResponse(entry2.url, entry2.response);
 
   // Fill up the zero suggest cache to max capacity.
   EXPECT_EQ(cache_svc.ReadZeroSuggestResponse(entry1.url).response_json,
@@ -190,7 +194,7 @@ TEST_F(ZeroSuggestCacheServiceTest, LeastRecentItemIsEvicted) {
   EXPECT_EQ(cache_svc.ReadZeroSuggestResponse(entry2.url).response_json,
             entry2.response);
 
-  cache_svc.StoreZeroSuggestResponse(entry3.url, CacheEntry(entry3.response));
+  cache_svc.StoreZeroSuggestResponse(entry3.url, entry3.response);
 
   // "Least recently used" entry should now have been evicted from the cache.
   EXPECT_EQ(cache_svc.ReadZeroSuggestResponse(entry1.url).response_json, "");
@@ -205,7 +209,7 @@ TEST_F(ZeroSuggestCacheServiceTest, ReadResponseWillRetrieveMatchingData) {
 
   const std::string page_url = "https://www.google.com";
   const std::string response = "foo";
-  cache_svc.StoreZeroSuggestResponse(page_url, CacheEntry(response));
+  cache_svc.StoreZeroSuggestResponse(page_url, response);
 
   EXPECT_EQ(cache_svc.ReadZeroSuggestResponse(page_url).response_json,
             response);
@@ -219,15 +223,15 @@ TEST_F(ZeroSuggestCacheServiceTest, ReadResponseUpdatesRecency) {
   TestCacheEntry entry3 = {"https://www.example.com", "eggs"};
 
   // Fill up the zero suggest cache to max capacity.
-  cache_svc.StoreZeroSuggestResponse(entry1.url, CacheEntry(entry1.response));
-  cache_svc.StoreZeroSuggestResponse(entry2.url, CacheEntry(entry2.response));
+  cache_svc.StoreZeroSuggestResponse(entry1.url, entry1.response);
+  cache_svc.StoreZeroSuggestResponse(entry2.url, entry2.response);
 
   // Read the oldest entry in the cache, thereby marking the more recent entry
   // as "least recently used".
   EXPECT_EQ(cache_svc.ReadZeroSuggestResponse(entry1.url).response_json,
             entry1.response);
 
-  cache_svc.StoreZeroSuggestResponse(entry3.url, CacheEntry(entry3.response));
+  cache_svc.StoreZeroSuggestResponse(entry3.url, entry3.response);
 
   // Since the second request was the "least recently used", it should have been
   // evicted.
@@ -245,12 +249,9 @@ TEST_F(ZeroSuggestCacheServiceTest, ClearCacheResultsInEmptyCache) {
 
   ZeroSuggestCacheService cache_svc(GetPrefs(), 3);
 
-  cache_svc.StoreZeroSuggestResponse(ntp_entry.url,
-                                     CacheEntry(ntp_entry.response));
-  cache_svc.StoreZeroSuggestResponse(srp_entry.url,
-                                     CacheEntry(srp_entry.response));
-  cache_svc.StoreZeroSuggestResponse(web_entry.url,
-                                     CacheEntry(web_entry.response));
+  cache_svc.StoreZeroSuggestResponse(ntp_entry.url, ntp_entry.response);
+  cache_svc.StoreZeroSuggestResponse(srp_entry.url, srp_entry.response);
+  cache_svc.StoreZeroSuggestResponse(web_entry.url, web_entry.response);
 
   EXPECT_FALSE(
       cache_svc.ReadZeroSuggestResponse(ntp_entry.url).response_json.empty());
@@ -301,12 +302,9 @@ TEST_F(ZeroSuggestCacheServiceTest, CacheDumpsToPrefsOnShutdown) {
   PrefService* prefs = GetPrefs();
   {
     ZeroSuggestCacheService cache_svc(prefs, 3);
-    cache_svc.StoreZeroSuggestResponse(ntp_entry.url,
-                                       CacheEntry(ntp_entry.response));
-    cache_svc.StoreZeroSuggestResponse(srp_entry.url,
-                                       CacheEntry(srp_entry.response));
-    cache_svc.StoreZeroSuggestResponse(web_entry.url,
-                                       CacheEntry(web_entry.response));
+    cache_svc.StoreZeroSuggestResponse(ntp_entry.url, ntp_entry.response);
+    cache_svc.StoreZeroSuggestResponse(srp_entry.url, srp_entry.response);
+    cache_svc.StoreZeroSuggestResponse(web_entry.url, web_entry.response);
   }
 
   EXPECT_EQ(omnibox::GetUserPreferenceForZeroSuggestCachedResponse(
@@ -325,9 +323,88 @@ TEST_F(ZeroSuggestCacheServiceTest, CacheWorksGivenNullPrefService) {
 
   PrefService* prefs = nullptr;
   ZeroSuggestCacheService cache_svc(prefs, 1);
-  cache_svc.StoreZeroSuggestResponse(ntp_entry.url,
-                                     CacheEntry(ntp_entry.response));
+  cache_svc.StoreZeroSuggestResponse(ntp_entry.url, ntp_entry.response);
 
   EXPECT_EQ(cache_svc.ReadZeroSuggestResponse(ntp_entry.url).response_json,
             ntp_entry.response);
+}
+
+TEST_F(ZeroSuggestCacheServiceTest, ClearCacheResultsInEmptyPersistencePrefs) {
+  PrefService* prefs = GetPrefs();
+
+  TestCacheEntry ntp_entry = {"", "foo"};
+  TestCacheEntry srp_entry = {"https://www.google.com/search?q=bar", "bar"};
+  TestCacheEntry web_entry = {"https://www.example.com", "eggs"};
+
+  // Store ZPS response on NTP in user prefs.
+  prefs->SetString(omnibox::kZeroSuggestCachedResults, ntp_entry.response);
+
+  base::Value::Dict prefs_dict;
+  prefs_dict.Set(srp_entry.url, srp_entry.response);
+  prefs_dict.Set(web_entry.url, web_entry.response);
+
+  // Store ZPS responses on SRP/Web in user prefs.
+  prefs->SetDict(omnibox::kZeroSuggestCachedResultsWithURL,
+                 std::move(prefs_dict));
+
+  EXPECT_FALSE(omnibox::GetUserPreferenceForZeroSuggestCachedResponse(
+                   prefs, ntp_entry.url)
+                   .empty());
+  EXPECT_FALSE(omnibox::GetUserPreferenceForZeroSuggestCachedResponse(
+                   prefs, srp_entry.url)
+                   .empty());
+  EXPECT_FALSE(omnibox::GetUserPreferenceForZeroSuggestCachedResponse(
+                   prefs, web_entry.url)
+                   .empty());
+
+  {
+    ZeroSuggestCacheService cache_svc(GetPrefs(), 3);
+    EXPECT_FALSE(cache_svc.IsCacheEmpty());
+
+    cache_svc.ClearCache();
+    EXPECT_TRUE(cache_svc.IsCacheEmpty());
+  }
+
+  EXPECT_TRUE(omnibox::GetUserPreferenceForZeroSuggestCachedResponse(
+                  prefs, ntp_entry.url)
+                  .empty());
+  EXPECT_TRUE(omnibox::GetUserPreferenceForZeroSuggestCachedResponse(
+                  prefs, srp_entry.url)
+                  .empty());
+  EXPECT_TRUE(omnibox::GetUserPreferenceForZeroSuggestCachedResponse(
+                  prefs, web_entry.url)
+                  .empty());
+}
+
+TEST_F(ZeroSuggestCacheServiceTest,
+       GetSuggestResultsReturnsEmptyListForInvalidResponseJson) {
+  ZeroSuggestCacheService cache_svc(nullptr, 1);
+
+  AutocompleteInput ac_input(u"", metrics::OmniboxEventProto::OTHER,
+                             TestSchemeClassifier());
+  FakeAutocompleteProviderClient client;
+
+  const std::vector<TestCacheEntry> invalid_json_responses = {
+      // Malformed JSON
+      {"https://www.example.com", ""},
+      // Malformed JSON
+      {"https://www.example.com", "({ malformed })"},
+      // Malformed JSON
+      {"https://www.example.com", "][]["},
+      // Invalid JSON (according to parsing logic in
+      // `SearchSuggestionParser::ParseSuggestResults()`)
+      {"https://www.example.com", "[]"},
+      // Invalid JSON
+      {"https://www.example.com", "[123]"},
+      // Invalid JSON
+      {"https://www.example.com", "[[]]"},
+      // Invalid JSON
+      {"https://www.example.com", "['a': 1]"},
+  };
+
+  for (TestCacheEntry entry : invalid_json_responses) {
+    cache_svc.StoreZeroSuggestResponse(entry.url, entry.response);
+    CacheEntry cached_entry = cache_svc.ReadZeroSuggestResponse(entry.url);
+    EXPECT_TRUE(cached_entry.GetSuggestResults(ac_input, client).empty());
+  }
 }

@@ -24,6 +24,7 @@ BASE_DECLARE_FEATURE(kEnableArcNearbyShareFuseBox);
 BASE_DECLARE_FEATURE(kEnableArcVmDataMigration);
 BASE_DECLARE_FEATURE(kEnableLazyWebViewInit);
 BASE_DECLARE_FEATURE(kEnablePerVmCoreScheduling);
+BASE_DECLARE_FEATURE(kEnableTokenBootstrapEndpoint);
 BASE_DECLARE_FEATURE(kEnableTTSCaching);
 BASE_DECLARE_FEATURE(kEnableTTSCacheSetup);
 BASE_DECLARE_FEATURE(kEnableUnifiedAudioFocusFeature);
@@ -66,6 +67,7 @@ extern const base::FeatureParam<int> kVmMemorySizeShiftMiB;
 extern const base::FeatureParam<int> kVmMemorySizeMaxMiB;
 BASE_DECLARE_FEATURE(kVmBroadcastPreNotifyANR);
 BASE_DECLARE_FEATURE(kVmGmsCoreLowMemoryKillerProtection);
+BASE_DECLARE_FEATURE(kVmmSwapKeyboardShortcut);
 
 }  // namespace arc
 

@@ -13,6 +13,7 @@
 #import "components/image_fetcher/core/image_data_fetcher.h"
 #import "components/payments/core/currency_formatter.h"
 #import "ios/chrome/browser/push_notification/push_notification_util.h"
+#import "ios/chrome/browser/ui/commands/price_notifications_commands.h"
 #import "ios/chrome/browser/ui/price_notifications/cells/price_notifications_table_view_item.h"
 #import "ios/chrome/browser/ui/price_notifications/price_notifications_consumer.h"
 #import "ios/web/public/web_state.h"
@@ -122,6 +123,14 @@ using PriceNotificationItems =
       }));
 }
 
+- (void)navigateToWebpageForItem:(PriceNotificationsTableViewItem*)item {
+  DCHECK(item.tracking);
+  self.webState->OpenURL(web::WebState::OpenURLParams(
+      item.entryURL, web::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+      ui::PAGE_TRANSITION_GENERATED, /*is_renderer_initiated=*/false));
+  [self.handler hidePriceNotifications];
+}
+
 #pragma mark - Private
 
 // This function fetches the product data for the item on the currently visible
@@ -205,13 +214,14 @@ using PriceNotificationItems =
   int64_t amountMicro = forCurrentPrice
                             ? productInfo->amount_micros
                             : productInfo->previous_amount_micros.value();
-  float price = amountMicro / commerce::kToMicroCurrency;
-  std::unique_ptr<payments::CurrencyFormatter> formatter =
-      std::make_unique<payments::CurrencyFormatter>(productInfo->currency_code,
-                                                    productInfo->country_code);
-  formatter->SetMaxFractionalDigits(2);
+  float price = static_cast<float>(amountMicro) /
+                static_cast<float>(commerce::kToMicroCurrency);
+  payments::CurrencyFormatter formatter(productInfo->currency_code,
+                                        productInfo->country_code);
+
+  formatter.SetMaxFractionalDigits(2);
   return base::SysUTF16ToNSString(
-      formatter->Format(base::NumberToString(price)));
+      formatter.Format(base::NumberToString(price)));
 }
 
 // This function handles the response from the user attempting to subscribe to

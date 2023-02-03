@@ -351,18 +351,12 @@ SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
   // first.
   output_device_.reset();
 
-  // Destroy solid color shared images created by this class.
-  for (gpu::Mailbox& mb : solid_color_images_) {
-    shared_image_factory_->DestroySharedImage(mb);
-  }
-
-  // Destroy shared images created by this class.
-  for (auto& entry : skia_representations_) {
-    shared_image_factory_->DestroySharedImage(entry.first);
-  }
   // Clear any open accesses before destroying the skia representations.
   overlay_pass_accesses_.clear();
   skia_representations_.clear();
+
+  // Destroy shared images created by this class.
+  shared_image_factory_->DestroyAllSharedImages(has_context);
 
   // Since SharedImageFactory also has a reference to ImplOnGpu's member
   // SharedContextState, we need to explicitly invoke the factory's destructor
@@ -1760,7 +1754,12 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
             shared_gpu_deps_->memory_tracker(),
             GetDidSwapBuffersCompleteCallback());
 #else   // !BUILDFLAG(IS_WIN)
-        NOTIMPLEMENTED();
+        DCHECK(presenter_->SupportsDCLayers());
+        output_device_ = std::make_unique<SkiaOutputDeviceDCompPresenter>(
+            shared_image_factory_.get(),
+            shared_image_representation_factory_.get(), context_state_.get(),
+            presenter_, feature_info_, shared_gpu_deps_->memory_tracker(),
+            GetDidSwapBuffersCompleteCallback());
 #endif  // BUILDFLAG(IS_WIN)
       } else {
         if (dependency_->NeedsSupportForExternalStencil()) {
@@ -1772,7 +1771,6 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
 #if BUILDFLAG(IS_WIN)
           if (gl_surface_->SupportsDCLayers()) {
             output_device_ = std::make_unique<SkiaOutputDeviceDCompGLSurface>(
-                dependency_->GetMailboxManager(),
                 shared_image_representation_factory_.get(),
                 context_state_.get(), gl_surface_, feature_info_,
                 shared_gpu_deps_->memory_tracker(),

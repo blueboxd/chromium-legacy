@@ -23,7 +23,10 @@ HotspotController::HotspotController() = default;
 
 HotspotController::~HotspotController() = default;
 
-void HotspotController::Init(HotspotStateHandler* hotspot_state_handler) {
+void HotspotController::Init(
+    HotspotCapabilitiesProvider* hotspot_capabilities_provider,
+    HotspotStateHandler* hotspot_state_handler) {
+  hotspot_capabilities_provider_ = hotspot_capabilities_provider;
   hotspot_state_handler_ = hotspot_state_handler;
 }
 
@@ -62,21 +65,28 @@ void HotspotController::ProcessRequestQueue() {
 }
 
 void HotspotController::CheckTetheringReadiness() {
-  if (hotspot_state_handler_->GetHotspotCapabilities().allow_status !=
+  if (hotspot_capabilities_provider_->GetHotspotCapabilities().allow_status !=
       hotspot_config::mojom::HotspotAllowStatus::kAllowed) {
     CompleteCurrentRequest(
         hotspot_config::mojom::HotspotControlResult::kNotAllowed);
     return;
   }
 
-  hotspot_state_handler_->CheckTetheringReadiness(
+  hotspot_capabilities_provider_->CheckTetheringReadiness(
       base::BindOnce(&HotspotController::OnCheckTetheringReadiness,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void HotspotController::OnCheckTetheringReadiness(
-    HotspotStateHandler::CheckTetheringReadinessResult result) {
-  if (result != HotspotStateHandler::CheckTetheringReadinessResult::kReady) {
+    HotspotCapabilitiesProvider::CheckTetheringReadinessResult result) {
+  if (result == HotspotCapabilitiesProvider::CheckTetheringReadinessResult::
+                    kUpstreamNetworkNotAvailable) {
+    CompleteCurrentRequest(
+        hotspot_config::mojom::HotspotControlResult::kUpstreamNotAvailable);
+    return;
+  }
+  if (result !=
+      HotspotCapabilitiesProvider::CheckTetheringReadinessResult::kReady) {
     CompleteCurrentRequest(
         hotspot_config::mojom::HotspotControlResult::kReadinessCheckFailed);
     return;
@@ -113,6 +123,18 @@ void HotspotController::CompleteCurrentRequest(
   current_request_.reset();
 
   ProcessRequestQueue();
+}
+
+void HotspotController::SetPolicyAllowHotspot(bool allow_hotspot) {
+  if (allow_hotspot_ == allow_hotspot) {
+    return;
+  }
+
+  hotspot_capabilities_provider_->SetPolicyAllowed(allow_hotspot);
+  if (!allow_hotspot && hotspot_state_handler_->GetHotspotState() !=
+                            hotspot_config::mojom::HotspotState::kDisabled) {
+    DisableHotspot(base::DoNothing());
+  }
 }
 
 }  //  namespace ash

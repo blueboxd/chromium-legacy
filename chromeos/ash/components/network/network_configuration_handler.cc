@@ -267,7 +267,7 @@ void NetworkConfigurationHandler::GetShillProperties(
        network_state->IsNonShillCellularNetwork())) {
     // This is a Tether network or a Cellular network with no Service.
     // Provide properties from NetworkState.
-    base::Value dictionary(base::Value::Type::DICTIONARY);
+    base::Value dictionary(base::Value::Type::DICT);
     network_state->GetStateProperties(&dictionary);
     std::move(callback).Run(service_path, std::move(dictionary));
     return;
@@ -357,7 +357,7 @@ void NetworkConfigurationHandler::CreateShillConfiguration(
 
   NET_LOG(USER) << "CreateShillConfiguration: " << type << ": "
                 << shill_property_util::GetNetworkIdFromProperties(
-                       shill_properties);
+                       shill_properties.GetDict());
 
   std::string profile_path =
       GetString(properties_to_set, shill::kProfileProperty);

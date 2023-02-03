@@ -113,12 +113,11 @@ if (optimize_webui) {
     excludes = [
                  "chrome://resources/cr_components/color_change_listener/color_change_listener.mojom-webui.js",
                  "chrome://resources/cr_components/customize_themes/customize_themes.mojom-webui.js",
+                 "chrome://resources/cr_components/history_clusters/history_clusters.mojom-webui.js",
                  "chrome://resources/cr_components/most_visited/most_visited.mojom-webui.js",
                  "chrome://resources/cr_components/omnibox/omnibox.mojom-webui.js",
                  "chrome://resources/js/browser_command/browser_command.mojom-webui.js",
-                 "chrome://resources/js/cr.js",
                  "chrome://resources/js/metrics_reporter/metrics_reporter.mojom-webui.js",
-                 "chrome://resources/mojo/mojo/public/js/bindings.js",
                  "chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-webui.js",
                  "chrome://resources/mojo/mojo/public/mojom/base/text_direction.mojom-webui.js",
                  "chrome://resources/mojo/mojo/public/mojom/base/time.mojom-webui.js",
@@ -141,13 +140,16 @@ ts_library_sourcemaps("build_ts") {
 
   deps = [
     "//third_party/polymer/v3_0:library",
-    "//ui/webui/resources:library",
     "//ui/webui/resources/cr_components/color_change_listener:build_ts",
     "//ui/webui/resources/cr_components/customize_themes:build_ts",
+    "//ui/webui/resources/cr_components/history_clusters:build_ts",
     "//ui/webui/resources/cr_components/most_visited:build_ts",
     "//ui/webui/resources/cr_components/omnibox:build_ts",
+    "//ui/webui/resources/cr_elements:build_ts",
+    "//ui/webui/resources/js:build_ts",
     "//ui/webui/resources/js/browser_command:build_ts",
     "//ui/webui/resources/js/metrics_reporter:build_ts",
+    "//ui/webui/resources/mojo:library",
   ]
 
   definitions = [

@@ -4,12 +4,16 @@
 
 #include "chrome/browser/android/compositor/layer/tab_handle_layer.h"
 
+#include <vector>
+
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/field_trial_params.h"
-#include "cc/layers/layer.h"
-#include "cc/layers/solid_color_layer.h"
 #include "cc/resources/scoped_ui_resource.h"
+#include "cc/slim/filter.h"
+#include "cc/slim/layer.h"
+#include "cc/slim/nine_patch_layer.h"
+#include "cc/slim/solid_color_layer.h"
 #include "chrome/browser/android/compositor/decoration_title.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
@@ -44,7 +48,8 @@ void TabHandleLayer::SetProperties(
     float bottom_offset_y,
     float close_button_padding,
     float close_button_alpha,
-    float divider_alpha,
+    bool is_start_divider_visible,
+    bool is_end_divider_visible,
     bool is_loading,
     float spinner_rotation,
     float brightness,
@@ -64,12 +69,11 @@ void TabHandleLayer::SetProperties(
     if (is_tab_strip_redesign_enabled) {
       tab_->SetOpacity(brightness_);
     } else {
-      cc::FilterOperations filters;
+      std::vector<cc::slim::Filter> filters;
       if (brightness_ != 1.0f) {
-        filters.Append(
-            cc::FilterOperation::CreateBrightnessFilter(brightness_));
+        filters.push_back(cc::slim::Filter::CreateBrightness(brightness_));
       }
-      layer_->SetFilters(filters);
+      layer_->SetFilters(std::move(filters));
       tab_outline_->SetIsDrawable(true);
     }
   }
@@ -165,27 +169,47 @@ void TabHandleLayer::SetProperties(
     }
   }
 
-  if (divider_alpha == 0.f) {
-    divider_->SetIsDrawable(false);
+  int divider_y;
+  float divider_y_offset_mid =
+      (tab_handle_resource->padding().y() + height) / 2 -
+      start_divider_->bounds().height() / 2;
+  if (is_tab_strip_redesign_enabled) {
+    divider_y = content_offset_y;
   } else {
-    divider_->SetIsDrawable(true);
-    divider_->SetUIResourceId(divider_resource->ui_resource()->id());
-    divider_->SetBounds(divider_resource->size());
-    int divider_y = (tab_handle_resource->padding().y() + height) / 2 -
-                    divider_->bounds().height() / 2;
+    divider_y = divider_y_offset_mid;
+  }
+
+  if (!is_start_divider_visible) {
+    start_divider_->SetIsDrawable(false);
+  } else {
+    start_divider_->SetIsDrawable(true);
+    start_divider_->SetUIResourceId(divider_resource->ui_resource()->id());
+    start_divider_->SetBounds(divider_resource->size());
     int divider_x = is_rtl ? width - divider_offset_x : divider_offset_x;
-    divider_->SetPosition(gfx::PointF(divider_x, divider_y));
-    divider_->SetOpacity(divider_alpha);
+    start_divider_->SetPosition(gfx::PointF(divider_x, divider_y));
+    start_divider_->SetOpacity(1.0f);
+  }
+
+  if (!is_end_divider_visible) {
+    end_divider_->SetIsDrawable(false);
+  } else {
+    end_divider_->SetIsDrawable(true);
+    end_divider_->SetUIResourceId(divider_resource->ui_resource()->id());
+    end_divider_->SetBounds(divider_resource->size());
+    int divider_x = is_rtl ? divider_offset_x : width - divider_offset_x;
+    end_divider_->SetPosition(gfx::PointF(divider_x, divider_y));
+    end_divider_->SetOpacity(1.0f);
   }
 
   if (title_layer) {
     int title_y;
+    float title_y_offset_mid = tab_handle_resource->padding().y() / 2 +
+                               height / 2 - title_layer->size().height() / 2;
     if (is_tab_strip_redesign_enabled) {
-      // 8dp top padding for folio and 10 dp for detached.
-      title_y = content_offset_y;
+      // 8dp top padding for folio and 10 dp for detached at default text size.
+      title_y = std::min(content_offset_y, title_y_offset_mid);
     } else {
-      title_y = tab_handle_resource->padding().y() / 2 + height / 2 -
-                title_layer->size().height() / 2;
+      title_y = title_y_offset_mid;
     }
 
     int title_x = is_rtl ? padding_left + close_width : padding_left;
@@ -205,18 +229,19 @@ void TabHandleLayer::SetProperties(
       title_layer->SetIsLoading(false);
     }
   }
-
   if (close_button_alpha == 0.f) {
     close_button_->SetIsDrawable(false);
   } else {
     close_button_->SetIsDrawable(true);
     const float close_max_width = close_button_->bounds().width();
     int close_y;
+    float close_y_offset_mid =
+        (tab_handle_resource->padding().y() + height) / 2 -
+        close_button_->bounds().height() / 2;
     if (is_tab_strip_redesign_enabled) {
       close_y = content_offset_y;
     } else {
-      close_y = (tab_handle_resource->padding().y() + height) / 2 -
-                close_button_->bounds().height() / 2;
+      close_y = close_y_offset_mid;
     }
     int close_x =
         is_rtl ? padding_left - close_max_width + close_width -
@@ -232,18 +257,19 @@ void TabHandleLayer::SetProperties(
   }
 }
 
-scoped_refptr<cc::Layer> TabHandleLayer::layer() {
+scoped_refptr<cc::slim::Layer> TabHandleLayer::layer() {
   return layer_;
 }
 
 TabHandleLayer::TabHandleLayer(LayerTitleCache* layer_title_cache)
     : layer_title_cache_(layer_title_cache),
-      layer_(cc::Layer::Create()),
-      tab_(cc::Layer::Create()),
-      close_button_(cc::UIResourceLayer::Create()),
-      divider_(cc::UIResourceLayer::Create()),
-      decoration_tab_(cc::NinePatchLayer::Create()),
-      tab_outline_(cc::NinePatchLayer::Create()),
+      layer_(cc::slim::Layer::Create()),
+      tab_(cc::slim::Layer::Create()),
+      close_button_(cc::slim::UIResourceLayer::Create()),
+      start_divider_(cc::slim::UIResourceLayer::Create()),
+      end_divider_(cc::slim::UIResourceLayer::Create()),
+      decoration_tab_(cc::slim::NinePatchLayer::Create()),
+      tab_outline_(cc::slim::NinePatchLayer::Create()),
       brightness_(1.0f),
       foreground_(false) {
   decoration_tab_->SetIsDrawable(true);
@@ -255,7 +281,8 @@ TabHandleLayer::TabHandleLayer(LayerTitleCache* layer_title_cache)
   // The divider is added as a separate child so its opacity can be controlled
   // separately from the other tab items.
   layer_->AddChild(tab_);
-  layer_->AddChild(divider_);
+  layer_->AddChild(start_divider_);
+  layer_->AddChild(end_divider_);
 }
 
 TabHandleLayer::~TabHandleLayer() {

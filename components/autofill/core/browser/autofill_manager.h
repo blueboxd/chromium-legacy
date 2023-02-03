@@ -65,6 +65,8 @@ class AutofillManager
   // without a corresponding OnAfterFoo() call are:
   // - if the number of cached forms exceeds `kAutofillManagerMaxFormCacheSize`;
   // - if this AutofillManager has been destroyed or reset in the meantime.
+  // - if the request in AutofillDownloadManager was not successful (i.e. no 2XX
+  //   response code or a null response body).
   //
   // The main purpose are unit tests. New pairs of events may be added as
   // needed.
@@ -93,6 +95,9 @@ class AutofillManager
 
     virtual void OnBeforeFormSubmitted() {}
     virtual void OnAfterFormSubmitted() {}
+
+    virtual void OnBeforeLoadedServerPredictions() {}
+    virtual void OnAfterLoadedServerPredictions() {}
 
     // TODO(crbug.com/1330105): Clean up API: delete the events that don't
     // follow the OnBeforeFoo() / OnAfterFoo() pattern.
@@ -170,9 +175,10 @@ class AutofillManager
   // Invoked when the |form| needs to be autofilled, the |bounding_box| is
   // a window relative value of |field|.
   // |bounding_box| are viewport coordinates.
-  // |touch_to_fill_eligible| indicates if the Touch To Fill surface could be
-  // used for showing suggestion. Note that it doesn't guarantee the given form
-  // input field is eligible for autofilling.
+  // |form_element_was_clicked| indicates if any of the form fields were
+  // clicked/tapped. Used to understand if the Touch To Fill or the Fast
+  // Checkout surface could be used for showing suggestions. Note that it
+  // doesn't guarantee the given form input field is eligible for autofilling.
   // Virtual for testing.
   virtual void OnAskForValuesToFill(
       const FormData& form,
@@ -282,10 +288,19 @@ class AutofillManager
 
   // Returns nullptr if no cached form structure is found with a matching
   // |form_id|. Runs in logarithmic time.
-  FormStructure* FindCachedFormByRendererId(FormGlobalId form_id) const;
+  FormStructure* FindCachedFormById(FormGlobalId form_id) const;
 
   // Returns the number of forms this Autofill handler is aware of.
   size_t NumFormsDetected() const { return form_structures_.size(); }
+
+  // Forwards call to the same-named `AutofillDriver` function.
+  virtual void SetShouldSuppressKeyboard(bool suppress);
+
+  // Forwards call to the same-named `AutofillDriver` function.
+  virtual bool CanShowAutofillUi() const;
+
+  // Forwards call to the same-named `AutofillDriver` function.
+  virtual void TriggerReparseInAllFrames();
 
   void AddObserver(Observer* observer) { observers_.AddObserver(observer); }
 

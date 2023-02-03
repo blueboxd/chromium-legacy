@@ -502,7 +502,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool IsDescendantOfDisabledNode() const;
   bool ComputeAccessibilityIsIgnoredButIncludedInTree() const;
   const AXObject* GetAtomicTextFieldAncestor(int max_levels_to_check = 3) const;
-  const AXObject* DatetimeAncestor(int max_levels_to_check = 3) const;
+  const AXObject* DatetimeAncestor() const;
   bool ComputeIsDescendantOfDisabledNode() const;
   bool LastKnownIsIgnoredValue() const;
   bool LastKnownIsIgnoredButIncludedInTreeValue() const;
@@ -648,6 +648,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   }
 
   virtual AXObject* GetChildFigcaption() const;
+  virtual bool IsDescendantOfLandmarkDisallowedElement() const;
 
   virtual AXObjectVector RadioButtonsInGroup() const {
     return AXObjectVector();
@@ -1337,7 +1338,8 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   // Get the role to be used in StringAttribute::kRole, which is used in the
   // xml-roles object attribute.
-  const AtomicString& GetRoleAttributeStringForObjectAttribute();
+  const AtomicString& GetRoleAttributeStringForObjectAttribute(
+      ui::AXNodeData* node_data);
 
   // Extra checks that occur right before a node is evaluated for serialization.
   void PreSerializationConsistencyCheck();

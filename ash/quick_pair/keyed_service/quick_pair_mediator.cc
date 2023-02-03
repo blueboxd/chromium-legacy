@@ -52,8 +52,9 @@ constexpr base::TimeDelta kShortBanDiscoveryNotificationBanTime =
 
 // static
 std::unique_ptr<Mediator> Mediator::Factory::Create() {
-  if (g_test_factory)
+  if (g_test_factory) {
     return g_test_factory->BuildInstance();
+  }
 
   auto process_manager = std::make_unique<QuickPairProcessManagerImpl>();
   auto pairer_broker = std::make_unique<PairerBrokerImpl>();
@@ -186,8 +187,9 @@ bool Mediator::IsDeviceBlockedForDiscoveryNotifications(
     scoped_refptr<Device> device) {
   auto it = discovery_notification_block_list_.find(
       std::make_pair(device->metadata_id(), device->protocol()));
-  if (it == discovery_notification_block_list_.end())
+  if (it == discovery_notification_block_list_.end()) {
     return false;
+  }
 
   DiscoveryNotificationDismissalState notification_state = it->second.first;
 
@@ -254,8 +256,9 @@ void Mediator::OnRetroactivePairFound(scoped_refptr<Device> device) {
   // SFUL metrics will cause a crash if Fast Pair is disabled when we
   // retroactive pair, so prevent a notification from popping up.
   // TODO(b/247148054): Look into moving this elsewhere.
-  if (!feature_status_tracker_->IsFastPairEnabled())
+  if (!feature_status_tracker_->IsFastPairEnabled()) {
     return;
+  }
   device_currently_showing_notification_ = device;
   ui_broker_->ShowAssociateAccount(device);
 }
@@ -427,8 +430,9 @@ void Mediator::OnAdapterStateControllerChanged(
   // Always reset the observation first to handle the case where the ptr
   // became a nullptr (i.e. AdapterStateController was destroyed).
   adapter_state_controller_observation_.Reset();
-  if (adapter_state_controller)
+  if (adapter_state_controller) {
     adapter_state_controller_observation_.Observe(adapter_state_controller);
+  }
 }
 
 void Mediator::OnAdapterStateChanged() {
@@ -450,8 +454,13 @@ void Mediator::OnAdapterStateChanged() {
     CancelPairing();
   }
 }
-// TODO(b/243586447): Remove this function and associated changes that were used
-// to disable FastPair while classic pair dialog was open.
+
+// TODO(b/243586447): Investigate why the classic BT pairing dialog being open
+// interferes with Fast Pair GATT connections.
+//
+// The logic here is necessary to prevent Fast Pair connecting notification
+// hanging when Fast Pair pairing has starting and the classic BT pairing
+// dialog is open.
 void Mediator::OnHasAtLeastOneDiscoverySessionChanged(
     bool has_at_least_one_discovery_session) {
   has_at_least_one_discovery_session_ = has_at_least_one_discovery_session;
@@ -459,6 +468,19 @@ void Mediator::OnHasAtLeastOneDiscoverySessionChanged(
                   << ": Discovery session status changed, we"
                      " have at least one discovery session: "
                   << has_at_least_one_discovery_session_;
+
+  // If we have a discovery session via the Settings pairing dialog, stop
+  // Fast Pair scanning. Else, start/stop scanning according to the feature
+  // status tracker.
+  SetFastPairState(!has_at_least_one_discovery_session_ &&
+                   feature_status_tracker_->IsFastPairEnabled());
+
+  // If we haven't begun pairing, dismiss all in-progress handshakes which
+  // will interfere with the discovery session. Note that V1 device Fast Pair
+  // via the Settings pairing dialog, so we also check for that case here.
+  if (has_at_least_one_discovery_session_ && !pairer_broker_->IsPairing()) {
+    CancelPairing();
+  }
 }
 
 }  // namespace quick_pair

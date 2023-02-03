@@ -8,6 +8,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_future.h"
 #include "base/values.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -44,18 +45,14 @@ mojom::TrustTokenOperationStatus
 TrustTokenRequestHelperTest::ExecuteBeginOperationAndWaitForResult(
     TrustTokenRequestHelper* helper,
     net::URLRequest* request) {
-  base::RunLoop run_loop;
-  mojom::TrustTokenOperationStatus status;
-  helper->Begin(request->url(),
-                base::BindLambdaForTesting(
-                    [&](absl::optional<net::HttpRequestHeaders> headers,
-                        mojom::TrustTokenOperationStatus returned_status) {
-                      if (headers)
-                        request->SetExtraRequestHeaders(*headers);
-                      status = returned_status;
-                      run_loop.Quit();
-                    }));
-  run_loop.Run();
+  base::test::TestFuture<absl::optional<net::HttpRequestHeaders>,
+                         mojom::TrustTokenOperationStatus>
+      future;
+  helper->Begin(request->url(), future.GetCallback());
+  auto [headers, status] = future.Take();
+  if (headers) {
+    request->SetExtraRequestHeaders(*headers);
+  }
   return status;
 }
 
@@ -63,16 +60,16 @@ mojom::TrustTokenOperationStatus
 TrustTokenRequestHelperTest::ExecuteFinalizeAndWaitForResult(
     TrustTokenRequestHelper* helper,
     mojom::URLResponseHead* response) {
-  base::RunLoop run_loop;
-  mojom::TrustTokenOperationStatus status;
-  helper->Finalize(*response->headers.get(),
-                   base::BindLambdaForTesting(
-                       [&](mojom::TrustTokenOperationStatus returned_status) {
-                         status = returned_status;
-                         run_loop.Quit();
-                       }));
-  run_loop.Run();
-  return status;
+  base::test::TestFuture<mojom::TrustTokenOperationStatus> future;
+  helper->Finalize(*response->headers.get(), future.GetCallback());
+  return future.Get();
+}
+
+int TrustTokenEnumToInt(mojom::TrustTokenMajorVersion version) {
+  if (version == mojom::TrustTokenMajorVersion::kPrivateStateTokenV1) {
+    return 1;
+  }
+  return 0;
 }
 
 std::string TrustTokenEnumToString(mojom::TrustTokenOperationType operation) {
@@ -128,10 +125,12 @@ TrustTokenTestParameters& TrustTokenTestParameters::operator=(
     const TrustTokenTestParameters&) = default;
 
 TrustTokenTestParameters::TrustTokenTestParameters(
+    network::mojom::TrustTokenMajorVersion version,
     network::mojom::TrustTokenOperationType operation,
     absl::optional<network::mojom::TrustTokenRefreshPolicy> refresh_policy,
     absl::optional<std::vector<std::string>> issuer_specs)
-    : operation(operation),
+    : version(version),
+      operation(operation),
       refresh_policy(refresh_policy),
       issuer_specs(issuer_specs) {}
 
@@ -140,24 +139,26 @@ SerializeTrustTokenParametersAndConstructExpectation(
     const TrustTokenTestParameters& input) {
   auto trust_token_params = mojom::TrustTokenParams::New();
 
-  base::Value parameters(base::Value::Type::DICTIONARY);
-  parameters.SetStringKey("operation", TrustTokenEnumToString(input.operation));
+  base::Value::Dict parameters;
+  parameters.Set("version", TrustTokenEnumToInt(input.version));
+  parameters.Set("operation", TrustTokenEnumToString(input.operation));
+  trust_token_params->version = input.version;
   trust_token_params->operation = input.operation;
 
   if (input.refresh_policy.has_value()) {
-    parameters.SetStringKey("refreshPolicy",
-                            TrustTokenEnumToString(*input.refresh_policy));
+    parameters.Set("refreshPolicy",
+                   TrustTokenEnumToString(*input.refresh_policy));
     trust_token_params->refresh_policy = *input.refresh_policy;
   }
 
   if (input.issuer_specs.has_value()) {
-    base::Value issuers(base::Value::Type::LIST);
+    base::Value::List issuers;
     for (const std::string& issuer_spec : *input.issuer_specs) {
       issuers.Append(issuer_spec);
       trust_token_params->issuers.push_back(
           url::Origin::Create(GURL(issuer_spec)));
     }
-    parameters.SetKey("issuers", std::move(issuers));
+    parameters.Set("issuers", std::move(issuers));
   }
 
   std::string serialized_parameters;
@@ -172,7 +173,7 @@ std::string WrapKeyCommitmentsForIssuers(
   std::string ret;
   JSONStringValueSerializer serializer(&ret);
 
-  base::Value to_serialize(base::Value::Type::DICTIONARY);
+  base::Value to_serialize(base::Value::Type::DICT);
 
   for (const auto& kv : issuers_and_commitments) {
     const url::Origin& issuer = kv.first;

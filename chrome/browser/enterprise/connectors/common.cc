@@ -162,15 +162,6 @@ ReportingSettings::ReportingSettings(const ReportingSettings&) = default;
 ReportingSettings& ReportingSettings::operator=(ReportingSettings&&) = default;
 ReportingSettings::~ReportingSettings() = default;
 
-FileSystemSettings::FileSystemSettings() = default;
-FileSystemSettings::FileSystemSettings(const FileSystemSettings&) = default;
-FileSystemSettings::FileSystemSettings(FileSystemSettings&&) = default;
-FileSystemSettings& FileSystemSettings::operator=(const FileSystemSettings&) =
-    default;
-FileSystemSettings& FileSystemSettings::operator=(FileSystemSettings&&) =
-    default;
-FileSystemSettings::~FileSystemSettings() = default;
-
 const char* ConnectorPref(AnalysisConnector connector) {
   switch (connector) {
     case AnalysisConnector::BULK_DATA_ENTRY:
@@ -182,7 +173,7 @@ const char* ConnectorPref(AnalysisConnector connector) {
     case AnalysisConnector::PRINT:
       return kOnPrintPref;
     case AnalysisConnector::FILE_TRANSFER:
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
       return kOnFileTransferPref;
 #endif
     case AnalysisConnector::ANALYSIS_CONNECTOR_UNSPECIFIED:
@@ -209,7 +200,7 @@ const char* ConnectorScopePref(AnalysisConnector connector) {
     case AnalysisConnector::PRINT:
       return kOnPrintScopePref;
     case AnalysisConnector::FILE_TRANSFER:
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
       return kOnFileTransferScopePref;
 #endif
     case AnalysisConnector::ANALYSIS_CONNECTOR_UNSPECIFIED:

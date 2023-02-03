@@ -26,7 +26,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/shell_integration.h"
@@ -80,6 +79,10 @@
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 #include "ui/accessibility/accessibility_features.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chromeos/ui/wm/features.h"
 #endif
 
 #if BUILDFLAG(IS_MAC)
@@ -385,8 +388,9 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
   // CommandUpdaterDelegate and CommandUpdater declare this function so we
   // choose to not implement CommandUpdaterDelegate inside this class and
   // therefore command_updater_ doesn't have the delegate set).
-  if (!SupportsCommand(id) || !IsCommandEnabled(id))
+  if (!SupportsCommand(id) || !IsCommandEnabled(id)) {
     return false;
+  }
 
   // No commands are enabled if there is not yet any selected tab.
   // TODO(pkasting): It seems like we should not need this, because either
@@ -524,6 +528,12 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       PromptToNameWindow(browser_);
       break;
 
+#if BUILDFLAG(IS_CHROMEOS)
+    case IDC_TOGGLE_MULTITASK_MENU:
+      ToggleMultitaskMenu(browser_);
+      break;
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     case IDC_VISIT_DESKTOP_OF_LRU_USER_2:
     case IDC_VISIT_DESKTOP_OF_LRU_USER_3:
@@ -597,6 +607,9 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       break;
     case IDC_SAVE_CREDIT_CARD_FOR_PAGE:
       SaveCreditCard(browser_);
+      break;
+    case IDC_SAVE_IBAN_FOR_PAGE:
+      SaveIBAN(browser_);
       break;
     case IDC_MIGRATE_LOCAL_CREDIT_CARD_FOR_PAGE:
       MigrateLocalCards(browser_);
@@ -1067,6 +1080,11 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
   command_updater_.UpdateCommandEnabled(IDC_DEBUG_FRAME_TOGGLE, true);
   command_updater_.UpdateCommandEnabled(IDC_NAME_WINDOW, true);
+#if BUILDFLAG(IS_CHROMEOS)
+  command_updater_.UpdateCommandEnabled(
+      IDC_TOGGLE_MULTITASK_MENU,
+      chromeos::wm::features::IsFloatWindowEnabled());
+#endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   command_updater_.UpdateCommandEnabled(IDC_MINIMIZE_WINDOW, true);
   // The VisitDesktop command is only supported for up to 5 logged in users

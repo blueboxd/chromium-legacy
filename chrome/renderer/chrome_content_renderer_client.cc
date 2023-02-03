@@ -103,6 +103,7 @@
 #include "components/subresource_filter/content/renderer/subresource_filter_agent.h"
 #include "components/subresource_filter/content/renderer/unverified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/common_features.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "components/translate/content/renderer/per_frame_translate_agent.h"
 #include "components/translate/core/common/translate_util.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -180,7 +181,6 @@
 #endif  // BUILDFLAG(ENABLE_SPEECH_SERVICE)
 
 #if BUILDFLAG(IS_WIN)
-#include "base/win/windows_version.h"
 #include "chrome/renderer/render_frame_font_family_accessor.h"
 #endif
 
@@ -328,12 +328,6 @@ std::unique_ptr<base::Unwinder> CreateV8Unwinder(v8::Isolate* isolate) {
 // made available in other clients of content/ that do not have a Web Share
 // Mojo implementation (e.g. WebView).
 void MaybeEnableWebShare() {
-#if BUILDFLAG(IS_WIN)
-  if (base::win::GetVersion() < base::win::Version::WIN10) {
-    // Web Share API is not functional for non-UWP apps prior to Windows 10.
-    return;
-  }
-#endif
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   if (base::FeatureList::IsEnabled(features::kWebShare))
 #endif

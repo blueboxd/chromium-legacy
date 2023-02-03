@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/core/css/css_view_value.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
-#include "third_party/blink/renderer/core/css/scoped_css_value.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/style/border_image_length_box.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -417,10 +416,9 @@ AtomicString CSSToStyleMap::MapAnimationName(StyleResolverState& state,
   return CSSAnimationData::InitialName();
 }
 
-StyleTimeline CSSToStyleMap::MapAnimationTimeline(
-    StyleResolverState& state,
-    const ScopedCSSValue& scoped_value) {
-  const CSSValue& value = scoped_value.GetCSSValue();
+StyleTimeline CSSToStyleMap::MapAnimationTimeline(StyleResolverState& state,
+                                                  const CSSValue& value) {
+  DCHECK(value.IsScopedValue());
   if (value.IsInitialValue()) {
     return CSSAnimationData::InitialTimeline();
   }
@@ -431,11 +429,7 @@ StyleTimeline CSSToStyleMap::MapAnimationTimeline(
   }
   if (auto* custom_ident = DynamicTo<CSSCustomIdentValue>(value)) {
     return StyleTimeline(MakeGarbageCollected<ScopedCSSName>(
-        custom_ident->Value(), scoped_value.GetTreeScope()));
-  }
-  if (auto* string_value = DynamicTo<CSSStringValue>(value)) {
-    return StyleTimeline(MakeGarbageCollected<ScopedCSSName>(
-        AtomicString(string_value->Value()), scoped_value.GetTreeScope()));
+        custom_ident->Value(), custom_ident->GetTreeScope()));
   }
   if (value.IsViewValue()) {
     const auto& view_value = To<cssvalue::CSSViewValue>(value);
@@ -479,8 +473,8 @@ EAnimPlayState CSSToStyleMap::MapAnimationPlayState(StyleResolverState& state,
 
 namespace {
 
-absl::optional<Timing::TimelineOffset> MapAnimationRange(
-    const CSSValue& value) {
+absl::optional<TimelineOffset> MapAnimationRange(StyleResolverState& state,
+                                                 const CSSValue& value) {
   if (auto* ident = DynamicTo<CSSIdentifierValue>(value);
       ident && ident->GetValueID() == CSSValueID::kAuto) {
     return absl::nullopt;
@@ -488,25 +482,23 @@ absl::optional<Timing::TimelineOffset> MapAnimationRange(
   const auto& list = To<CSSValueList>(value);
   DCHECK_EQ(list.length(), 2u);
   const auto& range_name = To<CSSIdentifierValue>(list.Item(0));
-  const auto& percentage = To<CSSPrimitiveValue>(list.Item(1));
-  DCHECK(percentage.IsPercentage());
-  return Timing::TimelineOffset(
-      range_name.ConvertTo<Timing::TimelineNamedRange>(),
-      Length::Percent(percentage.GetValue<double>()));
+  return TimelineOffset(
+      range_name.ConvertTo<TimelineOffset::NamedRange>(),
+      StyleBuilderConverter::ConvertLength(state, list.Item(1)));
 }
 
 }  // namespace
 
-absl::optional<Timing::TimelineOffset> CSSToStyleMap::MapAnimationRangeStart(
+absl::optional<TimelineOffset> CSSToStyleMap::MapAnimationRangeStart(
     StyleResolverState& state,
     const CSSValue& value) {
-  return MapAnimationRange(value);
+  return MapAnimationRange(state, value);
 }
 
-absl::optional<Timing::TimelineOffset> CSSToStyleMap::MapAnimationRangeEnd(
+absl::optional<TimelineOffset> CSSToStyleMap::MapAnimationRangeEnd(
     StyleResolverState& state,
     const CSSValue& value) {
-  return MapAnimationRange(value);
+  return MapAnimationRange(state, value);
 }
 
 EffectModel::CompositeOperation CSSToStyleMap::MapAnimationComposition(

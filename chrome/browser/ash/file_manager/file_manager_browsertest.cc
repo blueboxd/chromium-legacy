@@ -199,6 +199,16 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& FeatureIds(const std::vector<std::string>& ids) {
+    options.feature_ids = ids;
+    return *this;
+  }
+
+  TestCase& EnableBulkPinning() {
+    options.enable_drive_bulk_pinning = true;
+    return *this;
+  }
+
   TestCase& SetDeviceMode(DeviceMode device_mode) {
     options.device_mode = device_mode;
     return *this;
@@ -260,6 +270,10 @@ struct TestCase {
 
     if (options.enable_google_one_offer_files_banner) {
       full_name += "_GoogleOneOfferFilesBanner";
+    }
+
+    if (options.enable_drive_bulk_pinning) {
+      full_name += "_DriveBulkPinning";
     }
 
     switch (options.device_mode) {
@@ -460,22 +474,6 @@ class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
   DlpFilesAppBrowserTest() = default;
   ~DlpFilesAppBrowserTest() override = default;
 
-  std::unique_ptr<KeyedService> SetDlpRulesManager(
-      content::BrowserContext* context) {
-    auto dlp_rules_manager =
-        std::make_unique<testing::NiceMock<policy::MockDlpRulesManager>>();
-    mock_rules_manager_ = dlp_rules_manager.get();
-    ON_CALL(*mock_rules_manager_, IsFilesPolicyEnabled)
-        .WillByDefault(testing::Return(true));
-
-    files_controller_ =
-        std::make_unique<policy::DlpFilesController>(*mock_rules_manager_);
-    ON_CALL(*mock_rules_manager_, GetDlpFilesController)
-        .WillByDefault(testing::Return(files_controller_.get()));
-
-    return dlp_rules_manager;
-  }
-
   void SetUpOnMainThread() override {
     FilesAppBrowserTest::SetUpOnMainThread();
     policy::DlpRulesManagerFactory::GetInstance()->SetTestingFactory(
@@ -484,15 +482,6 @@ class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
                             base::Unretained(this)));
   }
 
-  absl::optional<ino64_t> GetInodeValue(const base::FilePath& path) {
-    struct stat file_stats;
-    if (stat(path.value().c_str(), &file_stats) != 0) {
-      return absl::nullopt;
-    }
-    return file_stats.st_ino;
-  }
-
-  // TODO(b/261163959): Optimize DLP messages.
   bool HandleDlpCommands(const std::string& name,
                          const base::Value::Dict& value,
                          std::string* output) override {
@@ -552,26 +541,14 @@ class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
               ::testing::Return(policy::DlpRulesManager::Level::kAllow));
       return true;
     }
-    if (name == "setBlockedArc") {
+    if (name == "setBlockedComponent") {
+      auto* component_str = value.FindString("component");
+      EXPECT_TRUE(component_str);
+      auto component = MapToPolicyComponent(*component_str);
+      EXPECT_NE(policy::DlpRulesManager::Component::kUnknownComponent,
+                component);
       policy::DlpRulesManager::AggregatedComponents components;
-      components[policy::DlpRulesManager::Level::kBlock].insert(
-          policy::DlpRulesManager::Component::kArc);
-      EXPECT_CALL(*mock_rules_manager_, GetAggregatedComponents)
-          .WillOnce(testing::Return(components));
-      return true;
-    }
-    if (name == "setBlockedCrostini") {
-      policy::DlpRulesManager::AggregatedComponents components;
-      components[policy::DlpRulesManager::Level::kBlock].insert(
-          policy::DlpRulesManager::Component::kCrostini);
-      EXPECT_CALL(*mock_rules_manager_, GetAggregatedComponents)
-          .WillOnce(testing::Return(components));
-      return true;
-    }
-    if (name == "setBlockedPluginVM") {
-      policy::DlpRulesManager::AggregatedComponents components;
-      components[policy::DlpRulesManager::Level::kBlock].insert(
-          policy::DlpRulesManager::Component::kPluginVm);
+      components[policy::DlpRulesManager::Level::kBlock].insert(component);
       EXPECT_CALL(*mock_rules_manager_, GetAggregatedComponents)
           .WillOnce(testing::Return(components));
       return true;
@@ -615,6 +592,57 @@ class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
     return false;
   }
 
+  // MockDlpRulesManager is owned by KeyedService and is guaranteed to outlive
+  // this class.
+  policy::MockDlpRulesManager* mock_rules_manager_ = nullptr;
+
+ private:
+  std::unique_ptr<KeyedService> SetDlpRulesManager(
+      content::BrowserContext* context) {
+    auto dlp_rules_manager =
+        std::make_unique<testing::NiceMock<policy::MockDlpRulesManager>>();
+    mock_rules_manager_ = dlp_rules_manager.get();
+    ON_CALL(*mock_rules_manager_, IsFilesPolicyEnabled)
+        .WillByDefault(testing::Return(true));
+
+    files_controller_ =
+        std::make_unique<policy::DlpFilesController>(*mock_rules_manager_);
+    ON_CALL(*mock_rules_manager_, GetDlpFilesController)
+        .WillByDefault(testing::Return(files_controller_.get()));
+
+    return dlp_rules_manager;
+  }
+
+  // Maps |component| to DlpRulesManager::Component.
+  policy::DlpRulesManager::Component MapToPolicyComponent(
+      const std::string& component) {
+    if (component == "arc") {
+      return policy::DlpRulesManager::Component::kArc;
+    }
+    if (component == "crostini") {
+      return policy::DlpRulesManager::Component::kCrostini;
+    }
+    if (component == "pluginVm") {
+      return policy::DlpRulesManager::Component::kPluginVm;
+    }
+    if (component == "usb") {
+      return policy::DlpRulesManager::Component::kUsb;
+    }
+    if (component == "drive") {
+      return policy::DlpRulesManager::Component::kDrive;
+    }
+    return policy::DlpRulesManager::Component::kUnknownComponent;
+  }
+
+  // Returns the inode value for |path|, if found.
+  absl::optional<ino64_t> GetInodeValue(const base::FilePath& path) {
+    struct stat file_stats;
+    if (stat(path.value().c_str(), &file_stats) != 0) {
+      return absl::nullopt;
+    }
+    return file_stats.st_ino;
+  }
+
   // Invokes `callback` with the previously constructed `response`. Note that
   // the result doesn't depend on the value of `request`.
   void GetFilesSourcesMock(
@@ -623,10 +651,6 @@ class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
       chromeos::DlpClient::GetFilesSourcesCallback callback) {
     std::move(callback).Run(response);
   }
-
-  // MockDlpRulesManager is owned by KeyedService and is guaranteed to outlive
-  // this class.
-  policy::MockDlpRulesManager* mock_rules_manager_ = nullptr;
 
   std::unique_ptr<policy::DlpFilesController> files_controller_;
 };
@@ -1129,12 +1153,21 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     CreateNewFolder, /* create_new_folder.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("selectCreateFolderDownloads"),
-                      TestCase("selectCreateFolderDownloads").InGuestMode(),
-                      TestCase("createFolderDownloads"),
-                      TestCase("createFolderDownloads").InGuestMode(),
-                      TestCase("createFolderNestedDownloads"),
-                      TestCase("createFolderDrive")));
+    ::testing::Values(
+        TestCase("selectCreateFolderDownloads")
+            .FeatureIds({"screenplay-d9f79e27-bec2-4d15-9ba3-ae2bcd1e4bb5"}),
+        TestCase("selectCreateFolderDownloads")
+            .InGuestMode()
+            .FeatureIds({"screenplay-d9f79e27-bec2-4d15-9ba3-ae2bcd1e4bb5"}),
+        TestCase("createFolderDownloads")
+            .FeatureIds({"screenplay-d9f79e27-bec2-4d15-9ba3-ae2bcd1e4bb5"}),
+        TestCase("createFolderDownloads")
+            .InGuestMode()
+            .FeatureIds({"screenplay-d9f79e27-bec2-4d15-9ba3-ae2bcd1e4bb5"}),
+        TestCase("createFolderNestedDownloads")
+            .FeatureIds({"screenplay-d9f79e27-bec2-4d15-9ba3-ae2bcd1e4bb5"}),
+        TestCase("createFolderDrive")
+            .FeatureIds({"screenplay-d9f79e27-bec2-4d15-9ba3-ae2bcd1e4bb5"})));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     KeyboardOperations, /* keyboard_operations.js */
@@ -1456,7 +1489,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveOfflineInfoBanner"),
         TestCase("driveDeleteDialogDoesntMentionPermanentDelete"),
         TestCase("driveInlineSyncStatusSingleFile").EnableInlineStatusSync(),
-        TestCase("driveInlineSyncStatusParentFolder").EnableInlineStatusSync()
+        TestCase("driveInlineSyncStatusParentFolder").EnableInlineStatusSync(),
+        TestCase("driveLocalDeleteUnpinsItem").EnableBulkPinning(),
+        TestCase("driveCloudDeleteUnpinsItem").EnableBulkPinning()
         // TODO(b/189173190): Enable
         // TestCase("driveEnableDocsOfflineDialog"),
         // TODO(b/189173190): Enable
@@ -1536,13 +1571,16 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("transferShowDlpToast").EnableDlp(),
         TestCase("dlpShowManagedIcon").EnableDlp(),
         TestCase("dlpContextMenuRestrictionDetails").EnableDlp(),
-        TestCase("saveAsDlpRestrictedDirectory").EnableDlp(),
+        TestCase("saveAsDlpRestrictedAndroid").EnableArcVm().EnableDlp(),
         TestCase("saveAsDlpRestrictedCrostini").EnableDlp(),
+        TestCase("saveAsDlpRestrictedVm").EnableDlp(),
+        TestCase("saveAsDlpRestrictedUsb").EnableDlp(),
+        TestCase("saveAsDlpRestrictedDrive").EnableDlp(),
         TestCase("saveAsNonDlpRestricted").EnableDlp(),
         TestCase("saveAsDlpRestrictedRedirectsToMyFiles").EnableDlp(),
-        TestCase("saveAsDlpRestrictedVm").EnableDlp(),
         TestCase("openDlpRestrictedFile").EnableDlp(),
-        TestCase("openFolderDlpRestricted").EnableDlp()));
+        TestCase("openFolderDlpRestricted").EnableDlp(),
+        TestCase("fileTasksDlpRestricted").EnableDlp()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DriveSpecific, /* drive_specific.js */

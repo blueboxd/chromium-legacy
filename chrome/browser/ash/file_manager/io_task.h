@@ -66,6 +66,32 @@ enum class OperationType {
 // Unique identifier for any type of task.
 using IOTaskId = uint64_t;
 
+// I/O task state::PAUSED parameters. Currently, only CopyOrMoveIOTask can
+// pause to resolve a file name conflict.
+struct PauseParams {
+  // The conflict file name.
+  std::string conflict_name;
+
+  // True if the conflict file name is a directory.
+  bool conflict_is_directory = false;
+
+  // Set true if there are potentially multiple conflicted file names.
+  bool conflict_multiple = false;
+
+  // The conflict copy or move target URL.
+  std::string conflict_target_url;
+};
+
+// Resume I/O task parameters.
+struct ResumeParams {
+  // How to resolve a CopyOrMoveIOTask file name conflict: either 'keepboth'
+  // or 'replace'.
+  std::string conflict_resolve;
+
+  // True if |conflict_resolve| should apply to future file name conflicts.
+  bool conflict_apply_to_all = false;
+};
+
 // Represents the status of a particular entry in an I/O task.
 struct EntryStatus {
   EntryStatus(storage::FileSystemURL file_url,
@@ -97,6 +123,9 @@ struct ProgressStatus {
   ProgressStatus(ProgressStatus&& other);
   ProgressStatus& operator=(ProgressStatus&& other);
 
+  // True if the task is in kPaused state.
+  bool IsPaused() const;
+
   // True if the task is in a terminal state and won't receive further updates.
   bool IsCompleted() const;
 
@@ -122,6 +151,9 @@ struct ProgressStatus {
   // Optional destination folder for operations that transfer files to a
   // directory (e.g. copy or move).
   storage::FileSystemURL destination_folder;
+
+  // I/O task state::PAUSED parameters.
+  PauseParams pause_params;
 
   // ProgressStatus over all |sources|.
   int64_t bytes_transferred = 0;
@@ -157,6 +189,9 @@ class IOTask {
   // |progress_callback| should be called on the same sequeuence Execute() was.
   virtual void Execute(ProgressCallback progress_callback,
                        CompleteCallback complete_callback) = 0;
+
+  // Resumes a task.
+  virtual void Resume(ResumeParams params);
 
   // Cancels the task. This should set the progress state to be |kCancelled|,
   // but not call any of Execute()'s callbacks. The task will be deleted

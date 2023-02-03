@@ -101,7 +101,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -154,12 +153,8 @@ public class WebContentsAccessibilityTest {
 
     // ContentFeatureList maps used for various tests.
     private static final Map<String, Boolean> ON_DEMAND_ON_COMPUTE_ON =
-            new HashMap<String, Boolean>() {
-                {
-                    put(ContentFeatureList.ON_DEMAND_ACCESSIBILITY_EVENTS, true);
-                    put(ContentFeatureList.COMPUTE_AX_MODE, true);
-                }
-            };
+            Map.of(ContentFeatureList.ON_DEMAND_ACCESSIBILITY_EVENTS, true,
+                    ContentFeatureList.COMPUTE_AX_MODE, true);
 
     // Constant values for unit tests
     private static final int UNSUPPRESSED_EXPECTED_COUNT = 15;
@@ -1545,15 +1540,16 @@ public class WebContentsAccessibilityTest {
     @SmallTest
     public void testNodeInfo_Actions_OverflowScroll() throws Throwable {
         // Build a simple web page with a div and overflow:scroll
-        setupTestWithHTML("<div title='1234' style='overflow:scroll; width: 200px; height:50px'>\n"
-                + "  <p>Example Paragraph 1</p>\n"
-                + "  <p>Example Paragraph 2</p>\n"
+        setupTestWithHTML(
+                "<div id='div1' title='1234' style='overflow:scroll; width: 200px; height:50px'>\n"
+                + "  <p id='p1'>Example Paragraph 1</p>\n"
+                + "  <p id='p2'>Example Paragraph 2</p>\n"
                 + "</div>");
 
-        // Define our root node and paragraph node IDs by looking for their text.
-        int vvIdDiv = waitForNodeMatching(sTextMatcher, "1234");
-        int vvIdP1 = waitForNodeMatching(sTextMatcher, "Example Paragraph 1");
-        int vvIdP2 = waitForNodeMatching(sTextMatcher, "Example Paragraph 2");
+        // Define our root node and paragraph node IDs by looking for their ids.
+        int vvIdDiv = waitForNodeMatching(sViewIdResourceNameMatcher, "div1");
+        int vvIdP1 = waitForNodeMatching(sViewIdResourceNameMatcher, "p1");
+        int vvIdP2 = waitForNodeMatching(sViewIdResourceNameMatcher, "p2");
 
         // Get the |AccessibilityNodeInfo| objects for our nodes.
         AccessibilityNodeInfoCompat nodeInfoDiv = createAccessibilityNodeInfo(vvIdDiv);

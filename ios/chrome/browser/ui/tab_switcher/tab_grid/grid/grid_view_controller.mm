@@ -15,6 +15,7 @@
 #import "base/notreached.h"
 #import "base/numerics/safe_conversions.h"
 #import "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/ui/commands/thumb_strip_commands.h"
 #import "ios/chrome/browser/ui/commerce/price_card/price_card_data_source.h"
 #import "ios/chrome/browser/ui/commerce/price_card/price_card_item.h"
@@ -23,6 +24,7 @@
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_view.h"
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_handler.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_metrics.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_empty_view.h"
@@ -49,8 +51,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-extern const char kUmaDragDropTabs[] = "IOS.TabSwitcher.DragDropTabs";
 
 namespace {
 
@@ -746,14 +746,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (UIPointerRegion*)pointerInteraction:(UIPointerInteraction*)interaction
                       regionForRequest:(UIPointerRegionRequest*)request
-                         defaultRegion:(UIPointerRegion*)defaultRegion
-    API_AVAILABLE(ios(13.4)) {
+                         defaultRegion:(UIPointerRegion*)defaultRegion {
   return defaultRegion;
 }
 
 - (UIPointerStyle*)pointerInteraction:(UIPointerInteraction*)interaction
-                       styleForRegion:(UIPointerRegion*)region
-    API_AVAILABLE(ios(13.4)) {
+                       styleForRegion:(UIPointerRegion*)region {
   UIPointerLiftEffect* effect = [UIPointerLiftEffect
       effectWithPreview:[[UITargetedPreview alloc]
                             initWithView:interaction.view]];
@@ -765,7 +763,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (void)collectionView:(UICollectionView*)collectionView
     dragSessionWillBegin:(id<UIDragSession>)session {
   self.dragEndAtNewIndex = NO;
-  base::UmaHistogramEnumeration(kUmaDragDropTabs, DragDropTabs::kDragBegin);
+  base::UmaHistogramEnumeration(kUmaGridViewDragDropTabs,
+                                DragDropTabs::kDragBegin);
 
   [self.delegate gridViewControllerDragSessionWillBegin:self];
 }
@@ -775,7 +774,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   DragDropTabs dragEvent = self.dragEndAtNewIndex
                                ? DragDropTabs::kDragEndAtNewIndex
                                : DragDropTabs::kDragEndAtSameIndex;
-  base::UmaHistogramEnumeration(kUmaDragDropTabs, dragEvent);
+  base::UmaHistogramEnumeration(kUmaGridViewDragDropTabs, dragEvent);
 
   // Used to let the Taptic Engine return to its idle state.
   // To preserve power, the Taptic Engine remains in a prepared state for only a
@@ -948,6 +947,22 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                                          toIndex:destinationIndex
                               placeholderContext:context];
     }
+  }
+}
+
+- (void)collectionView:(UICollectionView*)collectionView
+    dropSessionDidEnter:(id<UIDropSession>)session {
+  if (IsPinnedTabsEnabled()) {
+    // Notify the delegate that a drag cames from another app.
+    [self.delegate gridViewControllerDragSessionWillBegin:self];
+  }
+}
+
+- (void)collectionView:(UICollectionView*)collectionView
+     dropSessionDidEnd:(id<UIDropSession>)session {
+  if (IsPinnedTabsEnabled()) {
+    // Notify the delegate that a drag ends from another app.
+    [self.delegate gridViewControllerDropAnimationDidEnd:self];
   }
 }
 

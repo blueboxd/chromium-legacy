@@ -2213,6 +2213,8 @@ void ExtensionPrefs::RegisterProfilePrefs(
     BUILDFLAG(IS_FUCHSIA)
   registry->RegisterBooleanPref(pref_names::kChromeAppsEnabled, false);
 #endif
+  registry->RegisterBooleanPref(
+      pref_names::kChromeAppsWebViewPermissiveBehaviorAllowed, false);
 
   registry->RegisterListPref(pref_names::kNativeMessagingBlocklist);
   registry->RegisterListPref(pref_names::kNativeMessagingAllowlist);
@@ -2227,6 +2229,8 @@ void ExtensionPrefs::RegisterProfilePrefs(
 #endif
 
   registry->RegisterBooleanPref(pref_names::kBlockExternalExtensions, false);
+  registry->RegisterIntegerPref(pref_names::kExtensionUnpublishedAvailability,
+                                0);
 }
 
 template <class ExtensionIdContainer>

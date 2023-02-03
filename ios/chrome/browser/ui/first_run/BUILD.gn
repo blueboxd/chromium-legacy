@@ -11,7 +11,6 @@ source_set("field_trial") {
     "trending_queries_field_trial.h",
   ]
   deps = [
-    ":field_trial_constants",
     ":field_trial_ids",
     "//base",
     "//components/prefs",
@@ -23,14 +22,6 @@ source_set("field_trial") {
     "//ios/chrome/browser/ui/content_suggestions:feature_flags",
     "//ios/chrome/browser/ui/start_surface:feature_flags",
     "//ios/chrome/common",
-  ]
-}
-
-source_set("field_trial_constants") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "field_trial_constants.cc",
-    "field_trial_constants.h",
   ]
 }
 
@@ -83,7 +74,6 @@ source_set("first_run") {
     "//ios/chrome/browser/ui/authentication/signin",
     "//ios/chrome/browser/ui/authentication/signin/add_account_signin",
     "//ios/chrome/browser/ui/authentication/signin/user_signin/logging",
-    "//ios/chrome/browser/ui/authentication/signin_sync",
     "//ios/chrome/browser/ui/authentication/unified_consent/identity_chooser",
     "//ios/chrome/browser/ui/authentication/views",
     "//ios/chrome/browser/ui/commands",
@@ -187,7 +177,6 @@ source_set("unit_tests") {
   sources = [ "trending_queries_field_trial_unittest.mm" ]
   deps = [
     ":field_trial",
-    ":field_trial_constants",
     ":field_trial_ids",
     ":first_run",
     ":utils",
@@ -220,12 +209,11 @@ source_set("eg2_tests") {
   testonly = true
   sources = [
     "enterprise_loading_screen_egtest.mm",
-    "first_run_two_steps_egtest.mm",
+    "first_run_egtest.mm",
   ]
   deps = [
     ":constants",
     ":eg_test_support+eg2",
-    ":field_trial_constants",
     "//base",
     "//base/test:test_support",
     "//components/enterprise",

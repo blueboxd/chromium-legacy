@@ -107,7 +107,11 @@ if (enable_resource_allowlist_generation) {
 #      Location of the strip executable. When specified, strip will be run on
 #      all shared libraries and executables as they are built. The pre-stripped
 #      artifacts will be put in lib.unstripped/ and exe.unstripped/.
-template("gcc_toolchain") {
+#
+# Callers will normally want to invoke "gcc_toolchain" instead, which makes
+# a toolchain just like this but may additionally create an extra toolchain
+# without sanitizers for host-side tools.
+template("single_gcc_toolchain") {
   toolchain(target_name) {
     assert(defined(invoker.ar), "gcc_toolchain() must specify a \"ar\" value")
     assert(defined(invoker.cc), "gcc_toolchain() must specify a \"cc\" value")
@@ -145,14 +149,13 @@ template("gcc_toolchain") {
       # set on those toolchains.
       host_toolchain = host_toolchain
 
+      # The same applies to the toolchain we use to build Rust procedural
+      # macros, which is probably the same but might have sanitizers disabled.
+      host_toolchain_no_sanitizers = host_toolchain_no_sanitizers
+
       if (!defined(invoker_toolchain_args.v8_current_cpu)) {
         v8_current_cpu = invoker_toolchain_args.current_cpu
       }
-
-      # Whether rustc can successfully link binaries. (If not, rust code
-      # can still be linked by our C++ toolchain). See
-      # //build/config/rust.gni
-      rustc_can_link = current_os != "android"
     }
 
     # When the invoker has explicitly overridden use_remoteexec, use_goma or
@@ -733,39 +736,37 @@ template("gcc_toolchain") {
         outputs = [ rust_outfile ]
       }
 
-      if (toolchain_args.rustc_can_link) {
-        tool("rust_bin") {
-          rust_outfile = "{{root_out_dir}}/{{target_output_name}}"
-          depfile = "{{output}}.d"
-          rspfile = "$rust_outfile.rsp"
-          rspfile_content = "{{rustdeps}} {{externs}}"
-          command = "$python_path \"$rustc_wrapper\" --rustc=$rustc --depfile=$depfile --rsp=$rspfile -- -Clinker=\"${invoker.cxx}\" $rustc_common_args --emit=dep-info=$depfile,link -o $rust_outfile LDFLAGS {{ldflags}} ${extra_ldflags} RUSTENV {{rustenv}}"
-          description = "RUST $rust_outfile"
-          rust_sysroot = rust_sysroot_relative_to_out
-          outputs = [ rust_outfile ]
-        }
+      tool("rust_bin") {
+        rust_outfile = "{{root_out_dir}}/{{target_output_name}}"
+        depfile = "{{output}}.d"
+        rspfile = "$rust_outfile.rsp"
+        rspfile_content = "{{rustdeps}} {{externs}}"
+        command = "$python_path \"$rustc_wrapper\" --rustc=$rustc --depfile=$depfile --rsp=$rspfile -- -Clinker=\"${invoker.cxx}\" $rustc_common_args --emit=dep-info=$depfile,link -o $rust_outfile LDFLAGS {{ldflags}} ${extra_ldflags} RUSTENV {{rustenv}}"
+        description = "RUST $rust_outfile"
+        rust_sysroot = rust_sysroot_relative_to_out
+        outputs = [ rust_outfile ]
+      }
 
-        tool("rust_cdylib") {
-          rust_outfile = "{{output_dir}}/lib{{target_output_name}}.so"
-          depfile = "{{output}}.d"
-          rspfile = "$rust_outfile.rsp"
-          rspfile_content = "{{rustdeps}} {{externs}}"
-          command = "$python_path \"$rustc_wrapper\" --rustc=$rustc --depfile=$depfile --rsp=$rspfile -- -Clinker=\"${invoker.cxx}\" $rustc_common_args --emit=dep-info=$depfile,link -o $rust_outfile LDFLAGS {{ldflags}} ${extra_ldflags} RUSTENV {{rustenv}}"
-          description = "RUST $rust_outfile"
-          rust_sysroot = rust_sysroot_relative_to_out
-          outputs = [ rust_outfile ]
-        }
+      tool("rust_cdylib") {
+        rust_outfile = "{{output_dir}}/lib{{target_output_name}}.so"
+        depfile = "{{output}}.d"
+        rspfile = "$rust_outfile.rsp"
+        rspfile_content = "{{rustdeps}} {{externs}}"
+        command = "$python_path \"$rustc_wrapper\" --rustc=$rustc --depfile=$depfile --rsp=$rspfile -- -Clinker=\"${invoker.cxx}\" $rustc_common_args --emit=dep-info=$depfile,link -o $rust_outfile LDFLAGS {{ldflags}} ${extra_ldflags} RUSTENV {{rustenv}}"
+        description = "RUST $rust_outfile"
+        rust_sysroot = rust_sysroot_relative_to_out
+        outputs = [ rust_outfile ]
+      }
 
-        tool("rust_macro") {
-          rust_outfile = "{{output_dir}}/lib{{target_output_name}}.so"
-          depfile = "{{output}}.d"
-          rspfile = "$rust_outfile.rsp"
-          rspfile_content = "{{rustdeps}} {{externs}}"
-          command = "$python_path \"$rustc_wrapper\" --rustc=$rustc --depfile=$depfile --rsp=$rspfile -- -Clinker=\"${invoker.cxx}\" $rustc_common_args --emit=dep-info=$depfile,link -o $rust_outfile LDFLAGS {{ldflags}} ${extra_ldflags} RUSTENV {{rustenv}}"
-          description = "RUST $rust_outfile"
-          rust_sysroot = rust_sysroot_relative_to_out
-          outputs = [ rust_outfile ]
-        }
+      tool("rust_macro") {
+        rust_outfile = "{{output_dir}}/lib{{target_output_name}}.so"
+        depfile = "{{output}}.d"
+        rspfile = "$rust_outfile.rsp"
+        rspfile_content = "{{rustdeps}} {{externs}}"
+        command = "$python_path \"$rustc_wrapper\" --rustc=$rustc --depfile=$depfile --rsp=$rspfile -- -Clinker=\"${invoker.cxx}\" $rustc_common_args --emit=dep-info=$depfile,link -o $rust_outfile LDFLAGS {{ldflags}} ${extra_ldflags} RUSTENV {{rustenv}}"
+        description = "RUST $rust_outfile"
+        rust_sysroot = rust_sysroot_relative_to_out
+        outputs = [ rust_outfile ]
       }
     }
 
@@ -774,6 +775,44 @@ template("gcc_toolchain") {
                              "deps",
                              "propagates_configs",
                            ])
+  }
+}
+
+# Makes a single GCC toolchain, or possibly two if we need
+# an equivalent toolchain without sanitizers.
+template("gcc_toolchain") {
+  single_gcc_toolchain(target_name) {
+    assert(defined(invoker.toolchain_args),
+           "Toolchains must declare toolchain_args")
+    forward_variables_from(invoker,
+                           "*",
+                           [
+                             "visibility",
+                             "test_only",
+                           ])
+
+    # No need to forward visibility and test_only as they apply to targets not
+    # toolchains, but presubmit checks require that we explicitly exclude them
+  }
+
+  if (using_sanitizer) {
+    # Make an additional toolchain with no sanitizers.
+    single_gcc_toolchain("${target_name}_no_sanitizers") {
+      assert(defined(invoker.toolchain_args),
+             "Toolchains must declare toolchain_args")
+      forward_variables_from(invoker,
+                             "*",
+                             [
+                               "toolchain_args",
+                               "visibility",
+                               "test_only",
+                             ])
+      toolchain_args = {
+        # Populate toolchain args from the invoker.
+        forward_variables_from(invoker.toolchain_args, "*")
+        toolchain_disables_sanitizers = true
+      }
+    }
   }
 }
 

@@ -66,7 +66,8 @@ export interface PointingStick {
 }
 
 export interface KeyboardSettings {
-  // TODO: Populate KeyboardSettings interface.
+  modifierRemappings: Map<ModifierKey, ModifierKey>;
+  // TODO: Populate other KeyboardSettings interface.
 }
 
 export interface KeyboardObserverInterface {
@@ -100,7 +101,11 @@ export interface PointingStickObserverInterface {
 
 export interface InputDeviceSettingsProviderInterface {
   observeKeyboardSettings(observer: KeyboardObserverInterface): void;
+  getConnectedKeyboardSettings(): Promise<Keyboard[]>;
   observeTouchpadSettings(observer: TouchpadObserverInterface): void;
+  getConnectedTouchpadSettings(): Promise<Touchpad[]>;
   observeMouseSettings(observer: MouseObserverInterface): void;
+  getConnectedMouseSettings(): Promise<Mouse[]>;
   observePointingStickSettings(observer: PointingStickObserverInterface): void;
+  getConnectedPointingStickSettings(): Promise<PointingStick[]>;
 }

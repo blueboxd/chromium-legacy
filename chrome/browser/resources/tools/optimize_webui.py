@@ -26,8 +26,10 @@ import node_modules
 _BASE_EXCLUDES = []
 for excluded_file in [
     'resources/polymer/v1_0/web-animations-js/web-animations-next-lite.min.js',
+    'resources/mojo/mojo/public/js/bindings.js',
     'resources/mojo/mojo/public/mojom/base/time.mojom-lite.js',
     'resources/polymer/v3_0/polymer/polymer_bundled.min.js',
+    'resources/js/cr.js',  # This file relies on globals.
     'resources/js/load_time_data.js',
     'resources/ash/common/load_time_data.m.js',
 ]:
@@ -87,11 +89,11 @@ def _update_dep_file(in_folder, args, out_file_path, manifest):
 # excludes: Imports to exclude from the bundle.
 # external_paths: Path mappings for import paths that are outside of
 #                 |in_path|. For example:
-#                 chrome://resources/|gen/ui/webui/resources/preprocessed
+#                 chrome://resources/|gen/ui/webui/resources/tsc
 def _generate_rollup_config(tmp_out_dir, path_to_plugin, in_path, bundle_path,
                             host_url, excludes, external_paths):
   rollup_config_file = os.path.join(tmp_out_dir, bundle_path,
-                                    'rollup.config.js')
+                                    'rollup.config.mjs')
   config_content = r'''
     import plugin from '{plugin_path}';
     export default ({{
@@ -155,7 +157,9 @@ def _bundle_v3(tmp_out_dir, in_path, out_path, manifest_out_path, args,
   if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 
-  path_to_plugin = os.path.join(os.path.abspath(_HERE_PATH), 'rollup_plugin.js')
+  path_to_plugin = os.path.join(
+      os.path.relpath(_HERE_PATH, os.path.join(tmp_out_dir, bundle_path)),
+      'rollup_plugin.mjs')
   rollup_config_file = _generate_rollup_config(tmp_out_dir, path_to_plugin,
                                                in_path, bundle_path,
                                                args.host_url, excludes,

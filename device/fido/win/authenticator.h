@@ -34,6 +34,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticator
   // This method is safe to call without checking WinWebAuthnApi::IsAvailable().
   // Returns false if |api| is nullptr.
   static void IsUserVerifyingPlatformAuthenticatorAvailable(
+      bool is_off_the_record,
       WinWebAuthnApi* api,
       base::OnceCallback<void(bool is_available)>);
 
@@ -85,6 +86,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticator
                     GetAssertionCallback callback) override;
   void GetCredentialInformationForRequest(
       const CtapGetAssertionRequest& request,
+      const CtapGetAssertionOptions& options,
       base::OnceCallback<void(std::vector<DiscoverableCredentialMetadata>,
                               bool)> callback) override;
   void GetTouch(base::OnceClosure callback) override;

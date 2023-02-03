@@ -11,7 +11,6 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -186,6 +185,24 @@ class AppListSyncableServiceTest : public test::AppListSyncableServiceTestBase {
 
   AppListModelUpdater::TestApi* model_updater_test_api() {
     return model_updater_test_api_.get();
+  }
+
+  // Returns the app list order stored as preference.
+  ash::AppListSortOrder GetSortOrderFromPrefs() {
+    return static_cast<ash::AppListSortOrder>(
+        app_list_syncable_service()->profile()->GetPrefs()->GetInteger(
+            prefs::kAppListPreferredOrder));
+  }
+
+  ash::AppListItem* FindItemForApp(extensions::Extension* app) {
+    return GetModelUpdater()->model_for_test()->FindItem(app->id());
+  }
+
+  // A hacky way to change an item's name.
+  void ChangeItemName(const std::string& id, const std::string& new_name) {
+    app_list_syncable_service()->GetMutableSyncItemForTest(id)->item_name =
+        new_name;
+    app_list_syncable_service()->GetModelUpdater()->SetItemName(id, new_name);
   }
 
  private:
@@ -945,15 +962,9 @@ TEST_F(AppListSyncableServiceTest,
       std::make_unique<syncer::FakeSyncChangeProcessor>());
   content::RunAllTasksUntilIdle();
 
-  const bool productivity_launcher =
-      ash::features::IsProductivityLauncherEnabled();
-  // After the initial sync data is merged, the single item folder is expected
-  // to be cleaned up when productivity launcher is disabled.
-  ASSERT_EQ(productivity_launcher, !!GetSyncItem(kFolderId1));
-  // The child item in the folder should be moved to the top level.
+  ASSERT_TRUE(GetSyncItem(kFolderId1));
   ASSERT_TRUE(GetSyncItem(kChildItemId1));
-  EXPECT_EQ(productivity_launcher ? kFolderId1 : "",
-            GetSyncItem(kChildItemId1)->parent_id);
+  EXPECT_EQ(kFolderId1, GetSyncItem(kChildItemId1)->parent_id);
   EXPECT_TRUE(
       GetSyncItem(kChildItemId1)
           ->item_ordinal.GreaterThan(GetSyncItem(kTopItem)->item_ordinal));
@@ -1023,16 +1034,10 @@ TEST_F(AppListSyncableServiceTest, UpdateSyncItemRemoveLastItemFromFolder) {
   // Move the child_item_1 out of the folder.
   model_updater->SetItemFolderId(child_item_1->id(), "");
 
-  // Verify both child item are moved out of the folder if productivity launcher
-  // is disabled. With productivity launcher enabled, single-item folder should
-  // stay around.
-  const bool productivity_launcher =
-      ash::features::IsProductivityLauncherEnabled();
   ASSERT_TRUE(GetSyncItem(kChildItemId1));
   EXPECT_EQ("", GetSyncItem(kChildItemId1)->parent_id);
   ASSERT_TRUE(GetSyncItem(kChildItemId2));
-  EXPECT_EQ(productivity_launcher ? kFolderId : "",
-            GetSyncItem(kChildItemId2)->parent_id);
+  EXPECT_EQ(kFolderId, GetSyncItem(kChildItemId2)->parent_id);
   EXPECT_EQ("", model_updater->FindItem(kChildItemId1)->folder_id());
 
   // Install the second child app.
@@ -1041,11 +1046,9 @@ TEST_F(AppListSyncableServiceTest, UpdateSyncItemRemoveLastItemFromFolder) {
               extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
   InstallExtension(child_app_2.get());
 
-  // Verify the second app item is created in the model updater,
-  // and it is not in any folder.
   ChromeAppListItem* child_item_2 = model_updater->FindItem(kChildItemId2);
   ASSERT_TRUE(child_item_2);
-  EXPECT_EQ(productivity_launcher ? kFolderId : "", child_item_2->folder_id());
+  EXPECT_EQ(kFolderId, child_item_2->folder_id());
 }
 
 TEST_F(AppListSyncableServiceTest, PruneRedundantPageBreakItems) {
@@ -1234,24 +1237,9 @@ TEST_F(AppListSyncableServiceTest, PageBreakWithOverflowItem) {
               extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
   InstallExtension(app_C1.get());
 
-  // Verify all apps and page breaks are created and the items
-  // in the model updater should look like:
-  // A1 A2 [page break 1]
-  // B1 B2 B3 [page break 2]
-  // C1 [page break 3]
-  // For productivity launcher, page breaks are ignored.
-  const bool productivity_launcher =
-      ash::features::IsProductivityLauncherEnabled();
   auto ordered_items = GetOrderedItemIdsFromModelUpdater();
-  if (productivity_launcher) {
-    EXPECT_THAT(ordered_items, ElementsAre(kItemIdA1, kItemIdA2, kItemIdB1,
-                                           kItemIdB2, kItemIdB3, kItemIdC1));
-  } else {
-    EXPECT_THAT(ordered_items,
-                ElementsAre(kItemIdA1, kItemIdA2, kPageBreakItemId1, kItemIdB1,
-                            kItemIdB2, kItemIdB3, kPageBreakItemId2, kItemIdC1,
-                            kPageBreakItemId3));
-  }
+  EXPECT_THAT(ordered_items, ElementsAre(kItemIdA1, kItemIdA2, kItemIdB1,
+                                         kItemIdB2, kItemIdB3, kItemIdC1));
 
   // On device 1, move A1 from page 1 to page 2 and insert it between B1 and B2.
   // Device 2 should get the following 3 sync changes from device 1:
@@ -1301,22 +1289,10 @@ TEST_F(AppListSyncableServiceTest, PageBreakWithOverflowItem) {
   // Verify a new page break sync item is created.
   EXPECT_TRUE(GetSyncItem(kNewPageBreakItemId));
 
-  // Verify the items in model updater now looks like:
-  // A2 [pagebreak 1]
-  // B1 A1 B2 [new pagebreak]
-  // B3 C1 [pagebreak 3]
-  // For productivity launcher page breaks are ignored.
   auto ordered_items_after_sync = GetOrderedItemIdsFromModelUpdater();
-  if (productivity_launcher) {
-    EXPECT_THAT(ordered_items_after_sync,
-                ElementsAre(kItemIdA2, kItemIdB1, kItemIdA1, kItemIdB2,
-                            kItemIdB3, kItemIdC1));
-  } else {
-    EXPECT_THAT(ordered_items_after_sync,
-                ElementsAre(kItemIdA2, kPageBreakItemId1, kItemIdB1, kItemIdA1,
-                            kItemIdB2, kNewPageBreakItemId, kItemIdB3,
-                            kItemIdC1, kPageBreakItemId3));
-  }
+  EXPECT_THAT(ordered_items_after_sync,
+              ElementsAre(kItemIdA2, kItemIdB1, kItemIdA1, kItemIdB2, kItemIdB3,
+                          kItemIdC1));
 }
 
 TEST_F(AppListSyncableServiceTest, FirstAvailablePosition) {
@@ -1542,44 +1518,7 @@ TEST_F(AppListSyncableServiceTest, EphemeralFoldersNotSynced) {
   }
 }
 
-class ProductivityLauncherAppListSyncableServiceTest
-    : public AppListSyncableServiceTest {
- public:
-  ProductivityLauncherAppListSyncableServiceTest() {
-    feature_list_.InitWithFeatures(
-        {ash::features::kLauncherAppSort, ash::features::kProductivityLauncher},
-        {});
-  }
-  ProductivityLauncherAppListSyncableServiceTest(
-      const ProductivityLauncherAppListSyncableServiceTest&) = delete;
-  ProductivityLauncherAppListSyncableServiceTest& operator=(
-      const ProductivityLauncherAppListSyncableServiceTest&) = delete;
-  ~ProductivityLauncherAppListSyncableServiceTest() override = default;
-
-  // Returns the app list order stored as preference.
-  ash::AppListSortOrder GetSortOrderFromPrefs() {
-    return static_cast<ash::AppListSortOrder>(
-        app_list_syncable_service()->profile()->GetPrefs()->GetInteger(
-            prefs::kAppListPreferredOrder));
-  }
-
-  ash::AppListItem* FindItemForApp(extensions::Extension* app) {
-    return GetModelUpdater()->model_for_test()->FindItem(app->id());
-  }
-
-  // A hacky way to change an item's name.
-  void ChangeItemName(const std::string& id, const std::string& new_name) {
-    app_list_syncable_service()->GetMutableSyncItemForTest(id)->item_name =
-        new_name;
-    app_list_syncable_service()->GetModelUpdater()->SetItemName(id, new_name);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_lists_;
-};
-
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
-       SanitizePagesOnItemAdditionAndRemoval) {
+TEST_F(AppListSyncableServiceTest, SanitizePagesOnItemAdditionAndRemoval) {
   RemoveAllExistingItems();
 
   // Add enough items to fill up a legacy app list page.
@@ -1666,8 +1605,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
             "Item 15",    "Item 16",    "Item 17", "Item 18", "Item 19"}}));
 }
 
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
-       SanitizationKeepsUserAddedPageBreaks) {
+TEST_F(AppListSyncableServiceTest, SanitizationKeepsUserAddedPageBreaks) {
   RemoveAllExistingItems();
 
   // Add enough items to have two pages with legacy max app list page size,
@@ -1777,8 +1715,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
                  {"Item 20"}}));
 }
 
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
-       SanitizePageSizesWhenMovingApps) {
+TEST_F(AppListSyncableServiceTest, SanitizePageSizesWhenMovingApps) {
   RemoveAllExistingItems();
 
   app_list_syncable_service()->MergeDataAndStartSyncing(
@@ -1865,7 +1802,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
                  {"Item 10", "Item 1"}}));
 }
 
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
+TEST_F(AppListSyncableServiceTest,
        SanitizePageSizesWhenCreatingAndRemovingFolders) {
   RemoveAllExistingItems();
   app_list_syncable_service()->MergeDataAndStartSyncing(
@@ -1951,8 +1888,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
            {"Item 5"}}));
 }
 
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
-       SanitizePageSizesWhenReparentingItems) {
+TEST_F(AppListSyncableServiceTest, SanitizePageSizesWhenReparentingItems) {
   RemoveAllExistingItems();
 
   // Create two pages of apps, where the first page is partial, and the second
@@ -2064,7 +2000,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
                   "Item 29", "Item 30", "Item 31", "Item 32", "Item 33"}}));
 }
 
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
+TEST_F(AppListSyncableServiceTest,
        NonInstalledItemsIgnoredWhenSanitizingPageSizes) {
   RemoveAllExistingItems();
 
@@ -2213,7 +2149,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
             "Item 38", "Item 39", "Item 40", "Item 41"}}));
 }
 
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
+TEST_F(AppListSyncableServiceTest,
        DontDuplicatePageBreakBetweenUninstalledItems) {
   RemoveAllExistingItems();
 
@@ -2320,7 +2256,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
 
 // Verifies that app list model sanitizer gracefully handles the case when page
 // break has to be added between sync items that have duplicate item ordinals.
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
+TEST_F(AppListSyncableServiceTest,
        PageBreakSanitizationHandlesDuplicateOrdinalsAtPageBreakLocation) {
   RemoveAllExistingItems();
 
@@ -2411,7 +2347,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
 // Verifies that app list model sanitizer gracefully handles the case when page
 // break has to be added between sync items that have duplicate item ordinals,
 // where all trailing items have the same ordinal.
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
+TEST_F(AppListSyncableServiceTest,
        PageBreakSanitizationHandlesTrailingDuplicateOrdinals) {
   RemoveAllExistingItems();
 
@@ -2483,7 +2419,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
                  "Item 14", "Item 15", "Item 16"}));
 }
 
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
+TEST_F(AppListSyncableServiceTest,
        PageBreakSanitizationHandlesDuplicateOrdinalsAtTwoBreaks) {
   RemoveAllExistingItems();
 
@@ -2544,7 +2480,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
             std::vector<std::string>({"Item 42", "Item 43", "Item 44"}));
 }
 
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
+TEST_F(AppListSyncableServiceTest,
        PageBreakSanitizationHandlesFullPageOfDuplicateOrdinals) {
   RemoveAllExistingItems();
 
@@ -2601,7 +2537,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
             std::vector<std::string>({"Item 42", "Item 43", "Item 44"}));
 }
 
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
+TEST_F(AppListSyncableServiceTest,
        PageBreakSanitizationHandlesPairOfDuplicateOrdinals) {
   RemoveAllExistingItems();
 
@@ -2658,7 +2594,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
                 {"Item 20", "Item 21", "Item 22", "Item 23", "Item 24"}));
 }
 
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
+TEST_F(AppListSyncableServiceTest,
        PageBreakSanitizationHandlesAllDuplicateOrdinals) {
   RemoveAllExistingItems();
 
@@ -2715,8 +2651,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
 }
 
 // Verifies that sorting works for the mixture of valid and invalid positions.
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
-       SortMixedPositionValidityItems) {
+TEST_F(AppListSyncableServiceTest, SortMixedPositionValidityItems) {
   RemoveAllExistingItems();
 
   using SyncItem = AppListSyncableService::SyncItem;
@@ -2766,8 +2701,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
 }
 
 // Verifies that sorting works if all item positions are invalid.
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
-       SortInvalidPositionItems) {
+TEST_F(AppListSyncableServiceTest, SortInvalidPositionItems) {
   RemoveAllExistingItems();
 
   using SyncItem = AppListSyncableService::SyncItem;
@@ -2816,8 +2750,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
 
 // Verifies that sorting with alphateical order works as expected for both
 // folder items and app items.
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
-       VerifyAlphabeticalOrderForFolderItems) {
+TEST_F(AppListSyncableServiceTest, VerifyAlphabeticalOrderForFolderItems) {
   RemoveAllExistingItems();
   syncer::SyncDataList sync_list;
 
@@ -2886,8 +2819,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
 
 // Verifies that sorting app items with the alphabetical order should work as
 // expected. Meanwhile, sorting should incur the minimum orinal changes.
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
-       VerifyAlphabeticalOrderSort) {
+TEST_F(AppListSyncableServiceTest, VerifyAlphabeticalOrderSort) {
   RemoveAllExistingItems();
   syncer::SyncDataList sync_list;
   const std::string kItemId1 = CreateNextAppId(extensions::kWebStoreAppId);
@@ -2979,8 +2911,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
 
 // Verifies that sorting app items with the alphabetical order should work for
 // the apps with the duplicate names.
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
-       VerifyAlphabeticalSortWithDuplicateNames) {
+TEST_F(AppListSyncableServiceTest, VerifyAlphabeticalSortWithDuplicateNames) {
   RemoveAllExistingItems();
   syncer::SyncDataList sync_list;
   const std::string kItemId1 = CreateNextAppId(extensions::kWebStoreAppId);
@@ -3020,7 +2951,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
 
 // Verifies that a new app is placed at the correct place when the launcher is
 // in (reverse) alphabetical order.
-TEST_F(ProductivityLauncherAppListSyncableServiceTest, NewAppPlacement) {
+TEST_F(AppListSyncableServiceTest, NewAppPlacement) {
   RemoveAllExistingItems();
   EXPECT_EQ(ash::AppListSortOrder::kCustom, GetSortOrderFromPrefs());
 
@@ -3132,8 +3063,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest, NewAppPlacement) {
 
 // Verifies that a new app is placed at the correct place when initially all of
 // top level items are folders.
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
-       NewAppPlacementInitiallyOnlyFolders) {
+TEST_F(AppListSyncableServiceTest, NewAppPlacementInitiallyOnlyFolders) {
   RemoveAllExistingItems();
 
   // Add three folders.
@@ -3237,8 +3167,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
 
 // Verifies that the new app's position maintains the launcher sort order among
 // sync items (including the apps not enabled on the local device).
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
-       VerifyNewAppPositionInGlobalScope) {
+TEST_F(AppListSyncableServiceTest, VerifyNewAppPositionInGlobalScope) {
   RemoveAllExistingItems();
 
   const std::string kItemId1 = CreateNextAppId(GenerateId("app_id1"));
@@ -3302,8 +3231,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
             std::vector<std::string>({"A", "B", "C", "D", "E", "F"}));
 }
 
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
-       RemovePageBreaksIfAppsDontFillUpAPage) {
+TEST_F(AppListSyncableServiceTest, RemovePageBreaksIfAppsDontFillUpAPage) {
   RemoveAllExistingItems();
   syncer::SyncDataList sync_list;
   const std::string kItemId1 = CreateNextAppId(extensions::kWebStoreAppId);
@@ -3347,7 +3275,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
             std::vector<std::string>({"A", "B", "C", "D"}));
 }
 
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
+TEST_F(AppListSyncableServiceTest,
        RemovePageBreaksIfAppCountMatchesLegacyPageSize) {
   RemoveAllExistingItems();
   syncer::SyncDataList sync_list;
@@ -3385,8 +3313,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
                   "Item 5",  "Item 6",  "Item 7",  "Item 8",  "Item 9"}}));
 }
 
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
-       PageBreaksAfterSortWithTwoPagesInSync) {
+TEST_F(AppListSyncableServiceTest, PageBreaksAfterSortWithTwoPagesInSync) {
   RemoveAllExistingItems();
   syncer::SyncDataList sync_list;
   std::string last_item_id = extensions::kWebStoreAppId;
@@ -3423,7 +3350,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
                  {"Item 5", "Item 6", "Item 7", "Item 8", "Item 9"}}));
 }
 
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
+TEST_F(AppListSyncableServiceTest,
        PageBreaksAfterSortWithTwoPagesAndNonInstalledItemsInSync) {
   RemoveAllExistingItems();
   syncer::SyncDataList sync_list;
@@ -3467,7 +3394,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
            {"Item 7", "Item 8", "Item 9"}}));
 }
 
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
+TEST_F(AppListSyncableServiceTest,
        PageBreaksAfterSortWithTwoPagesAndAFolderInSync) {
   RemoveAllExistingItems();
 
@@ -3519,8 +3446,7 @@ TEST_F(ProductivityLauncherAppListSyncableServiceTest,
                  {"Item 9"}}));
 }
 
-TEST_F(ProductivityLauncherAppListSyncableServiceTest,
-       PageBreaksAfterSortWithTwoFullPagesInSync) {
+TEST_F(AppListSyncableServiceTest, PageBreaksAfterSortWithTwoFullPagesInSync) {
   RemoveAllExistingItems();
   syncer::SyncDataList sync_list;
   std::string last_item_id = extensions::kWebStoreAppId;

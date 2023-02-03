@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chromeos/ash/components/dbus/shill/shill_clients.h"
 #include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
+#include "chromeos/ash/components/network/hotspot_capabilities_provider.h"
 #include "chromeos/ash/components/network/hotspot_state_handler.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/network/network_state_test_helper.h"
@@ -31,11 +32,15 @@ const char kShillNetworkingFailure[] = "network_failure";
 class HotspotControllerTest : public ::testing::Test {
  public:
   void SetUp() override {
-    hotspot_state_handler_ = std::make_unique<HotspotStateHandler>();
-    hotspot_state_handler_->Init(
+    hotspot_capabilities_provider_ =
+        std::make_unique<HotspotCapabilitiesProvider>();
+    hotspot_capabilities_provider_->Init(
         network_state_test_helper_.network_state_handler());
+    hotspot_state_handler_ = std::make_unique<HotspotStateHandler>();
+    hotspot_state_handler_->Init();
     hotspot_controller_ = std::make_unique<HotspotController>();
-    hotspot_controller_->Init(hotspot_state_handler_.get());
+    hotspot_controller_->Init(hotspot_capabilities_provider_.get(),
+                              hotspot_state_handler_.get());
     SetReadinessCheckResultReady();
   }
 
@@ -43,6 +48,7 @@ class HotspotControllerTest : public ::testing::Test {
     network_state_test_helper_.ClearDevices();
     network_state_test_helper_.ClearServices();
     hotspot_controller_.reset();
+    hotspot_capabilities_provider_.reset();
     hotspot_state_handler_.reset();
   }
 
@@ -130,6 +136,7 @@ class HotspotControllerTest : public ::testing::Test {
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<HotspotController> hotspot_controller_;
+  std::unique_ptr<HotspotCapabilitiesProvider> hotspot_capabilities_provider_;
   std::unique_ptr<HotspotStateHandler> hotspot_state_handler_;
   NetworkStateTestHelper network_state_test_helper_{
       /*use_default_devices_and_services=*/false};
@@ -169,7 +176,7 @@ TEST_F(HotspotControllerTest, EnableTetheringReadinessCheckFailure) {
             EnableHotspot());
   EXPECT_EQ(
       hotspot_config::mojom::HotspotAllowStatus::kDisallowedReadinessCheckFail,
-      hotspot_state_handler_->GetHotspotCapabilities().allow_status);
+      hotspot_capabilities_provider_->GetHotspotCapabilities().allow_status);
 }
 
 TEST_F(HotspotControllerTest, EnableTetheringNetworkSetupFailure) {

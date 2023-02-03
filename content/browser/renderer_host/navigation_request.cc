@@ -345,31 +345,6 @@ bool DoesHeaderContainClientHint(
   return headers.GetHeader(header, &value) && value == "?1";
 }
 
-void LogUserAgentOverrideHistogram(const std::string& user_agent) {
-  std::string ua_original = GetContentClient()->browser()->GetUserAgent();
-  base::UmaHistogramEnumeration("Navigation.UserAgentStringType",
-                                UserAgentStringType::kOverriden);
-
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kUserAgentOverrideExperiment)) {
-    return;
-  }
-
-  auto it = user_agent.find(ua_original);
-  blink::UserAgentOverride::UserAgentOverrideHistogram histogram =
-      blink::UserAgentOverride::UserAgentOverrideHistogram::UserAgentOverriden;
-  if (it == 0) {
-    histogram = blink::UserAgentOverride::UserAgentOverrideHistogram::
-        UserAgentOverrideSuffix;
-  } else if (it != std::string::npos) {
-    histogram = blink::UserAgentOverride::UserAgentOverrideHistogram::
-        UserAgentOverrideSubstring;
-  }
-
-  base::UmaHistogramEnumeration(
-      blink::UserAgentOverride::kUserAgentOverrideHistogram, histogram);
-}
-
 // Computes the value that should be set for the User-Agent header, based on the
 // values of relevant headers like Sec-CH-UA-Reduced or Sec-CH-UA-Full.  If
 // `user_agent_override` is non-empty, `user_agent_override` is returned as the
@@ -378,7 +353,8 @@ std::string ComputeUserAgentValue(const net::HttpRequestHeaders& headers,
                                   const std::string& user_agent_override,
                                   content::BrowserContext* context) {
   if (!user_agent_override.empty()) {
-    LogUserAgentOverrideHistogram(user_agent_override);
+    base::UmaHistogramEnumeration("Navigation.UserAgentStringType",
+                                  UserAgentStringType::kOverriden);
     return user_agent_override;
   }
 
@@ -1043,6 +1019,7 @@ void RemoveOriginTrialHintsFromAcceptCH(
 // that correspond to persistent origin trials, provided the tokens are valid.
 void PersistOriginTrialsFromHeaders(
     const url::Origin& origin,
+    const url::Origin& partition_origin,
     const network::mojom::URLResponseHead* response,
     BrowserContext* browser_context) {
   if (!base::FeatureList::IsEnabled(features::kPersistentOriginTrials))
@@ -1065,8 +1042,8 @@ void PersistOriginTrialsFromHeaders(
 
   std::vector<std::string> tokens =
       GetOriginTrialHeaderValues(response->headers.get());
-  origin_trials_delegate->PersistTrialsFromTokens(origin, tokens,
-                                                  base::Time::Now());
+  origin_trials_delegate->PersistTrialsFromTokens(origin, partition_origin,
+                                                  tokens, base::Time::Now());
 }
 
 }  // namespace
@@ -1142,7 +1119,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::Create(
       net::LOAD_NORMAL, false /* skip_service_worker */,
       blink::mojom::RequestContextType::LOCATION,
       blink::mojom::MixedContentContextType::kBlockable, is_form_submission,
-      false /* was_initiated_by_link_click */, GURL() /* searchable_form_url */,
+      false /* was_initiated_by_link_click */,
+      blink::mojom::ForceHistoryPush::kNo, GURL() /* searchable_form_url */,
       std::string() /* searchable_form_encoding */,
       GURL() /* client_side_redirect_url */,
       absl::nullopt /* devtools_initiator_info */,
@@ -1298,7 +1276,6 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           /*early_hints_preloaded_resources=*/std::vector<GURL>(),
           // This timestamp will be populated when the commit IPC is sent.
           /*commit_sent=*/base::TimeTicks(), /*srcdoc_value=*/std::string(),
-          /*fallback_srcdoc_baseurl=*/GURL(),
           /*should_load_data_url=*/false,
           /*ancestor_or_self_has_cspee=*/
           frame_tree_node->AncestorOrSelfHasCSPEE(),
@@ -1442,7 +1419,6 @@ NavigationRequest::CreateForSynchronousRendererCommit(
           /*early_hints_preloaded_resources=*/std::vector<GURL>(),
           // This timestamp will be populated when the commit IPC is sent.
           /*commit_sent=*/base::TimeTicks(), /*srcdoc_value=*/std::string(),
-          /*fallback_srcdoc_baseurl=*/GURL(),
           /*should_load_data_url=*/false,
           /*ancestor_or_self_has_cspee=*/
           frame_tree_node->AncestorOrSelfHasCSPEE(),
@@ -1479,16 +1455,20 @@ NavigationRequest::CreateForSynchronousRendererCommit(
       render_frame_host->ComputeTopFrameOrigin(origin);
   // If the `nonce` is set the `top_level_site` must be the same as `origin` and
   // the `ancestor_chain_bit` must be kSameSite.
+  // TODO(https://crbug.com/1410254): Cleanup this logic.
   if (nonce) {
     navigation_request->commit_params_->storage_key =
         blink::StorageKey::CreateWithOptionalNonce(
             origin, net::SchemefulSite(origin), base::OptionalToPtr(nonce),
             blink::mojom::AncestorChainBit::kSameSite);
   } else {
+    net::SchemefulSite top_level_site(top_level_origin);
     navigation_request->commit_params_->storage_key =
         blink::StorageKey::CreateWithOptionalNonce(
-            origin, net::SchemefulSite(top_level_origin), nullptr,
-            render_frame_host->ComputeSiteForCookies().IsNull()
+            origin, top_level_site, nullptr,
+            ((render_frame_host->ComputeSiteForCookies().IsNull() ||
+              net::SchemefulSite(origin) != top_level_site) &&
+             !top_level_site.opaque())
                 ? blink::mojom::AncestorChainBit::kCrossSite
                 : blink::mojom::AncestorChainBit::kSameSite);
   }
@@ -1903,20 +1883,6 @@ NavigationRequest::NavigationRequest(
     }
   }
 
-  // For navigations that inherit a base URL, snapshot the parent's base URL at
-  // the start of the navigation. Currently, this is only stored and sent to the
-  // renderer if kNewBaseUrlInheritanceBehavior or kIsolateSandboxedIframes is
-  // enabled, since it is a behavior change relevant for isolated sandboxed
-  // iframes. See https://crbug.com/1356658.
-  // TODO(wjmaclean): about:blank frames may also need to inherit base URLs,
-  // possibly from the initiator rather than the parent. See
-  // https://crbug.com/1356658#c7.
-  if (GetURL().IsAboutSrcdoc() && frame_tree_node_->parent() &&
-      blink::features::IsNewBaseUrlInheritanceBehaviorEnabled()) {
-    commit_params_->fallback_srcdoc_baseurl =
-        frame_tree_node_->parent()->GetBaseUrl();
-  }
-
   // Ask the service worker context to speculatively start a service worker for
   // the request URL if necessary for optimization purposes. Don't ask to do
   // that if this request is for ReloadType::BYPASSING_CACHE that is supposed to
@@ -1956,6 +1922,23 @@ NavigationRequest::NavigationRequest(
       commit_params_->not_restored_reasons =
           metrics->GetWebExposedNotRestoredReasons();
     }
+  }
+
+  // Record `SameDocumentCrossOriginInitiator` metric. It happens in the
+  // NavigationRequest constructor, to catch every kind of same-document
+  // navigation: the one initiated from the navigating frame's process, and the
+  // others.
+  if (common_params_->navigation_type ==
+          blink::mojom::NavigationType::SAME_DOCUMENT &&
+      GetInitiatorOrigin() &&
+      !GetInitiatorOrigin()->IsSameOriginWith(
+          GetTentativeOriginAtRequestTime())) {
+    // This is reported to navigating frame's current document, because this is
+    // the document that behave differently if this navigation was turned into a
+    // cross-document one.
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        frame_tree_node_->current_frame_host(),
+        blink::mojom::WebFeature::kSameDocumentCrossOriginInitiator);
   }
 }
 
@@ -4744,9 +4727,9 @@ void NavigationRequest::MaybeAddResourceTimingEntryForCancelledNavigation() {
   }
 
   blink::mojom::ResourceTimingInfoPtr timing_info =
-      GenerateResourceTimingForNavigation(
-          parent_rfh->GetLastCommittedOrigin(), *common_params_,
-          *commit_params_, *response_head_, request_context_type());
+      GenerateResourceTimingForNavigation(parent_rfh->GetLastCommittedOrigin(),
+                                          *common_params_, *commit_params_,
+                                          *response_head_);
   timing_info->response_end = base::TimeTicks::Now();
   parent_rfh->GetAssociatedLocalFrame()
       ->AddResourceTimingEntryFromNonNavigatedFrame(
@@ -5127,6 +5110,9 @@ void NavigationRequest::CommitErrorPage(
   commit_params_->origin_to_commit = GetOriginToCommit();
   DCHECK(commit_params_->origin_to_commit->opaque());
 
+  // Don't pass the base url in a failed navigation.
+  common_params_->initiator_base_url = absl::nullopt;
+
   if (request_navigation_client_.is_bound()) {
     if (render_frame_host_ == frame_tree_node()->current_frame_host()) {
       // Reuse the request NavigationClient for commit.
@@ -5296,8 +5282,19 @@ void NavigationRequest::CommitNavigation() {
         common_params_->url, client_hints_delegate, response(),
         commit_params_->enabled_client_hints, frame_tree_node_);
   }
+  // Navigation requests should use the new origin as the partition origin
+  // except if embedded in an outer frame.
+  url::Origin partition_origin = origin;
+  bool is_top_level = frame_tree_node()->GetParentOrOuterDocument() == nullptr;
+  if (!is_top_level) {
+    partition_origin = frame_tree_node()
+                           ->GetParentOrOuterDocument()
+                           ->GetOutermostMainFrame()
+                           ->GetLastCommittedOrigin();
+  }
 
-  PersistOriginTrialsFromHeaders(origin, response(), browser_context);
+  PersistOriginTrialsFromHeaders(origin, partition_origin, response(),
+                                 browser_context);
 
   // Update the reduced accept-language to commit if it's empty, and stop
   // persisting the accepted language if the final response do not have a valid
@@ -8309,6 +8306,14 @@ bool NavigationRequest::ShouldReplaceCurrentEntryForSameUrlNavigation() const {
   // Never replace if there is no NavigationEntry to replace.
   if (!frame_tree_node_->navigator().controller().GetEntryCount())
     return false;
+
+  // The NavigationAPI allows a page to request a navigation that pushes even in
+  // situations where the browser would implicitly convert the navigation to
+  // a replace.
+  if (begin_params_->force_history_push ==
+      blink::mojom::ForceHistoryPush::kYes) {
+    return false;
+  }
 
   // Reloads and history navigations have special handling and don't need to
   // set |common_params_->should_replace_current_entry|.

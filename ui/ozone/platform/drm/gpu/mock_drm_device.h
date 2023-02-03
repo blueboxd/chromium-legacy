@@ -126,11 +126,15 @@ class MockDrmDevice : public DrmDevice {
     // CRTCs and connectors with 1 primary plane, 1 cursor plane (since some
     // tests expect them), and |planes_per_crtc| - 1 overlay planes for each
     // CRTC.
-    static MockDrmState CreateStateWithDefaultObjects(size_t crtc_count,
-                                                      size_t planes_per_crtc);
+    static MockDrmState CreateStateWithDefaultObjects(
+        size_t crtc_count,
+        size_t planes_per_crtc,
+        size_t movable_planes = 0u);
 
     std::pair<CrtcProperties&, ConnectorProperties&> AddCrtcAndConnector();
     PlaneProperties& AddPlane(uint32_t crtc_id, uint32_t type);
+    PlaneProperties& AddPlane(const std::vector<uint32_t>& crtc_ids,
+                              uint32_t type);
 
     std::vector<CrtcProperties> crtc_properties;
     std::vector<ConnectorProperties> connector_properties;
@@ -178,7 +182,7 @@ class MockDrmDevice : public DrmDevice {
     legacy_gamma_ramp_expectation_ = state;
   }
   void set_commit_expectation(bool state) { commit_expectation_ = state; }
-  void set_overlay_modeset_expecation(bool state) {
+  void set_overlay_modeset_expectation(bool state) {
     modeset_with_overlays_expectation_ = state;
   }
 

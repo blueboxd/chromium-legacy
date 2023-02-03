@@ -31,6 +31,11 @@ extern const base::FeatureParam<int>
         &kInstallableAmbientBadgeMessage,
         "installable_ambient_badge_message_throttle_domains_capacity", 100};
 
+// Enables WebAPK Install Failure Notification.
+BASE_FEATURE(kWebApkInstallFailureNotification,
+             "WebApkInstallFailureNotification",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables PWA Unique IDs for WebAPKs.
 BASE_FEATURE(kWebApkUniqueId,
              "WebApkUniqueId",
@@ -52,11 +57,9 @@ BASE_FEATURE(kCreateShortcutIgnoresManifest,
 // only the "installable" status but not "promotable".
 BASE_FEATURE(kSkipServiceWorkerCheckInstallOnly,
              "SkipServiceWorkerCheckInstallOnly",
-#if BUILDFLAG(IS_ANDROID)
+
              base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
+
 );
 
 // Enables showing a detailed install dialog for user installs.

@@ -51,16 +51,17 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
   // 1. kSkippedForEmptyFetchHandler
   // 2. kMainResourceSkippedDueToOriginTrial
   // 3. kMainResourceSkippedDueToFeatureFlag
-  // 4. kMainResourceSkippedBecauseMatchedWithAllowedOriginList
+  // 4. kMainResourceSkippedBecauseMatchedWithAllowedScriptList
   enum class FetchHandlerSkipReason {
     kNoFetchHandler = 0,
     kNotSkipped = 1,
     kSkippedForEmptyFetchHandler = 2,
     kMainResourceSkippedDueToOriginTrial = 3,
     kMainResourceSkippedDueToFeatureFlag = 4,
-    kMainResourceSkippedBecauseMatchedWithAllowedOriginList = 5,
+    // kMainResourceSkippedBecauseMatchedWithAllowedOriginList = 5,
+    kMainResourceSkippedBecauseMatchedWithAllowedScriptList = 6,
 
-    kMaxValue = kMainResourceSkippedBecauseMatchedWithAllowedOriginList,
+    kMaxValue = kMainResourceSkippedBecauseMatchedWithAllowedScriptList,
   };
 
   // If |skip_service_worker| is true, service workers are bypassed for
@@ -104,6 +105,8 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler final {
       const blink::StorageKey& storage_key);
 
   void ContinueWithRegistration(
+      // True when FindRegistrationForClientUrl() is called for navigation.
+      bool is_for_navigation,
       base::TimeTicks start_time,
       blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);

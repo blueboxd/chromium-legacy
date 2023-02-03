@@ -178,22 +178,27 @@ enum class NotificationCatalogName {
   kDicationOnlyPumpkinDownloaded = 163,
   kDictationOnlySodaDownloaded = 164,
   kIPHGoogleOneOffer = 165,
-  kMaxValue = kIPHGoogleOneOffer
+  kLockScreen = 166,
+  kMaxValue = kLockScreen
 };
 
 // A living catalog that registers system nudges.
 // Current values should not be renumbered or removed. Please keep in sync with
 // "NudgeCatalogName" in tools/metrics/histograms/enums.xml.
 // To deprecate comment out the entry.
+// Please call `SystemNudgeController::RecordNudgeAction` when the nudge's
+// suggested action is performed by the user, if applicable.
 enum class NudgeCatalogName {
   kTestCatalogName = 0,
   kDictation = 1,
-  kMultipaste = 2,
+  // [Deprecated] kMultipaste = 2,
   kDarkLightMode = 3,
   kAutozoom = 4,
   kAdaptiveCharging = 5,
   kPhoneHub = 6,
-  kMaxValue = kPhoneHub,
+  kClipboardHistoryZeroState = 7,
+  kClipboardHistoryOnboarding = 8,
+  kMaxValue = kClipboardHistoryOnboarding,
 };
 
 // A living catalog that registers toasts.
@@ -243,7 +248,8 @@ enum class ToastCatalogName {
   kNotificationCenterTrayNoNotifications = 39,
   kCopyToClipboardAction = 40,
   kVideoConferenceTraySpeakOnMuteDetected = 41,
-  kMaxValue = kVideoConferenceTraySpeakOnMuteDetected,
+  kCopyGifToClipboardAction = 42,
+  kMaxValue = kCopyGifToClipboardAction,
 };
 
 }  // namespace ash

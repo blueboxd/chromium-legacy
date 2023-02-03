@@ -96,8 +96,6 @@ constexpr auto kActiveTopicsConsent = StateKey::kActiveTopicsConsent;
 // using enum privacy_sandbox_test_util::InputKey;
 using privacy_sandbox_test_util::InputKey;
 constexpr auto kTopicsToggleNewValue = InputKey::kTopicsToggleNewValue;
-constexpr auto kTopicsConfirmationDecisionConfirmed =
-    InputKey::kTopicsConfirmationDecisionConfirmed;
 constexpr auto kTopFrameOrigin = InputKey::kTopFrameOrigin;
 constexpr auto kAdMeasurementReportingOrigin =
     InputKey::kAdMeasurementReportingOrigin;
@@ -137,9 +135,6 @@ class TestPrivacySandboxService
   // PrivacySandboxServiceTestInterface
   void TopicsToggleChanged(bool new_value) const override {
     service_->TopicsToggleChanged(new_value);
-  }
-  void TopicsConfirmationDecisionMade(bool confirmed) const override {
-    service_->TopicsConfirmationDecisionMade(confirmed);
   }
   void SetTopicAllowed(privacy_sandbox::CanonicalTopic topic,
                        bool allowed) override {
@@ -897,12 +892,19 @@ class PrivacySandboxServiceTest : public testing::Test {
 
   virtual void InitializeFeaturesBeforeStart() {}
 
-  void CreateService() {
+  virtual std::unique_ptr<
+      privacy_sandbox_test_util::MockPrivacySandboxSettingsDelegate>
+  CreateMockDelegate() {
     auto mock_delegate = std::make_unique<testing::NiceMock<
         privacy_sandbox_test_util::MockPrivacySandboxSettingsDelegate>>();
-    mock_delegate_ = mock_delegate.get();
     mock_delegate->SetUpIsPrivacySandboxRestrictedResponse(
         /*restricted=*/false);
+    return mock_delegate;
+  }
+
+  void CreateService() {
+    auto mock_delegate = CreateMockDelegate();
+    mock_delegate_ = mock_delegate.get();
 
     privacy_sandbox_settings_ =
         std::make_unique<privacy_sandbox::PrivacySandboxSettingsImpl>(
@@ -1680,6 +1682,27 @@ TEST_F(PrivacySandboxServiceTest, TestNoFakeTopics) {
   EXPECT_THAT(service->GetBlockedTopics(), testing::IsEmpty());
 }
 
+TEST_F(PrivacySandboxServiceTest, TestNoFakeTopicsPrefOff) {
+  // Sample data won't be returned for current topics when the pref is off, only
+  // the blocked list.
+  prefs()->SetUserPref(prefs::kPrivacySandboxM1TopicsEnabled,
+                       std::make_unique<base::Value>(false));
+
+  feature_list()->InitWithFeaturesAndParameters(
+      {{privacy_sandbox::kPrivacySandboxSettings4,
+        {{privacy_sandbox::kPrivacySandboxSettings4ShowSampleDataForTesting
+              .name,
+          "true"}}}},
+      {});
+
+  CanonicalTopic topic3(Topic(3), CanonicalTopic::AVAILABLE_TAXONOMY);
+  CanonicalTopic topic4(Topic(4), CanonicalTopic::AVAILABLE_TAXONOMY);
+
+  auto* service = privacy_sandbox_service();
+  EXPECT_THAT(service->GetCurrentTopTopics(), testing::IsEmpty());
+  EXPECT_THAT(service->GetBlockedTopics(), ElementsAre(topic3, topic4));
+}
+
 TEST_F(PrivacySandboxServiceTest, TestFakeTopics) {
   std::vector<base::test::FeatureRefAndParams> test_features = {
       {privacy_sandbox::kPrivacySandboxSettings3,
@@ -1688,6 +1711,10 @@ TEST_F(PrivacySandboxServiceTest, TestFakeTopics) {
       {privacy_sandbox::kPrivacySandboxSettings4,
        {{privacy_sandbox::kPrivacySandboxSettings4ShowSampleDataForTesting.name,
          "true"}}}};
+
+  // Sample data for current topics is only returned when the pref is on.
+  prefs()->SetUserPref(prefs::kPrivacySandboxM1TopicsEnabled,
+                       std::make_unique<base::Value>(true));
 
   for (const auto& feature : test_features) {
     feature_list()->Reset();
@@ -3260,40 +3287,6 @@ TEST_F(PrivacySandboxServiceM1Test,
       });
 }
 
-TEST_F(PrivacySandboxServiceM1Test, TopicsConsentConfirmation_Accepted) {
-  RunTestCase(
-      TestState{{kActiveTopicsConsent, false},
-                {kAdvanceClockBy, base::Hours(1)}},
-      TestInput{
-          {kTopicsConfirmationDecisionConfirmed, true},
-      },
-      TestOutput{
-          {kTopicsConsentGiven, true},
-          {kTopicsConsentLastUpdateReason,
-           privacy_sandbox::TopicsConsentUpdateSource::kConfirmation},
-          {kTopicsConsentLastUpdateTime, base::Time::Now() + base::Hours(1)},
-          {kTopicsConsentStringIdentifiers,
-           GetTopicsConfirmationStringIdentifiers()},
-      });
-}
-
-TEST_F(PrivacySandboxServiceM1Test, TopicsConsentConfirmation_Declined) {
-  RunTestCase(
-      TestState{{kActiveTopicsConsent, true},
-                {kAdvanceClockBy, base::Hours(1)}},
-      TestInput{
-          {kTopicsConfirmationDecisionConfirmed, true},
-      },
-      TestOutput{
-          {kTopicsConsentGiven, true},
-          {kTopicsConsentLastUpdateReason,
-           privacy_sandbox::TopicsConsentUpdateSource::kConfirmation},
-          {kTopicsConsentLastUpdateTime, base::Time::Now() + base::Hours(1)},
-          {kTopicsConsentStringIdentifiers,
-           GetTopicsConfirmationStringIdentifiers()},
-      });
-}
-
 TEST_F(PrivacySandboxServiceM1Test,
        RecordPrivacySandbox4StartupMetrics_PromptSuppressed_Explicitly) {
   base::HistogramTester histogram_tester;
@@ -3533,6 +3526,93 @@ TEST_F(PrivacySandboxServiceM1Test, RecordPrivacySandbox4StartupMetrics_APIs) {
   }
 }
 
+class PrivacySandboxServiceM1DelayCreation
+    : public PrivacySandboxServiceM1Test {
+ public:
+  void SetUp() override {
+    // Prevent service from being created by base class.
+  }
+};
+
+TEST_F(PrivacySandboxServiceM1DelayCreation,
+       UnrestrictedRemainsEnabledWithConsent) {
+  prefs()->SetBoolean(prefs::kPrivacySandboxM1TopicsEnabled, true);
+  prefs()->SetBoolean(prefs::kPrivacySandboxM1FledgeEnabled, true);
+  prefs()->SetBoolean(prefs::kPrivacySandboxM1AdMeasurementEnabled, true);
+  prefs()->SetBoolean(prefs::kPrivacySandboxTopicsConsentGiven, true);
+  prefs()->SetTime(prefs::kPrivacySandboxTopicsConsentLastUpdateTime,
+                   base::Time::Now());
+  prefs()->SetInteger(
+      prefs::kPrivacySandboxTopicsConsentLastUpdateReason,
+      static_cast<int>(
+          privacy_sandbox::TopicsConsentUpdateSource::kConfirmation));
+  prefs()->SetString(prefs::kPrivacySandboxTopicsConsentTextAtLastUpdate,
+                     "foo");
+
+  CreateService();
+
+  EXPECT_TRUE(prefs()->GetBoolean(prefs::kPrivacySandboxM1TopicsEnabled));
+  EXPECT_TRUE(prefs()->GetBoolean(prefs::kPrivacySandboxM1FledgeEnabled));
+  EXPECT_TRUE(
+      prefs()->GetBoolean(prefs::kPrivacySandboxM1AdMeasurementEnabled));
+  EXPECT_TRUE(prefs()->GetBoolean(prefs::kPrivacySandboxTopicsConsentGiven));
+  EXPECT_EQ(
+      base::Time::Now(),
+      prefs()->GetTime(prefs::kPrivacySandboxTopicsConsentLastUpdateTime));
+  EXPECT_EQ(privacy_sandbox::TopicsConsentUpdateSource::kConfirmation,
+            static_cast<privacy_sandbox::TopicsConsentUpdateSource>(
+                prefs()->GetInteger(
+                    prefs::kPrivacySandboxTopicsConsentLastUpdateReason)));
+  EXPECT_EQ("foo", prefs()->GetString(
+                       prefs::kPrivacySandboxTopicsConsentTextAtLastUpdate));
+}
+
+class PrivacySandboxServiceM1DelayCreationRestricted
+    : public PrivacySandboxServiceM1DelayCreation {
+ public:
+  std::unique_ptr<privacy_sandbox_test_util::MockPrivacySandboxSettingsDelegate>
+  CreateMockDelegate() override {
+    auto mock_delegate = std::make_unique<testing::NiceMock<
+        privacy_sandbox_test_util::MockPrivacySandboxSettingsDelegate>>();
+    mock_delegate->SetUpIsPrivacySandboxRestrictedResponse(
+        /*restricted=*/true);
+    return mock_delegate;
+  }
+};
+
+TEST_F(PrivacySandboxServiceM1DelayCreationRestricted,
+       RestrictedDisablesAndClearsConsent) {
+  prefs()->SetBoolean(prefs::kPrivacySandboxM1TopicsEnabled, true);
+  prefs()->SetBoolean(prefs::kPrivacySandboxM1FledgeEnabled, true);
+  prefs()->SetBoolean(prefs::kPrivacySandboxM1AdMeasurementEnabled, true);
+  prefs()->SetBoolean(prefs::kPrivacySandboxTopicsConsentGiven, true);
+  prefs()->SetTime(prefs::kPrivacySandboxTopicsConsentLastUpdateTime,
+                   base::Time::Now());
+  prefs()->SetInteger(
+      prefs::kPrivacySandboxTopicsConsentLastUpdateReason,
+      static_cast<int>(
+          privacy_sandbox::TopicsConsentUpdateSource::kConfirmation));
+  prefs()->SetString(prefs::kPrivacySandboxTopicsConsentTextAtLastUpdate,
+                     "foo");
+
+  CreateService();
+
+  EXPECT_FALSE(prefs()->GetBoolean(prefs::kPrivacySandboxM1TopicsEnabled));
+  EXPECT_FALSE(prefs()->GetBoolean(prefs::kPrivacySandboxM1FledgeEnabled));
+  EXPECT_FALSE(
+      prefs()->GetBoolean(prefs::kPrivacySandboxM1AdMeasurementEnabled));
+  EXPECT_FALSE(prefs()->GetBoolean(prefs::kPrivacySandboxTopicsConsentGiven));
+  EXPECT_EQ(
+      base::Time(),
+      prefs()->GetTime(prefs::kPrivacySandboxTopicsConsentLastUpdateTime));
+  EXPECT_EQ(privacy_sandbox::TopicsConsentUpdateSource::kDefaultValue,
+            static_cast<privacy_sandbox::TopicsConsentUpdateSource>(
+                prefs()->GetInteger(
+                    prefs::kPrivacySandboxTopicsConsentLastUpdateReason)));
+  EXPECT_EQ("", prefs()->GetString(
+                    prefs::kPrivacySandboxTopicsConsentTextAtLastUpdate));
+}
+
 class PrivacySandboxServiceM1PromptTest : public PrivacySandboxServiceM1Test {
  public:
   void InitializeFeaturesBeforeStart() override {
@@ -3624,6 +3704,51 @@ TEST_F(PrivacySandboxServiceM1PromptTest, RestrictedPrompt) {
                   static_cast<int>(PromptSuppressedReason::kRestricted)}});
 }
 
+#if !BUILDFLAG(IS_ANDROID)
+TEST_F(PrivacySandboxServiceM1PromptTest, PromptActionsSentimentService) {
+  // Settings both consent and notice to be true so that we can loop through all
+  // cases interacting with the sentiment service cleanly, without breaking
+  // DCHECKs. Other tests / code paths check that PromptActionOccurred is
+  // working correctly based on notice and consent, and assert that only one is
+  // enabled.
+  feature_list()->Reset();
+  feature_list()->InitAndEnableFeatureWithParameters(
+      privacy_sandbox::kPrivacySandboxSettings4,
+      {{"consent-required", "true"}, {"notice-required", "true"}});
+
+  std::map<PromptAction, TrustSafetySentimentService::FeatureArea>
+      expected_feature_areas;
+  expected_feature_areas = {
+      {PromptAction::kNoticeOpenSettings,
+       TrustSafetySentimentService::FeatureArea::
+           kPrivacySandbox4NoticeSettings},
+      {PromptAction::kNoticeAcknowledge,
+       TrustSafetySentimentService::FeatureArea::kPrivacySandbox4NoticeOk},
+      {PromptAction::kConsentAccepted,
+       TrustSafetySentimentService::FeatureArea::kPrivacySandbox4ConsentAccept},
+      {PromptAction::kConsentDeclined,
+       TrustSafetySentimentService::FeatureArea::
+           kPrivacySandbox4ConsentDecline}};
+
+  for (int enum_value = 0;
+       enum_value <= static_cast<int>(PromptAction::kMaxValue); ++enum_value) {
+    auto prompt_action = static_cast<PromptAction>(enum_value);
+    if (expected_feature_areas.count(prompt_action)) {
+      EXPECT_CALL(
+          *mock_sentiment_service(),
+          InteractedWithPrivacySandbox4(expected_feature_areas[prompt_action]))
+          .Times(1);
+    } else {
+      EXPECT_CALL(*mock_sentiment_service(),
+                  InteractedWithPrivacySandbox4(testing::_))
+          .Times(0);
+    }
+    privacy_sandbox_service()->PromptActionOccurred(prompt_action);
+    testing::Mock::VerifyAndClearExpectations(mock_sentiment_service());
+  }
+}
+#endif
+
 class PrivacySandboxServiceM1ConsentPromptTest
     : public PrivacySandboxServiceM1PromptTest {};
 
@@ -3706,21 +3831,39 @@ TEST_F(PrivacySandboxServiceM1ConsentPromptTest,
 TEST_F(PrivacySandboxServiceM1ConsentPromptTest, PromptAction_ConsentAccepted) {
   // Confirm that when the service is informed that the consent prompt was
   // accepted, it correctly adjusts the Privacy Sandbox prefs.
-  RunTestCase(TestState{},
-              TestInput{{InputKey::kPromptAction,
-                         static_cast<int>(PromptAction::kConsentAccepted)}},
-              TestOutput{{OutputKey::kM1ConsentDecisionMade, true},
-                         {OutputKey::kM1TopicsEnabled, true}});
+  RunTestCase(
+      TestState{{kActiveTopicsConsent, false},
+                {kAdvanceClockBy, base::Hours(1)}},
+      TestInput{{InputKey::kPromptAction,
+                 static_cast<int>(PromptAction::kConsentAccepted)}},
+      TestOutput{
+          {OutputKey::kM1ConsentDecisionMade, true},
+          {OutputKey::kM1TopicsEnabled, true},
+          {OutputKey::kTopicsConsentGiven, true},
+          {OutputKey::kTopicsConsentLastUpdateReason,
+           privacy_sandbox::TopicsConsentUpdateSource::kConfirmation},
+          {kTopicsConsentLastUpdateTime, base::Time::Now() + base::Hours(1)},
+          {kTopicsConsentStringIdentifiers,
+           GetTopicsConfirmationStringIdentifiers()}});
 }
 
 TEST_F(PrivacySandboxServiceM1ConsentPromptTest, PromptAction_ConsentDeclined) {
   // Confirm that when the service is informed that the consent prompt was
   // declined, it correctly adjusts the Privacy Sandbox prefs.
-  RunTestCase(TestState{},
-              TestInput{{InputKey::kPromptAction,
-                         static_cast<int>(PromptAction::kConsentDeclined)}},
-              TestOutput{{OutputKey::kM1ConsentDecisionMade, true},
-                         {OutputKey::kM1TopicsEnabled, false}});
+  RunTestCase(
+      TestState{{kActiveTopicsConsent, true},
+                {kAdvanceClockBy, base::Hours(1)}},
+      TestInput{{InputKey::kPromptAction,
+                 static_cast<int>(PromptAction::kConsentDeclined)}},
+      TestOutput{
+          {OutputKey::kM1ConsentDecisionMade, true},
+          {OutputKey::kM1TopicsEnabled, false},
+          {OutputKey::kTopicsConsentGiven, false},
+          {OutputKey::kTopicsConsentLastUpdateReason,
+           privacy_sandbox::TopicsConsentUpdateSource::kConfirmation},
+          {kTopicsConsentLastUpdateTime, base::Time::Now() + base::Hours(1)},
+          {kTopicsConsentStringIdentifiers,
+           GetTopicsConfirmationStringIdentifiers()}});
 }
 
 TEST_F(PrivacySandboxServiceM1ConsentPromptTest,
@@ -3734,13 +3877,17 @@ TEST_F(PrivacySandboxServiceM1ConsentPromptTest,
               TestOutput{{OutputKey::kM1EEANoticeAcknowledged, true},
                          {OutputKey::kM1FledgeEnabled, true},
                          {OutputKey::kM1AdMeasurementEnabled, true}});
-  RunTestCase(TestState{{StateKey::kM1ConsentDecisionMade, true},
-                        {StateKey::kM1EEANoticeAcknowledged, false}},
-              TestInput{{InputKey::kPromptAction,
-                         static_cast<int>(PromptAction::kNoticeOpenSettings)}},
-              TestOutput{{OutputKey::kM1EEANoticeAcknowledged, true},
-                         {OutputKey::kM1FledgeEnabled, true},
-                         {OutputKey::kM1AdMeasurementEnabled, true}});
+  RunTestCase(
+      TestState{{StateKey::kM1ConsentDecisionMade, true},
+                {StateKey::kM1EEANoticeAcknowledged, false}},
+      TestInput{{InputKey::kPromptAction,
+                 static_cast<int>(PromptAction::kNoticeOpenSettings)}},
+      TestOutput{{OutputKey::kM1EEANoticeAcknowledged, true},
+                 {OutputKey::kM1FledgeEnabled, true},
+                 {OutputKey::kM1AdMeasurementEnabled, true},
+                 {OutputKey::kTopicsConsentGiven, false},
+                 {OutputKey::kTopicsConsentLastUpdateReason,
+                  privacy_sandbox::TopicsConsentUpdateSource::kDefaultValue}});
 }
 
 class PrivacySandboxServiceM1NoticePromptTest
@@ -3852,7 +3999,8 @@ TEST_F(PrivacySandboxServiceM1NoticePromptTest,
               TestOutput{{OutputKey::kM1RowNoticeAcknowledged, true},
                          {OutputKey::kM1TopicsEnabled, true},
                          {OutputKey::kM1FledgeEnabled, true},
-                         {OutputKey::kM1AdMeasurementEnabled, true}});
+                         {OutputKey::kM1AdMeasurementEnabled, true},
+                         {OutputKey::kTopicsConsentGiven, false}});
 }
 
 TEST_F(PrivacySandboxServiceM1NoticePromptTest, PromptAction_OpenSettings) {
@@ -3864,7 +4012,8 @@ TEST_F(PrivacySandboxServiceM1NoticePromptTest, PromptAction_OpenSettings) {
               TestOutput{{OutputKey::kM1RowNoticeAcknowledged, true},
                          {OutputKey::kM1TopicsEnabled, true},
                          {OutputKey::kM1FledgeEnabled, true},
-                         {OutputKey::kM1AdMeasurementEnabled, true}});
+                         {OutputKey::kM1AdMeasurementEnabled, true},
+                         {OutputKey::kTopicsConsentGiven, false}});
 }
 
 TEST_F(PrivacySandboxServiceM1Test, DisablePrivacySandboxPromptPolicy) {

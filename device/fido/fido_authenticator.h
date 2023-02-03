@@ -48,9 +48,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   using MakeCredentialCallback = base::OnceCallback<void(
       CtapDeviceResponseCode,
       absl::optional<AuthenticatorMakeCredentialResponse>)>;
-  using GetAssertionCallback = base::OnceCallback<void(
-      CtapDeviceResponseCode,
-      absl::optional<AuthenticatorGetAssertionResponse>)>;
+  using GetAssertionCallback =
+      base::OnceCallback<void(CtapDeviceResponseCode,
+                              std::vector<AuthenticatorGetAssertionResponse>)>;
   using GetCredentialInformationForRequestCallback = base::OnceCallback<void(
       std::vector<DiscoverableCredentialMetadata> credentials,
       bool has_credentials)>;
@@ -82,10 +82,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   using BioEnrollmentCallback =
       base::OnceCallback<void(CtapDeviceResponseCode,
                               absl::optional<BioEnrollmentResponse>)>;
-  using LargeBlobReadCallback = base::OnceCallback<void(
-      CtapDeviceResponseCode,
-      absl::optional<std::vector<std::pair<LargeBlobKey, LargeBlob>>>
-          callback)>;
 
   FidoAuthenticator() = default;
 
@@ -113,21 +109,35 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
       MakeCredentialOptions options,
       base::OnceCallback<void(CtapDeviceResponseCode, absl::optional<bool>)>);
 
+  // Makes a FIDO credential given |request| and |options|.
+  // https://drafts.fidoalliance.org/fido-2/stable-links-to-latest/fido-client-to-authenticator-protocol.html#authenticatorMakeCredential
+  //
+  // This can take an arbitrary amount of time since the authenticator may
+  // prompt the user to satisfy user presence. |callback| will be executed with
+  // either a kSuccess status code and a valid response, or any other (error)
+  // code and an empty response.
   virtual void MakeCredential(CtapMakeCredentialRequest request,
                               MakeCredentialOptions options,
                               MakeCredentialCallback callback) = 0;
+
+  // Requests a FIDO assertion given |request| and |options|.
+  // https://drafts.fidoalliance.org/fido-2/stable-links-to-latest/fido-client-to-authenticator-protocol.html#authenticatorGetAssertion
+  //
+  // This can take an arbitrary amount of time since the authenticator may
+  // prompt the user to satisfy user presence. |callback| will be executed with
+  // either a kSuccess status code and at least one valid response, or any other
+  // (error) code and an empty response.
   virtual void GetAssertion(CtapGetAssertionRequest request,
                             CtapGetAssertionOptions options,
                             GetAssertionCallback callback) = 0;
-  // GetNextAssertion fetches the next assertion from a device that indicated in
-  // the response to |GetAssertion| that multiple results were available.
-  virtual void GetNextAssertion(GetAssertionCallback callback);
+
   // GetCredentialInformationForRequest returns a boolean indicating whether
   // there are credentials applicable for |request|, and if supported, a list of
   // the corresponding resident credential metadata for empty allow list
   // requests.
   virtual void GetCredentialInformationForRequest(
       const CtapGetAssertionRequest& request,
+      const CtapGetAssertionOptions& options,
       GetCredentialInformationForRequestCallback callback);
   // GetTouch causes an (external) authenticator to flash and wait for a touch.
   virtual void GetTouch(base::OnceCallback<void()> callback);
@@ -248,20 +258,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
                                std::vector<uint8_t> template_id,
                                BioEnrollmentCallback);
 
-  // Large blob commands.
-  // Attempts to write a |large_blob| into the credential. If there is an
-  // existing credential for the |large_blob_key|, it will be overwritten.
-  virtual void WriteLargeBlob(
-      LargeBlob large_blob,
-      const LargeBlobKey& large_blob_key,
-      absl::optional<pin::TokenResponse> pin_uv_auth_token,
-      base::OnceCallback<void(CtapDeviceResponseCode)> callback);
-  // Attempts to read large blobs from the credential encrypted with
-  // |large_blob_keys|. Returns a map of keys to their blobs.
-  virtual void ReadLargeBlob(
-      const std::vector<LargeBlobKey>& large_blob_keys,
-      absl::optional<pin::TokenResponse> pin_uv_auth_token,
-      LargeBlobReadCallback callback);
   // Removes all stored large blobs that conform to the large blob CBOR
   // structure without a corresponding discoverable credential.
   virtual void GarbageCollectLargeBlob(

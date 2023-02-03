@@ -59,10 +59,6 @@ BASE_DECLARE_FEATURE(kIOSNewOmniboxImplementation);
 // Feature flag that removes the crash infobar.
 BASE_DECLARE_FEATURE(kRemoveCrashInfobar);
 
-// Feature flag to enable removing any entry points to the history UI from
-// Incognito mode.
-BASE_DECLARE_FEATURE(kUpdateHistoryEntryPointsInIncognito);
-
 // Feature flag to enable using Lens to search for images.
 BASE_DECLARE_FEATURE(kUseLensToSearchForImage);
 
@@ -74,6 +70,9 @@ BASE_DECLARE_FEATURE(kEnableLensInKeyboard);
 
 // Feature flag to enable the Lens entrypoint in the new tab page.
 BASE_DECLARE_FEATURE(kEnableLensInNTP);
+
+// Feature flag to enable the Lens context menu alternate text string.
+BASE_DECLARE_FEATURE(kEnableLensContextMenuAltText);
 
 // Feature flag to enable the Lens "Search copied image" omnibox entrypoint.
 BASE_DECLARE_FEATURE(kEnableLensInOmniboxCopiedImage);
@@ -119,16 +118,20 @@ BASE_DECLARE_FEATURE(kEnableMiniMap);
 // When enabled sort tab by last usage in the TabGrid.
 BASE_DECLARE_FEATURE(kTabGridRecencySort);
 
-// Feature to enable the new bookmarks implementation.
-BASE_DECLARE_FEATURE(kEnableNewBookmarksImplementation);
+// Whether the tab grid tabs should be sorted by recency.
+bool IsTabGridSortedByRecency();
 
 // Feature to enable multiline gradient support in fade truncating label.
 BASE_DECLARE_FEATURE(kMultilineFadeTruncatingLabel);
 
-// Flag to enable accessibility identifier to omnibox leading image.
-BASE_DECLARE_FEATURE(kEnableAccessibilityIdentifierToOmniboxLeadingImage);
+// Flag to enable tab strip context menu.
+BASE_DECLARE_FEATURE(kTabStripContextMenu);
 
-// Whether the tab grid tabs should be sorted by recency.
-bool IsTabGridSortedByRecency();
+// Feature flag to enable the Close All Tabs confirmation dialog instead of the
+// Undo button.
+BASE_DECLARE_FEATURE(kCloseAllTabsConfirmation);
+
+// Whether the Close All tabs button should show a confirmation dialog.
+bool IsCloseAllTabsConfirmationEnabled();
 
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

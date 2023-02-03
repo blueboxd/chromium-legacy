@@ -84,7 +84,8 @@ class MetricsLogStore : public LogStore {
   // everywhere instead.
   void StoreLog(const std::string& log_data,
                 MetricsLog::LogType log_type,
-                const LogMetadata& log_metadata);
+                const LogMetadata& log_metadata,
+                MetricsLogsEventManager::CreateReason reason);
 
   // Saves a log, represented by a LogInfo object, as the given |log_type|. This
   // is useful if the LogInfo instance needs to be created outside the main
@@ -94,7 +95,11 @@ class MetricsLogStore : public LogStore {
   // unused.
   void StoreLogInfo(std::unique_ptr<UnsentLogStore::LogInfo> log_info,
                     size_t uncompressed_log_size,
-                    MetricsLog::LogType log_type);
+                    MetricsLog::LogType log_type,
+                    MetricsLogsEventManager::CreateReason reason);
+
+  // Deletes all logs, in memory and on disk.
+  void Purge();
 
   // Returns the signing key that should be used to create a signature for a
   // log of the given |log_type|. We don't "simply" return the signing key that

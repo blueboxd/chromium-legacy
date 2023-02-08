@@ -4,22 +4,10 @@
 
 #include "ui/base/clipboard/clipboard_util_mac.h"
 
-#include <AppKit/AppKit.h>
-#include <CoreServices/CoreServices.h>                      // pre-macOS 11
-#include <UniformTypeIdentifiers/UniformTypeIdentifiers.h>  // macOS 11
-
-#include <string>
-
-#include "base/files/file_path.h"
 #include "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/notreached.h"
-#include "base/strings/sys_string_conversions.h"
-#include "ui/base/clipboard/clipboard_constants.h"
-#include "ui/base/clipboard/file_info.h"
-#include "ui/base/clipboard/url_file_parser.h"
-#include "url/gurl.h"
 
 namespace ui {
 
@@ -38,9 +26,6 @@ NSString* UTIFromPboardType(NSString* type) {
       autorelease];
 }
 
-// Reads the "WebKitWebURLsWithTitles" type put onto the pasteboard by Safari
-// and returns the URLs/titles found within. Returns true if this was
-// successful, or false if it was not.
 bool ReadWebURLsWithTitlesPboardType(NSPasteboard* pboard,
                                      NSArray** urls,
                                      NSArray** titles) {
@@ -226,7 +211,7 @@ bool ClipboardUtil::URLsAndTitlesFromPasteboard(NSPasteboard* pboard,
                                                 NSArray** urls,
                                                 NSArray** titles) {
   return ReadWebURLsWithTitlesPboardType(pboard, urls, titles) ||
-         ReadURLItemsWithTitles(pboard, include_files, urls, titles);
+         ReadURLItemsWithTitles(pboard, urls, titles);
 }
 
 // static
@@ -267,7 +252,5 @@ NSString* ClipboardUtil::GetHTMLFromRTFOnPasteboard(NSPasteboard* pboard) {
   return [[[NSString alloc] initWithData:htmlData
                                 encoding:NSUTF8StringEncoding] autorelease];
 }
-
-}  // namespace ClipboardUtil
 
 }  // namespace ui

@@ -725,8 +725,6 @@ apps::AppPtr WebAppPublisherHelper::CreateWebApp(const WebApp* web_app) {
     const std::string name = base::UTF16ToUTF8(shortcut.name);
     std::string shortcut_id = GenerateShortcutId();
     StoreShortcutId(shortcut_id, shortcut);
-    app->shortcuts.push_back(
-        std::make_unique<apps::Shortcut>(shortcut_id, name));
   }
 
   return app;
@@ -926,6 +924,7 @@ void WebAppPublisherHelper::Launch(
     case apps::LaunchSource::kFromProtocolHandler:
     case apps::LaunchSource::kFromUrlHandler:
     case apps::LaunchSource::kFromLockScreen:
+    case apps::LaunchSource::kFromAppHomePage:
       break;
   }
 

@@ -7,13 +7,23 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/run_loop.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/test/bind.h"
 #include "base/time/time.h"
+#include "content/browser/interest_group/interest_group_k_anonymity_manager.h"
 #include "content/browser/interest_group/interest_group_manager_impl.h"
+#include "content/browser/interest_group/storage_interest_group.h"
+#include "content/public/browser/k_anonymity_service_delegate.h"
+#include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/client_security_state.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -35,9 +45,20 @@ TestInterestGroupManagerImpl::TestInterestGroupManagerImpl(
           std::move(expected_client_security_state)),
       expected_url_loader_factory_(std::move(expected_url_loader_factory)) {
   AddInterestGroupObserver(this);
+  set_k_anonymity_manager_for_testing(
+      std::make_unique<InterestGroupKAnonymityManager>(
+          /*interest_group_manager=*/this,
+          /*k_anonymity_service=*/this));
 }
 
 TestInterestGroupManagerImpl::~TestInterestGroupManagerImpl() {
+  // Need to replace the InterestGroupKAnonymityManager to avoid dangling
+  // pointer warnings, since `this` is the `k_anonymity_service` and is being
+  // torn down before the old InterestGroupKAnonymityManager.
+  set_k_anonymity_manager_for_testing(
+      std::make_unique<InterestGroupKAnonymityManager>(
+          /*interest_group_manager=*/this,
+          /*k_anonymity_service=*/nullptr));
   RemoveInterestGroupObserver(this);
 }
 
@@ -58,12 +79,36 @@ void TestInterestGroupManagerImpl::EnqueueReports(
 void TestInterestGroupManagerImpl::OnInterestGroupAccessed(
     const base::Time& access_time,
     AccessType type,
-    const std::string& owner_origin,
+    const url::Origin& owner_origin,
     const std::string& name) {
   if (type == AccessType::kBid) {
-    interest_groups_that_bid_.emplace_back(
-        url::Origin::Create(GURL(owner_origin)), name);
+    interest_groups_that_bid_.emplace_back(owner_origin, name);
   }
+}
+
+void TestInterestGroupManagerImpl::JoinSet(
+    std::string id,
+    base::OnceCallback<void(bool)> callback) {
+  joined_k_anon_sets_.emplace_back(std::move(id));
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
+void TestInterestGroupManagerImpl::QuerySets(
+    std::vector<std::string> ids,
+    base::OnceCallback<void(std::vector<bool>)> callback) {
+  // Return that nothing is k-anonymous.
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                std::vector<bool>(ids.size(), false)));
+}
+
+base::TimeDelta TestInterestGroupManagerImpl::GetJoinInterval() {
+  return base::Seconds(1);
+}
+
+base::TimeDelta TestInterestGroupManagerImpl::GetQueryInterval() {
+  return base::Seconds(1);
 }
 
 void TestInterestGroupManagerImpl::ClearLoggedData() {
@@ -95,6 +140,27 @@ std::vector<GURL> TestInterestGroupManagerImpl::TakeReportUrlsOfType(
 std::vector<blink::InterestGroupKey>
 TestInterestGroupManagerImpl::TakeInterestGroupsThatBid() {
   return std::exchange(interest_groups_that_bid_, {});
+}
+
+std::vector<std::string> TestInterestGroupManagerImpl::TakeJoinedKAnonSets() {
+  return std::exchange(joined_k_anon_sets_, {});
+}
+
+absl::optional<StorageInterestGroup>
+TestInterestGroupManagerImpl::BlockingGetInterestGroup(
+    const url::Origin& owner,
+    const std::string& name) {
+  base::RunLoop run_loop;
+  absl::optional<StorageInterestGroup> out;
+  GetInterestGroup(
+      {owner, name},
+      base::BindLambdaForTesting(
+          [&](absl::optional<StorageInterestGroup> interest_group) {
+            out = std::move(interest_group);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+  return out;
 }
 
 }  // namespace content

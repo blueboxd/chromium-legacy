@@ -33,6 +33,11 @@ AutofillClientImpl::GetURLLoaderFactory() {
       ->GetURLLoaderFactoryForBrowserProcess();
 }
 
+autofill::AutofillDownloadManager* AutofillClientImpl::GetDownloadManager() {
+  NOTREACHED();
+  return nullptr;
+}
+
 autofill::PersonalDataManager* AutofillClientImpl::GetPersonalDataManager() {
   NOTREACHED();
   return nullptr;
@@ -309,10 +314,10 @@ void AutofillClientImpl::HideAutofillPopup(autofill::PopupHidingReason reason) {
   // take.
 }
 
-base::span<const autofill::Suggestion> AutofillClientImpl::GetPopupSuggestions()
+std::vector<autofill::Suggestion> AutofillClientImpl::GetPopupSuggestions()
     const {
   NOTIMPLEMENTED();
-  return base::span<const autofill::Suggestion>();
+  return {};
 }
 
 void AutofillClientImpl::PinPopupView() {

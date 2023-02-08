@@ -11,9 +11,6 @@ namespace share {
 BASE_FEATURE(kScreenshotsForAndroidV2,
              "ScreenshotsForAndroidV2",
              base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kSharingDesktopScreenshotsEdit,
-             "SharingDesktopScreenshotsEdit",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kUpcomingSharingFeatures,
              "UpcomingSharingFeatures",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -30,7 +27,7 @@ BASE_FEATURE(kCrowLaunchTab,
 #if !BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kDesktopSharePreview,
              "DesktopSharePreview",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 extern const char kDesktopSharePreviewVariant16[] = "16";
 extern const char kDesktopSharePreviewVariant40[] = "40";
 extern const char kDesktopSharePreviewVariant72[] = "72";

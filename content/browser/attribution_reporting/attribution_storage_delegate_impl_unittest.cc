@@ -18,7 +18,6 @@
 #include "content/browser/attribution_reporting/combinatorics.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/stored_source.h"
-#include "content/public/browser/attribution_reporting.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {

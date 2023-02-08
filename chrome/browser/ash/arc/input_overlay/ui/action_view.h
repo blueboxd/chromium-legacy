@@ -82,6 +82,8 @@ class ActionView : public views::View {
   // Otherwise, don't show any error message and return false.
   bool ShouldShowErrorMsg(ui::DomCode code,
                           ActionLabel* editing_label = nullptr);
+  // Reacts to child label focus change.
+  void OnChildLabelUpdateFocus(ActionLabel* child, bool focus);
 
   bool ApplyMousePressed(const ui::MouseEvent& event);
   bool ApplyMouseDragged(const ui::MouseEvent& event);
@@ -91,6 +93,7 @@ class ActionView : public views::View {
   bool ApplyKeyReleased(const ui::KeyEvent& event);
 
   void SetTouchPointCenter(const gfx::Point& touch_point_center);
+  gfx::Point GetTouchCenterInWindow();
 
   Action* action() { return action_; }
   const std::vector<ActionLabel*>& labels() const { return labels_; }
@@ -104,9 +107,13 @@ class ActionView : public views::View {
   }
   int unbind_label_index() { return unbind_label_index_; }
 
-  gfx::Point touch_point_center() const { return touch_point_center_; }
+  absl::optional<gfx::Point> touch_point_center() const {
+    return touch_point_center_;
+  }
 
  protected:
+  virtual void MayUpdateLabelPosition(bool moving = true) = 0;
+
   void UpdateTrashButtonPosition();
 
   void AddTouchPoint(ActionType action_type);
@@ -123,8 +130,8 @@ class ActionView : public views::View {
   std::vector<ActionLabel*> labels_;
   // Current display mode.
   DisplayMode current_display_mode_ = DisplayMode::kNone;
-  // Center position of the touch point view.
-  gfx::Point touch_point_center_;
+  // Local center position of the touch point view.
+  absl::optional<gfx::Point> touch_point_center_;
   // TODO(cuicuirunan): Enable or remove this after MVP.
   bool show_edit_button_ = false;
 

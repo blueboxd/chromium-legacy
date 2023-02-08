@@ -637,7 +637,8 @@
       // https://drafts.csswg.org/css-conditional-4/#support-definition-ext
       // https://github.com/w3c/csswg-drafts/issues/7280#issuecomment-1143852187
       name: "CSSAtSupportsAlwaysNonForgivingParsing",
-      status: "experimental",
+      status: "stable",
+      base_feature: "CSSAtSupportsAlwaysNonForgivingParsing",
     },
     {
       name: "CSSBaselineSource",
@@ -856,7 +857,7 @@
     },
     {
       name: "CSSPseudoHasNonForgivingParsing",
-      status: "experimental",
+      status: "stable",
       base_feature: "CSSPseudoHasNonForgivingParsing",
     },
     {
@@ -988,12 +989,6 @@
       name: "DecodeLossyWebPImagesToYUV",
       public: true,
       status: "stable",
-    },
-    {
-      // crbug.com/1259085
-      name: "DeferredShaping",
-      status: "test",
-      base_feature: "DeferredShaping",
     },
     {
       name: "DeflateRawCompressionFormat",
@@ -1213,13 +1208,6 @@
       depends_on: ["DocumentPolicy"],
       status: "experimental"
     },
-    // Prototype implementation of web snapshots - blink integration. Suitable
-    // for local testing, *not* suitable for origin trials. Replacing the
-    // current implementation with the real Blink integration is expected
-    // before M102. See crbug.com/1173534.
-    {
-      name: "ExperimentalWebSnapshots",
-    },
     {
       name: "ExposeRenderTimeNonTaoDelayedImage",
     },
@@ -1269,15 +1257,22 @@
       status: "stable",
     },
     {
-      name: "FedCmAutoSignin",
+      name: "FedCmAutoReauthn",
       depends_on: ["FedCm"],
       public: true,
+      status: "test",
     },
     {
       // This only exists so we can use RuntimeEnabled in the IDL file
       // when either implied_by flag is enabled.
       name: "FedCmIdentityProviderInterface",
-      implied_by: ["FedCmIdpSigninStatus", "FedCmUserInfo"],
+      implied_by: ["FedCmIdpSigninStatus", "FedCmUserInfo", "FedCmIdPRegistration"],
+    },
+    {
+      name: "FedCmIdPRegistration",
+      depends_on: ["FedCm"],
+      public: true,
+      status: "test",
     },
     {
       name: "FedCmIdpSigninStatus",
@@ -1394,10 +1389,6 @@
       status: "stable",
     },
     {
-      name: "FirstPartySets",
-      status: "experimental",
-    },
-    {
       name: "FirstRectForRangeVertical",
       status: "stable",
       base_feature: "FirstRectForRangeVertical",
@@ -1511,6 +1502,11 @@
         "Android": "experimental",
         "default": "stable",
         },
+    },
+    {
+      name: "GetDisplayMediaRequiresUserActivation",
+      depends_on: ["GetDisplayMedia"],
+      status: "experimental",
     },
     {
       // Enables the getDisplayMediaSet API for multi surface capture.
@@ -1656,11 +1652,6 @@
       settable_from_internals: true,
     },
     {
-      name: "LangAttributeAwareSvgText",
-      base_feature: "LangAttributeAwareSvgText",
-      status: "stable",
-    },
-    {
       name: "LayoutMediaNGContainer",
       // This feature doesn't work in the legacy layout.
       depends_on: ["LayoutNGPrinting"],
@@ -1671,12 +1662,6 @@
       name: "LayoutMediaNoInlineChildren",
       base_feature: "LayoutMediaNoInlineChildren",
       status: "stable",  // Since M112.
-    },
-    {
-      // A kill-switch for a fix of crbug.com/1366268.
-      name: "LayoutNGDelayScrollOffsetClamping",
-      base_feature: "LayoutNGDelayScrollOffsetClamping",
-      status: "stable",
     },
     {
       // crbug.com/1353190
@@ -2355,7 +2340,7 @@
       // reduced.
       name: "ReduceUserAgentPlatformOsCpu",
       depends_on: ["ReduceUserAgentMinorVersion"],
-      status: "experimental",
+      status: {"Android": "", "default": "stable"},
       base_feature: "ReduceUserAgentPlatformOsCpu",
     },
     {
@@ -2747,7 +2732,6 @@
       name: "StorageAccessAPI",
       status: "experimental",
       base_feature: "StorageAccessAPI",
-      implied_by: ["FirstPartySets"],
     },
     {
       name: "StorageAccessAPIForOriginExtension",

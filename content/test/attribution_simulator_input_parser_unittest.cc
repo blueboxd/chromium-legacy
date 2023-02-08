@@ -5,12 +5,12 @@
 #include "content/test/attribution_simulator_input_parser.h"
 
 #include <ostream>
-#include <sstream>
 #include <vector>
 
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
+#include "base/types/expected.h"
 #include "base/values.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
@@ -18,6 +18,7 @@
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/storable_source.h"
+#include "net/base/schemeful_site.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -50,7 +51,6 @@ namespace {
 
 using ::testing::HasSubstr;
 using ::testing::IsEmpty;
-using ::testing::Optional;
 
 using ::attribution_reporting::SuitableOrigin;
 
@@ -65,13 +65,11 @@ TEST(AttributionSimulatorInputParserTest, EmptyInputParses) {
   };
 
   for (const char* json : kTestCases) {
-    base::Value value = base::test::ParseJson(json);
-    std::ostringstream error_stream;
-    EXPECT_THAT(ParseAttributionSimulationInput(std::move(value), kOffsetTime,
-                                                error_stream),
-                Optional(IsEmpty()))
-        << json;
-    EXPECT_THAT(error_stream.str(), IsEmpty()) << json;
+    base::Value::Dict value = base::test::ParseJsonDict(json);
+    auto result =
+        ParseAttributionSimulationInput(std::move(value), kOffsetTime);
+    ASSERT_TRUE(result.has_value()) << json;
+    EXPECT_THAT(*result, IsEmpty()) << json;
   }
 }
 
@@ -98,13 +96,11 @@ TEST(AttributionSimulatorInputParserTest, ValidSourceParses) {
     }
   ]})json";
 
-  base::Value value = base::test::ParseJson(kJson);
-  std::ostringstream error_stream;
+  base::Value::Dict value = base::test::ParseJsonDict(kJson);
 
-  auto result = ParseAttributionSimulationInput(std::move(value), kOffsetTime,
-                                                error_stream);
+  auto result = ParseAttributionSimulationInput(std::move(value), kOffsetTime);
 
-  ASSERT_TRUE(result.has_value());
+  ASSERT_TRUE(result.has_value()) << result.error();
   ASSERT_EQ(result->size(), 2u);
 
   const auto* source1 = absl::get_if<AttributionSource>(&result->front());
@@ -121,8 +117,8 @@ TEST(AttributionSimulatorInputParserTest, ValidSourceParses) {
             *SuitableOrigin::Deserialize("https://a.r.test"));
   EXPECT_EQ(source1->source.common_info().source_origin(),
             *SuitableOrigin::Deserialize("https://a.s.test"));
-  EXPECT_EQ(source1->source.common_info().destination_origin(),
-            *SuitableOrigin::Deserialize("https://a.d.test"));
+  EXPECT_EQ(source1->source.common_info().destination_site(),
+            net::SchemefulSite::Deserialize("https://d.test"));
   EXPECT_FALSE(source1->source.is_within_fenced_frame());
   EXPECT_TRUE(source1->debug_permission);
 
@@ -134,12 +130,10 @@ TEST(AttributionSimulatorInputParserTest, ValidSourceParses) {
             *SuitableOrigin::Deserialize("https://b.r.test"));
   EXPECT_EQ(source2->source.common_info().source_origin(),
             *SuitableOrigin::Deserialize("https://b.s.test"));
-  EXPECT_EQ(source2->source.common_info().destination_origin(),
-            *SuitableOrigin::Deserialize("https://b.d.test"));
+  EXPECT_EQ(source2->source.common_info().destination_site(),
+            net::SchemefulSite::Deserialize("https://d.test"));
   EXPECT_FALSE(source2->source.is_within_fenced_frame());
   EXPECT_FALSE(source2->debug_permission);
-
-  EXPECT_THAT(error_stream.str(), IsEmpty());
 }
 
 TEST(AttributionSimulatorInputParserTest, ValidTriggerParses) {
@@ -153,11 +147,9 @@ TEST(AttributionSimulatorInputParserTest, ValidTriggerParses) {
     }
   ]})json";
 
-  base::Value value = base::test::ParseJson(kJson);
-  std::ostringstream error_stream;
+  base::Value::Dict value = base::test::ParseJsonDict(kJson);
 
-  auto result = ParseAttributionSimulationInput(std::move(value), kOffsetTime,
-                                                error_stream);
+  auto result = ParseAttributionSimulationInput(std::move(value), kOffsetTime);
 
   ASSERT_TRUE(result.has_value());
   ASSERT_EQ(result->size(), 1u);
@@ -174,8 +166,6 @@ TEST(AttributionSimulatorInputParserTest, ValidTriggerParses) {
   EXPECT_EQ(trigger->trigger.attestation(), absl::nullopt);
   EXPECT_FALSE(trigger->trigger.is_within_fenced_frame());
   EXPECT_TRUE(trigger->debug_permission);
-
-  EXPECT_THAT(error_stream.str(), IsEmpty());
 }
 
 struct ParseErrorTestCase {
@@ -189,20 +179,13 @@ class AttributionSimulatorInputParseErrorTest
 TEST_P(AttributionSimulatorInputParseErrorTest, InvalidInputFails) {
   const ParseErrorTestCase& test_case = GetParam();
 
-  base::Value value = base::test::ParseJson(test_case.json);
-  std::ostringstream error_stream;
-  EXPECT_EQ(ParseAttributionSimulationInput(std::move(value), kOffsetTime,
-                                            error_stream),
-            absl::nullopt);
-
-  EXPECT_THAT(error_stream.str(), HasSubstr(test_case.expected_failure_substr));
+  base::Value::Dict value = base::test::ParseJsonDict(test_case.json);
+  auto result = ParseAttributionSimulationInput(std::move(value), kOffsetTime);
+  ASSERT_FALSE(result.has_value());
+  EXPECT_THAT(result.error(), HasSubstr(test_case.expected_failure_substr));
 }
 
 const ParseErrorTestCase kParseErrorTestCases[] = {
-    {
-        "input root: must be a dictionary",
-        R"json(1)json",
-    },
     {
         R"(["sources"][0]["source_type"]: must be either)",
         R"json({"sources": [{

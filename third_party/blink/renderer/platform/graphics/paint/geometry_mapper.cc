@@ -19,20 +19,26 @@ gfx::SizeF MaxScrollOffset(
                     scroll_translation.ScrollNode()->ContainerRect().size());
 }
 
-// Expands a visual rect under a fixed-position transform so that the result
-// covers all area that could overlap with anything under the scroller during
-// scrolling.
-void ExpandFixedVisualRectInScroller(
-    const TransformPaintPropertyNode& scroll_translation,
-    gfx::RectF& rect) {
-  DCHECK(scroll_translation.ScrollNode());
-
-  // First move the rect back to the min scroll offset, by accounting for the
-  // current scroll offset.
-  rect.Offset(scroll_translation.Get2dTranslation());
-
-  // Expand by the max scroll offset.
-  rect.set_size(rect.size() + MaxScrollOffset(scroll_translation));
+// These two functions are used for compositing overlap only, where the effect
+// node doesn't matter.
+PropertyTreeState ScrollContainerState(
+    const TransformPaintPropertyNode& scroll_translation) {
+  PropertyTreeState state(*scroll_translation.UnaliasedParent(),
+                          ClipPaintPropertyNode::Root(),
+                          EffectPaintPropertyNode::Root());
+  if (auto* scroll_clip = scroll_translation.ScrollNode()->OverflowClipNode()) {
+    state.SetClip(*scroll_clip->UnaliasedParent());
+  }
+  return state;
+}
+PropertyTreeState ScrollingContentsState(
+    const TransformPaintPropertyNode& scroll_translation) {
+  PropertyTreeState state(scroll_translation, ClipPaintPropertyNode::Root(),
+                          EffectPaintPropertyNode::Root());
+  if (auto* scroll_clip = scroll_translation.ScrollNode()->OverflowClipNode()) {
+    state.SetClip(*scroll_clip);
+  }
+  return state;
 }
 
 }  // namespace
@@ -220,11 +226,12 @@ bool GeometryMapper::LocalToAncestorVisualRectInternal(
     return true;
   }
 
-  if (&local_state.Effect() != &ancestor_state.Effect() &&
-      &local_state.Clip() != &ancestor_state.Clip()) {
-    return SlowLocalToAncestorVisualRectWithEffects<for_compositing_overlap>(
-        local_state, ancestor_state, rect_to_map, clip_behavior,
-        inclusive_behavior);
+  if (&local_state.Clip() != &ancestor_state.Clip() &&
+      local_state.Clip().NearestPixelMovingFilterClip() !=
+          ancestor_state.Clip().NearestPixelMovingFilterClip()) {
+    return SlowLocalToAncestorVisualRectWithPixelMovingFilters<
+        for_compositing_overlap>(local_state, ancestor_state, rect_to_map,
+                                 clip_behavior, inclusive_behavior);
   }
 
   ExtraProjectionResult extra_result;
@@ -273,7 +280,7 @@ bool GeometryMapper::LocalToAncestorVisualRectInternal(
 }
 
 template <GeometryMapper::ForCompositingOverlap for_compositing_overlap>
-bool GeometryMapper::SlowLocalToAncestorVisualRectWithEffects(
+bool GeometryMapper::SlowLocalToAncestorVisualRectWithPixelMovingFilters(
     const PropertyTreeState& local_state,
     const PropertyTreeState& ancestor_state,
     FloatClipRect& rect_to_map,
@@ -484,13 +491,12 @@ bool GeometryMapper::MightOverlapForCompositing(
       state1.Transform().ScrollTranslationForFixed();
   const auto* fixed_scroll_translation2 =
       state2.Transform().ScrollTranslationForFixed();
-  if (fixed_scroll_translation1 == scroll_translation2 &&
-      &state1.Clip() == scroll_translation2->ScrollNode()->OverflowClipNode()) {
-    ExpandFixedVisualRectInScroller(*fixed_scroll_translation1, new_rect1);
-  } else if (scroll_translation1 == fixed_scroll_translation2 &&
-             &state2.Clip() ==
-                 scroll_translation1->ScrollNode()->OverflowClipNode()) {
-    ExpandFixedVisualRectInScroller(*fixed_scroll_translation2, new_rect2);
+  if (fixed_scroll_translation1 == scroll_translation2) {
+    MapFixedVisualRectInScrollForCompositingOverlap(*fixed_scroll_translation1,
+                                                    new_rect1, new_state1);
+  } else if (scroll_translation1 == fixed_scroll_translation2) {
+    MapFixedVisualRectInScrollForCompositingOverlap(*fixed_scroll_translation2,
+                                                    new_rect2, new_state2);
   } else {
     const auto& transform_lca =
         state1.Transform().LowestCommonAncestor(state2.Transform()).Unalias();
@@ -500,49 +506,39 @@ bool GeometryMapper::MightOverlapForCompositing(
 
     // If we will test overlap across scroll translations, adjust each property
     // tree state to be the parent of the highest scroll translation under
-    // |transform_lca| along the ancestor path, and the visual rect to be the
-    // scroll container rect, assuming the visual rect under the scroll
-    // translation can be anywhere in the scroll container rect, thus we can
-    // avoid re-testing overlap on change of scroll offset.
+    // |transform_lca| along the ancestor path, and the visual rect to contain
+    // all possible location of the original visual rect during scroll, thus we
+    // can avoid re-testing overlap on change of scroll offset.
     auto adjust_rect_and_state =
         [&scroll_translation_lca, &between_fixed_and_non_fixed](
             const TransformPaintPropertyNode* scroll_translation,
             const TransformPaintPropertyNode* other_fixed_scroll_translation,
             gfx::RectF& rect, PropertyTreeState& state) {
-          if (scroll_translation == &scroll_translation_lca)
-            return;
-
-          auto* parent = scroll_translation->UnaliasedParent();
-          DCHECK(parent);
-          for (auto* next = &parent->NearestScrollTranslationNode();
-               next != &scroll_translation_lca;
-               next = &parent->NearestScrollTranslationNode()) {
+          while (scroll_translation != &scroll_translation_lca) {
+            MapVisualRectAboveScrollForCompositingOverlap(*scroll_translation,
+                                                          rect, state);
+            auto* next = &scroll_translation->UnaliasedParent()
+                              ->NearestScrollTranslationNode();
             if (next == other_fixed_scroll_translation) {
               between_fixed_and_non_fixed = true;
               break;
             }
             scroll_translation = next;
-            parent = scroll_translation->UnaliasedParent();
-            DCHECK(parent);
           }
-          rect = MapVisualRectAboveScrollForCompositingOverlap(
-              state, *scroll_translation, rect);
-          state.SetTransform(*parent);
-          if (auto* clip = scroll_translation->ScrollNode()->OverflowClipNode())
-            state.SetClip(*clip->UnaliasedParent());
-          else
-            state.SetClip(ClipPaintPropertyNode::Root());
         };
 
     adjust_rect_and_state(scroll_translation1, fixed_scroll_translation2,
                           new_rect1, new_state1);
     if (between_fixed_and_non_fixed) {
-      ExpandFixedVisualRectInScroller(*fixed_scroll_translation2, new_rect2);
+      MapFixedVisualRectInScrollForCompositingOverlap(
+          *fixed_scroll_translation2, new_rect2, new_state2);
     } else {
       adjust_rect_and_state(scroll_translation2, fixed_scroll_translation1,
                             new_rect2, new_state2);
-      if (between_fixed_and_non_fixed)
-        ExpandFixedVisualRectInScroller(*fixed_scroll_translation1, new_rect1);
+      if (between_fixed_and_non_fixed) {
+        MapFixedVisualRectInScrollForCompositingOverlap(
+            *fixed_scroll_translation1, new_rect1, new_state1);
+      }
     }
   }
 
@@ -588,50 +584,77 @@ gfx::RectF GeometryMapper::VisualRectForCompositingOverlap(
   return visual_rect.Rect();
 }
 
+// Expands a visual rect under a fixed-position transform so that the result
+// covers all area that could overlap with anything under the scroller during
+// scrolling, in the scrolling contents space. `state` is also updated to the
+// scrolling contents space, with the effect node set to root as it doesn't
+// matter in compositing overlap.
+void GeometryMapper::MapFixedVisualRectInScrollForCompositingOverlap(
+    const TransformPaintPropertyNode& scroll_translation,
+    gfx::RectF& rect,
+    PropertyTreeState& state) {
+  DCHECK(scroll_translation.ScrollNode());
+
+  auto container_state = ScrollContainerState(scroll_translation);
+  if (&state.Clip() != &container_state.Clip() &&
+      state.Clip().NearestPixelMovingFilterClip() !=
+          container_state.Clip().NearestPixelMovingFilterClip()) {
+    // We can't ignore pixel moving filter clips, so we simply assume maximum
+    // overlap.
+    rect = gfx::RectF(LayoutRect::InfiniteIntRect());
+  } else {
+    // Ignore any clips between state and container_state because the clips
+    // may depend on the scroll offset of the scroller. See crbug.com/1400107.
+    state.SetClip(container_state.Clip());
+    // Map the rect to scroll_container_state, in case there are intermediate
+    // transforms/clips between state and scroll_container_state.
+    rect = VisualRectForCompositingOverlap(rect, state, container_state);
+    // Expand by the max scroll offset. The result is equivalent to
+    //   rect = Union(rect_when_scroll_offset_is_zero,
+    //                rect_when_scroll_offset_is_max);
+    // in the scrolling contents space.
+    rect.set_size(rect.size() + MaxScrollOffset(scroll_translation));
+    rect.Intersect(gfx::RectF(scroll_translation.ScrollNode()->ContentsRect()));
+  }
+
+  state = ScrollingContentsState(scroll_translation);
+}
+
 // Maps a visual rect from a state below a scroll translation to the container
 // space. The result is expanded to contain all possible locations in the
-// container space of the input rect during scroll.
-gfx::RectF GeometryMapper::MapVisualRectAboveScrollForCompositingOverlap(
-    const PropertyTreeState& state,
+// container space of the input rect during scroll. `state` is also updated to
+// the container space, with the effect node set to root as it doesn't matter
+// in compositing overlap.
+void GeometryMapper::MapVisualRectAboveScrollForCompositingOverlap(
     const TransformPaintPropertyNode& scroll_translation,
-    gfx::RectF& rect) {
+    gfx::RectF& rect,
+    PropertyTreeState& state) {
+  DCHECK_EQ(&state.Transform().NearestScrollTranslationNode(),
+            &scroll_translation);
   DCHECK(scroll_translation.ScrollNode());
   gfx::RectF container_rect(scroll_translation.ScrollNode()->ContainerRect());
 
   if (!RuntimeEnabledFeatures::ScrollOverlapOptimizationEnabled()) {
-    return container_rect;
+    rect = container_rect;
+    state = ScrollContainerState(scroll_translation);
+    return;
   }
 
-  // Assume the rect can appear at any location in the container rect for
-  // complex cases:
-  // 1. There are intermediate scroll translations.
-  if (&state.Transform().NearestScrollTranslationNode() !=
-      &scroll_translation) {
-    return container_rect;
-  }
-  // 2. There are pixel-moving filters.
-  auto* scroll_clip = scroll_translation.ScrollNode()->OverflowClipNode();
-  if (!scroll_clip || (&state.Clip() != scroll_clip &&
-                       state.Clip().NearestPixelMovingFilterClip() !=
-                           scroll_clip->NearestPixelMovingFilterClip())) {
-    return container_rect;
-  }
-
-  PropertyTreeState scroll_state(scroll_translation, *scroll_clip,
-                                 state.Effect());
-  gfx::RectF result =
-      VisualRectForCompositingOverlap(rect, state, scroll_state);
+  rect = VisualRectForCompositingOverlap(
+      rect, state, ScrollingContentsState(scroll_translation));
   gfx::SizeF max_scroll_offset = MaxScrollOffset(scroll_translation);
   // Expand the rect to the top-left direction by max_scroll_offset, which is
   // equivalent to
-  //   Union(result, result - max_scroll_offset)
+  //   rect = Union(rect, result - max_scroll_offset)
   // i.e.
-  //   Union(rect_when_scroll_offset_is_zero, rect_when_scroll_offset_is_max);
+  //   rect = Union(rect_when_scroll_offset_is_zero,
+  //                rect_when_scroll_offset_is_max);
   // in the container space.
-  result.Offset(-max_scroll_offset.width(), -max_scroll_offset.height());
-  result.set_size(rect.size() + max_scroll_offset);
-  result.Intersect(container_rect);
-  return result;
+  rect.Offset(-max_scroll_offset.width(), -max_scroll_offset.height());
+  rect.set_size(rect.size() + max_scroll_offset);
+  rect.Intersect(container_rect);
+
+  state = ScrollContainerState(scroll_translation);
 }
 
 bool GeometryMapper::LocalToAncestorVisualRectInternalForTesting(

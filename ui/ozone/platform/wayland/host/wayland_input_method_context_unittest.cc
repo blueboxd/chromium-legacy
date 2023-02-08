@@ -299,7 +299,8 @@ TEST_F(WaylandInputMethodContextTest, ActivateDeactivate) {
   });
 
   input_method_context_->UpdateFocus(true, ui::TEXT_INPUT_TYPE_NONE,
-                                     ui::TEXT_INPUT_TYPE_TEXT);
+                                     ui::TEXT_INPUT_TYPE_TEXT,
+                                     ui::TextInputClient::FOCUS_REASON_OTHER);
   connection_->Flush();
 
   PostToServerAndWait([id = surface_id_](wl::TestWaylandServerThread* server) {
@@ -334,7 +335,8 @@ TEST_F(WaylandInputMethodContextTest, ActivateDeactivate) {
   });
 
   input_method_context_->UpdateFocus(true, ui::TEXT_INPUT_TYPE_TEXT,
-                                     ui::TEXT_INPUT_TYPE_NONE);
+                                     ui::TEXT_INPUT_TYPE_NONE,
+                                     ui::TextInputClient::FOCUS_REASON_NONE);
   connection_->Flush();
 
   PostToServerAndWait([id = surface_id_](wl::TestWaylandServerThread* server) {
@@ -362,7 +364,8 @@ TEST_F(WaylandInputMethodContextTest, ActivateDeactivate) {
   });
 
   input_method_context_->UpdateFocus(true, ui::TEXT_INPUT_TYPE_NONE,
-                                     ui::TEXT_INPUT_TYPE_TEXT);
+                                     ui::TEXT_INPUT_TYPE_TEXT,
+                                     ui::TextInputClient::FOCUS_REASON_OTHER);
   connection_->Flush();
 
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
@@ -374,7 +377,8 @@ TEST_F(WaylandInputMethodContextTest, ActivateDeactivate) {
   });
 
   input_method_context_->UpdateFocus(true, ui::TEXT_INPUT_TYPE_TEXT,
-                                     ui::TEXT_INPUT_TYPE_NONE);
+                                     ui::TEXT_INPUT_TYPE_NONE,
+                                     ui::TextInputClient::FOCUS_REASON_NONE);
   connection_->Flush();
 
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
@@ -920,7 +924,7 @@ TEST_F(WaylandInputMethodContextTest, MAYBE(OnConfirmCompositionText)) {
     auto* text_input = server->text_input_manager_v1()->text_input();
     Mock::VerifyAndClearExpectations(text_input);
 
-    zwp_text_input_v1_send_cursor_position(text_input->resource(), 10, 7);
+    zwp_text_input_v1_send_cursor_position(text_input->resource(), 7, 10);
     zwp_text_input_v1_send_commit_string(text_input->resource(), 0,
                                          "ab😀cあdef");
   });
@@ -968,8 +972,8 @@ TEST_F(WaylandInputMethodContextTest,
     Mock::VerifyAndClearExpectations(text_input);
 
     zwp_text_input_v1_send_cursor_position(text_input->resource(),
-                                           kExpectedSentRange.end(),
-                                           kExpectedSentRange.start());
+                                           kExpectedSentRange.start(),
+                                           kExpectedSentRange.end());
     zwp_text_input_v1_send_commit_string(text_input->resource(), 0,
                                          kExpectedSentText.c_str());
   });
@@ -1153,10 +1157,12 @@ TEST_F(WaylandInputMethodContextTest,
 
   input_method_context_->WillUpdateFocus(client1.get(), client2.get());
   input_method_context_->UpdateFocus(true, client1->GetTextInputType(),
-                                     client2->GetTextInputType());
+                                     client2->GetTextInputType(),
+                                     ui::TextInputClient::FOCUS_REASON_OTHER);
   input_method_context_->WillUpdateFocus(client2.get(), nullptr);
   input_method_context_->UpdateFocus(false, client2->GetTextInputType(),
-                                     ui::TEXT_INPUT_TYPE_NONE);
+                                     ui::TEXT_INPUT_TYPE_NONE,
+                                     ui::TextInputClient::FOCUS_REASON_NONE);
 
   // Clients should get further bounds updates.
   constexpr gfx::Rect kBounds(10, 20, 300, 400);
@@ -1192,7 +1198,8 @@ TEST_F(WaylandInputMethodContextTest,
 
   input_method_context_->WillUpdateFocus(client.get(), nullptr);
   input_method_context_->UpdateFocus(false, client->GetTextInputType(),
-                                     ui::TEXT_INPUT_TYPE_NONE);
+                                     ui::TEXT_INPUT_TYPE_NONE,
+                                     ui::TextInputClient::FOCUS_REASON_NONE);
 
   const gfx::Rect kBounds(10, 20, 300, 400);
   EXPECT_CALL(*client, EnsureCaretNotInRect(kBounds));
@@ -1271,7 +1278,8 @@ TEST_F(WaylandInputMethodContextNoKeyboardTest, ActivateDeactivate) {
   });
 
   input_method_context_->UpdateFocus(true, ui::TEXT_INPUT_TYPE_NONE,
-                                     ui::TEXT_INPUT_TYPE_TEXT);
+                                     ui::TEXT_INPUT_TYPE_TEXT,
+                                     ui::TextInputClient::FOCUS_REASON_OTHER);
   connection_->Flush();
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
     auto* zwp_text_input = server->text_input_manager_v1()->text_input();
@@ -1282,7 +1290,8 @@ TEST_F(WaylandInputMethodContextNoKeyboardTest, ActivateDeactivate) {
   });
 
   input_method_context_->UpdateFocus(false, ui::TEXT_INPUT_TYPE_TEXT,
-                                     ui::TEXT_INPUT_TYPE_NONE);
+                                     ui::TEXT_INPUT_TYPE_NONE,
+                                     ui::TextInputClient::FOCUS_REASON_NONE);
   connection_->Flush();
 
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
@@ -1306,7 +1315,8 @@ TEST_F(WaylandInputMethodContextNoKeyboardTest, UpdateFocusBetweenTextFields) {
   });
 
   input_method_context_->UpdateFocus(true, ui::TEXT_INPUT_TYPE_NONE,
-                                     ui::TEXT_INPUT_TYPE_TEXT);
+                                     ui::TEXT_INPUT_TYPE_TEXT,
+                                     ui::TextInputClient::FOCUS_REASON_OTHER);
   connection_->Flush();
 
   PostToServerAndWait([id = surface_id](wl::TestWaylandServerThread* server) {
@@ -1322,7 +1332,8 @@ TEST_F(WaylandInputMethodContextNoKeyboardTest, UpdateFocusBetweenTextFields) {
   });
 
   input_method_context_->UpdateFocus(false, ui::TEXT_INPUT_TYPE_TEXT,
-                                     ui::TEXT_INPUT_TYPE_TEXT);
+                                     ui::TEXT_INPUT_TYPE_TEXT,
+                                     ui::TextInputClient::FOCUS_REASON_OTHER);
   connection_->Flush();
 
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {

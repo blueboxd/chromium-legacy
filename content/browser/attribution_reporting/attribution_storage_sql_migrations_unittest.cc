@@ -94,14 +94,21 @@ class AttributionStorageSqlMigrationsTest : public testing::Test {
            base::ReadFileToString(source_path, contents);
   }
 
-  static int VersionFromDatabase(sql::Database* db) {
-    // Get version.
-    sql::Statement s(
-        db->GetUniqueStatement("SELECT value FROM meta WHERE key='version'"));
-    if (!s.Step()) {
-      return 0;
+  static void CheckVersionNumbers(sql::Database* db) {
+    {
+      sql::Statement s(
+          db->GetUniqueStatement("SELECT value FROM meta WHERE key='version'"));
+      ASSERT_TRUE(s.Step());
+      EXPECT_EQ(s.ColumnInt(0), AttributionStorageSql::kCurrentVersionNumber);
     }
-    return s.ColumnInt(0);
+
+    {
+      sql::Statement s(db->GetUniqueStatement(
+          "SELECT value FROM meta WHERE key='last_compatible_version'"));
+      ASSERT_TRUE(s.Step());
+      EXPECT_EQ(s.ColumnInt(0),
+                AttributionStorageSql::kCompatibleVersionNumber);
+    }
   }
 
   void LoadDatabase(const base::FilePath& file, const base::FilePath& db_path) {
@@ -134,9 +141,7 @@ TEST_F(AttributionStorageSqlMigrationsTest, MigrateEmptyToCurrent) {
     sql::Database db;
     ASSERT_TRUE(db.Open(DbPath()));
 
-    // Check version.
-    EXPECT_EQ(AttributionStorageSql::kCurrentVersionNumber,
-              VersionFromDatabase(&db));
+    CheckVersionNumbers(&db);
 
     // Check that expected tables are present.
     EXPECT_TRUE(db.DoesTableExist("event_level_reports"));
@@ -176,9 +181,7 @@ TEST_F(AttributionStorageSqlMigrationsTest, MigrateLatestDeprecatedToCurrent) {
     sql::Database db;
     ASSERT_TRUE(db.Open(DbPath()));
 
-    // Check version.
-    EXPECT_EQ(AttributionStorageSql::kCurrentVersionNumber,
-              VersionFromDatabase(&db));
+    CheckVersionNumbers(&db);
 
     EXPECT_EQ(NormalizeSchema(GetCurrentSchema()),
               NormalizeSchema(db.GetSchema()));
@@ -215,9 +218,7 @@ TEST_F(AttributionStorageSqlMigrationsTest, MigrateVersion35ToCurrent) {
     sql::Database db;
     ASSERT_TRUE(db.Open(DbPath()));
 
-    // Check version.
-    EXPECT_EQ(AttributionStorageSql::kCurrentVersionNumber,
-              VersionFromDatabase(&db));
+    CheckVersionNumbers(&db);
 
     // Compare normalized schemas
     EXPECT_EQ(NormalizeSchema(GetCurrentSchema()),
@@ -257,9 +258,7 @@ TEST_F(AttributionStorageSqlMigrationsTest, MigrateVersion36ToCurrent) {
     sql::Database db;
     ASSERT_TRUE(db.Open(DbPath()));
 
-    // Check version.
-    EXPECT_EQ(AttributionStorageSql::kCurrentVersionNumber,
-              VersionFromDatabase(&db));
+    CheckVersionNumbers(&db);
 
     // Compare normalized schemas
     EXPECT_EQ(NormalizeSchema(GetCurrentSchema()),
@@ -291,11 +290,12 @@ TEST_F(AttributionStorageSqlMigrationsTest, MigrateVersion37ToCurrent) {
     ASSERT_FALSE(db.DoesColumnExist("sources", "event_report_window"));
     ASSERT_FALSE(db.DoesColumnExist("sources", "aggregatable_report_window"));
 
-    sql::Statement s(db.GetUniqueStatement("SELECT * FROM sources"));
+    sql::Statement s(db.GetUniqueStatement(
+        "SELECT expiry_time,num_attributions FROM sources"));
 
     ASSERT_TRUE(s.Step());
-    ASSERT_EQ(8, s.ColumnInt(6));  // expiry_time
-    ASSERT_EQ(9, s.ColumnInt(7));  // num_attributions
+    ASSERT_EQ(8, s.ColumnInt(0));  // expiry_time
+    ASSERT_EQ(9, s.ColumnInt(1));  // num_attributions
     ASSERT_FALSE(s.Step());
   }
 
@@ -306,22 +306,23 @@ TEST_F(AttributionStorageSqlMigrationsTest, MigrateVersion37ToCurrent) {
     sql::Database db;
     ASSERT_TRUE(db.Open(DbPath()));
 
-    // Check version.
-    EXPECT_EQ(AttributionStorageSql::kCurrentVersionNumber,
-              VersionFromDatabase(&db));
+    CheckVersionNumbers(&db);
 
     // Compare normalized schemas
     EXPECT_EQ(NormalizeSchema(GetCurrentSchema()),
               NormalizeSchema(db.GetSchema()));
 
     // Verify that data is preserved across the migration.
-    sql::Statement s(db.GetUniqueStatement("SELECT * FROM sources"));
+    sql::Statement s(db.GetUniqueStatement(
+        "SELECT "
+        "expiry_time,event_report_window_time,aggregatable_report_window_time,"
+        "num_attributions FROM sources"));
 
     ASSERT_TRUE(s.Step());
-    ASSERT_EQ(8, s.ColumnInt(6));  // expiry_time
-    ASSERT_EQ(8, s.ColumnInt(7));  // event_report_window
-    ASSERT_EQ(8, s.ColumnInt(8));  // aggregatable_report_window
-    ASSERT_EQ(9, s.ColumnInt(9));  // num_attributions
+    ASSERT_EQ(8, s.ColumnInt(0));  // expiry_time
+    ASSERT_EQ(8, s.ColumnInt(1));  // event_report_window_time
+    ASSERT_EQ(8, s.ColumnInt(2));  // aggregatable_report_window_time
+    ASSERT_EQ(9, s.ColumnInt(3));  // num_attributions
     ASSERT_FALSE(s.Step());
   }
 
@@ -356,9 +357,7 @@ TEST_F(AttributionStorageSqlMigrationsTest, MigrateVersion38ToCurrent) {
     sql::Database db;
     ASSERT_TRUE(db.Open(DbPath()));
 
-    // Check version.
-    EXPECT_EQ(AttributionStorageSql::kCurrentVersionNumber,
-              VersionFromDatabase(&db));
+    CheckVersionNumbers(&db);
 
     // Compare normalized schemas
     EXPECT_EQ(NormalizeSchema(GetCurrentSchema()),
@@ -415,9 +414,7 @@ TEST_F(AttributionStorageSqlMigrationsTest, MigrateVersion39ToCurrent) {
     ASSERT_TRUE(db.Open(DbPath()));
     ASSERT_FALSE(db.DoesIndexExist("contribution_aggregation_id_idx"));
 
-    // Check version.
-    EXPECT_EQ(AttributionStorageSql::kCurrentVersionNumber,
-              VersionFromDatabase(&db));
+    CheckVersionNumbers(&db);
 
     // Compare without quotes as sometimes migrations cause table names to be
     // string literals.
@@ -474,9 +471,7 @@ TEST_F(AttributionStorageSqlMigrationsTest, MigrateVersion40ToCurrent) {
     sql::Database db;
     ASSERT_TRUE(db.Open(DbPath()));
 
-    // Check version.
-    EXPECT_EQ(AttributionStorageSql::kCurrentVersionNumber,
-              VersionFromDatabase(&db));
+    CheckVersionNumbers(&db);
 
     // Compare normalized schemas
     EXPECT_EQ(NormalizeSchema(GetCurrentSchema()),
@@ -529,9 +524,7 @@ TEST_F(AttributionStorageSqlMigrationsTest, MigrateVersion41ToCurrent) {
     sql::Database db;
     ASSERT_TRUE(db.Open(DbPath()));
 
-    // Check version.
-    EXPECT_EQ(AttributionStorageSql::kCurrentVersionNumber,
-              VersionFromDatabase(&db));
+    CheckVersionNumbers(&db);
 
     // Compare normalized schemas
     EXPECT_EQ(NormalizeSchema(GetCurrentSchema()),
@@ -582,9 +575,7 @@ TEST_F(AttributionStorageSqlMigrationsTest, MigrateVersion42ToCurrent) {
     sql::Database db;
     ASSERT_TRUE(db.Open(DbPath()));
 
-    // Check version.
-    EXPECT_EQ(AttributionStorageSql::kCurrentVersionNumber,
-              VersionFromDatabase(&db));
+    CheckVersionNumbers(&db);
 
     // Compare normalized schemas
     EXPECT_EQ(NormalizeSchema(GetCurrentSchema()),
@@ -659,9 +650,7 @@ TEST_F(AttributionStorageSqlMigrationsTest, MigrateVersion43ToCurrent) {
     sql::Database db;
     ASSERT_TRUE(db.Open(DbPath()));
 
-    // Check version.
-    EXPECT_EQ(AttributionStorageSql::kCurrentVersionNumber,
-              VersionFromDatabase(&db));
+    CheckVersionNumbers(&db);
 
     // Compare normalized schemas
     EXPECT_EQ(NormalizeSchema(GetCurrentSchema()),
@@ -738,9 +727,7 @@ TEST_F(AttributionStorageSqlMigrationsTest, MigrateVersion44ToCurrent) {
     sql::Database db;
     ASSERT_TRUE(db.Open(DbPath()));
 
-    // Check version.
-    EXPECT_EQ(AttributionStorageSql::kCurrentVersionNumber,
-              VersionFromDatabase(&db));
+    CheckVersionNumbers(&db);
 
     // Compare normalized schemas
     EXPECT_EQ(NormalizeSchema(GetCurrentSchema()),
@@ -755,6 +742,35 @@ TEST_F(AttributionStorageSqlMigrationsTest, MigrateVersion44ToCurrent) {
       ASSERT_EQ("https://a.d.test", s.ColumnString(0));
       ASSERT_FALSE(s.Step());
     }
+  }
+
+  // DB creation histograms should be recorded.
+  histograms.ExpectTotalCount("Conversions.Storage.CreationTime", 0);
+  histograms.ExpectTotalCount("Conversions.Storage.MigrationTime", 1);
+}
+
+TEST_F(AttributionStorageSqlMigrationsTest, MigrateVersion45ToCurrent) {
+  base::HistogramTester histograms;
+  LoadDatabase(GetVersionFilePath(45), DbPath());
+
+  // Verify pre-conditions.
+  {
+    sql::Database db;
+    ASSERT_TRUE(db.Open(DbPath()));
+  }
+
+  MigrateDatabase();
+
+  // Verify schema is current.
+  {
+    sql::Database db;
+    ASSERT_TRUE(db.Open(DbPath()));
+
+    CheckVersionNumbers(&db);
+
+    // Compare normalized schemas
+    EXPECT_EQ(NormalizeSchema(GetCurrentSchema()),
+              NormalizeSchema(db.GetSchema()));
   }
 
   // DB creation histograms should be recorded.

@@ -209,6 +209,13 @@ AX_BASE_EXPORT BASE_DECLARE_FEATURE(kComputeAXMode);
 // Returns true if the IChromeAccessible COM API is enabled.
 AX_BASE_EXPORT bool IsComputeAXModeEnabled();
 
+// Enable form controls AXMode based on running services. If disabled,
+// then form controls AXMode will not be available to be set.
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityFormControlsMode);
+
+// Returns true if the form controls AXMode is enabled.
+AX_BASE_EXPORT bool IsAccessibilityFormControlsAXModeEnabled();
+
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kOptimizeAccessibilityUiThreadWork);
 
 bool IsOptimizeAccessibilityUiThreadWorkEnabled();
@@ -253,12 +260,6 @@ AX_BASE_EXPORT BASE_DECLARE_FEATURE(kLayoutExtraction);
 // local machine intelligence library to process screenshots and adds metadata
 // to the accessibility tree.
 AX_BASE_EXPORT bool IsLayoutExtractionEnabled();
-
-// Enables ChromeVox Q1 Fast-Track Features.
-AX_BASE_EXPORT BASE_DECLARE_FEATURE(kChromeVoxQ1FastTrackFeatures);
-
-// Returns true if ChromeVox Q1 Fast-Track Features are enabled.
-AX_BASE_EXPORT bool IsChromeVoxQ1FastTrackFeaturesEnabled();
 
 // Enables the experimental Accessibility Service.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityService);

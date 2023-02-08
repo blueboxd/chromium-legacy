@@ -317,9 +317,32 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
       kInstallAndWaitForActivatedPageWithModuleScript);
 }
 
-// TODO(crbug.com/1404256): Resolve flakiness and re-enable.
-IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest, DISABLED_SubresourceCountUKM) {
+// TODO(crbug.com/1395715): The test is flaky. Re-enable it.
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_SubresourceCountUKM DISABLED_SubresourceCountUKM
+#else
+#define MAYBE_SubresourceCountUKM SubresourceCountUKM
+#endif
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest, MAYBE_SubresourceCountUKM) {
+  base::RunLoop ukm_loop;
   ukm::TestAutoSetUkmRecorder test_recorder;
+  test_recorder.SetOnAddEntryCallback(
+      ukm::builders::ServiceWorker_OnLoad::kEntryName,
+      // In the following test, there are two kinds of sub resources loaded;
+      // one is handled with "respondWith", and the other is not.
+      // `ukm_loop.Quit()` is called when both of them are recorded in UKM.
+      base::BindLambdaForTesting([&]() {
+        auto entries = test_recorder.GetEntriesByName(
+            ukm::builders::ServiceWorker_OnLoad::kEntryName);
+        CHECK(!entries.empty());
+        const int64_t* v = ukm::TestAutoSetUkmRecorder::GetEntryMetric(
+            entries[0],
+            ukm::builders::ServiceWorker_OnLoad::kTotalSubResourceLoadName);
+        CHECK(v);
+        if (*v == 2) {
+          ukm_loop.Quit();
+        }
+      }));
 
   WriteFile(FILE_PATH_LITERAL("fallback.css"), "");
   WriteFile(FILE_PATH_LITERAL("nofallback.css"), "");
@@ -371,10 +394,9 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest, DISABLED_SubresourceCountUKM) {
   ASSERT_TRUE(
       ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
 
-  // Wait until the UKM record is updated.
-  // Note that since we update multiple metrics in the entry, waiting for the
-  // entry metrics with `SetOnAddEntryCallback()` seems not to work well.
-  base::RunLoop().RunUntilIdle();
+  // Wait until the UKM record has enough entries.
+  ukm_loop.Run();
+
   auto entries = test_recorder.GetEntriesByName(
       ukm::builders::ServiceWorker_OnLoad::kEntryName);
   ASSERT_EQ(entries.size(), 1u);

@@ -97,6 +97,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillEnableSupportForHonorificPrefixes,
     &autofill::features::kAutofillEnableUpdateVirtualCardEnrollment,
     &autofill::features::kAutofillEnableVirtualCardMetadata,
+    &autofill::features::kAutofillEnableCardArtImage,
     &autofill::features::kAutofillEnableCardProductName,
     &autofill::features::kAutofillTouchToFillForCreditCardsAndroid,
     &blink::features::kForceWebContentsDarkMode,
@@ -247,6 +248,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kOptimizeGeolocationHeaderGeneration,
     &kPostTaskFocusTab,
     &kProbabilisticCryptidRenderer,
+    &kQuickDeleteForAndroid,
     &kReachedCodeProfiler,
     &kReaderModeInCCT,
     &kRecordSuppressionMetrics,
@@ -290,6 +292,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kTabStripRedesign,
     &kTabGridLayoutAndroid,
     &kTabSelectionEditorV2,
+    &kTabStateV1Optimizations,
     &kTabStripImprovements,
     &kTabToGTSAnimation,
     &kTestDefaultDisabled,
@@ -510,7 +513,7 @@ BASE_FEATURE(kCCTBackgroundTab,
 
 BASE_FEATURE(kCCTBrandTransparency,
              "CCTBrandTransparency",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTClientDataHeader,
              "CCTClientDataHeader",
@@ -548,7 +551,7 @@ BASE_FEATURE(kCCTPrefetchDelayShowOnStart,
 
 BASE_FEATURE(kCCTRealTimeEngagementSignals,
              "CCTRealTimeEngagementSignals",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTRedirectPreconnect,
              "CCTRedirectPreconnect",
@@ -782,6 +785,10 @@ BASE_FEATURE(kProbabilisticCryptidRenderer,
              "ProbabilisticCryptidRenderer",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kQuickDeleteForAndroid,
+             "QuickDeleteForAndroid",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kReachedCodeProfiler,
              "ReachedCodeProfiler",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -933,6 +940,10 @@ BASE_FEATURE(kTabGridLayoutAndroid,
 BASE_FEATURE(kTabSelectionEditorV2,
              "TabSelectionEditorV2",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kTabStateV1Optimizations,
+             "TabStateV1Optimizations",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTabStripImprovements,
              "TabStripImprovements",

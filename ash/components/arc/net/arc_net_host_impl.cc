@@ -548,9 +548,7 @@ void SetLohsEnabledFailureCallback(
     const std::string& dbus_error_message) {
   NET_LOG(ERROR) << "SetLohsEnabledFailureCallback, error: " << dbus_error_name
                  << ", message: " << dbus_error_message;
-  // TODO(b/259162524): Change this to a more specific "shill configuration"
-  // error
-  std::move(callback).Run(arc::mojom::LohsStatus::kErrorGeneric);
+  std::move(callback).Run(arc::mojom::LohsStatus::kErrorConfiguringPlatform);
 }
 
 void SetLohsConfigPropertySuccessCallback(
@@ -570,9 +568,7 @@ void SetLohsConfigPropertyFailureCallback(
     const std::string& dbus_error_message) {
   NET_LOG(ERROR) << "SetLohsConfigPropertyFailureCallback, error: "
                  << dbus_error_name << ", message: " << dbus_error_message;
-  // TODO(b/259162524): Change this to a more specific "shill configuration"
-  // error
-  std::move(callback).Run(arc::mojom::LohsStatus::kErrorGeneric);
+  std::move(callback).Run(arc::mojom::LohsStatus::kErrorConfiguringPlatform);
 }
 
 void StopLohsFailureCallback(const std::string& error_name,
@@ -1323,8 +1319,7 @@ void ArcNetHostImpl::AddPasspointCredentialsWithProperties(
   }
 
   ash::ShillManagerClient::Get()->AddPasspointCredentials(
-      dbus::ObjectPath(profile->path), base::Value(std::move(properties)),
-      base::DoNothing(),
+      dbus::ObjectPath(profile->path), std::move(properties), base::DoNothing(),
       base::BindOnce(&AddPasspointCredentialsFailureCallback));
   return;
 }
@@ -1353,7 +1348,7 @@ void ArcNetHostImpl::RemovePasspointCredentials(
   }
 
   ash::ShillManagerClient::Get()->RemovePasspointCredentials(
-      dbus::ObjectPath(profile->path), base::Value(std::move(shill_properties)),
+      dbus::ObjectPath(profile->path), std::move(shill_properties),
       base::DoNothing(),
       base::BindOnce(&RemovePasspointCredentialsFailureCallback));
 
@@ -1488,7 +1483,7 @@ void ArcNetHostImpl::StartLohs(mojom::LohsConfigPtr config,
 
   if (config->hexssid.empty()) {
     NET_LOG(ERROR) << "Cannot create local only hotspot without hex ssid";
-    std::move(callback).Run(arc::mojom::LohsStatus::kErrorGeneric);
+    std::move(callback).Run(arc::mojom::LohsStatus::kErrorInvalidArgument);
     return;
   }
   dict.GetDict().Set(shill::kTetheringConfSSIDProperty,
@@ -1498,9 +1493,7 @@ void ArcNetHostImpl::StartLohs(mojom::LohsConfigPtr config,
     // TODO(b/257880335): Support 5Ghz band as well
     NET_LOG(ERROR) << "Unsupported band for LOHS: " << config->band
                    << "; can only support 2.4GHz";
-    // TODO(b/259162524): Change this to a more specific "invalid argument"
-    // error
-    std::move(callback).Run(arc::mojom::LohsStatus::kErrorGeneric);
+    std::move(callback).Run(arc::mojom::LohsStatus::kErrorInvalidArgument);
     return;
   }
   dict.GetDict().Set(shill::kTetheringConfBandProperty,
@@ -1509,16 +1502,12 @@ void ArcNetHostImpl::StartLohs(mojom::LohsConfigPtr config,
   if (config->security_type != arc::mojom::SecurityType::WPA_PSK) {
     NET_LOG(ERROR) << "Unsupported security for LOHS: " << config->security_type
                    << "; can only support WPA_PSK";
-    // TODO(b/259162524): Change this to a more specific "invalid argument"
-    // error
-    std::move(callback).Run(arc::mojom::LohsStatus::kErrorGeneric);
+    std::move(callback).Run(arc::mojom::LohsStatus::kErrorInvalidArgument);
     return;
   }
   if (!config->passphrase.has_value()) {
     NET_LOG(ERROR) << "Cannot create local only hotspot without password";
-    // TODO(b/259162524): Change this to a more specific "invalid argument"
-    // error
-    std::move(callback).Run(arc::mojom::LohsStatus::kErrorGeneric);
+    std::move(callback).Run(arc::mojom::LohsStatus::kErrorInvalidArgument);
     return;
   }
   dict.GetDict().Set(shill::kTetheringConfSecurityProperty,

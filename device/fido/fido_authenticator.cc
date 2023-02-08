@@ -198,26 +198,6 @@ ProtocolVersion FidoAuthenticator::SupportedProtocol() const {
   return ProtocolVersion::kUnknown;
 }
 
-bool FidoAuthenticator::SupportsCredProtectExtension() const {
-  return Options() && Options()->supports_cred_protect;
-}
-
-bool FidoAuthenticator::SupportsHMACSecretExtension() const {
-  return false;
-}
-
-bool FidoAuthenticator::SupportsEnterpriseAttestation() const {
-  return false;
-}
-
-bool FidoAuthenticator::SupportsCredBlobOfSize(size_t num_bytes) const {
-  return false;
-}
-
-bool FidoAuthenticator::SupportsDevicePublicKey() const {
-  return false;
-}
-
 bool FidoAuthenticator::SupportsLargeBlobs() const {
   return false;
 }

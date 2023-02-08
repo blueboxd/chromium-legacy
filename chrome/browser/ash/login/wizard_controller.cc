@@ -70,10 +70,10 @@
 #include "chrome/browser/ash/login/screens/enable_debugging_screen.h"
 #include "chrome/browser/ash/login/screens/encryption_migration_screen.h"
 #include "chrome/browser/ash/login/screens/error_screen.h"
-#include "chrome/browser/ash/login/screens/eula_screen.h"
 #include "chrome/browser/ash/login/screens/family_link_notice_screen.h"
 #include "chrome/browser/ash/login/screens/fingerprint_setup_screen.h"
 #include "chrome/browser/ash/login/screens/gaia_password_changed_screen.h"
+#include "chrome/browser/ash/login/screens/gaia_password_changed_screen_legacy.h"
 #include "chrome/browser/ash/login/screens/gaia_screen.h"
 #include "chrome/browser/ash/login/screens/gesture_navigation_screen.h"
 #include "chrome/browser/ash/login/screens/hardware_data_collection_screen.h"
@@ -150,7 +150,6 @@
 #include "chrome/browser/ui/webui/ash/login/encryption_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/error_screen_handler.h"
-#include "chrome/browser/ui/webui/ash/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/family_link_notice_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/fingerprint_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_password_changed_screen_handler.h"
@@ -200,11 +199,8 @@
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
 #include "chromeos/ash/components/geolocation/simple_geolocation_provider.h"
-#include "chromeos/ash/components/network/network_handler.h"
-#include "chromeos/ash/components/network/network_handler_callbacks.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
-#include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/components/settings/cros_settings_provider.h"
 #include "chromeos/ash/components/settings/timezone_settings.h"
@@ -253,9 +249,11 @@ constexpr char kLegacyUpdateScreenName[] = "update";
 
 // Stores the list of all screens that should be shown when resuming OOBE.
 const StaticOobeScreenId kResumableOobeScreens[] = {
-    WelcomeView::kScreenId,          NetworkScreenView::kScreenId,
-    UpdateView::kScreenId,           EulaView::kScreenId,
-    EnrollmentScreenView::kScreenId, AutoEnrollmentCheckScreenView::kScreenId,
+    WelcomeView::kScreenId,
+    NetworkScreenView::kScreenId,
+    UpdateView::kScreenId,
+    EnrollmentScreenView::kScreenId,
+    AutoEnrollmentCheckScreenView::kScreenId,
 };
 
 const StaticOobeScreenId kResumablePostLoginScreens[] = {
@@ -604,10 +602,6 @@ WizardController::CreateScreens() {
       oobe_ui->GetView<NetworkScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnNetworkScreenExit,
                           weak_factory_.GetWeakPtr())));
-  append(std::make_unique<EulaScreen>(
-      oobe_ui->GetView<EulaScreenHandler>()->AsWeakPtr(),
-      base::BindRepeating(&WizardController::OnEulaScreenExit,
-                          weak_factory_.GetWeakPtr())));
   append(std::make_unique<UpdateScreen>(
       oobe_ui->GetView<UpdateScreenHandler>()->AsWeakPtr(),
       oobe_ui->GetErrorScreen(),
@@ -615,6 +609,7 @@ WizardController::CreateScreens() {
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<EnrollmentScreen>(
       oobe_ui->GetView<EnrollmentScreenHandler>()->AsWeakPtr(),
+      oobe_ui->GetErrorScreen(),
       base::BindRepeating(&WizardController::OnEnrollmentScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<ResetScreen>(
@@ -762,12 +757,22 @@ WizardController::CreateScreens() {
   append(std::make_unique<TpmErrorScreen>(
       oobe_ui->GetView<TpmErrorScreenHandler>()->AsWeakPtr()));
 
-  auto gaia_password_change_screen =
-      std::make_unique<GaiaPasswordChangedScreen>(
-          base::BindRepeating(&WizardController::OnPasswordChangeScreenExit,
-                              weak_factory_.GetWeakPtr()),
-          oobe_ui->GetView<GaiaPasswordChangedScreenHandler>()->AsWeakPtr());
-  append(std::move(gaia_password_change_screen));
+  if (ash::features::IsCryptohomeRecoveryEnabled()) {
+    auto gaia_password_change_screen =
+        std::make_unique<GaiaPasswordChangedScreen>(
+            base::BindRepeating(&WizardController::OnPasswordChangeScreenExit,
+                                weak_factory_.GetWeakPtr()),
+            oobe_ui->GetView<GaiaPasswordChangedScreenHandler>()->AsWeakPtr());
+    append(std::move(gaia_password_change_screen));
+  } else {
+    auto gaia_password_change_screen =
+        std::make_unique<GaiaPasswordChangedScreenLegacy>(
+            base::BindRepeating(
+                &WizardController::OnPasswordChangeLegacyScreenExit,
+                weak_factory_.GetWeakPtr()),
+            oobe_ui->GetView<GaiaPasswordChangedScreenHandler>()->AsWeakPtr());
+    append(std::move(gaia_password_change_screen));
+  }
 
   append(std::make_unique<ActiveDirectoryPasswordChangeScreen>(
       oobe_ui->GetView<ActiveDirectoryPasswordChangeScreenHandler>()
@@ -924,19 +929,17 @@ void WizardController::OnSignInFatalErrorScreenExit() {
 }
 
 void WizardController::ShowLoginScreen() {
-  if (!time_eula_accepted_.is_null()) {
-    base::TimeDelta delta = base::TimeTicks::Now() - time_eula_accepted_;
-    base::UmaHistogramMediumTimes("OOBE.EULAToSignInTime", delta);
-  }
   VLOG(1) << "Showing login screen.";
   UpdateStatusAreaVisibilityForScreen(GaiaView::kScreenId);
   GetLoginDisplayHost()->StartSignInScreen();
 }
 
-void WizardController::ShowGaiaPasswordChangedScreen(
+void WizardController::ShowGaiaPasswordChangedScreenLegacy(
     const AccountId& account_id,
     bool has_error) {
-  GaiaPasswordChangedScreen* screen = GetScreen<GaiaPasswordChangedScreen>();
+  DCHECK(!ash::features::IsCryptohomeRecoveryEnabled());
+  GaiaPasswordChangedScreenLegacy* screen =
+      GetScreen<GaiaPasswordChangedScreenLegacy>();
   screen->Configure(account_id, has_error);
   if (current_screen_ != screen) {
     SetCurrentScreen(screen);
@@ -945,8 +948,11 @@ void WizardController::ShowGaiaPasswordChangedScreen(
   }
 }
 
-void WizardController::ShowEulaScreen() {
-  SetCurrentScreen(GetScreen(EulaView::kScreenId));
+void WizardController::ShowGaiaPasswordChangedScreen(
+    std::unique_ptr<UserContext> user_context) {
+  DCHECK(features::IsCryptohomeRecoveryEnabled());
+  wizard_context_->user_context = std::move(user_context);
+  SetCurrentScreen(GetScreen<GaiaPasswordChangedScreen>());
 }
 
 void WizardController::ShowEnrollmentScreen() {
@@ -1240,6 +1246,22 @@ void WizardController::OnSamlConfirmPasswordScreenExit(
   }
 }
 
+void WizardController::OnPasswordChangeLegacyScreenExit(
+    GaiaPasswordChangedScreenLegacy::Result result) {
+  OnScreenExit(GaiaPasswordChangedView::kScreenId,
+               GaiaPasswordChangedScreenLegacy::GetResultString(result));
+  switch (result) {
+    case GaiaPasswordChangedScreenLegacy::Result::CANCEL:
+      LoginDisplayHost::default_host()->CancelPasswordChangedFlow();
+      break;
+    case GaiaPasswordChangedScreenLegacy::Result::RESYNC:
+      LoginDisplayHost::default_host()->ResyncUserData();
+      break;
+    case GaiaPasswordChangedScreenLegacy::Result::MIGRATE:
+      NOTREACHED();
+  }
+}
+
 void WizardController::OnPasswordChangeScreenExit(
     GaiaPasswordChangedScreen::Result result) {
   OnScreenExit(GaiaPasswordChangedView::kScreenId,
@@ -1248,11 +1270,21 @@ void WizardController::OnPasswordChangeScreenExit(
     case GaiaPasswordChangedScreen::Result::CANCEL:
       LoginDisplayHost::default_host()->CancelPasswordChangedFlow();
       break;
-    case GaiaPasswordChangedScreen::Result::RESYNC:
-      LoginDisplayHost::default_host()->ResyncUserData();
+    case GaiaPasswordChangedScreen::Result::CONTINUE_LOGIN:
+      ash::LoginDisplayHost::default_host()
+          ->GetExistingUserController()
+          ->LoginAuthenticated(std::move(wizard_context_->user_context));
       break;
-    case GaiaPasswordChangedScreen::Result::MIGRATE:
+    case GaiaPasswordChangedScreen::Result::RECREATE_USER: {
+      std::unique_ptr<UserContext> context =
+          std::move(wizard_context_->user_context);
+      ash::LoginDisplayHost::default_host()->CompleteLogin(*context);
+      break;
+    }
+    case GaiaPasswordChangedScreen::Result::CRYPTOHOME_ERROR:
+      // TODO(b/239420684): Send an error to the UI.
       NOTREACHED();
+      LoginDisplayHost::default_host()->CancelPasswordChangedFlow();
   }
 }
 
@@ -1437,8 +1469,7 @@ void WizardController::OnCryptohomeRecoveryScreenExit(
       break;
     case CryptohomeRecoveryScreen::Result::kManualRecovery:
     case CryptohomeRecoveryScreen::Result::kNoRecoveryFactor:
-      ShowGaiaPasswordChangedScreen(
-          wizard_context_->user_context->GetAccountId(), false /*has_error*/);
+      ShowGaiaPasswordChangedScreen(std::move(wizard_context_->user_context));
       break;
   }
 }
@@ -1475,10 +1506,6 @@ void WizardController::SkipToLoginForTesting() {
   if (current_screen_ && current_screen_->screen_id() == GaiaView::kScreenId)
     return;
   wizard_context_->skip_to_login_for_tests = true;
-
-  if (!features::IsOobeConsolidatedConsentEnabled()) {
-    StartupUtils::MarkEulaAccepted();
-  }
 
   PerformPostNetworkScreenActions();
   OnDeviceDisabledChecked(false /* device_disabled */);
@@ -1580,19 +1607,13 @@ void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {
   }
 
   // OS Install flow.
-  bool is_consolidated_consent_enabled =
-      features::IsOobeConsolidatedConsentEnabled();
   if (switches::IsOsInstallAllowed()) {
     switch (result) {
       case NetworkScreen::Result::CONNECTED:
       case NetworkScreen::Result::NOT_APPLICABLE:
-        if (is_consolidated_consent_enabled) {
-          MaybeTakeTPMOwnership();
-          PerformPostNetworkScreenActions();
-          InitiateOOBEUpdate();
-        } else {
-          ShowEulaScreen();
-        }
+        MaybeTakeTPMOwnership();
+        PerformPostNetworkScreenActions();
+        InitiateOOBEUpdate();
         break;
       case NetworkScreen::Result::BACK:
         ShowOsTrialScreen();
@@ -1605,72 +1626,14 @@ void WizardController::OnNetworkScreenExit(NetworkScreen::Result result) {
   switch (result) {
     case NetworkScreen::Result::CONNECTED:
     case NetworkScreen::Result::NOT_APPLICABLE:
-      if (is_consolidated_consent_enabled) {
-        MaybeTakeTPMOwnership();
-        PerformPostNetworkScreenActions();
-        InitiateOOBEUpdate();
-      } else {
-        ShowEulaScreen();
-      }
+      MaybeTakeTPMOwnership();
+      PerformPostNetworkScreenActions();
+      InitiateOOBEUpdate();
       break;
     case NetworkScreen::Result::BACK:
       ShowWelcomeScreen();
       break;
   }
-}
-
-void WizardController::OnEulaScreenExit(EulaScreen::Result result) {
-  OnScreenExit(EulaView::kScreenId, EulaScreen::GetResultString(result));
-
-  switch (result) {
-    case EulaScreen::Result::ACCEPTED_WITH_USAGE_STATS_REPORTING:
-      OnEulaAccepted(true /*usage_statistics_reporting_enabled*/);
-      break;
-    case EulaScreen::Result::ALREADY_ACCEPTED:
-      InitiateOOBEUpdate();
-      break;
-    case EulaScreen::Result::ALREADY_ACCEPTED_DEMO_MODE:
-      ShowArcTermsOfServiceScreen();
-      break;
-    case EulaScreen::Result::ACCEPTED_WITHOUT_USAGE_STATS_REPORTING:
-    case EulaScreen::Result::NOT_APPLICABLE:
-      OnEulaAccepted(false /*usage_statistics_reporting_enabled*/);
-      break;
-    case EulaScreen::Result::BACK:
-      DCHECK(!demo_setup_controller_);
-      ShowNetworkScreen();
-      break;
-    case EulaScreen::Result::BACK_DEMO_MODE:
-      DCHECK(demo_setup_controller_);
-      ShowDemoModePreferencesScreen();
-      break;
-  }
-}
-
-void WizardController::OnEulaAccepted(bool usage_statistics_reporting_enabled) {
-  time_eula_accepted_ = base::TimeTicks::Now();
-  StartupUtils::MarkEulaAccepted();
-  metrics::structured::NeutrinoDevicesLogWithLocalState(
-      GetLocalState(),
-      metrics::structured::NeutrinoDevicesLocation::kOnEulaAccepted);
-  ChangeMetricsReportingStateWithReply(
-      usage_statistics_reporting_enabled,
-      base::BindOnce(&WizardController::OnChangedMetricsReportingState,
-                     weak_factory_.GetWeakPtr()));
-  if (wizard_context_->is_cloud_ready_update_flow) {
-    AdvanceToScreen(HWDataCollectionView::kScreenId);
-    return;
-  }
-  PerformPostNetworkScreenActions();
-
-  if (arc::IsArcTermsOfServiceOobeNegotiationNeeded()) {
-    ShowArcTermsOfServiceScreen();
-    return;
-  } else if (demo_setup_controller_) {
-    ShowDemoModeSetupScreen();
-  }
-
-  InitiateOOBEUpdate();
 }
 
 void WizardController::OnUpdateScreenExit(UpdateScreen::Result result) {
@@ -1828,9 +1791,6 @@ void WizardController::OnDemoPreferencesScreenExit(
 
   switch (result) {
     case DemoPreferencesScreen::Result::COMPLETED:
-      ShowEulaScreen();
-      break;
-    case DemoPreferencesScreen::Result::COMPLETED_CONSOLIDATED_CONSENT:
       demo_setup_controller_->set_demo_config(
           DemoSession::DemoModeConfig::kOnline);
       MaybeTakeTPMOwnership();
@@ -2205,12 +2165,7 @@ void WizardController::PerformPostNetworkScreenActions() {
                    ServicesCustomizationDocument::GetInstance()
                        ->EnsureCustomizationAppliedClosure());
 
-  // Enable portal check for official builds.
-  // ChromiumOS builds would go though this code path too.
-  NetworkHandler::Get()->network_state_handler()->SetCheckPortalList(
-      NetworkStateHandler::kDefaultCheckPortalList);
   GetAutoEnrollmentController()->Start();
-  network_portal_detector::GetInstance()->Enable();
 }
 
 void WizardController::PerformOOBECompletedActions() {
@@ -2367,8 +2322,6 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
     ShowPackagedLicenseScreen();
   } else if (screen_id == UpdateView::kScreenId) {
     InitiateOOBEUpdate();
-  } else if (screen_id == EulaView::kScreenId) {
-    ShowEulaScreen();
   } else if (screen_id == ResetView::kScreenId) {
     ShowResetScreen();
   } else if (screen_id == KioskEnableScreenView::kScreenId) {
@@ -2387,10 +2340,10 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
     ShowDemoModePreferencesScreen();
   } else if (screen_id == TermsOfServiceScreenView::kScreenId) {
     ShowTermsOfServiceScreen();
-  } else if (screen_id == SyncConsentScreenView::kScreenId) {
-    ShowSyncConsentScreen();
   } else if (screen_id == ArcTermsOfServiceScreenView::kScreenId) {
     ShowArcTermsOfServiceScreen();
+  } else if (screen_id == SyncConsentScreenView::kScreenId) {
+    ShowSyncConsentScreen();
   } else if (screen_id == RecommendAppsScreenView::kScreenId) {
     ShowRecommendAppsScreen();
   } else if (screen_id == AppDownloadingScreenView::kScreenId) {

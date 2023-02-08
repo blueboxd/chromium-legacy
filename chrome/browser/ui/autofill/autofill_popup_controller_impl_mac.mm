@@ -53,7 +53,7 @@ AutofillPopupControllerImplMac::AutofillPopupControllerImplMac(
 AutofillPopupControllerImplMac::~AutofillPopupControllerImplMac() {}
 
 void AutofillPopupControllerImplMac::Show(
-    const std::vector<autofill::Suggestion>& suggestions,
+    std::vector<autofill::Suggestion> suggestions,
     AutoselectFirstSuggestion autoselect_first_suggestion) {
   if (!suggestions.empty() && is_credit_card_popup_) {
     if (@available(macOS 10.12.2, *)) {
@@ -63,7 +63,8 @@ void AutofillPopupControllerImplMac::Show(
     }
   }
 
-  AutofillPopupControllerImpl::Show(suggestions, autoselect_first_suggestion);
+  AutofillPopupControllerImpl::Show(std::move(suggestions),
+                                    autoselect_first_suggestion);
   // No code below this line!
   // |Show| may hide the popup and destroy |this|, so |Show| should be the last
   // line.

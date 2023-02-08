@@ -174,6 +174,11 @@ public class WebEngineShellActivity extends AppCompatActivity {
         mTabManager.registerTabListObserver(
                 new DefaultObservers.DefaultTabListObserver(progressBar, urlBar, mTabManager));
 
+        activeTab.addMessageEventListener((Tab source, String message) -> {
+            Log.w(TAG, "Received post message from web content: " + message);
+        }, Arrays.asList("*"));
+        activeTab.postMessage("Hello!", "*");
+
         ListenableFuture<Void> setCookieFuture =
                 cookieManager.setCookie("https://sadchonks.com", "foo=bar123");
         Futures.addCallback(setCookieFuture, new FutureCallback<Void>() {
@@ -202,7 +207,7 @@ public class WebEngineShellActivity extends AppCompatActivity {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 String query = v.getText().toString();
-                activeTab.getNavigationController().navigate(query);
+                mTabManager.getActiveTab().getNavigationController().navigate(query);
                 // Hides keyboard on Enter key pressed
                 InputMethodManager imm =
                         (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);

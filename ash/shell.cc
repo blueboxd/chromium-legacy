@@ -1160,8 +1160,6 @@ void Shell::Init(
       peripheral_battery_listener_.get());
   power_event_observer_ = std::make_unique<PowerEventObserver>();
   window_cycle_controller_ = std::make_unique<WindowCycleController>();
-  multitask_menu_nudge_controller_ =
-      std::make_unique<MultitaskMenuNudgeController>();
 
   capture_mode_controller_ = std::make_unique<CaptureModeController>(
       shell_delegate_->CreateCaptureModeDelegate());
@@ -1262,6 +1260,11 @@ void Shell::Init(
   focus_rules_ = new AshFocusRules();
   focus_controller_ = std::make_unique<::wm::FocusController>(focus_rules_);
   focus_controller_->AddObserver(this);
+
+  // Needs to be constructed after `focus_controller_` as it adds itself as an
+  // observer on construction.
+  multitask_menu_nudge_controller_ =
+      std::make_unique<MultitaskMenuNudgeController>();
 
   overview_controller_ = std::make_unique<OverviewController>();
 
@@ -1416,15 +1419,11 @@ void Shell::Init(
   multi_display_metrics_controller_ =
       std::make_unique<MultiDisplayMetricsController>();
 
-  // |assistant_controller_| is put before |ambient_controller_| as it will be
-  // used by the latter.
-  if (features::IsAmbientModeEnabled()) {
-    mojo::PendingRemote<device::mojom::Fingerprint> fingerprint;
-    shell_delegate_->BindFingerprint(
-        fingerprint.InitWithNewPipeAndPassReceiver());
-    ambient_controller_ =
-        std::make_unique<AmbientController>(std::move(fingerprint));
-  }
+  mojo::PendingRemote<device::mojom::Fingerprint> ambient_fingerprint;
+  shell_delegate_->BindFingerprint(
+      ambient_fingerprint.InitWithNewPipeAndPassReceiver());
+  ambient_controller_ =
+      std::make_unique<AmbientController>(std::move(ambient_fingerprint));
 
   mojo::PendingRemote<video_capture::mojom::MultiCaptureService>
       multi_capture_service;
@@ -1594,7 +1593,7 @@ void Shell::Init(
     projector_controller_ = std::make_unique<ProjectorControllerImpl>();
   }
 
-  if (chromeos::wm::features::IsFloatWindowEnabled()) {
+  if (chromeos::wm::features::IsWindowLayoutMenuEnabled()) {
     float_controller_ = std::make_unique<FloatController>();
   }
 

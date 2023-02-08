@@ -24,6 +24,9 @@ BASE_FEATURE(kInstantTetheringBackgroundAdvertisementSupport,
              "InstantTetheringBackgroundAdvertisementSupport",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+constexpr char kChromeOSReleaseTrack[] = "CHROMEOS_RELEASE_TRACK";
+constexpr char kTestImageRelease[] = "testimage-channel";
+
 }  // namespace
 
 // Enables the UI and logic that minimizes the amount of time the device spends
@@ -67,47 +70,6 @@ BASE_FEATURE(kAlwaysReinstallSystemWebApps,
 BASE_FEATURE(kAllowScrollSettings,
              "AllowScrollSettings",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Controls whether to enable Ambient mode feature.
-BASE_FEATURE(kAmbientModeFeature,
-             "ChromeOSAmbientMode",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-constexpr base::FeatureParam<bool> kAmbientModeCapturedOnPixelAlbumEnabled{
-    &kAmbientModeFeature, "CapturedOnPixelAlbumEnabled", false};
-
-constexpr base::FeatureParam<bool> kAmbientModeCapturedOnPixelPhotosEnabled{
-    &kAmbientModeFeature, "CapturedOnPixelPhotosEnabled", false};
-
-constexpr base::FeatureParam<bool> kAmbientModeCulturalInstitutePhotosEnabled{
-    &kAmbientModeFeature, "CulturalInstitutePhotosEnabled", false};
-
-constexpr base::FeatureParam<bool> kAmbientModeDefaultFeedEnabled{
-    &kAmbientModeFeature, "DefaultFeedEnabled", false};
-
-constexpr base::FeatureParam<bool> kAmbientModeEarthAndSpaceAlbumEnabled{
-    &kAmbientModeFeature, "EarthAndSpaceAlbumEnabled", true};
-
-constexpr base::FeatureParam<bool> kAmbientModeFeaturedPhotoAlbumEnabled{
-    &kAmbientModeFeature, "FeaturedPhotoAlbumEnabled", true};
-
-constexpr base::FeatureParam<bool> kAmbientModeFeaturedPhotosEnabled{
-    &kAmbientModeFeature, "FeaturedPhotosEnabled", true};
-
-constexpr base::FeatureParam<bool> kAmbientModeFineArtAlbumEnabled{
-    &kAmbientModeFeature, "FineArtAlbumEnabled", false};
-
-constexpr base::FeatureParam<bool> kAmbientModeGeoPhotosEnabled{
-    &kAmbientModeFeature, "GeoPhotosEnabled", true};
-
-constexpr base::FeatureParam<bool> kAmbientModePersonalPhotosEnabled{
-    &kAmbientModeFeature, "PersonalPhotosEnabled", true};
-
-constexpr base::FeatureParam<bool> kAmbientModeRssPhotosEnabled{
-    &kAmbientModeFeature, "RssPhotosEnabled", false};
-
-constexpr base::FeatureParam<bool> kAmbientModeStreetArtAlbumEnabled{
-    &kAmbientModeFeature, "StreetArtAlbumEnabled", false};
 
 // Controls whether to enable AutoEnrollment for Kiosk in OOBE
 BASE_FEATURE(kAutoEnrollmentKioskInOobe,
@@ -934,6 +896,12 @@ BASE_FEATURE(kFilesConflictDialog,
              "FilesConflictDialog",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables shortcut icons to be shown in Google Drive when an item is a
+// shortcut.
+BASE_FEATURE(kFilesDriveShortcuts,
+             "FilesDriveShortcuts",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enable inline sync status in Files app.
 BASE_FEATURE(kFilesInlineSyncStatus,
              "FilesInlineSyncStatus",
@@ -1244,9 +1212,6 @@ BASE_FEATURE(kIppClientInfo, "IppClientInfo", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables Jelly features.
 BASE_FEATURE(kJelly, "Jelly", base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables Jellyroll features.
-BASE_FEATURE(kJellyroll, "Jellyroll", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables IME button in the floating accessibility menu for the Kiosk session.
 BASE_FEATURE(kKioskEnableImeButton,
@@ -2289,10 +2254,6 @@ bool IsAmbientModeDevUseProdEnabled() {
   return base::FeatureList::IsEnabled(kAmbientModeDevUseProdFeature);
 }
 
-bool IsAmbientModeEnabled() {
-  return base::FeatureList::IsEnabled(kAmbientModeFeature);
-}
-
 bool IsAmbientModePhotoPreviewEnabled() {
   return base::FeatureList::IsEnabled(kAmbientModePhotoPreviewFeature);
 }
@@ -2703,10 +2664,6 @@ bool IsJellyEnabled() {
   return base::FeatureList::IsEnabled(kJelly);
 }
 
-bool IsJellyrollEnabled() {
-  return base::FeatureList::IsEnabled(kJellyroll);
-}
-
 bool IsKeyboardBacklightToggleEnabled() {
   return base::FeatureList::IsEnabled(kEnableKeyboardBacklightToggle);
 }
@@ -2742,7 +2699,14 @@ bool IsEducationEnrollmentOobeFlowEnabled() {
 }
 
 bool IsGameDashboardEnabled() {
-  return base::FeatureList::IsEnabled(kGameDashboard);
+  if (!base::FeatureList::IsEnabled(kGameDashboard)) {
+    return false;
+  }
+
+  // Only allow the dashboard on test images until further in development.
+  std::string track;
+  return base::SysInfo::GetLsbReleaseValue(kChromeOSReleaseTrack, &track) &&
+         track.find(kTestImageRelease) != std::string::npos;
 }
 
 bool IsLockScreenInlineReplyEnabled() {

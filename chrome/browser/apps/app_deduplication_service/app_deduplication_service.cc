@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/files/file_path.h"
 #include "base/functional/callback_helpers.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/apps/app_deduplication_service/app_deduplication_service.h"
@@ -12,6 +13,12 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/services/app_service/public/cpp/types_util.h"
+
+namespace {
+// Folder path to where the deduplication data will be stored on disk.
+constexpr char kAppDeduplicationFolderPath[] =
+    "app_deduplication_service/deduplication_data/";
+}  // namespace
 
 namespace apps::deduplication {
 
@@ -23,6 +30,10 @@ AppDeduplicationService::AppDeduplicationService(Profile* profile)
   app_registry_cache_observation_.Observe(
       &apps::AppServiceProxyFactory::GetForProfile(profile)
            ->AppRegistryCache());
+
+  base::FilePath path =
+      profile_->GetPath().AppendASCII(kAppDeduplicationFolderPath);
+  cache_ = std::make_unique<AppDeduplicationCache>(path);
 }
 
 AppDeduplicationService::~AppDeduplicationService() = default;
@@ -71,6 +82,8 @@ bool AppDeduplicationService::AreDuplicates(const EntryId& entry_id_1,
   return duplication_index_1 == duplication_index_2;
 }
 
+// This function is only used when the kAppDeduplicationService flag
+// is enabled.
 void AppDeduplicationService::OnDuplicatedGroupListUpdated(
     const proto::DuplicatedGroupList& duplicated_group_list) {
   // Use the index as the internal indexing key for fast look up. If the
@@ -198,6 +211,74 @@ void AppDeduplicationService::GetDeduplicateDataFromServer() {
 void AppDeduplicationService::OnGetDeduplicateDataFromServerCompleted(
     absl::optional<proto::DeduplicateData> response) {
   // TODO(b/264216262): handle response data and store in disk.
+}
+
+void AppDeduplicationService::OnWriteDeduplicationCacheCompleted(bool result) {
+  if (!result) {
+    LOG(ERROR) << "Writing deduplication data to disk failed.";
+    return;
+  }
+
+  cache_->ReadDeduplicationCache(base::BindOnce(
+      &AppDeduplicationService::OnReadDeduplicationCacheCompleted,
+      weak_ptr_factory_.GetWeakPtr()));
+  return;
+}
+
+void AppDeduplicationService::OnReadDeduplicationCacheCompleted(
+    absl::optional<proto::DeduplicateData> data) {
+  // TODO(b/267549842): handle data and map to list of Entries.
+}
+
+// This function is only used when the kAppDeduplicationServiceFondue flag
+// is enabled.
+void AppDeduplicationService::DeduplicateDataToEntries(
+    const absl::optional<proto::DeduplicateData> data) {
+  // Use the index as the internal indexing key for fast look up. If the
+  // size of the duplicated groups goes over integer 32 limit, a new indexing
+  // key needs to be introduced.
+  uint32_t index = 1;
+  for (auto const& group : data.value().app_group()) {
+    DuplicateGroup duplicate_group;
+    for (auto const& app : group.app()) {
+      const std::string& app_id = app.app_id();
+      const std::string& platform = app.platform();
+      EntryId entry_id;
+
+      if (platform == "arc") {
+        entry_id = EntryId(app_id, AppType::kArc);
+      } else if (platform == "web") {
+        entry_id = EntryId(app_id, AppType::kWeb);
+      } else if (platform == "phonehub") {
+        entry_id = EntryId(app_id);
+      } else if (platform == "website") {
+        GURL entry_url = GURL(app_id);
+        if (entry_url.is_valid()) {
+          entry_id = EntryId(GURL(app_id));
+        } else {
+          continue;
+        }
+      } else {
+        continue;
+      }
+
+      entry_to_group_map_[entry_id] = index;
+      // Initialize entry status.
+      entry_status_[entry_id] = entry_id.entry_type == EntryType::kApp
+                                    ? EntryStatus::kNotInstalledApp
+                                    : EntryStatus::kNonApp;
+      Entry entry(std::move(entry_id));
+      duplicate_group.entries.push_back(std::move(entry));
+    }
+    duplication_map_[index] = std::move(duplicate_group);
+    index++;
+  }
+
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile_);
+  proxy->AppRegistryCache().ForEachApp([this](const apps::AppUpdate& update) {
+    UpdateInstallationStatus(update);
+  });
 }
 
 }  // namespace apps::deduplication

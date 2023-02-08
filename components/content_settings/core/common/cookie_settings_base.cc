@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/types/optional_util.h"
+#include "build/blink_buildflags.h"
 #include "build/build_config.h"
 #include "net/base/features.h"
 #include "net/base/net_errors.h"
@@ -17,7 +18,7 @@
 #include "net/cookies/static_cookie_policy.h"
 #include "url/gurl.h"
 
-#if !BUILDFLAG(IS_IOS)
+#if BUILDFLAG(USE_BLINK)
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
 #endif
 
@@ -35,7 +36,7 @@ CookieSettingsBase::CookieSettingsBase()
     : is_storage_partitioned_(base::FeatureList::IsEnabled(
           net::features::kThirdPartyStoragePartitioning)),
       is_privacy_sandbox_v4_enabled_(
-#if BUILDFLAG(IS_IOS)
+#if !BUILDFLAG(USE_BLINK)
           false
 #else
           base::FeatureList::IsEnabled(
@@ -68,9 +69,10 @@ bool CookieSettingsBase::ShouldDeleteCookieOnExit(
   GURL origin = net::cookie_util::CookieOriginToURL(domain, is_https);
   // Pass GURL() as first_party_url since we don't know the context and
   // don't want to match against (*, exception) pattern.
-  ContentSetting setting = GetCookieSetting(
+  ContentSetting setting = GetCookieSettingInternal(
       origin, is_privacy_sandbox_v4_enabled_ ? GURL() : origin,
-      net::CookieSettingOverrides(), nullptr, QueryReason::kCookies);
+      /*is_third_party_request=*/false, net::CookieSettingOverrides(), nullptr,
+      QueryReason::kSetting);
   DCHECK(IsValidSetting(setting));
   if (setting == CONTENT_SETTING_ALLOW)
     return false;
@@ -125,13 +127,15 @@ bool CookieSettingsBase::IsFullCookieAccessAllowed(
   return IsAllowed(setting);
 }
 
+// TODO(crbug.com/1413957): Remove QueryReason parameter from this method.
 bool CookieSettingsBase::IsCookieSessionOnly(const GURL& origin,
                                              QueryReason query_reason) const {
   // Pass GURL() as first_party_url since we don't know the context and
   // don't want to match against (*, exception) pattern.
-  ContentSetting setting =
-      GetCookieSetting(origin, is_privacy_sandbox_v4_enabled_ ? GURL() : origin,
-                       net::CookieSettingOverrides(), nullptr, query_reason);
+  ContentSetting setting = GetCookieSettingInternal(
+      origin, is_privacy_sandbox_v4_enabled_ ? GURL() : origin,
+      /*is_third_party_request=*/false, net::CookieSettingOverrides(), nullptr,
+      QueryReason::kSetting);
   DCHECK(IsValidSetting(setting));
   return setting == CONTENT_SETTING_SESSION_ONLY;
 }

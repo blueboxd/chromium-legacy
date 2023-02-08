@@ -21,20 +21,18 @@
 
   /* Buttons */
   iron-selector {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: auto auto auto auto;
     margin: 16px 0;
   }
 
   cr-button {
-    /* TODO(b/254487168): Replace the background color with one that makes more
-       sense. Neutral95. */
-    background-color: var(--cros-sys-input_field_dark);
+    background-color: var(--cros-sys-app_base_shaded);
     border: none;
     border-radius: 16px;
     height: 76px;
     padding: 0;
-    width: 76px;
   }
 
   /* TODO(b/254478525) Replace with an icon button component. */

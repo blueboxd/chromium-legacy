@@ -49,6 +49,10 @@ class MockAutofillAgent : public mojom::AutofillAgent {
 
   MOCK_METHOD(void, TriggerReparse, (), (override));
   MOCK_METHOD(void,
+              TriggerReparseWithResponse,
+              (base::OnceCallback<void(bool)>),
+              (override));
+  MOCK_METHOD(void,
               FillOrPreviewForm,
               (const FormData& form, mojom::RendererFormDataAction action),
               (override));
@@ -362,6 +366,7 @@ class ContentAutofillDriverFactoryTest_FencedFrames
     enabled.push_back(
         {blink::features::kFencedFrames, {{"implementation_type", "mparch"}}});
     if (autofill_enabled_in_fencedframe()) {
+      enabled.push_back({blink::features::kFencedFramesAPIChanges, {}});
       enabled.push_back({features::kAutofillEnableWithinFencedFrame, {}});
     } else {
       disabled.push_back(features::kAutofillEnableWithinFencedFrame);

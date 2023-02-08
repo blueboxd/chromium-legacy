@@ -1316,15 +1316,10 @@ void OverviewItem::CreateItemWidget() {
                               base::Unretained(this)),
           GetWindow(), transform_window_.IsMinimized()));
   item_widget_->Show();
-  if (overview_session_ &&
-      (overview_session_->enter_exit_overview_type() ==
-           OverviewEnterExitType::kImmediateEnter ||
-       overview_session_->enter_exit_overview_type() ==
-           OverviewEnterExitType::kImmediateEnterWithoutFocus)) {
-    item_widget_->SetOpacity(1.f);
-  } else {
-    item_widget_->SetOpacity(0.f);
-  }
+  item_widget_->SetOpacity(
+      overview_session_ && overview_session_->ShouldEnterWithoutAnimations()
+          ? 1.f
+          : 0.f);
   widget_layer->SetMasksToBounds(false);
 }
 
@@ -1502,10 +1497,6 @@ void OverviewItem::HideWindowInOverview() {
       overview_session_->hide_windows_for_saved_desks_grid();
   DCHECK(hide_windows);
 
-  // Hide the application window.
-  if (!hide_windows->HasWindow(GetWindow()))
-    hide_windows->AddWindow(GetWindow());
-
   // Hide the overview item window.
   if (item_widget_ && !hide_windows->HasWindow(item_widget_->GetNativeWindow()))
     hide_windows->AddWindow(item_widget_->GetNativeWindow());
@@ -1515,15 +1506,6 @@ void OverviewItem::ShowWindowInOverview() {
   ScopedOverviewHideWindows* hide_windows =
       overview_session_->hide_windows_for_saved_desks_grid();
   DCHECK(hide_windows);
-
-  // Hide the application window. Also make sure to ignore activation for this
-  // application window, so that it remains in overview.
-  if (hide_windows->HasWindow(GetWindow())) {
-    const bool ignore_activations = overview_session_->ignore_activations();
-    overview_session_->set_ignore_activations(true);
-    hide_windows->RemoveWindow(GetWindow(), /*show_window=*/true);
-    overview_session_->set_ignore_activations(ignore_activations);
-  }
 
   // Show the overview item window.
   if (item_widget_ &&

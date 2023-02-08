@@ -23,6 +23,7 @@ BASE_DECLARE_FEATURE(kAutofillEnableFIDOProgressDialog);
 BASE_DECLARE_FEATURE(kAutofillEnableManualFallbackForVirtualCards);
 BASE_DECLARE_FEATURE(kAutofillEnableOfferNotificationForPromoCodes);
 BASE_DECLARE_FEATURE(kAutofillEnableOffersInClankKeyboardAccessory);
+BASE_DECLARE_FEATURE(kAutofillEnablePageLoadMetadataIntegration);
 BASE_DECLARE_FEATURE(kAutofillEnableRemadeDownstreamMetrics);
 BASE_DECLARE_FEATURE(kAutofillEnableStickyManualFallbackForCards);
 BASE_DECLARE_FEATURE(kAutofillEnableUpdateVirtualCardEnrollment);
@@ -37,7 +38,6 @@ BASE_DECLARE_FEATURE(kAutofillOfferToSaveCardWithSameLastFour);
 BASE_DECLARE_FEATURE(kAutofillParseIBANFields);
 BASE_DECLARE_FEATURE(kAutofillParseVcnCardOnFileStandaloneCvcFields);
 BASE_DECLARE_FEATURE(kAutofillRemoveCardExpirationAndTypeTitles);
-BASE_DECLARE_FEATURE(kAutofillSaveCardDismissOnNavigation);
 BASE_DECLARE_FEATURE(kAutofillSaveCardInfobarEditSupport);
 BASE_DECLARE_FEATURE(kAutofillSaveCardUiExperiment);
 extern const base::FeatureParam<int>

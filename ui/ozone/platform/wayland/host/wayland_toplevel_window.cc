@@ -491,19 +491,9 @@ void WaylandToplevelWindow::HandleAuraToplevelConfigure(
   // Thus, we must store previous bounds to restore later.
   SetOrResetRestoredBounds();
 
-  if (old_state != state_) {
-    if (!did_send_delegate_notification) {
-      previous_state_ = old_state;
-      delegate()->OnWindowStateChanged(previous_state_, state_);
-    }
-
-    if (keyboard_shortcuts_inhibition_mode() ==
-            KeyboardShortcutsInhibitionMode::kFullscreenOnly &&
-        (state_ == PlatformWindowState::kFullScreen ||
-         old_state == PlatformWindowState::kFullScreen)) {
-      root_surface()->SetKeyboardShortcutsInhibition(
-          state_ == PlatformWindowState::kFullScreen);
-    }
+  if (old_state != state_ && !did_send_delegate_notification) {
+    previous_state_ = old_state;
+    delegate()->OnWindowStateChanged(previous_state_, state_);
   }
 
   if (did_active_change)
@@ -543,7 +533,7 @@ void WaylandToplevelWindow::OnSequencePoint(int64_t seq) {
 
 bool WaylandToplevelWindow::OnInitialize(
     PlatformWindowInitProperties properties,
-    State* state) {
+    PlatformWindowDelegate::State* state) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   auto token = base::UnguessableToken::Create();
   window_unique_id_ =

@@ -45,6 +45,10 @@ bool TestAutofillClient::IsOffTheRecord() {
   return is_off_the_record_;
 }
 
+AutofillDownloadManager* TestAutofillClient::GetDownloadManager() {
+  return download_manager_.get();
+}
+
 scoped_refptr<network::SharedURLLoaderFactory>
 TestAutofillClient::GetURLLoaderFactory() {
   return test_shared_loader_factory_;
@@ -339,8 +343,8 @@ void TestAutofillClient::UpdateAutofillPopupDataListValues(
     const std::vector<std::u16string>& values,
     const std::vector<std::u16string>& labels) {}
 
-base::span<const Suggestion> TestAutofillClient::GetPopupSuggestions() const {
-  return base::span<const Suggestion>();
+std::vector<Suggestion> TestAutofillClient::GetPopupSuggestions() const {
+  return {};
 }
 
 void TestAutofillClient::PinPopupView() {}

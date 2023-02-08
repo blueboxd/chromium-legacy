@@ -695,29 +695,6 @@ DetermineAfterCommitWhetherToForbidTrustTokenRedemption(
              : network::mojom::TrustTokenRedemptionPolicy::kForbid;
 }
 
-// Returns the string corresponding to LifecycleStateImpl, used for logging
-// crash keys.
-const char* LifecycleStateImplToString(
-    RenderFrameHostImpl::LifecycleStateImpl state) {
-  using LifecycleStateImpl = RenderFrameHostImpl::LifecycleStateImpl;
-  switch (state) {
-    case LifecycleStateImpl::kSpeculative:
-      return "Speculative";
-    case LifecycleStateImpl::kPrerendering:
-      return "Prerendering";
-    case LifecycleStateImpl::kPendingCommit:
-      return "PendingCommit";
-    case LifecycleStateImpl::kActive:
-      return "Active";
-    case LifecycleStateImpl::kInBackForwardCache:
-      return "InBackForwardCache";
-    case LifecycleStateImpl::kRunningUnloadHandlers:
-      return "RunningUnloadHandlers";
-    case LifecycleStateImpl::kReadyToBeDeleted:
-      return "ReadyToBeDeleted";
-  }
-}
-
 // Verify that |browser_side_origin| and |renderer_side_origin| match.  See also
 // https://crbug.com/888079. Returns true if the origins match, and false
 // otherwise.
@@ -793,6 +770,29 @@ bool VerifyThatBrowserAndRendererCalculatedOriginsToCommitMatch(
       << "; navigation_request->GetURL() = " << navigation_request->GetURL();
   return true;
 }
+
+#if BUILDFLAG(IS_ANDROID)
+void DumpPrerenderTerminationSnapshot(
+    const ChildProcessTerminationInfo& info,
+    RenderFrameHostImpl::LifecycleStateImpl lifecycle_state) {
+  SCOPED_CRASH_KEY_BOOL("Prerender", "has_visible_clients",
+                        info.renderer_has_visible_clients);
+  SCOPED_CRASH_KEY_BOOL("Prerender", "was_subframe",
+                        info.renderer_was_subframe);
+  SCOPED_CRASH_KEY_BOOL("Prerender", "was_killed_by_browser",
+                        info.was_killed_intentionally_by_browser);
+  SCOPED_CRASH_KEY_BOOL("Prerender", "threw_exception_during_init",
+                        info.threw_exception_during_init);
+  SCOPED_CRASH_KEY_BOOL("Prerender", "clean_exit", info.clean_exit);
+  SCOPED_CRASH_KEY_NUMBER("Prerender", "termination_state",
+                          static_cast<int>(info.status));
+  SCOPED_CRASH_KEY_NUMBER("Prerender", "exit_code", info.exit_code);
+  SCOPED_CRASH_KEY_STRING32(
+      "Prerender", "rfhi_lifecycle",
+      RenderFrameHostImpl::LifecycleStateImplToString(lifecycle_state));
+  base::debug::DumpWithoutCrashing();
+}
+#endif  // BUILDFLAG(IS_ANDROID)
 
 // Enum used for Navigation.VerifyDidCommitParams histogram, to indicate which
 // DidCommitProvisionalLoadParams differ when comparing browser- vs
@@ -1507,6 +1507,28 @@ GetCodeCacheHostReceiverHandler() {
 void RenderFrameHostImpl::SetCodeCacheHostReceiverHandlerForTesting(
     CodeCacheHostReceiverHandler handler) {
   GetCodeCacheHostReceiverHandler() = handler;
+}
+
+// static
+const char* RenderFrameHostImpl::LifecycleStateImplToString(
+    RenderFrameHostImpl::LifecycleStateImpl state) {
+  using LifecycleStateImpl = RenderFrameHostImpl::LifecycleStateImpl;
+  switch (state) {
+    case LifecycleStateImpl::kSpeculative:
+      return "Speculative";
+    case LifecycleStateImpl::kPrerendering:
+      return "Prerendering";
+    case LifecycleStateImpl::kPendingCommit:
+      return "PendingCommit";
+    case LifecycleStateImpl::kActive:
+      return "Active";
+    case LifecycleStateImpl::kInBackForwardCache:
+      return "InBackForwardCache";
+    case LifecycleStateImpl::kRunningUnloadHandlers:
+      return "RunningUnloadHandlers";
+    case LifecycleStateImpl::kReadyToBeDeleted:
+      return "ReadyToBeDeleted";
+  }
 }
 
 RenderFrameHostImpl::RenderFrameHostImpl(
@@ -3124,10 +3146,16 @@ void RenderFrameHostImpl::RenderProcessGone(
                   kRendererProcessKilled);
   }
 
-  CancelPrerendering(PrerenderCancellationReason(
-      info.status == base::TERMINATION_STATUS_PROCESS_CRASHED
-          ? PrerenderFinalStatus::kRendererProcessCrashed
-          : PrerenderFinalStatus::kRendererProcessKilled));
+  if (CancelPrerendering(PrerenderCancellationReason(
+          info.status == base::TERMINATION_STATUS_PROCESS_CRASHED
+              ? PrerenderFinalStatus::kRendererProcessCrashed
+              : PrerenderFinalStatus::kRendererProcessKilled))) {
+#if BUILDFLAG(IS_ANDROID)
+    // TODO(https://crbug.com/1407056): Report detailed status about the gone
+    // process for debugging.
+    DumpPrerenderTerminationSnapshot(info, lifecycle_state_);
+#endif  // BUILDFLAG(IS_ANDROID)
+  }
 
   if (owned_render_widget_host_)
     owned_render_widget_host_->RendererExited();
@@ -14582,7 +14610,7 @@ void RenderFrameHostImpl::DocumentAssociatedData::
 
 std::ostream& operator<<(std::ostream& o,
                          const RenderFrameHostImpl::LifecycleStateImpl& s) {
-  return o << LifecycleStateImplToString(s);
+  return o << RenderFrameHostImpl::LifecycleStateImplToString(s);
 }
 
 net::CookieSettingOverrides RenderFrameHostImpl::GetCookieSettingOverrides() {

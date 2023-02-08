@@ -248,7 +248,6 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
-#include "third_party/blink/renderer/core/layout/deferred_shaping_controller.h"
 #include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
@@ -2666,11 +2665,6 @@ void Document::EnsurePaintLocationDataValidForNode(
   if (!node->InActiveDocument())
     return;
 
-  if (reason == DocumentUpdateReason::kJavaScript) {
-    DeferredShapingController::From(*this)->ReshapeDeferred(
-        ReshapeReason::kGeometryApi, *node);
-  }
-
   DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(
       node, DisplayLockContext::ForcedPhase::kLayout);
 
@@ -2685,14 +2679,6 @@ void Document::EnsurePaintLocationDataValidForNode(const Node* node,
   DCHECK(node);
   if (!node->InActiveDocument())
     return;
-
-  if (RuntimeEnabledFeatures::DeferredShapingEnabled()) {
-    auto* ds_controller = DeferredShapingController::From(*this);
-    if (property_id == CSSPropertyID::kWidth)
-      ds_controller->ReshapeDeferredForWidth(*node->GetLayoutObject());
-    else
-      ds_controller->ReshapeDeferredForHeight(*node->GetLayoutObject());
-  }
 
   DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(
       node, DisplayLockContext::ForcedPhase::kLayout);
@@ -3207,8 +3193,6 @@ void Document::SetPrinting(PrintingState state) {
 
   if (was_printing != is_printing) {
     GetDisplayLockDocumentState().NotifyPrintingOrPreviewChanged();
-    if (auto* ds_controller = DeferredShapingController::From(*this))
-      ds_controller->ReshapeAllDeferred(ReshapeReason::kPrinting);
 
     // We force the color-scheme to light for printing.
     ColorSchemeChanged();
@@ -3912,8 +3896,11 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
   if (before_unload_event.returnValue().IsNull()) {
     RecordBeforeUnloadUse(BeforeUnloadUse::kNoDialogNoText);
   }
-  if (!GetFrame() || before_unload_event.returnValue().IsNull())
+  bool cancelled_by_script = !before_unload_event.returnValue().IsNull() ||
+                             before_unload_event.defaultPrevented();
+  if (!GetFrame() || !cancelled_by_script) {
     return true;
+  }
 
   if (!GetFrame()->HasStickyUserActivation()) {
     RecordBeforeUnloadUse(BeforeUnloadUse::kNoDialogNoUserGesture);
@@ -4086,11 +4073,6 @@ void Document::SetParsingState(ParsingState parsing_state) {
       parsing_state_ == kFinishedParsing) {
     if (form_controller_ && form_controller_->HasControlStates())
       form_controller_->ScheduleRestore();
-    if (auto* ds_controller = DeferredShapingController::From(*this)) {
-      PaintTiming& timing = PaintTiming::From(*this);
-      if (!timing.FirstContentfulPaintIgnoringSoftNavigations().is_null())
-        ds_controller->ReshapeAllDeferred(ReshapeReason::kDomContentLoaded);
-    }
   }
 }
 
@@ -8590,6 +8572,7 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(popover_stack_);
   visitor->Trace(popover_pointerdown_target_);
   visitor->Trace(popovers_waiting_to_hide_);
+  visitor->Trace(elements_with_css_toggles_);
   visitor->Trace(elements_needing_style_recalc_for_toggle_);
   visitor->Trace(load_event_delay_timer_);
   visitor->Trace(plugin_loading_timer_);
@@ -9013,8 +8996,6 @@ Document::PaintPreviewScope::PaintPreviewScope(Document& document,
     : document_(document) {
   document_.paint_preview_ = state;
   document_.GetDisplayLockDocumentState().NotifyPrintingOrPreviewChanged();
-  if (auto* ds_controller = DeferredShapingController::From(document_))
-    ds_controller->ReshapeAllDeferred(ReshapeReason::kPrinting);
 }
 
 Document::PaintPreviewScope::~PaintPreviewScope() {

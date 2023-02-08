@@ -1695,6 +1695,7 @@
     },
     'prerender': {
       'filepath': 'chrome/browser/chrome_content_browser_client_binder_policies' \
+                  '|chrome/browser/preloading/prefetch/search_prefetch/' \
                   '|chrome/browser/preloading/prerender/' \
                   '|content/browser/mojo_binder_policy' \
                   '|content/browser/preloading/prerender/'
@@ -2753,13 +2754,11 @@
     'libaom': ['fgalligan@chromium.org',
                'jianj@chromium.org',
                'jzern@chromium.org',
-               'marpan@chromium.org',
-               'tomfinegan@chromium.org'],
+               'marpan@chromium.org'],
     'libvpx': ['fgalligan@chromium.org',
                'jianj@chromium.org',
                'jzern@chromium.org',
-               'marpan@chromium.org',
-               'tomfinegan@chromium.org'],
+               'marpan@chromium.org'],
     'libwebp': ['jzern@chromium.org',
                 'skal@google.com',
                 'urvang@chromium.org'],

@@ -213,7 +213,8 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
 
     // Specifies which cache to use for reads/writes. See comments above
     // MechanismExperimentHashDatabaseCache's definition for more details.
-    MechanismExperimentHashDatabaseCache mechanism_experiment_cache_selection;
+    MechanismExperimentHashDatabaseCache mechanism_experiment_cache_selection =
+        MechanismExperimentHashDatabaseCache::kNoExperiment;
 
     // Specifies whether the PendingCheck is in the V4LocalDatabaseManager's
     // |pending_checks_| set. This property is for sanity-checking that when the

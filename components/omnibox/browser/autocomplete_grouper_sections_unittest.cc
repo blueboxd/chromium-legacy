@@ -37,10 +37,10 @@ void VerifyMatches(const ACMatches& matches,
 
 // Tests a section with no groups.
 TEST(AutocompleteGrouperSectionsTest, Section) {
-  auto test = [](const ACMatches& matches,
-                 std::vector<int> expected_relevances) {
+  auto test = [](ACMatches matches, std::vector<int> expected_relevances) {
     PSections sections;
-    sections.push_back(std::make_unique<Section>(2));
+    omnibox::GroupConfigMap group_configs;
+    sections.push_back(std::make_unique<Section>(2, Groups{}, group_configs));
     auto out_matches = Section::GroupMatches(std::move(sections), matches);
     VerifyMatches(out_matches, expected_relevances);
   };
@@ -54,10 +54,10 @@ TEST(AutocompleteGrouperSectionsTest, Section) {
 
 // Tests the groups, limits, and rules for the ZPS section.
 TEST(AutocompleteGrouperSectionsTest, ZpsSection) {
-  auto test = [](const ACMatches& matches,
-                 std::vector<int> expected_relevances) {
+  auto test = [](ACMatches matches, std::vector<int> expected_relevances) {
     PSections sections;
-    sections.push_back(std::make_unique<DesktopZpsSection>());
+    omnibox::GroupConfigMap group_configs;
+    sections.push_back(std::make_unique<DesktopZpsSection>(group_configs));
     auto out_matches = Section::GroupMatches(std::move(sections), matches);
     VerifyMatches(out_matches, expected_relevances);
   };
@@ -137,10 +137,10 @@ TEST(AutocompleteGrouperSectionsTest, ZpsSection) {
 
 // Tests the groups, limits, and rules for the Desktop non-ZPS section.
 TEST(AutocompleteGrouperSectionsTest, DesktopNonZpsSection) {
-  auto test = [](const ACMatches& matches,
-                 std::vector<int> expected_relevances) {
+  auto test = [](ACMatches matches, std::vector<int> expected_relevances) {
     PSections sections;
-    sections.push_back(std::make_unique<DesktopNonZpsSection>());
+    omnibox::GroupConfigMap group_configs;
+    sections.push_back(std::make_unique<DesktopNonZpsSection>(group_configs));
     auto out_matches = Section::GroupMatches(std::move(sections), matches);
     VerifyMatches(out_matches, expected_relevances);
   };

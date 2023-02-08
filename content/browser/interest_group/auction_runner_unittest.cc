@@ -1011,16 +1011,26 @@ BuildPrivateAggregationForEventRequest(absl::uint128 bucket,
 }
 
 // Marks `ad` in `group` k-anonymous, double-checking that its url is `url`.
-void AuthorizeKAnon(const blink::InterestGroup::Ad& ad,
-                    const char* url,
-                    StorageInterestGroup& group) {
+void AuthorizeKAnonAd(const blink::InterestGroup::Ad& ad,
+                      const char* url,
+                      StorageInterestGroup& group) {
+  DCHECK_EQ(url, ad.render_url.spec());
   group.bidding_ads_kanon.emplace_back();
   group.bidding_ads_kanon.back().key =
-      KAnonKeyForAdBid(group.interest_group, ad.render_url);
-  DCHECK_EQ(GURL(url),
-            RenderUrlFromKAnonKeyForAdBid(group.bidding_ads_kanon.back().key));
+      blink::KAnonKeyForAdBid(group.interest_group, ad.render_url);
   group.bidding_ads_kanon.back().is_k_anonymous = true;
   group.bidding_ads_kanon.back().last_updated = base::Time::Now();
+}
+
+void AuthorizeKAnonAdComponent(const blink::InterestGroup::Ad& ad,
+                               const char* url,
+                               StorageInterestGroup& group) {
+  DCHECK_EQ(url, ad.render_url.spec());
+  group.component_ads_kanon.emplace_back();
+  group.component_ads_kanon.back().key =
+      blink::KAnonKeyForAdComponentBid(ad.render_url);
+  group.component_ads_kanon.back().is_k_anonymous = true;
+  group.component_ads_kanon.back().last_updated = base::Time::Now();
 }
 
 class SameProcessAuctionProcessManager : public AuctionProcessManager {
@@ -1115,7 +1125,6 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
     std::map<url::Origin, PrivateAggregationRequests>
         private_aggregation_requests;
     std::vector<blink::InterestGroupKey> interest_groups_that_bid;
-    base::flat_set<std::string> k_anon_keys_to_join;
 
     std::vector<std::string> errors;
   };
@@ -1368,8 +1377,15 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
         task_environment()->FastForwardBy(base::Seconds(1));
       }
 
-      for (const auto& kanon_data : bidder.bidding_ads_kanon)
+      for (const auto& kanon_data : bidder.bidding_ads_kanon) {
         interest_group_manager_->UpdateKAnonymity(kanon_data);
+      }
+      for (const auto& kanon_data : bidder.component_ads_kanon) {
+        interest_group_manager_->UpdateKAnonymity(kanon_data);
+      }
+      for (const auto& kanon_data : bidder.reporting_ads_kanon) {
+        interest_group_manager_->UpdateKAnonymity(kanon_data);
+      }
     }
 
     interest_group_manager_->ClearLoggedData();
@@ -1399,10 +1415,8 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
       absl::optional<InterestGroupKey> winning_group_key,
       absl::optional<GURL> render_url,
       std::vector<GURL> ad_component_urls,
-      std::string winning_group_ad_metadata,
       std::map<url::Origin, PrivateAggregationRequests>
           private_aggregation_requests,
-      base::flat_set<std::string> k_anon_keys_to_join,
       std::vector<std::string> errors,
       std::unique_ptr<InterestGroupAuctionReporter> reporter) {
     DCHECK(auction_run_loop_);
@@ -1421,7 +1435,7 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
     result_.winning_group_id = std::move(winning_group_key);
     result_.ad_url = std::move(render_url);
     result_.ad_component_urls = std::move(ad_component_urls);
-    result_.winning_group_ad_metadata = std::move(winning_group_ad_metadata);
+    result_.winning_group_ad_metadata.clear();
     result_.report_urls.clear();
     result_.errors = std::move(errors);
     result_.debug_loss_report_urls.clear();
@@ -1430,7 +1444,6 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
     result_.interest_groups_that_bid.clear();
     result_.private_aggregation_requests =
         std::move(private_aggregation_requests);
-    result_.k_anon_keys_to_join = std::move(k_anon_keys_to_join);
 
     if (!reporter) {
       result_.debug_loss_report_urls =
@@ -1489,6 +1502,31 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
                           report_errors.end());
 
     reporter_.reset();
+
+    // Retrieve the winning interest group to extract the most recently added ad
+    // metadata.
+    interest_group_manager_->GetInterestGroup(
+        InterestGroupKey(result_.winning_group_id->owner,
+                         result_.winning_group_id->name),
+        base::BindOnce(
+            &AuctionRunnerTest::OnInterestGroupRetrievedAfterReporterDone,
+            base::Unretained(this)));
+  }
+
+  void OnInterestGroupRetrievedAfterReporterDone(
+      absl::optional<StorageInterestGroup> interest_group) {
+    EXPECT_TRUE(interest_group);
+    EXPECT_FALSE(interest_group->bidding_browser_signals->prev_wins.empty());
+    base::Time most_recent_win_time;
+    // Find the most recent win and write its metadata to
+    // `winning_group_ad_metadata`.
+    for (const auto& prev_win :
+         interest_group->bidding_browser_signals->prev_wins) {
+      if (prev_win->time > most_recent_win_time) {
+        most_recent_win_time = prev_win->time;
+        result_.winning_group_ad_metadata = prev_win->ad_json;
+      }
+    }
     auction_run_loop_->Quit();
   }
 
@@ -1496,17 +1534,7 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
   absl::optional<StorageInterestGroup> GetInterestGroup(
       const url::Origin& owner,
       const std::string& name) {
-    base::RunLoop run_loop;
-    absl::optional<StorageInterestGroup> out;
-    interest_group_manager_->GetInterestGroup(
-        {owner, name},
-        base::BindLambdaForTesting(
-            [&](absl::optional<StorageInterestGroup> interest_group) {
-              out = std::move(interest_group);
-              run_loop.Quit();
-            }));
-    run_loop.Run();
-    return out;
+    return interest_group_manager_->BlockingGetInterestGroup(owner, name);
   }
 
   StorageInterestGroup MakeInterestGroup(
@@ -1541,12 +1569,15 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
     // Create fake previous wins. The time of these wins is ignored, since the
     // InterestGroupManager attaches the current time when logging a win.
     std::vector<auction_worklet::mojom::PreviousWinPtr> previous_wins;
+    // Log a time that's before now, so that any new entry will have the largest
+    // time.
+    base::Time the_past = base::Time::Now() - base::Milliseconds(1);
+    previous_wins.push_back(
+        auction_worklet::mojom::PreviousWin::New(the_past, R"({"winner": 0})"));
     previous_wins.push_back(auction_worklet::mojom::PreviousWin::New(
-        base::Time::Now(), R"({"winner": 0})"));
+        the_past, R"({"winner": -1})"));
     previous_wins.push_back(auction_worklet::mojom::PreviousWin::New(
-        base::Time::Now(), R"({"winner": -1})"));
-    previous_wins.push_back(auction_worklet::mojom::PreviousWin::New(
-        base::Time::Now(), R"({"winner": -2})"));
+        the_past, R"({"winner": -2})"));
 
     StorageInterestGroup storage_group;
     storage_group.interest_group = blink::InterestGroup(
@@ -1563,7 +1594,9 @@ class AuctionRunnerTest : public RenderViewHostTestHarness,
         /*bidding_wasm_helper_url=*/absl::nullopt,
         /*update_url=*/absl::nullopt, std::move(trusted_bidding_signals_url),
         std::move(trusted_bidding_signals_keys), absl::nullopt, std::move(ads),
-        std::move(ad_components));
+        std::move(ad_components),
+        /*ad_sizes=*/{},
+        /*size_groups=*/{});
     storage_group.bidding_browser_signals =
         auction_worklet::mojom::BiddingBrowserSignals::New(
             3, 5, std::move(previous_wins));
@@ -1947,7 +1980,6 @@ TEST_F(AuctionRunnerTest, NullBuyers) {
   EXPECT_THAT(result_.report_urls, testing::UnorderedElementsAre());
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre());
-  EXPECT_EQ("", result_.winning_group_ad_metadata);
   CheckHistograms(InterestGroupAuction::AuctionResult::kNoInterestGroups,
                   /*expected_interest_groups=*/absl::nullopt,
                   /*expected_owners=*/absl::nullopt,
@@ -1968,7 +2000,6 @@ TEST_F(AuctionRunnerTest, ComponentAuctionNullBuyers) {
   EXPECT_THAT(result_.report_urls, testing::UnorderedElementsAre());
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre());
-  EXPECT_EQ("", result_.winning_group_ad_metadata);
   CheckHistograms(InterestGroupAuction::AuctionResult::kNoInterestGroups,
                   /*expected_interest_groups=*/absl::nullopt,
                   /*expected_owners=*/absl::nullopt,
@@ -1987,7 +2018,6 @@ TEST_F(AuctionRunnerTest, EmptyBuyers) {
   EXPECT_THAT(result_.report_urls, testing::UnorderedElementsAre());
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre());
-  EXPECT_EQ("", result_.winning_group_ad_metadata);
   CheckHistograms(InterestGroupAuction::AuctionResult::kNoInterestGroups,
                   /*expected_interest_groups=*/absl::nullopt,
                   /*expected_owners=*/absl::nullopt,
@@ -2008,7 +2038,6 @@ TEST_F(AuctionRunnerTest, ComponentAuctionEmptyBuyers) {
   EXPECT_THAT(result_.report_urls, testing::UnorderedElementsAre());
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre());
-  EXPECT_EQ("", result_.winning_group_ad_metadata);
   CheckHistograms(InterestGroupAuction::AuctionResult::kNoInterestGroups,
                   /*expected_interest_groups=*/absl::nullopt,
                   /*expected_owners=*/absl::nullopt,
@@ -2027,7 +2056,6 @@ TEST_F(AuctionRunnerTest, NoInterestGroups) {
   EXPECT_THAT(result_.report_urls, testing::UnorderedElementsAre());
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre());
-  EXPECT_EQ("", result_.winning_group_ad_metadata);
   CheckHistograms(InterestGroupAuction::AuctionResult::kNoInterestGroups,
                   /*expected_interest_groups=*/0, /*expected_owners=*/0,
                   /*expected_sellers=*/0);
@@ -2050,7 +2078,6 @@ TEST_F(AuctionRunnerTest, ComponentAuctionNoInterestGroups) {
   EXPECT_THAT(result_.report_urls, testing::UnorderedElementsAre());
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre());
-  EXPECT_EQ("", result_.winning_group_ad_metadata);
   CheckHistograms(InterestGroupAuction::AuctionResult::kNoInterestGroups,
                   /*expected_interest_groups=*/0, /*expected_owners=*/0,
                   /*expected_sellers=*/0);
@@ -2073,7 +2100,6 @@ TEST_F(AuctionRunnerTest, OneInterestGroupNoAds) {
   EXPECT_THAT(result_.report_urls, testing::UnorderedElementsAre());
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre());
-  EXPECT_EQ("", result_.winning_group_ad_metadata);
   CheckHistograms(InterestGroupAuction::AuctionResult::kNoInterestGroups,
                   /*expected_interest_groups=*/0, /*expected_owners=*/0,
                   /*expected_sellers=*/0);
@@ -2096,7 +2122,6 @@ TEST_F(AuctionRunnerTest, ComponentAuctionOneInterestGroupNoAds) {
   EXPECT_THAT(result_.report_urls, testing::UnorderedElementsAre());
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre());
-  EXPECT_EQ("", result_.winning_group_ad_metadata);
   CheckHistograms(InterestGroupAuction::AuctionResult::kNoInterestGroups,
                   /*expected_interest_groups=*/0, /*expected_owners=*/0,
                   /*expected_sellers=*/0);
@@ -2119,7 +2144,6 @@ TEST_F(AuctionRunnerTest, OneInterestGroupNoBidScript) {
   EXPECT_THAT(result_.report_urls, testing::UnorderedElementsAre());
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre());
-  EXPECT_EQ("", result_.winning_group_ad_metadata);
   CheckHistograms(InterestGroupAuction::AuctionResult::kNoInterestGroups,
                   /*expected_interest_groups=*/0, /*expected_owners=*/0,
                   /*expected_sellers=*/0);
@@ -2766,7 +2790,6 @@ TEST_F(AuctionRunnerTest, ComponentAuctionTopSellerRejectsBids) {
   EXPECT_THAT(result_.report_urls, testing::UnorderedElementsAre());
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key, kBidder2Key));
-  EXPECT_EQ("", result_.winning_group_ad_metadata);
   CheckHistograms(InterestGroupAuction::AuctionResult::kAllBidsRejected,
                   /*expected_interest_groups=*/2, /*expected_owners=*/2,
                   /*expected_sellers=*/2);
@@ -3276,7 +3299,6 @@ TEST_F(AuctionRunnerTest, DisallowedSeller) {
   EXPECT_TRUE(result_.private_aggregation_requests.empty());
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre());
-  EXPECT_EQ("", result_.winning_group_ad_metadata);
   CheckHistograms(InterestGroupAuction::AuctionResult::kSellerRejected,
                   /*expected_interest_groups=*/absl::nullopt,
                   /*expected_owners=*/absl::nullopt,
@@ -3309,7 +3331,6 @@ TEST_F(AuctionRunnerTest, DisallowedComponentAuctionSeller) {
   EXPECT_TRUE(result_.private_aggregation_requests.empty());
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre());
-  EXPECT_EQ("", result_.winning_group_ad_metadata);
   CheckHistograms(InterestGroupAuction::AuctionResult::kNoInterestGroups,
                   /*expected_interest_groups=*/absl::nullopt,
                   /*expected_owners=*/absl::nullopt,
@@ -3403,7 +3424,6 @@ TEST_F(AuctionRunnerTest, DisallowedBuyers) {
   EXPECT_TRUE(result_.private_aggregation_requests.empty());
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre());
-  EXPECT_EQ("", result_.winning_group_ad_metadata);
   CheckHistograms(InterestGroupAuction::AuctionResult::kNoInterestGroups,
                   /*expected_interest_groups=*/absl::nullopt,
                   /*expected_owners=*/absl::nullopt,
@@ -3502,7 +3522,6 @@ TEST_F(AuctionRunnerTest, DisallowedComponentAuctionBuyers) {
   EXPECT_TRUE(result_.private_aggregation_requests.empty());
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre());
-  EXPECT_EQ("", result_.winning_group_ad_metadata);
   CheckHistograms(InterestGroupAuction::AuctionResult::kNoInterestGroups,
                   /*expected_interest_groups=*/absl::nullopt,
                   /*expected_owners=*/absl::nullopt,
@@ -3846,7 +3865,6 @@ TEST_F(AuctionRunnerTest, NoBids) {
   EXPECT_TRUE(res.ad_beacon_map.metadata.empty());
   EXPECT_TRUE(res.private_aggregation_requests.empty());
   EXPECT_THAT(res.interest_groups_that_bid, testing::UnorderedElementsAre());
-  EXPECT_EQ("", result_.winning_group_ad_metadata);
   EXPECT_THAT(res.errors,
               testing::UnorderedElementsAre(
                   "Failed to load https://adplatform.com/offers.js "
@@ -3888,7 +3906,6 @@ TEST_F(AuctionRunnerTest, NoBidMadeByScript) {
   EXPECT_TRUE(res.ad_beacon_map.metadata.empty());
   EXPECT_TRUE(res.private_aggregation_requests.empty());
   EXPECT_THAT(res.interest_groups_that_bid, testing::UnorderedElementsAre());
-  EXPECT_EQ("", result_.winning_group_ad_metadata);
   EXPECT_THAT(
       res.errors,
       testing::UnorderedElementsAre(
@@ -3947,7 +3964,6 @@ TEST_F(AuctionRunnerTest, SellerRejectsAll) {
                             kExpectedGenerateBidPrivateAggregationRequest))));
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre(kBidder1Key, kBidder2Key));
-  EXPECT_EQ("", result_.winning_group_ad_metadata);
   EXPECT_THAT(res.errors, testing::UnorderedElementsAre(
                               "https://adstuff.publisher1.com/auction.js "
                               "`scoreAd` is not a function.",
@@ -4044,7 +4060,6 @@ TEST_F(AuctionRunnerTest, NoSellerScript) {
 
   EXPECT_EQ(0, url_loader_factory_.NumPending());
   EXPECT_THAT(res.interest_groups_that_bid, testing::UnorderedElementsAre());
-  EXPECT_EQ("", result_.winning_group_ad_metadata);
   EXPECT_THAT(res.errors,
               testing::ElementsAre(
                   "Failed to load https://adstuff.publisher1.com/auction.js "
@@ -6035,7 +6050,6 @@ TEST_F(AuctionRunnerTest, SellerLoadErrorWhileWaitingForBidders) {
   EXPECT_FALSE(result_.ad_url);
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre());
-  EXPECT_EQ("", result_.winning_group_ad_metadata);
   CheckHistograms(InterestGroupAuction::AuctionResult::kSellerWorkletLoadFailed,
                   /*expected_interest_groups=*/2, /*expected_owners=*/2,
                   /*expected_sellers=*/1);
@@ -6407,7 +6421,6 @@ TEST_F(AuctionRunnerTest, AllBiddersCrashBeforeBidding) {
   EXPECT_TRUE(result_.private_aggregation_requests.empty());
   EXPECT_THAT(result_.interest_groups_that_bid,
               testing::UnorderedElementsAre());
-  EXPECT_EQ("", result_.winning_group_ad_metadata);
 
   CheckHistograms(InterestGroupAuction::AuctionResult::kNoBids,
                   /*expected_interest_groups=*/2, /*expected_owners=*/2,
@@ -6608,7 +6621,6 @@ TEST_F(AuctionRunnerTest, SellerCrash) {
     EXPECT_TRUE(result_.private_aggregation_requests.empty());
     EXPECT_THAT(result_.interest_groups_that_bid,
                 testing::UnorderedElementsAre());
-    EXPECT_EQ("", result_.winning_group_ad_metadata);
     CheckHistograms(InterestGroupAuction::AuctionResult::kSellerWorkletCrashed,
                     /*expected_interest_groups=*/2, /*expected_owners=*/2,
                     /*expected_sellers=*/1);
@@ -7054,7 +7066,6 @@ TEST_F(AuctionRunnerTest, NullAdComponents) {
       EXPECT_TRUE(result_.private_aggregation_requests.empty());
       EXPECT_THAT(result_.interest_groups_that_bid,
                   testing::UnorderedElementsAre());
-      EXPECT_EQ("", result_.winning_group_ad_metadata);
       CheckHistograms(InterestGroupAuction::AuctionResult::kNoBids,
                       /*expected_interest_groups=*/1, /*expected_owners=*/1,
                       /*expected_sellers=*/1);
@@ -7154,7 +7165,6 @@ TEST_F(AuctionRunnerTest, AdComponentsLimit) {
       EXPECT_TRUE(result_.private_aggregation_requests.empty());
       EXPECT_THAT(result_.interest_groups_that_bid,
                   testing::UnorderedElementsAre());
-      EXPECT_EQ("", result_.winning_group_ad_metadata);
       CheckHistograms(InterestGroupAuction::AuctionResult::kNoBids,
                       /*expected_interest_groups=*/1, /*expected_owners=*/1,
                       /*expected_sellers=*/1);
@@ -7307,7 +7317,6 @@ TEST_F(AuctionRunnerTest, BadBid) {
     EXPECT_TRUE(result_.private_aggregation_requests.empty());
     EXPECT_THAT(result_.interest_groups_that_bid,
                 testing::UnorderedElementsAre());
-    EXPECT_EQ("", result_.winning_group_ad_metadata);
     CheckHistograms(InterestGroupAuction::AuctionResult::kNoBids,
                     /*expected_interest_groups=*/2, /*expected_owners=*/2,
                     /*expected_sellers=*/1);
@@ -10755,7 +10764,6 @@ TEST_F(AuctionRunnerBiddingAndScoringDebugReportingAPIEnabledTest,
     EXPECT_FALSE(result_.ad_url);
     EXPECT_THAT(result_.interest_groups_that_bid,
                 testing::UnorderedElementsAre());
-    EXPECT_EQ("", result_.winning_group_ad_metadata);
 
     EXPECT_EQ(0u, result_.debug_loss_report_urls.size());
     EXPECT_EQ(0u, result_.debug_win_report_urls.size());
@@ -10834,7 +10842,6 @@ TEST_F(AuctionRunnerBiddingAndScoringDebugReportingAPIEnabledTest,
     EXPECT_FALSE(result_.ad_url);
     EXPECT_THAT(result_.interest_groups_that_bid,
                 testing::UnorderedElementsAre());
-    EXPECT_EQ("", result_.winning_group_ad_metadata);
 
     EXPECT_EQ(0u, result_.debug_loss_report_urls.size());
     EXPECT_EQ(0u, result_.debug_win_report_urls.size());
@@ -11359,14 +11366,16 @@ TEST_P(AuctionRunnerKAnonTest, SingleNonKAnon) {
   // No k-anon authorizations.
   StartAuction(kSellerUrl, bidders);
   auction_run_loop_->Run();
-  EXPECT_THAT(
-      result_.k_anon_keys_to_join,
-      testing::UnorderedElementsAre(
-          KAnonKeyForAdBid(bidders[0].interest_group,
-                           bidders[0].interest_group.ads.value()[0].render_url),
-          KAnonKeyForAdNameReporting(
-              bidders[0].interest_group,
-              bidders[0].interest_group.ads.value()[0])));
+  // Have to spin all message loops to flush any k-anon set join events.
+  task_environment()->RunUntilIdle();
+  EXPECT_THAT(interest_group_manager_->TakeJoinedKAnonSets(),
+              testing::UnorderedElementsAre(
+                  blink::KAnonKeyForAdBid(
+                      bidders[0].interest_group,
+                      bidders[0].interest_group.ads.value()[0].render_url),
+                  blink::KAnonKeyForAdNameReporting(
+                      bidders[0].interest_group,
+                      bidders[0].interest_group.ads.value()[0])));
   histogram_tester_->ExpectUniqueSample(
       "Ads.InterestGroup.Auction.NonKAnonWinnerIsKAnon", false, 1);
   switch (kanon_mode()) {
@@ -11405,11 +11414,11 @@ TEST_P(AuctionRunnerKAnonTest, SingleKAnon) {
   bidders.emplace_back(MakeInterestGroup(
       kBidder1, kBidder1Name, kBidder1Url,
       /*trusted_bidding_signals_url=*/absl::nullopt,
-      /*trusted_bidding_signals_keys=*/{}, GURL("https://ad1.com")));
+      /*trusted_bidding_signals_keys=*/{}, GURL("https://ad1.com/")));
 
   // Authorize the ad.
-  AuthorizeKAnon(bidders[0].interest_group.ads.value()[0], "https://ad1.com",
-                 bidders[0]);
+  AuthorizeKAnonAd(bidders[0].interest_group.ads.value()[0], "https://ad1.com/",
+                   bidders[0]);
 
   StartAuction(kSellerUrl, bidders);
   auction_run_loop_->Run();
@@ -11418,14 +11427,16 @@ TEST_P(AuctionRunnerKAnonTest, SingleKAnon) {
   ASSERT_TRUE(result_.ad_url.has_value());
   EXPECT_EQ(GURL("https://ad1.com"), result_.ad_url.value());
   EXPECT_THAT(result_.errors, testing::ElementsAre());
-  EXPECT_THAT(
-      result_.k_anon_keys_to_join,
-      testing::UnorderedElementsAre(
-          KAnonKeyForAdBid(bidders[0].interest_group,
-                           bidders[0].interest_group.ads.value()[0].render_url),
-          KAnonKeyForAdNameReporting(
-              bidders[0].interest_group,
-              bidders[0].interest_group.ads.value()[0])));
+  // Have to spin all message loops to flush any k-anon set join events.
+  task_environment()->RunUntilIdle();
+  EXPECT_THAT(interest_group_manager_->TakeJoinedKAnonSets(),
+              testing::UnorderedElementsAre(
+                  blink::KAnonKeyForAdBid(
+                      bidders[0].interest_group,
+                      bidders[0].interest_group.ads.value()[0].render_url),
+                  blink::KAnonKeyForAdNameReporting(
+                      bidders[0].interest_group,
+                      bidders[0].interest_group.ads.value()[0])));
   EXPECT_THAT(result_.errors, testing::ElementsAre());
   histogram_tester_->ExpectUniqueSample(
       "Ads.InterestGroup.Auction.NonKAnonWinnerIsKAnon",
@@ -11465,40 +11476,38 @@ TEST_P(AuctionRunnerKAnonTest, ComponentURLs) {
           {GURL("https://ad2.com/1"), GURL("https://ad2.com/2")}))));
 
   // Authorize everything except for one of the components in ad2.
-  AuthorizeKAnon(bidders[0].interest_group.ads.value()[0], "https://ad1.com",
-                 bidders[0]);
-  AuthorizeKAnon(bidders[0].interest_group.ad_components.value()[0],
-                 "https://ad1.com/1", bidders[0]);
-  AuthorizeKAnon(bidders[0].interest_group.ad_components.value()[1],
-                 "https://ad1.com/2", bidders[0]);
-  AuthorizeKAnon(bidders[1].interest_group.ads.value()[0], "https://ad2.com",
-                 bidders[1]);
-  AuthorizeKAnon(bidders[1].interest_group.ad_components.value()[0],
-                 "https://ad2.com/1", bidders[1]);
+  AuthorizeKAnonAd(bidders[0].interest_group.ads.value()[0], "https://ad1.com/",
+                   bidders[0]);
+  AuthorizeKAnonAdComponent(bidders[0].interest_group.ad_components.value()[0],
+                            "https://ad1.com/1", bidders[0]);
+  AuthorizeKAnonAdComponent(bidders[0].interest_group.ad_components.value()[1],
+                            "https://ad1.com/2", bidders[0]);
+  AuthorizeKAnonAd(bidders[1].interest_group.ads.value()[0], "https://ad2.com/",
+                   bidders[1]);
+  AuthorizeKAnonAdComponent(bidders[1].interest_group.ad_components.value()[0],
+                            "https://ad2.com/1", bidders[1]);
 
   std::vector<std::string> ad1_k_anon_keys = {
-      KAnonKeyForAdBid(bidders[0].interest_group,
-                       bidders[0].interest_group.ads.value()[0].render_url),
-      KAnonKeyForAdNameReporting(bidders[0].interest_group,
-                                 bidders[0].interest_group.ads.value()[0]),
-      KAnonKeyForAdBid(
+      blink::KAnonKeyForAdBid(
           bidders[0].interest_group,
+          bidders[0].interest_group.ads.value()[0].render_url),
+      blink::KAnonKeyForAdNameReporting(
+          bidders[0].interest_group, bidders[0].interest_group.ads.value()[0]),
+      blink::KAnonKeyForAdComponentBid(
           bidders[0].interest_group.ad_components.value()[0].render_url),
-      KAnonKeyForAdBid(
-          bidders[0].interest_group,
+      blink::KAnonKeyForAdComponentBid(
           bidders[0].interest_group.ad_components.value()[1].render_url),
   };
 
   std::vector<std::string> ad2_k_anon_keys = {
-      KAnonKeyForAdBid(bidders[1].interest_group,
-                       bidders[1].interest_group.ads.value()[0].render_url),
-      KAnonKeyForAdNameReporting(bidders[1].interest_group,
-                                 bidders[1].interest_group.ads.value()[0]),
-      KAnonKeyForAdBid(
+      blink::KAnonKeyForAdBid(
           bidders[1].interest_group,
+          bidders[1].interest_group.ads.value()[0].render_url),
+      blink::KAnonKeyForAdNameReporting(
+          bidders[1].interest_group, bidders[1].interest_group.ads.value()[0]),
+      blink::KAnonKeyForAdComponentBid(
           bidders[1].interest_group.ad_components.value()[0].render_url),
-      KAnonKeyForAdBid(
-          bidders[1].interest_group,
+      blink::KAnonKeyForAdComponentBid(
           bidders[1].interest_group.ad_components.value()[1].render_url),
   };
 
@@ -11542,7 +11551,7 @@ TEST_P(AuctionRunnerKAnonTest, ComponentURLs) {
         break;
 
       case auction_worklet::mojom::KAnonymityBidMode::kEnforce:
-        // k-anon requirement meands ad1 wins, but we also report ad2 as what
+        // k-anon requirement means ad1 wins, but we also report ad2 as what
         // would have won had it been authorized.
         EXPECT_THAT(result_.errors,
                     testing::ElementsAre(
@@ -11584,8 +11593,11 @@ TEST_P(AuctionRunnerKAnonTest, ComponentURLs) {
         break;
     }
 
-    EXPECT_THAT(result_.k_anon_keys_to_join, testing::UnorderedElementsAreArray(
-                                                 expected_k_anon_keys_to_join));
+    // Have to spin all message loops to flush any k-anon set join events.
+    task_environment()->RunUntilIdle();
+    EXPECT_THAT(
+        interest_group_manager_->TakeJoinedKAnonSets(),
+        testing::UnorderedElementsAreArray(expected_k_anon_keys_to_join));
 
     expected_report_urls.push_back(expected_seller_report_url);
     if (run_as_component) {
@@ -11623,20 +11635,22 @@ TEST_P(AuctionRunnerKAnonTest, Basic) {
       /*trusted_bidding_signals_keys=*/{}, GURL("https://ad2.com")));
 
   // Authorize only ad 1.
-  AuthorizeKAnon(bidders[0].interest_group.ads.value()[0], "https://ad1.com",
-                 bidders[0]);
+  AuthorizeKAnonAd(bidders[0].interest_group.ads.value()[0], "https://ad1.com/",
+                   bidders[0]);
 
   std::vector<std::string> ad1_k_anon_keys = {
-      KAnonKeyForAdBid(bidders[0].interest_group,
-                       bidders[0].interest_group.ads.value()[0].render_url),
-      KAnonKeyForAdNameReporting(bidders[0].interest_group,
-                                 bidders[0].interest_group.ads.value()[0]),
+      blink::KAnonKeyForAdBid(
+          bidders[0].interest_group,
+          bidders[0].interest_group.ads.value()[0].render_url),
+      blink::KAnonKeyForAdNameReporting(
+          bidders[0].interest_group, bidders[0].interest_group.ads.value()[0]),
   };
   std::vector<std::string> ad2_k_anon_keys = {
-      KAnonKeyForAdBid(bidders[1].interest_group,
-                       bidders[1].interest_group.ads.value()[0].render_url),
-      KAnonKeyForAdNameReporting(bidders[1].interest_group,
-                                 bidders[1].interest_group.ads.value()[0]),
+      blink::KAnonKeyForAdBid(
+          bidders[1].interest_group,
+          bidders[1].interest_group.ads.value()[0].render_url),
+      blink::KAnonKeyForAdNameReporting(
+          bidders[1].interest_group, bidders[1].interest_group.ads.value()[0]),
   };
 
   for (bool run_as_component : {false, true}) {
@@ -11701,8 +11715,11 @@ TEST_P(AuctionRunnerKAnonTest, Basic) {
                          /*made_highest_scoring_other_bid=*/false));
         break;
     }
-    EXPECT_THAT(result_.k_anon_keys_to_join, testing::UnorderedElementsAreArray(
-                                                 expected_k_anon_keys_to_join));
+    // Have to spin all message loops to flush any k-anon set join events.
+    task_environment()->RunUntilIdle();
+    EXPECT_THAT(
+        interest_group_manager_->TakeJoinedKAnonSets(),
+        testing::UnorderedElementsAreArray(expected_k_anon_keys_to_join));
 
     expected_report_urls.push_back(expected_seller_report_url);
     if (run_as_component) {
@@ -11737,14 +11754,15 @@ TEST_P(AuctionRunnerKAnonTest, KAnonHigher) {
       /*trusted_bidding_signals_keys=*/{}, GURL("https://ad2.com")));
 
   // Authorize only ad 1.
-  AuthorizeKAnon(bidders[0].interest_group.ads.value()[0], "https://ad1.com",
-                 bidders[0]);
+  AuthorizeKAnonAd(bidders[0].interest_group.ads.value()[0], "https://ad1.com/",
+                   bidders[0]);
 
   std::vector<std::string> ad1_k_anon_keys = {
-      KAnonKeyForAdBid(bidders[0].interest_group,
-                       bidders[0].interest_group.ads.value()[0].render_url),
-      KAnonKeyForAdNameReporting(bidders[0].interest_group,
-                                 bidders[0].interest_group.ads.value()[0]),
+      blink::KAnonKeyForAdBid(
+          bidders[0].interest_group,
+          bidders[0].interest_group.ads.value()[0].render_url),
+      blink::KAnonKeyForAdNameReporting(
+          bidders[0].interest_group, bidders[0].interest_group.ads.value()[0]),
   };
 
   StartAuction(kSellerUrl, bidders);
@@ -11752,7 +11770,9 @@ TEST_P(AuctionRunnerKAnonTest, KAnonHigher) {
   EXPECT_THAT(result_.errors, testing::ElementsAre());
   ASSERT_TRUE(result_.ad_url.has_value());
   EXPECT_EQ(GURL("https://ad1.com"), result_.ad_url.value());
-  EXPECT_THAT(result_.k_anon_keys_to_join,
+  // Have to spin all message loops to flush any k-anon set join events.
+  task_environment()->RunUntilIdle();
+  EXPECT_THAT(interest_group_manager_->TakeJoinedKAnonSets(),
               testing::UnorderedElementsAreArray(ad1_k_anon_keys));
 
   std::vector<GURL> expected_report_urls;
@@ -11821,20 +11841,22 @@ TEST_P(AuctionRunnerKAnonTest, DifferentBids) {
                                                   /*metadata=*/absl::nullopt);
 
   // Authorize only ad 1.
-  AuthorizeKAnon(bidders[0].interest_group.ads.value()[0], "https://ad1.com",
-                 bidders[0]);
+  AuthorizeKAnonAd(bidders[0].interest_group.ads.value()[0], "https://ad1.com/",
+                   bidders[0]);
 
   std::vector<std::string> ad1_k_anon_keys = {
-      KAnonKeyForAdBid(bidders[0].interest_group,
-                       bidders[0].interest_group.ads.value()[0].render_url),
-      KAnonKeyForAdNameReporting(bidders[0].interest_group,
-                                 bidders[0].interest_group.ads.value()[0]),
+      blink::KAnonKeyForAdBid(
+          bidders[0].interest_group,
+          bidders[0].interest_group.ads.value()[0].render_url),
+      blink::KAnonKeyForAdNameReporting(
+          bidders[0].interest_group, bidders[0].interest_group.ads.value()[0]),
   };
   std::vector<std::string> ad2_k_anon_keys = {
-      KAnonKeyForAdBid(bidders[0].interest_group,
-                       bidders[0].interest_group.ads.value()[1].render_url),
-      KAnonKeyForAdNameReporting(bidders[0].interest_group,
-                                 bidders[0].interest_group.ads.value()[1]),
+      blink::KAnonKeyForAdBid(
+          bidders[0].interest_group,
+          bidders[0].interest_group.ads.value()[1].render_url),
+      blink::KAnonKeyForAdNameReporting(
+          bidders[0].interest_group, bidders[0].interest_group.ads.value()[1]),
   };
 
   StartAuction(kSellerUrl, bidders);
@@ -11879,7 +11901,9 @@ TEST_P(AuctionRunnerKAnonTest, DifferentBids) {
                   testing::ElementsAre("https://reporting.example.com/2"));
       break;
   }
-  EXPECT_THAT(result_.k_anon_keys_to_join,
+  // Have to spin all message loops to flush any k-anon set join events.
+  task_environment()->RunUntilIdle();
+  EXPECT_THAT(interest_group_manager_->TakeJoinedKAnonSets(),
               testing::UnorderedElementsAreArray(expected_k_anon_keys_to_join));
 }
 
@@ -11919,8 +11943,8 @@ TEST_P(AuctionRunnerKAnonTest, FailureHandling) {
       /*trusted_bidding_signals_keys=*/{}, GURL("https://ad3.com")));
 
   // Authorize only ad 1.
-  AuthorizeKAnon(bidders[0].interest_group.ads.value()[0], "https://ad1.com",
-                 bidders[0]);
+  AuthorizeKAnonAd(bidders[0].interest_group.ads.value()[0], "https://ad1.com/",
+                   bidders[0]);
 
   // Run the auction, and simulate it being interrupted by navigating away.
   StartAuction(kSellerUrl, bidders);
@@ -11931,7 +11955,10 @@ TEST_P(AuctionRunnerKAnonTest, FailureHandling) {
 
   // Should not have anything to report.
   EXPECT_FALSE(result_.ad_url.has_value());
-  EXPECT_THAT(result_.k_anon_keys_to_join, testing::ElementsAre());
+  // Have to spin all message loops to flush any k-anon set join events.
+  task_environment()->RunUntilIdle();
+  EXPECT_THAT(interest_group_manager_->TakeJoinedKAnonSets(),
+              testing::ElementsAre());
   histogram_tester_->ExpectUniqueSample(
       "Ads.InterestGroup.Auction.NonKAnonWinnerIsKAnon", false, 0);
 }
@@ -11994,8 +12021,8 @@ TEST_P(AuctionRunnerKAnonTest, MojoValidation) {
   bidders.back().interest_group.ads->emplace_back(GURL("https://ad2.com"),
                                                   /*metadata=*/absl::nullopt);
   // Authorize only ad 1.
-  AuthorizeKAnon(bidders[0].interest_group.ads.value()[0], "https://ad1.com",
-                 bidders[0]);
+  AuthorizeKAnonAd(bidders[0].interest_group.ads.value()[0], "https://ad1.com/",
+                   bidders[0]);
 
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(test_case.expected_error_message);

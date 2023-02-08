@@ -18,6 +18,7 @@
 #include "chrome/browser/ash/arc/input_overlay/actions/action_tap.h"
 #include "chrome/browser/ash/arc/input_overlay/arc_input_overlay_ukm.h"
 #include "chrome/browser/ash/arc/input_overlay/arc_input_overlay_uma.h"
+#include "chrome/browser/ash/arc/input_overlay/constants.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_id_manager.h"
 #include "chrome/browser/ash/arc/input_overlay/util.h"
 #include "ui/aura/window.h"
@@ -188,7 +189,7 @@ TouchInjector::~TouchInjector() {
 void TouchInjector::ParseActions(const base::Value& root) {
   DCHECK(actions_.empty());
   if (enable_mouse_lock_)
-    ParseMouseLock(root);
+    ParseMouseLock(root.GetDict());
 
   auto parsed_actions = ParseJsonToActions(this, root);
   if (!parsed_actions.empty()) {
@@ -331,6 +332,7 @@ void TouchInjector::OnBindingRestore() {
 }
 
 void TouchInjector::OnProtoDataAvailable(AppDataProto& proto) {
+  LoadSystemVersionFromProto(proto);
   LoadMenuEntryFromProto(proto);
   LoadMenuStateFromProto(proto);
   for (const ActionProto& action_proto : proto.actions()) {
@@ -502,8 +504,8 @@ void TouchInjector::SendExtraEvent(
   }
 }
 
-void TouchInjector::ParseMouseLock(const base::Value& value) {
-  auto* mouse_lock = value.FindKey(kMouseLock);
+void TouchInjector::ParseMouseLock(const base::Value::Dict& dict) {
+  auto* mouse_lock = dict.Find(kMouseLock);
   if (!mouse_lock) {
     mouse_lock_ = std::make_unique<KeyCommand>(
         kDefaultMouseLockCode, /*modifier=*/0,
@@ -774,6 +776,7 @@ std::unique_ptr<AppDataProto> TouchInjector::ConvertToProto() {
   }
   AddMenuStateToProto(*app_data_proto);
   AddMenuEntryToProtoIfCustomized(*app_data_proto);
+  AddSystemVersionToProto(*app_data_proto);
   return app_data_proto;
 }
 
@@ -814,6 +817,25 @@ void TouchInjector::LoadMenuEntryFromProto(AppDataProto& proto) {
   DCHECK_EQ(menu_entry_position.size(), 2);
   menu_entry_location_ = absl::make_optional<gfx::Vector2dF>(
       menu_entry_position[0], menu_entry_position[1]);
+}
+
+void TouchInjector::AddSystemVersionToProto(AppDataProto& proto) {
+  auto system_version = GetCurrentSystemVersion();
+  if (!system_version)
+    return;
+
+  proto.set_system_version(*system_version);
+}
+
+void TouchInjector::LoadSystemVersionFromProto(AppDataProto& proto) {
+  auto system_version = GetCurrentSystemVersion();
+  if (!system_version)
+    return;
+
+  if (!proto.has_system_version() ||
+      system_version->compare(proto.system_version()) > 0) {
+    show_nudge_ = true;
+  }
 }
 
 std::unique_ptr<Action> TouchInjector::CreateRawAction(ActionType action_type) {

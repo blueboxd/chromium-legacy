@@ -11,8 +11,7 @@ import static org.chromium.net.CronetTestRule.SERVER_CERT_PEM;
 import static org.chromium.net.CronetTestRule.SERVER_KEY_PKCS8_PEM;
 import static org.chromium.net.CronetTestRule.getContext;
 
-import android.support.test.runner.AndroidJUnit4;
-
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import org.junit.After;
@@ -21,7 +20,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 
 /**
@@ -51,7 +49,6 @@ public class NetworkErrorLoggingTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testManualReportUpload() throws Exception {
         ExperimentalCronetEngine.Builder builder =
@@ -78,7 +75,6 @@ public class NetworkErrorLoggingTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testUploadNELReportsFromHeaders() throws Exception {
         ExperimentalCronetEngine.Builder builder =
@@ -114,7 +110,6 @@ public class NetworkErrorLoggingTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testUploadNELReportsFromPreloadedPolicy() throws Exception {
         ExperimentalCronetEngine.Builder builder =

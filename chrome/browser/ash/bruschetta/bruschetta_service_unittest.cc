@@ -10,8 +10,12 @@
 #include "chrome/browser/ash/bruschetta/bruschetta_pref_names.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_util.h"
 #include "chrome/browser/ash/guest_os/dbus_test_helper.h"
+#include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
+#include "chrome/browser/ash/guest_os/public/guest_os_service.h"
+#include "chrome/browser/ash/guest_os/virtual_machines/virtual_machines_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
+#include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/test/browser_task_environment.h"
@@ -101,8 +105,46 @@ class BruschettaServiceTest : public testing::Test,
   std::unique_ptr<BruschettaService> service_;
 };
 
-TEST_F(BruschettaServiceTest, GetLauncherForMigratedVm) {
-  ASSERT_NE(service_->GetLauncher("bru"), nullptr);
+TEST_F(BruschettaServiceTest, StartUpMigration) {
+  service_.reset();
+
+  guest_os::AddContainerToPrefs(&profile_, MakeBruschettaId("first-vm"), {});
+  guest_os::AddContainerToPrefs(&profile_, MakeBruschettaId("second-vm"), {});
+  guest_os::UpdateContainerPref(&profile_, MakeBruschettaId("second-vm"),
+                                guest_os::prefs::kBruschettaConfigId,
+                                base::Value(kTestVmConfig));
+
+  service_ = std::make_unique<BruschettaService>(&profile_);
+
+  ASSERT_TRUE(IsInstalled(&profile_, GetBruschettaAlphaId()));
+  ASSERT_TRUE(IsInstalled(&profile_, MakeBruschettaId("first-vm")));
+  ASSERT_TRUE(IsInstalled(&profile_, MakeBruschettaId("second-vm")));
+
+  ASSERT_EQ(
+      guest_os::GetContainerPrefValue(&profile_, GetBruschettaAlphaId(),
+                                      guest_os::prefs::kBruschettaConfigId)
+          ->GetString(),
+      "glinux-latest");
+  ASSERT_EQ(
+      guest_os::GetContainerPrefValue(&profile_, MakeBruschettaId("first-vm"),
+                                      guest_os::prefs::kBruschettaConfigId)
+          ->GetString(),
+      "glinux-latest");
+  ASSERT_EQ(
+      guest_os::GetContainerPrefValue(&profile_, MakeBruschettaId("second-vm"),
+                                      guest_os::prefs::kBruschettaConfigId)
+          ->GetString(),
+      kTestVmConfig);
+
+  ASSERT_TRUE(guest_os::GuestOsService::GetForProfile(&profile_)
+                  ->TerminalProviderRegistry()
+                  ->Get(GetBruschettaAlphaId()));
+  ASSERT_TRUE(guest_os::GuestOsService::GetForProfile(&profile_)
+                  ->TerminalProviderRegistry()
+                  ->Get(MakeBruschettaId("first-vm")));
+  ASSERT_TRUE(guest_os::GuestOsService::GetForProfile(&profile_)
+                  ->TerminalProviderRegistry()
+                  ->Get(MakeBruschettaId("second-vm")));
 }
 
 TEST_F(BruschettaServiceTest, GetLauncherPolicyEnabled) {
@@ -192,6 +234,28 @@ TEST_F(BruschettaServiceTest, DynamicPolicyUpdateVtpmFromDisabled) {
   ASSERT_EQ(FakeConciergeClient()->stop_vm_call_count(), 0);
   SetVtpmConfig(true, prefs::PolicyUpdateAction::FORCE_SHUTDOWN_ALWAYS);
   ASSERT_EQ(FakeConciergeClient()->stop_vm_call_count(), 1);
+}
+
+TEST_F(BruschettaServiceTest, VirtualMachinesAllowed) {
+  vm_tools::concierge::VmStoppedSignal stop_signal;
+  stop_signal.set_name(kTestVmName);
+
+  service_->RegisterInPrefs(MakeBruschettaId(kTestVmName), kTestVmConfig);
+
+  EnableByPolicy();
+  service_->RegisterVmLaunch(kTestVmName, {});
+  ASSERT_TRUE(service_->GetRunningVmsForTesting().contains(kTestVmName));
+
+  profile_.ScopedCrosSettingsTestHelper()
+      ->ReplaceDeviceSettingsProviderWithStub();
+  profile_.ScopedCrosSettingsTestHelper()->GetStubbedProvider()->SetBoolean(
+      ash::kVirtualMachinesAllowed, false);
+
+  ASSERT_FALSE(virtual_machines::AreVirtualMachinesAllowedByPolicy());
+  ASSERT_EQ(service_->GetLauncher(kTestVmName), nullptr);
+  ASSERT_EQ(FakeConciergeClient()->stop_vm_call_count(), 1);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(service_->GetRunningVmsForTesting().contains(kTestVmName));
 }
 
 }  // namespace bruschetta

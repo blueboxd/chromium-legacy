@@ -25,6 +25,7 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
+#include "base/containers/flat_set.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
@@ -472,7 +473,7 @@ void Desk::PrepareForActivationAnimation() {
   // Floated window doesn't belong to desk container and needed to be handled
   // separately.
   aura::Window* floated_window = nullptr;
-  if (chromeos::wm::features::IsFloatWindowEnabled() &&
+  if (chromeos::wm::features::IsWindowLayoutMenuEnabled() &&
       (floated_window =
            Shell::Get()->float_controller()->FindFloatedWindowOfDesk(this))) {
     // Ensure the floated window remain hidden during activation animation.
@@ -633,7 +634,7 @@ void Desk::MoveWindowsToDesk(Desk* target_desk) {
   // floated window back to desk container before the removal, so all windows
   // under the to-be-removed desk's container can be collected in
   // `windows_to_move` to move to target desk.
-  if (chromeos::wm::features::IsFloatWindowEnabled()) {
+  if (chromeos::wm::features::IsWindowLayoutMenuEnabled()) {
     Shell::Get()->float_controller()->OnMovingAllWindowsOutToDesk(this,
                                                                   target_desk);
   }
@@ -793,7 +794,7 @@ std::vector<aura::Window*> Desk::GetAllAppWindows() const {
   // Note that floated window is also app window but needs to be handled
   // separately since it doesn't store in desk container.
   aura::Window* floated_window = nullptr;
-  if (chromeos::wm::features::IsFloatWindowEnabled() &&
+  if (chromeos::wm::features::IsWindowLayoutMenuEnabled() &&
       (floated_window =
            Shell::Get()->float_controller()->FindFloatedWindowOfDesk(this))) {
     app_windows.push_back(floated_window);
@@ -806,7 +807,7 @@ std::vector<aura::Window*> Desk::GetAllAssociatedWindows() const {
   // Note that floated window needs to be handled separately since it doesn't
   // store in desk container.
   if (auto* floated_window =
-          !chromeos::wm::features::IsFloatWindowEnabled()
+          !chromeos::wm::features::IsWindowLayoutMenuEnabled()
               ? nullptr
               : Shell::Get()->float_controller()->FindFloatedWindowOfDesk(
                     this)) {
@@ -856,19 +857,36 @@ void Desk::RestackAllDeskWindows() {
     const size_t count = container->children().size();
     DCHECK_LE(adw_data.size(), count);
 
-    if (count > 1) {
-      for (auto& adw : base::Reversed(adw_data)) {
-        DCHECK(adw.window);
-        if (adw.order != 0) {
-          // TODO: Make this robust rather than DCHECK'ing
-          DCHECK_GT(container->children().size(), count - adw.order - 1);
-          aura::Window* stack_below =
-              container->children()[count - adw.order - 1];
-          if (adw.window != stack_below) {
-            container->StackChildBelow(adw.window, stack_below);
-          }
+    // Keeps track of which ADW windows have been stacked in the code below.
+    base::flat_set<aura::Window*> already_stacked;
+
+    // Find the place to insert, counting only windows that are Z-order tracked.
+    auto find_window_to_stack_below = [&](size_t order) -> aura::Window* {
+      size_t index = 0;
+      for (aura::Window* w : base::Reversed(container->children())) {
+        if (desks_util::IsZOrderTracked(w) &&
+            (!desks_util::IsWindowVisibleOnAllWorkspaces(w) ||
+             already_stacked.contains(w))) {
+          ++index;
+        }
+        if (order == index) {
+          return w;
         }
       }
+      return nullptr;
+    };
+
+    for (auto& adw : adw_data) {
+      DCHECK(adw.window);
+      if (adw.order == 0) {
+        container->StackChildAtTop(adw.window);
+      } else if (aura::Window* stack_below =
+                     find_window_to_stack_below(adw.order)) {
+        if (adw.window != stack_below) {
+          container->StackChildBelow(adw.window, stack_below);
+        }
+      }
+      already_stacked.insert(adw.window);
     }
   }
 }

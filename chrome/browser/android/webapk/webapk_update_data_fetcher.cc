@@ -46,6 +46,19 @@ bool IsInScope(const GURL& url, const GURL& scope) {
                           base::CompareCase::SENSITIVE);
 }
 
+constexpr char kGotUpdateManifestHistogramName[] =
+    "WebApk.Update.DidGetInstallableData";
+
+// These values are logged to UMA. Entries should not be renumbered and
+// numeric values should never be reused. Please keep in sync with
+// "WebApkUpdateManifestResult" in src/tools/metrics/histograms/enums.xml.
+enum class ManifestResult {
+  kDifferent = 0,
+  kDifferentLegacyId = 1,
+  kFound = 2,
+  kMaxValue = kFound,
+};
+
 }  // anonymous namespace
 
 jlong JNI_WebApkUpdateDataFetcher_Initialize(
@@ -167,21 +180,36 @@ void WebApkUpdateDataFetcher::OnDidGetInstallableData(
 
   if (!base::FeatureList::IsEnabled(webapps::features::kWebApkUniqueId) &&
       web_manifest_url_ != *data.manifest_url) {
+    UMA_HISTOGRAM_ENUMERATION(kGotUpdateManifestHistogramName,
+                              ManifestResult::kDifferent,
+                              ManifestResult::kMaxValue);
     return;
+  } else {
+    GURL new_manifest_id(blink::GetIdFromManifest(*data.manifest));
+    if (web_manifest_id_.is_empty()) {
+      // Don't have an existing manifest ID, check if either manifest URL or
+      // start URL are the same. If neither of them are the same, we treat the
+      // manifest as one of another WebAPK.
+      if (web_manifest_url_ != *data.manifest_url &&
+          start_url_ != data.manifest->start_url) {
+        UMA_HISTOGRAM_ENUMERATION(kGotUpdateManifestHistogramName,
+                                  ManifestResult::kDifferentLegacyId,
+                                  ManifestResult::kMaxValue);
+        return;
+      }
+    } else if (web_manifest_id_ != new_manifest_id) {
+      // If the fetched manifest id is different from the current one,
+      // continue observing as the id is the identity for the application. We
+      // will treat the manifest with different id as the one of another WebAPK.
+      UMA_HISTOGRAM_ENUMERATION(kGotUpdateManifestHistogramName,
+                                ManifestResult::kDifferent,
+                                ManifestResult::kMaxValue);
+      return;
+    }
   }
 
-  GURL new_manifest_id(blink::GetIdFromManifest(*data.manifest));
-  // If the fetched manifest id is different from the current one, we also
-  // continue observing as the id is the identity for the application. We
-  // will treat the manifest with different id as the one of another WebAPK.
-  if (base::FeatureList::IsEnabled(webapps::features::kWebApkUniqueId) &&
-      !web_manifest_id_.is_empty() && web_manifest_id_ != new_manifest_id) {
-    UMA_HISTOGRAM_BOOLEAN("WebApk.Update.UniqueIdDifferent.ManifestUrl",
-                          web_manifest_url_ == *data.manifest_url);
-    UMA_HISTOGRAM_BOOLEAN("WebApk.Update.UniqueIdDifferent.StartUrl",
-                          start_url_ == data.manifest->start_url);
-    return;
-  }
+  UMA_HISTOGRAM_ENUMERATION(kGotUpdateManifestHistogramName,
+                            ManifestResult::kFound, ManifestResult::kMaxValue);
 
   info_.UpdateFromManifest(*data.manifest);
   info_.manifest_url = *data.manifest_url;
@@ -233,6 +261,8 @@ void WebApkUpdateDataFetcher::OnGotIconMurmur2Hashes(
       base::android::ConvertUTF16ToJavaString(env, info_.name);
   ScopedJavaLocalRef<jstring> java_short_name =
       base::android::ConvertUTF16ToJavaString(env, info_.short_name);
+  ScopedJavaLocalRef<jstring> java_manifest_url =
+      base::android::ConvertUTF8ToJavaString(env, info_.manifest_url.spec());
   ScopedJavaLocalRef<jstring> java_manifest_id =
       base::android::ConvertUTF8ToJavaString(env, info_.manifest_id.spec());
   ScopedJavaLocalRef<jstring> java_primary_icon_url =
@@ -323,8 +353,9 @@ void WebApkUpdateDataFetcher::OnGotIconMurmur2Hashes(
 
   Java_WebApkUpdateDataFetcher_onDataAvailable(
       env, java_ref_, java_url, java_scope, java_name, java_short_name,
-      java_manifest_id, java_primary_icon_url, java_primary_icon_murmur2_hash,
-      java_primary_icon, java_is_primary_icon_maskable, java_splash_icon_url,
+      java_manifest_url, java_manifest_id, java_primary_icon_url,
+      java_primary_icon_murmur2_hash, java_primary_icon,
+      java_is_primary_icon_maskable, java_splash_icon_url,
       java_splash_icon_murmur2_hash, java_splash_icon,
       java_is_splash_icon_maskable, java_icon_urls,
       static_cast<int>(info_.display), static_cast<int>(info_.orientation),

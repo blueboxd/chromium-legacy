@@ -23,8 +23,10 @@
 #error "This file requires ARC support."
 #endif
 
-@interface BookmarksEditorCoordinator () <BookmarksEditorViewControllerDelegate,
-                                          BookmarksEditorMediatorDelegate> {
+@interface BookmarksEditorCoordinator () <
+    BookmarksEditorViewControllerDelegate,
+    BookmarksEditorMediatorDelegate,
+    BookmarksFolderChooserCoordinatorDelegate> {
   // BookmarkNode to edit.
   const bookmarks::BookmarkNode* _node;
 
@@ -43,8 +45,8 @@
   // controller is the child of this navigation controller.
   UINavigationController* _navigationController;
 
-  // The delegate provided to `_bookmarkNavigationController`.
-  BookmarkNavigationControllerDelegate* _navigationControllerDelegate;
+  // The folder chooser coordinator.
+  BookmarksFolderChooserCoordinator* _folderChooserCoordinator;
 }
 
 // The action sheet coordinator, if one is currently being shown.
@@ -87,12 +89,10 @@
   _mediator.delegate = self;
   _viewController.mutator = _mediator;
 
-  _navigationControllerDelegate =
-      [[BookmarkNavigationControllerDelegate alloc] init];
   _navigationController =
       [[TableViewNavigationController alloc] initWithTable:_viewController];
   _navigationController.toolbarHidden = YES;
-  _navigationController.delegate = _navigationControllerDelegate;
+  _navigationController.presentationController.delegate = self;
   [_navigationController
       setModalPresentationStyle:UIModalPresentationFormSheet];
 
@@ -107,21 +107,46 @@
   [_mediator disconnect];
   _mediator.consumer = nil;
   _mediator = nil;
-  [_viewController shutdown];
   _viewController.delegate = nil;
   _viewController.snackbarCommandsHandler = nil;
   _viewController.mutator = nil;
   _viewController = nil;
   _snackbarCommandsHandler = nil;
+  [_folderChooserCoordinator stop];
+  _folderChooserCoordinator.delegate = nil;
+  _folderChooserCoordinator = nil;
 
   // animatedDismissal should have been explicitly set before calling stop.
   [_navigationController dismissViewControllerAnimated:self.animatedDismissal
                                             completion:nil];
   _navigationController = nil;
-  _navigationControllerDelegate = nil;
+}
+
+- (BOOL)canDismiss {
+  if (_viewController.edited) {
+    return NO;
+  }
+  if (_folderChooserCoordinator && ![_folderChooserCoordinator canDismiss]) {
+    return NO;
+  }
+  return YES;
 }
 
 #pragma mark - BookmarksEditorViewControllerDelegate
+
+- (void)moveBookmark {
+  DCHECK([_mediator bookmarkModel]);
+  DCHECK(!_folderChooserCoordinator);
+
+  std::set<const bookmarks::BookmarkNode*> hiddenNodes{[_mediator bookmark]};
+  _folderChooserCoordinator = [[BookmarksFolderChooserCoordinator alloc]
+      initWithNavigationController:_navigationController
+                           browser:self.browser
+                       hiddenNodes:hiddenNodes];
+  _folderChooserCoordinator.selectedFolder = [_mediator folder];
+  _folderChooserCoordinator.delegate = self;
+  [_folderChooserCoordinator start];
+}
 
 - (void)bookmarkEditorWantsDismissal:
     (BookmarksEditorViewController*)controller {
@@ -132,7 +157,6 @@
     (BookmarksEditorViewController*)controller {
   [self.delegate bookmarkEditorWillCommitTitleOrURLChange:self];
 }
-
 #pragma mark - UIAdaptivePresentationControllerDelegate
 
 - (void)presentationControllerDidAttemptToDismiss:
@@ -189,7 +213,12 @@
 
 - (void)presentationControllerDidDismiss:
     (UIPresentationController*)presentationController {
-  [_viewController dismissBookmarkEditView];
+  [_viewController dismissBookmarkEditorView];
+}
+
+- (BOOL)presentationControllerShouldDismiss:
+    (UIPresentationController*)presentationController {
+  return [self canDismiss];
 }
 
 #pragma mark - BookmarksEditorMediatorDelegate
@@ -197,6 +226,41 @@
 - (void)bookmarkEditorMediatorWantsDismissal:
     (BookmarksEditorMediator*)mediator {
   [self.delegate bookmarksEditorCoordinatorShouldStop:self];
+}
+
+- (void)bookmarkDidMoveToParent:(const bookmarks::BookmarkNode*)newParent {
+  _folderChooserCoordinator.selectedFolder = newParent;
+}
+
+#pragma mark - BookmarksFolderChooserCoordinatorDelegate
+
+- (void)bookmarksFolderChooserCoordinatorDidConfirm:
+            (BookmarksFolderChooserCoordinator*)coordinator
+                                 withSelectedFolder:
+                                     (const bookmarks::BookmarkNode*)folder {
+  DCHECK(_folderChooserCoordinator);
+  DCHECK(folder);
+
+  [_folderChooserCoordinator stop];
+  _folderChooserCoordinator.delegate = nil;
+  _folderChooserCoordinator = nil;
+
+  [_mediator changeFolder:folder];
+}
+
+- (void)bookmarksFolderChooserCoordinatorDidCancel:
+    (BookmarksFolderChooserCoordinator*)coordinator {
+  DCHECK(_folderChooserCoordinator);
+  [_folderChooserCoordinator stop];
+  _folderChooserCoordinator.delegate = nil;
+  _folderChooserCoordinator = nil;
+  if (!_navigationController.presentingViewController) {
+    // In this case the `_navigationController` itself was dismissed.
+    // TODO(crbug.com/1402758): Remove this if block when dismiss handling
+    // is done in coordinators.
+    [_viewController.view endEditing:YES];
+    [self.delegate bookmarksEditorCoordinatorShouldStop:self];
+  }
 }
 
 @end

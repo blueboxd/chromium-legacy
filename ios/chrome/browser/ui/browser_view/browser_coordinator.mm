@@ -431,6 +431,9 @@ enum class ToolbarKind {
   id<PopupMenuCommands> _popupMenuCommandsHandler;
   id<SnackbarCommands> _snackbarCommandsHandler;
   id<ApplicationCommands> _applicationCommandsHandler;
+  id<BrowserCoordinatorCommands> _browserCoordinatorCommandsHandler;
+  id<FindInPageCommands> _findInPageCommandsHandler;
+  id<ToolbarCommands> _toolbarCommandsHandler;
   absl::optional<ToolbarKind> _nextToolbarToPresent;
   CredentialProviderPromoCoordinator* _credentialProviderPromoCoordinator;
 }
@@ -443,13 +446,13 @@ enum class ToolbarKind {
 
   DCHECK(!self.viewController);
 
-  [self createViewControllerDependencies];
-
   // TabLifeCycleMediator should start before createViewController because it
   // needs to register itself as a WebStateListObserver before the rest of the
   // UI in order to be able to install the tab helper delegate before the UI is
   // notified of WebStateList events.
   [self startTabLifeCycleMediator];
+
+  [self createViewControllerDependencies];
 
   [self createViewController];
 
@@ -729,6 +732,7 @@ enum class ToolbarKind {
       _primaryToolbarCoordinator;
   _sideSwipeController.secondaryToolbarSnapshotProvider =
       _secondaryToolbarCoordinator;
+  self.tabLifecycleMediator.sideSwipeController = _sideSwipeController;
 
   _bookmarksCoordinator =
       [[BookmarksCoordinator alloc] initWithBrowser:self.browser];
@@ -743,6 +747,8 @@ enum class ToolbarKind {
                          browser:self.browser];
   self.downloadManagerCoordinator.presenter =
       [[VerticalAnimationContainer alloc] init];
+  self.tabLifecycleMediator.downloadManagerCoordinator =
+      self.downloadManagerCoordinator;
 
   self.qrScannerCoordinator =
       [[QRScannerLegacyCoordinator alloc] initWithBrowser:self.browser];
@@ -778,6 +784,7 @@ enum class ToolbarKind {
       [[NewTabPageCoordinator alloc] initWithBrowser:self.browser];
   _NTPCoordinator.toolbarDelegate = _toolbarCoordinatorAdaptor;
   _NTPCoordinator.bubblePresenter = _bubblePresenter;
+  self.tabLifecycleMediator.NTPCoordinator = _NTPCoordinator;
 
   _lensCoordinator = [[LensCoordinator alloc] initWithBrowser:self.browser];
 
@@ -787,9 +794,16 @@ enum class ToolbarKind {
       HandlerForProtocol(_dispatcher, PopupMenuCommands);
   _applicationCommandsHandler =
       HandlerForProtocol(_dispatcher, ApplicationCommands);
+  _browserCoordinatorCommandsHandler =
+      HandlerForProtocol(_dispatcher, BrowserCoordinatorCommands);
+  _findInPageCommandsHandler =
+      HandlerForProtocol(_dispatcher, FindInPageCommands);
+  _toolbarCommandsHandler = HandlerForProtocol(_dispatcher, ToolbarCommands);
 
   // SnackbarCoordinator is not created yet and therefore not dispatching
   // SnackbarCommands.
+  // TODO(crbug.com/1413769) Typecast should be performed using
+  // HandlerForProtocol method.
   _snackbarCommandsHandler = static_cast<id<SnackbarCommands>>(_dispatcher);
 
   _viewControllerDependencies.prerenderService = _prerenderService;
@@ -817,6 +831,15 @@ enum class ToolbarKind {
       _snackbarCommandsHandler;
   _viewControllerDependencies.applicationCommandsHandler =
       _applicationCommandsHandler;
+  _viewControllerDependencies.browserCoordinatorCommandsHandler =
+      _browserCoordinatorCommandsHandler;
+  _viewControllerDependencies.findInPageCommandsHandler =
+      _findInPageCommandsHandler;
+  _viewControllerDependencies.toolbarCommandsHandler = _toolbarCommandsHandler;
+  // TODO(crbug.com/1413769) Typecast should be performed using
+  // HandlerForProtocol method.
+  _viewControllerDependencies.loadQueryCommandsHandler =
+      static_cast<id<LoadQueryCommands>>(_dispatcher);
 }
 
 - (void)updateViewControllerDependencies {
@@ -869,6 +892,10 @@ enum class ToolbarKind {
   _viewControllerDependencies.popupMenuCommandsHandler = nil;
   _viewControllerDependencies.snackbarCommandsHandler = nil;
   _viewControllerDependencies.applicationCommandsHandler = nil;
+  _viewControllerDependencies.browserCoordinatorCommandsHandler = nil;
+  _viewControllerDependencies.findInPageCommandsHandler = nil;
+  _viewControllerDependencies.toolbarCommandsHandler = nil;
+  _viewControllerDependencies.loadQueryCommandsHandler = nil;
 
   [_bookmarksCoordinator shutdown];
   _bookmarksCoordinator = nil;
@@ -1207,26 +1234,23 @@ enum class ToolbarKind {
 }
 
 - (void)startTabLifeCycleMediator {
-  TabLifecycleMediator* lifecycleMediator = [[TabLifecycleMediator alloc] init];
-  self.tabLifecycleMediator = lifecycleMediator;
+  Browser* browser = self.browser;
 
-  lifecycleMediator.prerenderService =
-      PrerenderServiceFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
-  lifecycleMediator.sideSwipeController = _sideSwipeController;
-  lifecycleMediator.downloadManagerCoordinator =
-      self.downloadManagerCoordinator;
-  lifecycleMediator.commandDispatcher = self.browser->GetCommandDispatcher();
-  lifecycleMediator.tabHelperDelegate = self;
-  lifecycleMediator.repostFormDelegate = self;
-  TabInsertionBrowserAgent* insertion_agent =
-      TabInsertionBrowserAgent::FromBrowser(self.browser);
-  lifecycleMediator.tabInsertionBrowserAgent = insertion_agent;
-  lifecycleMediator.NTPTabHelperDelegate = self;
-  lifecycleMediator.snapshotGeneratorDelegate = self;
-  lifecycleMediator.NTPCoordinator = _NTPCoordinator;
+  TabLifecycleMediator* tabLifecycleMediator = [[TabLifecycleMediator alloc]
+      initWithWebStateList:browser->GetWebStateList()];
 
-  [lifecycleMediator startWithWebStateList:self.browser->GetWebStateList()];
+  // Set properties that are already valid.
+  tabLifecycleMediator.prerenderService =
+      PrerenderServiceFactory::GetForBrowserState(browser->GetBrowserState());
+  tabLifecycleMediator.commandDispatcher = browser->GetCommandDispatcher();
+  tabLifecycleMediator.tabHelperDelegate = self;
+  tabLifecycleMediator.repostFormDelegate = self;
+  tabLifecycleMediator.tabInsertionBrowserAgent =
+      TabInsertionBrowserAgent::FromBrowser(browser);
+  tabLifecycleMediator.NTPTabHelperDelegate = self;
+  tabLifecycleMediator.snapshotGeneratorDelegate = self;
+
+  self.tabLifecycleMediator = tabLifecycleMediator;
 }
 
 #pragma mark - ActivityServiceCommands

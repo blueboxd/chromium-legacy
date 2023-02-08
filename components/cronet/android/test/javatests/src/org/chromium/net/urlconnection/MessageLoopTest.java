@@ -8,15 +8,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import android.support.test.runner.AndroidJUnit4;
-
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule;
 
 import java.io.IOException;
@@ -49,7 +47,6 @@ public class MessageLoopTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testInterrupt() throws Exception {
         final MessageLoop loop = new MessageLoop();
         assertFalse(loop.isRunning());
@@ -90,7 +87,6 @@ public class MessageLoopTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testTaskFailed() throws Exception {
         final MessageLoop loop = new MessageLoop();
         assertFalse(loop.isRunning());
@@ -139,7 +135,6 @@ public class MessageLoopTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testLoopWithTimeout() throws Exception {
         final MessageLoop loop = new MessageLoop();
         assertFalse(loop.isRunning());

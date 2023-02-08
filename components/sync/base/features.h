@@ -48,10 +48,6 @@ inline constexpr base::FeatureParam<base::TimeDelta> kPasswordNotesAuthValidity{
     &kPasswordNotesWithBackup, "authentication_validity_duration",
     base::Minutes(5)};
 
-// Allows custom passphrase users to receive Wallet data for secondary accounts
-// while in transport-only mode.
-BASE_DECLARE_FEATURE(kSyncAllowWalletDataInTransportModeWithCustomPassphrase);
-
 #if BUILDFLAG(IS_ANDROID)
 BASE_DECLARE_FEATURE(kSyncAndroidLimitNTPPromoImpressions);
 inline constexpr base::FeatureParam<int> kSyncAndroidNTPPromoMaxImpressions{
@@ -100,10 +96,6 @@ inline constexpr base::FeatureParam<base::TimeDelta>
         &kSyncTrustedVaultPeriodicDegradedRecoverabilityPolling,
         "kSyncTrustedVaultShortPeriodDegradedRecoverabilityPolling",
         base::Hours(1)};
-
-// Whether the entry point to opt in to trusted vault in settings should be
-// shown.
-BASE_DECLARE_FEATURE(kSyncTrustedVaultPassphrasePromo);
 
 // Enables logging a UMA metric that requires first communicating with the
 // trusted vault server, in order to verify that the local notion of the device

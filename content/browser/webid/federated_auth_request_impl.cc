@@ -361,7 +361,7 @@ FederatedAuthRequestImpl::~FederatedAuthRequestImpl() {
     // PendingWebIdentityRequest on the Page so that other frames in the
     // same Page may still trigger new requests after the current
     // RenderFrameHost is destroyed.
-    GetPageData(&render_frame_host())->SetHasPendingWebIdentityRequest(false);
+    GetPageData(&render_frame_host())->SetPendingWebIdentityRequest(nullptr);
   }
 }
 
@@ -448,7 +448,7 @@ void FederatedAuthRequestImpl::RequestToken(
   }
 
   auth_request_token_callback_ = std::move(callback);
-  GetPageData(&render_frame_host())->SetHasPendingWebIdentityRequest(true);
+  GetPageData(&render_frame_host())->SetPendingWebIdentityRequest(this);
   network_manager_ = CreateNetworkManager();
   request_dialog_controller_ = CreateDialogController();
   start_time_ = base::TimeTicks::Now();
@@ -537,7 +537,7 @@ void FederatedAuthRequestImpl::RequestToken(
           idp_config_url,
           IdentityProviderGetInfo(std::move(idp_ptr),
                                   idp_get_params_ptr->prefer_auto_sign_in &&
-                                      IsFedCmAutoSigninEnabled(),
+                                      IsFedCmAutoReauthnEnabled(),
                                   rp_context));
     }
   }
@@ -607,7 +607,7 @@ void FederatedAuthRequestImpl::LogoutRps(
   DCHECK(logout_requests_.empty());
 
   logout_callback_ = std::move(callback);
-  GetPageData(&render_frame_host())->SetHasPendingWebIdentityRequest(true);
+  GetPageData(&render_frame_host())->SetPendingWebIdentityRequest(this);
 
   if (logout_requests.empty()) {
     CompleteLogoutRequest(LogoutRpsStatus::kError);
@@ -664,6 +664,35 @@ void FederatedAuthRequestImpl::SetIdpSigninStatus(
       idp_origin, status == blink::mojom::IdpSigninStatus::kSignedIn);
 }
 
+void FederatedAuthRequestImpl::RegisterIdP(const GURL& idp,
+                                           RegisterIdPCallback callback) {
+  if (!IsFedCmIdPRegistrationEnabled()) {
+    std::move(callback).Run(false);
+    return;
+  }
+  if (!origin().IsSameOriginWith(url::Origin::Create(idp))) {
+    std::move(callback).Run(false);
+    return;
+  }
+  // TODO(crbug.com/1406698): prompt the user for permission.
+  permission_delegate_->RegisterIdP(idp);
+  std::move(callback).Run(true);
+}
+
+void FederatedAuthRequestImpl::UnregisterIdP(const GURL& idp,
+                                             UnregisterIdPCallback callback) {
+  if (!IsFedCmIdPRegistrationEnabled()) {
+    std::move(callback).Run(false);
+    return;
+  }
+  if (!origin().IsSameOriginWith(url::Origin::Create(idp))) {
+    std::move(callback).Run(false);
+    return;
+  }
+  permission_delegate_->UnregisterIdP(idp);
+  std::move(callback).Run(true);
+}
+
 void FederatedAuthRequestImpl::OnIdpSigninStatusChanged(
     const url::Origin& idp_config_origin,
     bool idp_signin_status) {
@@ -682,7 +711,7 @@ void FederatedAuthRequestImpl::OnIdpSigninStatusChanged(
 
 bool FederatedAuthRequestImpl::HasPendingRequest() const {
   bool has_pending_request =
-      GetPageData(&render_frame_host())->HasPendingWebIdentityRequest();
+      GetPageData(&render_frame_host())->PendingWebIdentityRequest() != nullptr;
   DCHECK(has_pending_request ||
          (!auth_request_token_callback_ && !logout_callback_));
   return has_pending_request;
@@ -889,7 +918,7 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
   DCHECK(render_frame_host().GetPage().IsPrimary());
 
   bool maybe_proceed_with_auto_signin =
-      prefer_auto_signin && IsFedCmAutoSigninEnabled() &&
+      prefer_auto_signin && IsFedCmAutoReauthnEnabled() &&
       auto_signin_permission_delegate_->HasAutoSigninPermission();
 
   if (maybe_proceed_with_auto_signin) {
@@ -909,10 +938,9 @@ void FederatedAuthRequestImpl::MaybeShowAccountsDialog() {
     }
   }
 
-  // TODO(crbug.com/1408520): we should only show the checkbox when the user has
-  // not seen it before. This condition should be added once the user preference
-  // is correctly stored.
-  bool show_auto_signin_checkbox = prefer_auto_signin;
+  // TODO(crbug.com/1408520): opt-out affordance is not included in the origin
+  // trial. Should revisit based on the OT feedback.
+  bool show_auto_signin_checkbox = false;
 
   // TODO(crbug.com/1382863): Handle UI where some IDPs are successful and some
   // IDPs are failing in the multi IDP case.
@@ -1407,7 +1435,7 @@ void FederatedAuthRequestImpl::CompleteRequest(
   CleanUp();
 
   if (!should_delay_callback || ShouldCompleteRequestImmediately()) {
-    GetPageData(&render_frame_host())->SetHasPendingWebIdentityRequest(false);
+    GetPageData(&render_frame_host())->SetPendingWebIdentityRequest(nullptr);
     errors_logged_to_console_ = false;
 
     RequestTokenStatus status =
@@ -1514,7 +1542,7 @@ void FederatedAuthRequestImpl::CompleteLogoutRequest(
   if (logout_callback_) {
     std::move(logout_callback_).Run(status);
     logout_callback_.Reset();
-    GetPageData(&render_frame_host())->SetHasPendingWebIdentityRequest(false);
+    GetPageData(&render_frame_host())->SetPendingWebIdentityRequest(nullptr);
   }
 }
 

@@ -4,11 +4,13 @@
 
 #include "headless/lib/browser/headless_browser_main_parts.h"
 
+#include <memory.h>
 #include <stdio.h>
 
 #include "base/debug/alias.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "components/headless/clipboard/headless_clipboard.h"
 #include "content/public/common/result_codes.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
@@ -60,6 +62,7 @@ int HeadlessBrowserMainParts::PreMainMessageLoopRun() {
   CreatePrefService();
 #endif
   MaybeStartLocalDevToolsHttpHandler();
+  SetHeadlessClipboardForCurrentThread();
   browser_->PlatformInitialize();
   browser_->RunOnStartCallback();
   HeadlessSelectFileDialogFactory::SetUp();

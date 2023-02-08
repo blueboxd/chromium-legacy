@@ -82,7 +82,7 @@ class NewTabAction final : public BrowserAction {
   NewTabAction() : BrowserAction(true) {}
 
   void Perform(const VersionedBrowserService& service) override {
-    service.service->NewTabWithoutParameter(base::DoNothing());
+    service.service->NewTab(base::DoNothing());
   }
 };
 
@@ -95,7 +95,7 @@ class LaunchAction final : public BrowserAction {
     if (service.interface_version < mojom::BrowserService::kLaunchMinVersion) {
       LOG(WARNING)
           << "Lacros too old for Launch action - falling back to NewTab";
-      service.service->NewTabWithoutParameter(base::DoNothing());
+      service.service->NewTab(base::DoNothing());
       return;
     }
     service.service->Launch(target_display_id_, base::DoNothing());
@@ -168,19 +168,22 @@ class NewGuestWindowAction final : public BrowserAction {
 
 class HandleTabScrubbingAction final : public BrowserAction {
  public:
-  explicit HandleTabScrubbingAction(float x_offset)
-      : BrowserAction(false), x_offset_(x_offset) {}
+  HandleTabScrubbingAction(float x_offset, bool is_fling_scroll_event)
+      : BrowserAction(false),
+        x_offset_(x_offset),
+        is_fling_scroll_event_(is_fling_scroll_event) {}
 
   void Perform(const VersionedBrowserService& service) override {
     if (service.interface_version <
         crosapi::mojom::BrowserService::kHandleTabScrubbingMinVersion) {
       return;
     }
-    service.service->HandleTabScrubbing(x_offset_);
+    service.service->HandleTabScrubbing(x_offset_, is_fling_scroll_event_);
   }
 
  private:
   const float x_offset_;
+  const bool is_fling_scroll_event_;
 };
 
 class NewFullscreenWindowAction final : public BrowserAction {
@@ -368,8 +371,10 @@ std::unique_ptr<BrowserAction> BrowserAction::RestoreTab() {
 
 // static
 std::unique_ptr<BrowserAction> BrowserAction::HandleTabScrubbing(
-    float x_offset) {
-  return std::make_unique<HandleTabScrubbingAction>(x_offset);
+    float x_offset,
+    bool is_fling_scroll_event) {
+  return std::make_unique<HandleTabScrubbingAction>(x_offset,
+                                                    is_fling_scroll_event);
 }
 
 // static

@@ -4,7 +4,8 @@
 
 #import "ios/web_view/internal/autofill/web_view_autofill_client_ios.h"
 
-#include <utility>
+#import <utility>
+#import <vector>
 
 #include "base/check.h"
 #include "base/functional/bind.h"
@@ -107,6 +108,15 @@ scoped_refptr<network::SharedURLLoaderFactory>
 WebViewAutofillClientIOS::GetURLLoaderFactory() {
   return base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
       web_state_->GetBrowserState()->GetURLLoaderFactory());
+}
+
+AutofillDownloadManager* WebViewAutofillClientIOS::GetDownloadManager() {
+  if (!download_manager_) {
+    // Lazy initialization to avoid virtual function calls in the constructor.
+    download_manager_ = std::make_unique<AutofillDownloadManager>(
+        this, GetChannel(), GetLogManager());
+  }
+  return download_manager_.get();
 }
 
 PersonalDataManager* WebViewAutofillClientIOS::GetPersonalDataManager() {
@@ -311,10 +321,9 @@ void WebViewAutofillClientIOS::UpdateAutofillPopupDataListValues(
   // No op. ios/web_view does not support display datalist.
 }
 
-base::span<const Suggestion> WebViewAutofillClientIOS::GetPopupSuggestions()
-    const {
+std::vector<Suggestion> WebViewAutofillClientIOS::GetPopupSuggestions() const {
   NOTIMPLEMENTED();
-  return base::span<const Suggestion>();
+  return {};
 }
 
 void WebViewAutofillClientIOS::PinPopupView() {

@@ -573,8 +573,8 @@ TEST_F(AutofillMetricsTest,
   SubmitForm(form);
 
   // Test that the correct bucket for the number of filled fields with an
-  // unrecognized autocomplete attriute received a count while the others remain
-  // at zero counts.
+  // unrecognized autocomplete attribute received a count while the others
+  // remain at zero counts.
   const size_t expected_number_of_accepted_fillings = 1;
   const size_t expected_number_of_corrected_fillings = 1;
   const size_t expected_number_of_total_fillings =
@@ -1126,32 +1126,34 @@ TEST_F(AutofillMetricsTest, ProfileImportRequirements_AllFulfilled) {
   SubmitForm(form);
 
   std::vector<AddressProfileImportRequirementExpectations> expectations = {
-      {AddressImportRequirements::STATE_VALID_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::STATE_VALID_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::EMAIL_VALID_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::EMAIL_VALID_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::ZIP_VALID_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::ZIP_VALID_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::EMAIL_ADDRESS_UNIQUE_REQUIREMENT_FULFILLED,
+      {AddressImportRequirements::kStateValidRequirementFulfilled, true},
+      {AddressImportRequirements::kStateValidRequirementViolated, false},
+      {AddressImportRequirements::kEmailValidRequirementFulfilled, true},
+      {AddressImportRequirements::kEmailValidRequirementViolated, false},
+      {AddressImportRequirements::kZipValidRequirementFulfilled, true},
+      {AddressImportRequirements::kZipValidRequirementViolated, false},
+      {AddressImportRequirements::kEmailAddressUniqueRequirementFulfilled,
        true},
-      {AddressImportRequirements::EMAIL_ADDRESS_UNIQUE_REQUIREMENT_VIOLATED,
+      {AddressImportRequirements::kEmailAddressUniqueRequirementViolated,
        false},
-      {AddressImportRequirements::NO_INVALID_FIELD_TYPES_REQUIREMENT_FULFILLED,
+      {AddressImportRequirements::kNoInvalidFieldTypesRequirementFulfilled,
        true},
-      {AddressImportRequirements::NO_INVALID_FIELD_TYPES_REQUIREMENT_VIOLATED,
+      {AddressImportRequirements::kNoInvalidFieldTypesRequirementViolated,
        false},
-      {AddressImportRequirements::CITY_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::CITY_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::ZIP_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::ZIP_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::STATE_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::STATE_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::OVERALL_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::OVERALL_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::LINE1_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::LINE1_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::ZIP_OR_STATE_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::ZIP_OR_STATE_REQUIREMENT_VIOLATED, false}};
+      {AddressImportRequirements::kCityRequirementFulfilled, true},
+      {AddressImportRequirements::kCityRequirementViolated, false},
+      {AddressImportRequirements::kZipRequirementFulfilled, true},
+      {AddressImportRequirements::kZipRequirementViolated, false},
+      {AddressImportRequirements::kStateRequirementFulfilled, true},
+      {AddressImportRequirements::kStateRequirementViolated, false},
+      {AddressImportRequirements::kOverallRequirementFulfilled, true},
+      {AddressImportRequirements::kOverallRequirementViolated, false},
+      {AddressImportRequirements::kLine1RequirementFulfilled, true},
+      {AddressImportRequirements::kLine1RequirementViolated, false},
+      {AddressImportRequirements::kZipOrStateRequirementFulfilled, true},
+      {AddressImportRequirements::kZipOrStateRequirementViolated, false},
+      {AddressImportRequirements::kNameRequirementFulfilled, false},
+      {AddressImportRequirements::kNameRequirementViolated, false}};
 
   TestAddressProfileImportRequirements(&histogram_tester, expectations);
 
@@ -1190,32 +1192,34 @@ TEST_F(AutofillMetricsTest, ProfileImportRequirements_MissingHomeLineOne) {
   SubmitForm(form);
 
   std::vector<AddressProfileImportRequirementExpectations> expectations = {
-      {AddressImportRequirements::STATE_VALID_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::STATE_VALID_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::EMAIL_VALID_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::EMAIL_VALID_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::ZIP_VALID_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::ZIP_VALID_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::EMAIL_ADDRESS_UNIQUE_REQUIREMENT_FULFILLED,
+      {AddressImportRequirements::kStateValidRequirementFulfilled, true},
+      {AddressImportRequirements::kStateValidRequirementViolated, false},
+      {AddressImportRequirements::kEmailValidRequirementFulfilled, true},
+      {AddressImportRequirements::kEmailValidRequirementViolated, false},
+      {AddressImportRequirements::kZipValidRequirementFulfilled, true},
+      {AddressImportRequirements::kZipValidRequirementViolated, false},
+      {AddressImportRequirements::kEmailAddressUniqueRequirementFulfilled,
        true},
-      {AddressImportRequirements::EMAIL_ADDRESS_UNIQUE_REQUIREMENT_VIOLATED,
+      {AddressImportRequirements::kEmailAddressUniqueRequirementViolated,
        false},
-      {AddressImportRequirements::NO_INVALID_FIELD_TYPES_REQUIREMENT_FULFILLED,
+      {AddressImportRequirements::kNoInvalidFieldTypesRequirementFulfilled,
        true},
-      {AddressImportRequirements::NO_INVALID_FIELD_TYPES_REQUIREMENT_VIOLATED,
+      {AddressImportRequirements::kNoInvalidFieldTypesRequirementViolated,
        false},
-      {AddressImportRequirements::CITY_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::CITY_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::ZIP_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::ZIP_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::STATE_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::STATE_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::OVERALL_REQUIREMENT_FULFILLED, false},
-      {AddressImportRequirements::OVERALL_REQUIREMENT_VIOLATED, true},
-      {AddressImportRequirements::LINE1_REQUIREMENT_FULFILLED, false},
-      {AddressImportRequirements::LINE1_REQUIREMENT_VIOLATED, true},
-      {AddressImportRequirements::ZIP_OR_STATE_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::ZIP_OR_STATE_REQUIREMENT_VIOLATED, false}};
+      {AddressImportRequirements::kCityRequirementFulfilled, true},
+      {AddressImportRequirements::kCityRequirementViolated, false},
+      {AddressImportRequirements::kZipRequirementFulfilled, true},
+      {AddressImportRequirements::kZipRequirementViolated, false},
+      {AddressImportRequirements::kStateRequirementFulfilled, true},
+      {AddressImportRequirements::kStateRequirementViolated, false},
+      {AddressImportRequirements::kOverallRequirementFulfilled, false},
+      {AddressImportRequirements::kOverallRequirementViolated, true},
+      {AddressImportRequirements::kLine1RequirementFulfilled, false},
+      {AddressImportRequirements::kLine1RequirementViolated, true},
+      {AddressImportRequirements::kZipOrStateRequirementFulfilled, true},
+      {AddressImportRequirements::kZipOrStateRequirementViolated, false},
+      {AddressImportRequirements::kNameRequirementFulfilled, false},
+      {AddressImportRequirements::kNameRequirementViolated, false}};
 
   TestAddressProfileImportRequirements(&histogram_tester, expectations);
 
@@ -1257,32 +1261,34 @@ TEST_F(AutofillMetricsTest,
   SubmitForm(form);
 
   std::vector<AddressProfileImportRequirementExpectations> expectations = {
-      {AddressImportRequirements::STATE_VALID_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::STATE_VALID_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::EMAIL_VALID_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::EMAIL_VALID_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::ZIP_VALID_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::ZIP_VALID_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::EMAIL_ADDRESS_UNIQUE_REQUIREMENT_FULFILLED,
+      {AddressImportRequirements::kStateValidRequirementFulfilled, true},
+      {AddressImportRequirements::kStateValidRequirementViolated, false},
+      {AddressImportRequirements::kEmailValidRequirementFulfilled, true},
+      {AddressImportRequirements::kEmailValidRequirementViolated, false},
+      {AddressImportRequirements::kZipValidRequirementFulfilled, true},
+      {AddressImportRequirements::kZipValidRequirementViolated, false},
+      {AddressImportRequirements::kEmailAddressUniqueRequirementFulfilled,
        true},
-      {AddressImportRequirements::EMAIL_ADDRESS_UNIQUE_REQUIREMENT_VIOLATED,
+      {AddressImportRequirements::kEmailAddressUniqueRequirementViolated,
        false},
-      {AddressImportRequirements::NO_INVALID_FIELD_TYPES_REQUIREMENT_FULFILLED,
+      {AddressImportRequirements::kNoInvalidFieldTypesRequirementFulfilled,
        true},
-      {AddressImportRequirements::NO_INVALID_FIELD_TYPES_REQUIREMENT_VIOLATED,
+      {AddressImportRequirements::kNoInvalidFieldTypesRequirementViolated,
        false},
-      {AddressImportRequirements::CITY_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::CITY_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::ZIP_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::ZIP_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::STATE_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::STATE_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::OVERALL_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::OVERALL_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::LINE1_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::LINE1_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::ZIP_OR_STATE_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::ZIP_OR_STATE_REQUIREMENT_VIOLATED, false}};
+      {AddressImportRequirements::kCityRequirementFulfilled, true},
+      {AddressImportRequirements::kCityRequirementViolated, false},
+      {AddressImportRequirements::kZipRequirementFulfilled, true},
+      {AddressImportRequirements::kZipRequirementViolated, false},
+      {AddressImportRequirements::kStateRequirementFulfilled, true},
+      {AddressImportRequirements::kStateRequirementViolated, false},
+      {AddressImportRequirements::kOverallRequirementFulfilled, true},
+      {AddressImportRequirements::kOverallRequirementViolated, false},
+      {AddressImportRequirements::kLine1RequirementFulfilled, true},
+      {AddressImportRequirements::kLine1RequirementViolated, false},
+      {AddressImportRequirements::kZipOrStateRequirementFulfilled, true},
+      {AddressImportRequirements::kZipOrStateRequirementViolated, false},
+      {AddressImportRequirements::kNameRequirementFulfilled, false},
+      {AddressImportRequirements::kNameRequirementViolated, false}};
 
   TestAddressProfileImportRequirements(&histogram_tester, expectations);
   // All country specific field requirements have been fulfilled.
@@ -1317,32 +1323,34 @@ TEST_F(AutofillMetricsTest,
   SubmitForm(form);
 
   std::vector<AddressProfileImportRequirementExpectations> expectations = {
-      {AddressImportRequirements::STATE_VALID_REQUIREMENT_FULFILLED, false},
-      {AddressImportRequirements::STATE_VALID_REQUIREMENT_VIOLATED, true},
-      {AddressImportRequirements::EMAIL_VALID_REQUIREMENT_FULFILLED, false},
-      {AddressImportRequirements::EMAIL_VALID_REQUIREMENT_VIOLATED, true},
-      {AddressImportRequirements::ZIP_VALID_REQUIREMENT_FULFILLED, false},
-      {AddressImportRequirements::ZIP_VALID_REQUIREMENT_VIOLATED, true},
-      {AddressImportRequirements::EMAIL_ADDRESS_UNIQUE_REQUIREMENT_FULFILLED,
+      {AddressImportRequirements::kStateValidRequirementFulfilled, false},
+      {AddressImportRequirements::kStateValidRequirementViolated, true},
+      {AddressImportRequirements::kEmailValidRequirementFulfilled, false},
+      {AddressImportRequirements::kEmailValidRequirementViolated, true},
+      {AddressImportRequirements::kZipValidRequirementFulfilled, false},
+      {AddressImportRequirements::kZipValidRequirementViolated, true},
+      {AddressImportRequirements::kEmailAddressUniqueRequirementFulfilled,
        true},
-      {AddressImportRequirements::EMAIL_ADDRESS_UNIQUE_REQUIREMENT_VIOLATED,
+      {AddressImportRequirements::kEmailAddressUniqueRequirementViolated,
        false},
-      {AddressImportRequirements::NO_INVALID_FIELD_TYPES_REQUIREMENT_FULFILLED,
+      {AddressImportRequirements::kNoInvalidFieldTypesRequirementFulfilled,
        true},
-      {AddressImportRequirements::NO_INVALID_FIELD_TYPES_REQUIREMENT_VIOLATED,
+      {AddressImportRequirements::kNoInvalidFieldTypesRequirementViolated,
        false},
-      {AddressImportRequirements::CITY_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::CITY_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::ZIP_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::ZIP_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::STATE_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::STATE_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::OVERALL_REQUIREMENT_FULFILLED, false},
-      {AddressImportRequirements::OVERALL_REQUIREMENT_VIOLATED, true},
-      {AddressImportRequirements::LINE1_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::LINE1_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::ZIP_OR_STATE_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::ZIP_OR_STATE_REQUIREMENT_VIOLATED, false}};
+      {AddressImportRequirements::kCityRequirementFulfilled, true},
+      {AddressImportRequirements::kCityRequirementViolated, false},
+      {AddressImportRequirements::kZipRequirementFulfilled, true},
+      {AddressImportRequirements::kZipRequirementViolated, false},
+      {AddressImportRequirements::kStateRequirementFulfilled, true},
+      {AddressImportRequirements::kStateRequirementViolated, false},
+      {AddressImportRequirements::kOverallRequirementFulfilled, false},
+      {AddressImportRequirements::kOverallRequirementViolated, true},
+      {AddressImportRequirements::kLine1RequirementFulfilled, true},
+      {AddressImportRequirements::kLine1RequirementViolated, false},
+      {AddressImportRequirements::kZipOrStateRequirementFulfilled, true},
+      {AddressImportRequirements::kZipOrStateRequirementViolated, false},
+      {AddressImportRequirements::kNameRequirementFulfilled, false},
+      {AddressImportRequirements::kNameRequirementViolated, false}};
 
   TestAddressProfileImportRequirements(&histogram_tester, expectations);
 
@@ -1387,32 +1395,33 @@ TEST_F(AutofillMetricsTest, ProfileImportRequirements_NonUniqueEmail) {
   SubmitForm(form);
 
   std::vector<AddressProfileImportRequirementExpectations> expectations = {
-      {AddressImportRequirements::STATE_VALID_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::STATE_VALID_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::EMAIL_VALID_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::EMAIL_VALID_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::ZIP_VALID_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::ZIP_VALID_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::EMAIL_ADDRESS_UNIQUE_REQUIREMENT_FULFILLED,
+      {AddressImportRequirements::kStateValidRequirementFulfilled, true},
+      {AddressImportRequirements::kStateValidRequirementViolated, false},
+      {AddressImportRequirements::kEmailValidRequirementFulfilled, true},
+      {AddressImportRequirements::kEmailValidRequirementViolated, false},
+      {AddressImportRequirements::kZipValidRequirementFulfilled, true},
+      {AddressImportRequirements::kZipValidRequirementViolated, false},
+      {AddressImportRequirements::kEmailAddressUniqueRequirementFulfilled,
        false},
-      {AddressImportRequirements::EMAIL_ADDRESS_UNIQUE_REQUIREMENT_VIOLATED,
+      {AddressImportRequirements::kEmailAddressUniqueRequirementViolated, true},
+      {AddressImportRequirements::kNoInvalidFieldTypesRequirementFulfilled,
        true},
-      {AddressImportRequirements::NO_INVALID_FIELD_TYPES_REQUIREMENT_FULFILLED,
-       true},
-      {AddressImportRequirements::NO_INVALID_FIELD_TYPES_REQUIREMENT_VIOLATED,
+      {AddressImportRequirements::kNoInvalidFieldTypesRequirementViolated,
        false},
-      {AddressImportRequirements::CITY_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::CITY_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::ZIP_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::ZIP_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::STATE_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::STATE_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::OVERALL_REQUIREMENT_FULFILLED, false},
-      {AddressImportRequirements::OVERALL_REQUIREMENT_VIOLATED, true},
-      {AddressImportRequirements::LINE1_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::LINE1_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::ZIP_OR_STATE_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::ZIP_OR_STATE_REQUIREMENT_VIOLATED, false}};
+      {AddressImportRequirements::kCityRequirementFulfilled, true},
+      {AddressImportRequirements::kCityRequirementViolated, false},
+      {AddressImportRequirements::kZipRequirementFulfilled, true},
+      {AddressImportRequirements::kZipRequirementViolated, false},
+      {AddressImportRequirements::kStateRequirementFulfilled, true},
+      {AddressImportRequirements::kStateRequirementViolated, false},
+      {AddressImportRequirements::kOverallRequirementFulfilled, false},
+      {AddressImportRequirements::kOverallRequirementViolated, true},
+      {AddressImportRequirements::kLine1RequirementFulfilled, true},
+      {AddressImportRequirements::kLine1RequirementViolated, false},
+      {AddressImportRequirements::kZipOrStateRequirementFulfilled, true},
+      {AddressImportRequirements::kZipOrStateRequirementViolated, false},
+      {AddressImportRequirements::kNameRequirementFulfilled, false},
+      {AddressImportRequirements::kNameRequirementViolated, false}};
 
   TestAddressProfileImportRequirements(&histogram_tester, expectations);
 
@@ -1452,32 +1461,34 @@ TEST_F(AutofillMetricsTest, ProfileImportRequirements_OnlyAddressLineOne) {
   SubmitForm(form);
 
   std::vector<AddressProfileImportRequirementExpectations> expectations = {
-      {AddressImportRequirements::STATE_VALID_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::STATE_VALID_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::EMAIL_VALID_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::EMAIL_VALID_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::ZIP_VALID_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::ZIP_VALID_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::EMAIL_ADDRESS_UNIQUE_REQUIREMENT_FULFILLED,
+      {AddressImportRequirements::kStateValidRequirementFulfilled, true},
+      {AddressImportRequirements::kStateValidRequirementViolated, false},
+      {AddressImportRequirements::kEmailValidRequirementFulfilled, true},
+      {AddressImportRequirements::kEmailValidRequirementViolated, false},
+      {AddressImportRequirements::kZipValidRequirementFulfilled, true},
+      {AddressImportRequirements::kZipValidRequirementViolated, false},
+      {AddressImportRequirements::kEmailAddressUniqueRequirementFulfilled,
        true},
-      {AddressImportRequirements::EMAIL_ADDRESS_UNIQUE_REQUIREMENT_VIOLATED,
+      {AddressImportRequirements::kEmailAddressUniqueRequirementViolated,
        false},
-      {AddressImportRequirements::NO_INVALID_FIELD_TYPES_REQUIREMENT_FULFILLED,
+      {AddressImportRequirements::kNoInvalidFieldTypesRequirementFulfilled,
        true},
-      {AddressImportRequirements::NO_INVALID_FIELD_TYPES_REQUIREMENT_VIOLATED,
+      {AddressImportRequirements::kNoInvalidFieldTypesRequirementViolated,
        false},
-      {AddressImportRequirements::CITY_REQUIREMENT_FULFILLED, false},
-      {AddressImportRequirements::CITY_REQUIREMENT_VIOLATED, true},
-      {AddressImportRequirements::ZIP_REQUIREMENT_FULFILLED, false},
-      {AddressImportRequirements::ZIP_REQUIREMENT_VIOLATED, true},
-      {AddressImportRequirements::STATE_REQUIREMENT_FULFILLED, false},
-      {AddressImportRequirements::STATE_REQUIREMENT_VIOLATED, true},
-      {AddressImportRequirements::OVERALL_REQUIREMENT_FULFILLED, false},
-      {AddressImportRequirements::OVERALL_REQUIREMENT_VIOLATED, true},
-      {AddressImportRequirements::LINE1_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::LINE1_REQUIREMENT_VIOLATED, false},
-      {AddressImportRequirements::ZIP_OR_STATE_REQUIREMENT_FULFILLED, true},
-      {AddressImportRequirements::ZIP_OR_STATE_REQUIREMENT_VIOLATED, false}};
+      {AddressImportRequirements::kCityRequirementFulfilled, false},
+      {AddressImportRequirements::kCityRequirementViolated, true},
+      {AddressImportRequirements::kZipRequirementFulfilled, false},
+      {AddressImportRequirements::kZipRequirementViolated, true},
+      {AddressImportRequirements::kStateRequirementFulfilled, false},
+      {AddressImportRequirements::kStateRequirementViolated, true},
+      {AddressImportRequirements::kOverallRequirementFulfilled, false},
+      {AddressImportRequirements::kOverallRequirementViolated, true},
+      {AddressImportRequirements::kLine1RequirementFulfilled, true},
+      {AddressImportRequirements::kLine1RequirementViolated, false},
+      {AddressImportRequirements::kZipOrStateRequirementFulfilled, true},
+      {AddressImportRequirements::kZipOrStateRequirementViolated, false},
+      {AddressImportRequirements::kNameRequirementFulfilled, false},
+      {AddressImportRequirements::kNameRequirementViolated, false}};
 
   TestAddressProfileImportRequirements(&histogram_tester, expectations);
 
@@ -1487,6 +1498,58 @@ TEST_F(AutofillMetricsTest, ProfileImportRequirements_OnlyAddressLineOne) {
       AutofillMetrics::
           AddressProfileImportCountrySpecificFieldRequirementsMetric::
               ZIP_STATE_CITY_REQUIREMENT_VIOLATED);
+}
+
+// Test that the ProfileImportRequirements are all counted as fulfilled, except
+// for the name requirement which was violated.
+TEST_F(AutofillMetricsTest, ProfileImportRequirements_AllFulfilledButName) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillRequireNameForProfileImport);
+  //  Set up our form data.
+  FormData form = GetAndAddSeenForm(
+      {.description_for_logging = "ProfileImportRequirements_AllButName",
+       .fields = {
+           {.role = NAME_FULL, .value = u""},
+           {.role = ADDRESS_HOME_LINE1, .value = u"3734 Elvis Presley Blvd."},
+           {.role = ADDRESS_HOME_CITY, .value = u"New York"},
+           {.role = PHONE_HOME_CITY_AND_NUMBER, .value = u"2345678901"},
+           {.role = ADDRESS_HOME_STATE, .value = u"CA"},
+           {.role = ADDRESS_HOME_ZIP, .value = u"37373"},
+           {.role = ADDRESS_HOME_COUNTRY, .value = u"USA"}}});
+  FillTestProfile(form);
+  base::HistogramTester histogram_tester;
+  SubmitForm(form);
+  std::vector<AddressProfileImportRequirementExpectations> expectations = {
+      {AddressImportRequirements::kStateValidRequirementFulfilled, true},
+      {AddressImportRequirements::kStateValidRequirementViolated, false},
+      {AddressImportRequirements::kEmailValidRequirementFulfilled, true},
+      {AddressImportRequirements::kEmailValidRequirementViolated, false},
+      {AddressImportRequirements::kZipValidRequirementFulfilled, true},
+      {AddressImportRequirements::kZipValidRequirementViolated, false},
+      {AddressImportRequirements::kEmailAddressUniqueRequirementFulfilled,
+       true},
+      {AddressImportRequirements::kEmailAddressUniqueRequirementViolated,
+       false},
+      {AddressImportRequirements::kNoInvalidFieldTypesRequirementFulfilled,
+       true},
+      {AddressImportRequirements::kNoInvalidFieldTypesRequirementViolated,
+       false},
+      {AddressImportRequirements::kCityRequirementFulfilled, true},
+      {AddressImportRequirements::kCityRequirementViolated, false},
+      {AddressImportRequirements::kZipRequirementFulfilled, true},
+      {AddressImportRequirements::kZipRequirementViolated, false},
+      {AddressImportRequirements::kStateRequirementFulfilled, true},
+      {AddressImportRequirements::kStateRequirementViolated, false},
+      {AddressImportRequirements::kOverallRequirementFulfilled, false},
+      {AddressImportRequirements::kOverallRequirementViolated, true},
+      {AddressImportRequirements::kLine1RequirementFulfilled, true},
+      {AddressImportRequirements::kLine1RequirementViolated, false},
+      {AddressImportRequirements::kZipOrStateRequirementFulfilled, true},
+      {AddressImportRequirements::kZipOrStateRequirementViolated, false},
+      {AddressImportRequirements::kNameRequirementFulfilled, false},
+      {AddressImportRequirements::kNameRequirementViolated, true}};
+  TestAddressProfileImportRequirements(&histogram_tester, expectations);
 }
 
 // Test that we log quality metrics appropriately with fields having
@@ -10480,7 +10543,7 @@ TEST_F(AutofillMetricsFromLogEventsTest, AddressSubmittedFormLogEvents) {
 
   {
     // Simulating submission with filled local data. The third field cannot be
-    // autofilled because its type cannot be predicated.
+    // autofilled because its type cannot be predicted.
     autofill_manager().OnAskForValuesToFillTest(
         form, form.fields[0], gfx::RectF(), AutoselectFirstSuggestion(false),
         FormElementWasClicked(true));
@@ -10488,6 +10551,8 @@ TEST_F(AutofillMetricsFromLogEventsTest, AddressSubmittedFormLogEvents) {
 
     // Simulate text input in the first fields.
     SimulateUserChangedTextField(form, form.fields[0]);
+
+    base::HistogramTester histogram_tester;
     SubmitForm(form);
 
     // Record Autofill2.FieldInfo UKM event at autofill manager reset.
@@ -10536,6 +10601,22 @@ TEST_F(AutofillMetricsFromLogEventsTest, AddressSubmittedFormLogEvents) {
         test_ukm_recorder_->ExpectEntryMetric(entry, metric, value);
       }
     }
+
+    histogram_tester.ExpectBucketCount(
+        "Autofill.LogEvent.AskForValuesToFillEvent", 1, 1);
+    histogram_tester.ExpectBucketCount("Autofill.LogEvent.TriggerFillEvent", 1,
+                                       1);
+    histogram_tester.ExpectBucketCount("Autofill.LogEvent.FillEvent", 3, 1);
+    histogram_tester.ExpectBucketCount("Autofill.LogEvent.TypingEvent", 1, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.LogEvent.HeuristicPredictionEvent", 0, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.LogEvent.AutocompleteAttributeEvent", 0, 1);
+    histogram_tester.ExpectBucketCount(
+        "Autofill.LogEvent.ServerPredictionEvent", 0, 1);
+    histogram_tester.ExpectBucketCount("Autofill.LogEvent.RationalizationEvent",
+                                       0, 1);
+    histogram_tester.ExpectBucketCount("Autofill.LogEvent.All", 6, 1);
   }
 }
 
@@ -10582,6 +10663,7 @@ TEST_F(AutofillMetricsFromLogEventsTest, AutofillFieldInfoMetricsFieldType) {
   autofill_manager().OnLoadedServerPredictionsForTest(
       response_string, test::GetEncodedSignatures(*form_structure_ptr));
 
+  base::HistogramTester histogram_tester;
   SubmitForm(form);
   // Record Autofill2.FieldInfo UKM event at autofill manager reset.
   autofill_manager().Reset();
@@ -10597,6 +10679,8 @@ TEST_F(AutofillMetricsFromLogEventsTest, AutofillFieldInfoMetricsFieldType) {
   std::vector<HtmlFieldType> html_field_types{
       HtmlFieldType::kFamilyName, HtmlFieldType::kAdditionalName,
       HtmlFieldType::kUnrecognized, HtmlFieldType::kPostalCode};
+  std::vector<ServerFieldType> overall_types{NAME_LAST, NAME_MIDDLE,
+                                             NAME_MIDDLE, ADDRESS_HOME_ZIP};
 
   for (size_t i = 0; i < entries.size(); ++i) {
     SCOPED_TRACE(testing::Message() << i);
@@ -10619,6 +10703,9 @@ TEST_F(AutofillMetricsFromLogEventsTest, AutofillFieldInfoMetricsFieldType) {
         {UFIT::kServerPredictionSource2Name,
          FieldPrediction::SOURCE_UNSPECIFIED},
         {UFIT::kServerTypeIsOverrideName, false},
+        {UFIT::kOverallTypeName, overall_types[i]},
+        {UFIT::kSectionIdName, 1},
+        {UFIT::kTypeChangedByRationalizationName, false},
         {UFIT::kIsFocusableName, true},
         {UFIT::kRankInFieldSignatureGroupName, 1},
         {UFIT::kWasFocusedName, false},
@@ -10650,6 +10737,28 @@ TEST_F(AutofillMetricsFromLogEventsTest, AutofillFieldInfoMetricsFieldType) {
       test_ukm_recorder_->ExpectEntryMetric(entry, metric, value);
     }
   }
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.LogEvent.AskForValuesToFillEvent", 0, 1);
+  histogram_tester.ExpectBucketCount("Autofill.LogEvent.TriggerFillEvent", 0,
+                                     1);
+  histogram_tester.ExpectBucketCount("Autofill.LogEvent.FillEvent", 0, 1);
+  histogram_tester.ExpectBucketCount("Autofill.LogEvent.TypingEvent", 0, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.LogEvent.AutocompleteAttributeEvent", 3, 1);
+  histogram_tester.ExpectBucketCount("Autofill.LogEvent.ServerPredictionEvent",
+                                     4, 1);
+  histogram_tester.ExpectBucketCount("Autofill.LogEvent.RationalizationEvent",
+                                     8, 1);
+#if BUILDFLAG(USE_INTERNAL_AUTOFILL_PATTERNS)
+  histogram_tester.ExpectBucketCount(
+      "Autofill.LogEvent.HeuristicPredictionEvent", 12, 1);
+  histogram_tester.ExpectBucketCount("Autofill.LogEvent.All", 27, 1);
+#else
+  histogram_tester.ExpectBucketCount(
+      "Autofill.LogEvent.HeuristicPredictionEvent", 3, 1);
+  histogram_tester.ExpectBucketCount("Autofill.LogEvent.All", 18, 1);
+#endif
 }
 
 // Test if we have recorded FieldInfo UKM metrics correctly after typing in
@@ -10671,11 +10780,11 @@ TEST_F(AutofillMetricsFromLogEventsTest,
 
   FormData form = GetAndAddSeenForm(form_description);
 
-  base::HistogramTester histogram_tester;
   // Simulate text input in the first and second fields.
   SimulateUserChangedTextField(form, form.fields[0]);
   SimulateUserChangedTextField(form, form.fields[1]);
 
+  base::HistogramTester histogram_tester;
   SubmitForm(form);
 
   // Record Autofill2.FieldInfo UKM event at autofill manager reset.
@@ -10708,6 +10817,22 @@ TEST_F(AutofillMetricsFromLogEventsTest,
       test_ukm_recorder_->ExpectEntryMetric(entry, metric, value);
     }
   }
+
+  histogram_tester.ExpectBucketCount(
+      "Autofill.LogEvent.AskForValuesToFillEvent", 0, 1);
+  histogram_tester.ExpectBucketCount("Autofill.LogEvent.TriggerFillEvent", 0,
+                                     1);
+  histogram_tester.ExpectBucketCount("Autofill.LogEvent.FillEvent", 0, 1);
+  histogram_tester.ExpectBucketCount("Autofill.LogEvent.TypingEvent", 2, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.LogEvent.HeuristicPredictionEvent", 0, 1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.LogEvent.AutocompleteAttributeEvent", 0, 1);
+  histogram_tester.ExpectBucketCount("Autofill.LogEvent.ServerPredictionEvent",
+                                     0, 1);
+  histogram_tester.ExpectBucketCount("Autofill.LogEvent.RationalizationEvent",
+                                     0, 1);
+  histogram_tester.ExpectBucketCount("Autofill.LogEvent.All", 2, 1);
 }
 
 // TODO(crbug.com/1352826) Delete this after collecting the metrics.
@@ -10762,7 +10887,7 @@ INSTANTIATE_TEST_SUITE_P(
     AutofillMetricsTestForLaxLocalHeuristics,
     AutofillMetricsTestForLaxLocalHeuristics,
     testing::Values(
-        // Because the local heuristic classifies 3 dictinct field types, we
+        // Because the local heuristic classifies 3 distinct field types, we
         // don't expect any metrics. This form is not eligible.
         LaxLocalHeuristicsTestCase{
             .form = {.description_for_logging = "Three different field types",

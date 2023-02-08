@@ -18,10 +18,6 @@
 
 class PrefService;
 
-namespace device {
-class FakeGeolocationManager;
-}
-
 namespace content {
 class ShellBrowserContext;
 class ShellBrowserMainParts;
@@ -66,6 +62,14 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       WebContents* web_contents) override;
   bool IsIsolatedContextAllowedForUrl(BrowserContext* browser_context,
                                       const GURL& lock_url) override;
+  bool IsSharedStorageAllowed(content::BrowserContext* browser_context,
+                              content::RenderFrameHost* rfh,
+                              const url::Origin& top_frame_origin,
+                              const url::Origin& accessing_origin) override;
+  bool IsSharedStorageSelectURLAllowed(
+      content::BrowserContext* browser_context,
+      const url::Origin& top_frame_origin,
+      const url::Origin& accessing_origin) override;
   GeneratedCodeCacheSettings GetGeneratedCodeCacheSettings(
       content::BrowserContext* context) override;
   base::OnceClosure SelectClientCertificate(
@@ -146,9 +150,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
 
   ShellBrowserContext* browser_context();
   ShellBrowserContext* off_the_record_browser_context();
-  ShellBrowserMainParts* shell_browser_main_parts() {
-    return shell_browser_main_parts_;
-  }
+  ShellBrowserMainParts* shell_browser_main_parts();
 
   // Used for content_browsertests.
   using SelectClientCertificateCallback = base::OnceCallback<base::OnceClosure(
@@ -190,9 +192,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
 
  protected:
   // Call this if CreateBrowserMainParts() is overridden in a subclass.
-  void set_browser_main_parts(ShellBrowserMainParts* parts) {
-    shell_browser_main_parts_ = parts;
-  }
+  void set_browser_main_parts(ShellBrowserMainParts* parts);
 
   // Used by ConfigureNetworkContextParams(), and can be overridden to change
   // the parameters used there.
@@ -203,9 +203,17 @@ class ShellContentBrowserClient : public ContentBrowserClient {
           cert_verifier_creation_params);
 
  private:
-  std::unique_ptr<PrefService> CreateLocalState();
+  // For GetShellContentBrowserClientInstances().
+  friend class ContentBrowserTestContentBrowserClient;
+
   // Needed so that content_shell can use fieldtrial_testing_config.
   void SetUpFieldTrials();
+
+  // Returns the list of ShellContentBrowserClients ordered by time created.
+  // If a test overrides ContentBrowserClient, this list will have more than
+  // one item.
+  static const std::vector<ShellContentBrowserClient*>&
+  GetShellContentBrowserClientInstances();
 
   static bool allow_any_cors_exempt_header_for_browser_;
 
@@ -220,15 +228,14 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       create_throttles_for_navigation_callback_;
   base::RepeatingCallback<void(blink::web_pref::WebPreferences*)>
       override_web_preferences_callback_;
-#if BUILDFLAG(IS_MAC)
-  std::unique_ptr<device::FakeGeolocationManager> location_manager_;
-#endif
 
-  // Owned by content::BrowserMainLoop.
-  raw_ptr<ShellBrowserMainParts, DanglingUntriaged> shell_browser_main_parts_ =
-      nullptr;
-
-  std::unique_ptr<PrefService> local_state_;
+  // NOTE: Tests may install a second ShellContentBrowserClient that becomes
+  // the ContentBrowserClient used by content. This has subtle implications
+  // for any state (variables) that are needed by ShellContentBrowserClient.
+  // Any state that needs to be the same across all ShellContentBrowserClients
+  // should be placed in SharedState (declared in
+  // shell_content_browser_client.cc). Any state that is specific to a
+  // particular instance should be placed here.
 };
 
 // The delay for sending reports when running with --run-web-tests

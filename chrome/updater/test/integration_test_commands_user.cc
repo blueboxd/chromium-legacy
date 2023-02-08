@@ -33,7 +33,7 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
   void PrintLog() const override { updater::test::PrintLog(updater_scope_); }
 
   void CopyLog() const override {
-    absl::optional<base::FilePath> path = GetDataDirPath(updater_scope_);
+    absl::optional<base::FilePath> path = GetInstallDirectory(updater_scope_);
     EXPECT_TRUE(path);
     if (path)
       updater::test::CopyLog(*path);
@@ -176,10 +176,21 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::RunWakeActive(updater_scope_, exit_code);
   }
 
+// TODO(crbug.com/1396103): remove this `#if` once mojo interface changes are
+// done in separate CL.
+#if BUILDFLAG(IS_WIN)
+  void Update(const std::string& app_id,
+              const std::string& install_data_index,
+              bool do_update_check_only) const override {
+    updater::test::Update(updater_scope_, app_id, install_data_index,
+                          do_update_check_only);
+  }
+#else   // BUILDFLAG(IS_WIN)
   void Update(const std::string& app_id,
               const std::string& install_data_index) const override {
     updater::test::Update(updater_scope_, app_id, install_data_index);
   }
+#endif  // BUILDFLAG(IS_WIN)
 
   void UpdateAll() const override { updater::test::UpdateAll(updater_scope_); }
 

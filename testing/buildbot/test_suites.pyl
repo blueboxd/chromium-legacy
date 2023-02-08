@@ -2129,6 +2129,121 @@
       }
     },
 
+
+    'devtools_webkit_and_tab_target_isolated_scripts': {
+      'blink_web_tests': {
+        # layout test failures are retried 3 times when '--test-list' is not
+        # passed, but 0 times when '--test-list' is passed. We want to always
+        # retry 3 times, so we explicitly specify it.
+        'args': [
+          '--num-retries=3',
+        ],
+        'isolate_name': 'blink_web_tests',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'mixins': [
+          'blink_tests_write_run_histories',
+          # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
+          'skia_gold_test',
+        ],
+        'resultdb': {
+          'enable': True,
+        },
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 5,
+        }
+      },
+      'blink_web_tests_dt_tab_target': {
+        # layout test failures are retried 3 times when '--test-list' is not
+        # passed, but 0 times when '--test-list' is passed. We want to always
+        # retry 3 times, so we explicitly specify it.
+        'args': [
+          '--flag-specific=devtools-tab-target',
+          '--num-retries=3',
+          'http/tests/devtools',
+        ],
+        'isolate_name': 'blink_web_tests',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'mixins': [
+          'blink_tests_write_run_histories',
+          # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
+          'skia_gold_test',
+        ],
+        'resultdb': {
+          'enable': True,
+        },
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 5,
+        }
+      },
+      'blink_wpt_tests': {
+        # layout test failures are retried 3 times when '--test-list' is not
+        # passed, but 0 times when '--test-list' is passed. We want to always
+        # retry 3 times, so we explicitly specify it.
+        'args': [
+          '--num-retries=3',
+        ],
+        'isolate_name': 'blink_wpt_tests',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'mixins': [
+          'blink_tests_write_run_histories',
+          # TODO(crbug.com/1327314): Enable for blink web tests.
+          'disable_check_flakiness_web_tests',
+          'skia_gold_test',
+        ],
+        'resultdb': {
+          'enable': True,
+        },
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 7,
+        }
+      },
+      'webkit_layout_from_devtools': {
+        # TODO(crbug.com/816629) - Move these args into //BUILD.gn .
+        # layout test failures are retried 3 times when '--test-list' is not
+        # passed, but 0 times when '--test-list' is passed. We want to always
+        # retry 3 times, so we explicitly specify it.
+        'args': [
+          '--num-retries=3',
+          '--layout-tests-directory=../../third_party/devtools-frontend/src/test/webtests/',
+          'http/tests/devtools',
+        ],
+        'isolate_name': 'devtools_web_tests',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'resultdb': {
+          'enable': True,
+        },
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 4,
+        }
+      },
+    },
+
     'devtools_webkit_isolated_scripts': {
       'blink_web_tests': {
         # layout test failures are retried 3 times when '--test-list' is not
@@ -5044,11 +5159,6 @@
           '--test-arg=--vmodule=test_navigation_listener=1',
         ],
       },
-      'web_engine_integration_tests_cfv1': {
-        'args': [
-          '--test-arg=--vmodule=test_navigation_listener=1',
-        ],
-      },
       'web_engine_unittests': {},
       'web_runner_integration_tests': {},
     },
@@ -5206,6 +5316,7 @@
     'webview_trichrome_64_cts_tests': {
       'webview_trichrome_64_cts_tests': {
         'swarming': {
+          'shards': 2,
           'cipd_packages': [
             {
               'cipd_package': 'chromium/android_webview/tools/cts_archive',
@@ -5223,6 +5334,7 @@
           '--disable-field-trial-config',
         ],
         'swarming': {
+          'shards': 2,
           'cipd_packages': [
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
@@ -5474,7 +5586,7 @@
     'wpt_web_tests_ios': {
       'wpt_tests_suite': {
         'args': [
-          '--product=chrome_ios'
+          '--log-wptreport'
         ],
         'merge': {
           'args': [
@@ -5788,6 +5900,18 @@
       'chromium_web_tests_high_dpi_isolated_scripts',
     ],
 
+    'chromium_linux_rel_isolated_scripts_code_coverage': [
+      'chromedriver_py_tests_isolated_scripts',
+      'desktop_chromium_isolated_scripts',
+      'linux_specific_chromium_isolated_scripts',
+      'mojo_python_unittests_isolated_scripts',
+      'pytype_tests',
+      'telemetry_perf_unittests_isolated_scripts',
+      'vulkan_swiftshader_isolated_scripts',
+      'chromium_web_tests_high_dpi_isolated_scripts',
+      'gpu_dawn_webgpu_blink_web_tests',
+    ],
+
     'chromium_mac_and_dangling_pointer_detection_gtests': [
       'dangling_pointer_detection_tests',
       'chromium_gtests',
@@ -5844,6 +5968,10 @@
       'mac_specific_isolated_scripts',
       'mojo_python_unittests_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
+    ],
+
+    'chromium_mac_rel_isolated_scripts_code_coverage': [
+      'gpu_dawn_webgpu_blink_web_tests',
     ],
 
     # Pixel tests only enabled on Win 10. So this is
@@ -5903,6 +6031,10 @@
       'telemetry_desktop_minidump_unittests_isolated_scripts',
       'telemetry_perf_unittests_isolated_scripts',
       'win_specific_isolated_scripts',
+    ],
+
+    'chromium_win_rel_isolated_scripts_code_coverage': [
+      'gpu_dawn_webgpu_blink_web_tests',
     ],
 
     'cronet_dbg_isolated_scripts': [
@@ -6451,7 +6583,11 @@
       'webview_ui_instrumentation_tests': {},
     },
 
-    'android_12_13_emulator_gtests': {
+    'android_12_emulator_fyi_gtests': {
+      'oop_network_service_tests': {},
+    },
+
+    'android_12_emulator_gtests': {
       'android_emulator_specific_chrome_public_tests': {},
       'android_monochrome_smoke_tests': {},
       'android_smoke_tests': {},
@@ -6469,10 +6605,6 @@
       'webview_ui_instrumentation_tests': {},
     },
 
-    'android_12_emulator_fyi_gtests': {
-      'oop_network_service_tests': {},
-    },
-
     'android_12l_emulator_gtests': {
       'android_emulator_specific_chrome_public_tests': {},
       'android_monochrome_smoke_tests': {},
@@ -6482,6 +6614,25 @@
       'chromium_gtests_for_devices_with_graphical_output': {},
       'linux_flavor_specific_chromium_gtests': {},
       'system_webview_shell_instrumentation_tests': {}, # Not an experimental test
+      'webview_ui_instrumentation_tests': {},
+    },
+
+    'android_13_emulator_gtests': {
+      'android_emulator_specific_chrome_public_tests': {},
+      'android_monochrome_smoke_tests': {},
+      'android_smoke_tests': {},
+      'android_specific_chromium_gtests': {},  # Already includes gl_gtests.
+      'chromium_gtests': {},
+      'chromium_gtests_for_devices_with_graphical_output': {},
+      'linux_flavor_specific_chromium_gtests': {},
+      'system_webview_shell_instrumentation_tests': {}, # Not an experimental test
+      'webview_trichrome_64_cts_tests': {
+        'variants': [
+          'WEBVIEW_TRICHROME_FULL_CTS_TESTS',
+          'WEBVIEW_TRICHROME_INSTANT_CTS_TESTS',
+        ]
+      },
+      'webview_trichrome_64_cts_tests_no_field_trial': {},
       'webview_ui_instrumentation_tests': {},
     },
 
@@ -6935,7 +7086,7 @@
           'SIM_IPHONE_7_14_5',
           'SIM_IPAD_AIR_2_14_5',
           'SIM_IPHONE_X_14_5',
-          'SIM_IPAD_PRO_3RD_GEN_16_2',
+          'SIM_IPAD_PRO_3RD_GEN_16_2_T2',
         ]
       },
       'ios_eg2_cq_tests': {

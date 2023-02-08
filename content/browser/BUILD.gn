@@ -267,6 +267,7 @@ source_set("browser") {
     "//ui/base/ime/init",
     "//ui/color",
     "//ui/color:mixers",
+    "//ui/compositor",
     "//ui/display",
     "//ui/display/types",
     "//ui/display/util",
@@ -414,6 +415,7 @@ source_set("browser") {
     "attribution_reporting/aggregatable_histogram_contribution.h",
     "attribution_reporting/attribution_beacon_id.h",
     "attribution_reporting/attribution_config.cc",
+    "attribution_reporting/attribution_config.h",
     "attribution_reporting/attribution_constants.h",
     "attribution_reporting/attribution_cookie_checker.h",
     "attribution_reporting/attribution_cookie_checker_impl.cc",
@@ -449,7 +451,6 @@ source_set("browser") {
     "attribution_reporting/attribution_report_network_sender.cc",
     "attribution_reporting/attribution_report_network_sender.h",
     "attribution_reporting/attribution_report_sender.h",
-    "attribution_reporting/attribution_source_type.cc",
     "attribution_reporting/attribution_source_type.h",
     "attribution_reporting/attribution_storage.cc",
     "attribution_reporting/attribution_storage.h",
@@ -1431,8 +1432,6 @@ source_set("browser") {
     "preloading/prefetch/prefetch_document_manager.h",
     "preloading/prefetch/prefetch_features.cc",
     "preloading/prefetch/prefetch_features.h",
-    "preloading/prefetch/prefetch_from_string_url_loader.cc",
-    "preloading/prefetch/prefetch_from_string_url_loader.h",
     "preloading/prefetch/prefetch_metrics.cc",
     "preloading/prefetch/prefetch_network_context.cc",
     "preloading/prefetch/prefetch_network_context.h",
@@ -1458,8 +1457,6 @@ source_set("browser") {
     "preloading/prefetch/prefetch_type.h",
     "preloading/prefetch/prefetch_url_loader_interceptor.cc",
     "preloading/prefetch/prefetch_url_loader_interceptor.h",
-    "preloading/prefetch/prefetched_mainframe_response_container.cc",
-    "preloading/prefetch/prefetched_mainframe_response_container.h",
     "preloading/prefetch/proxy_lookup_client_impl.cc",
     "preloading/prefetch/proxy_lookup_client_impl.h",
     "preloading/prefetcher.cc",
@@ -2484,8 +2481,8 @@ source_set("browser") {
       "//media/fuchsia/cdm/service",
       "//media/fuchsia/mojom:fuchsia_media",
       "//third_party/abseil-cpp:absl",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mediacodec",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics:fuchsia.accessibility.semantics_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mediacodec:fuchsia.mediacodec_hlcpp",
       "//third_party/fuchsia-sdk/sdk/pkg/inspect",
       "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
       "//third_party/fuchsia-sdk/sdk/pkg/sys_inspect_cpp",
@@ -2599,6 +2596,23 @@ source_set("browser") {
       "QuartzCore.framework",
       "IOSurface.framework",
     ]
+    weak_frameworks = [
+      "UniformTypeIdentifiers.framework",  # macOS 11
+    ]
+  } else if (is_ios) {
+    sources += [
+      "child_process_launcher_helper_ios.cc",
+      "renderer_host/browser_compositor_ios.h",
+      "renderer_host/browser_compositor_ios.mm",
+      "renderer_host/delegated_frame_host_client_ios.cc",
+      "renderer_host/delegated_frame_host_client_ios.h",
+      "renderer_host/render_widget_host_view_ios.h",
+      "renderer_host/render_widget_host_view_ios.mm",
+      "web_contents/web_contents_view_ios.h",
+      "web_contents/web_contents_view_ios.mm",
+    ]
+    frameworks += [ "IOSurface.framework" ]
+    deps += [ "//ui/accelerated_widget_mac" ]
   } else {
     # Not Mac.
     deps += [ "//sandbox" ]
@@ -2889,6 +2903,15 @@ source_set("browser") {
 
   if (use_pangocairo) {
     configs += [ "//build/config/linux/pangocairo" ]
+  }
+
+  if (is_ios) {
+    sources += [
+      "renderer_host/input/web_input_event_builders_ios.h",
+      "renderer_host/input/web_input_event_builders_ios.mm",
+      "renderer_host/native_web_keyboard_event_ios.mm",
+      "speech/tts_ios.mm",
+    ]
   }
 
   if (is_android) {
@@ -3212,7 +3235,7 @@ source_set("browser") {
     ]
   }
 
-  if (use_aura || is_mac) {
+  if (use_aura || is_apple) {
     sources += [
       "compositor/image_transport_factory.cc",
       "compositor/image_transport_factory.h",

@@ -2776,11 +2776,27 @@ be describing additional metrics about the same event.
       visibility with false positives.
     </summary>
   </metric>
+  <metric name="OverallType" enum="AutofillServerFieldType">
+    <summary>
+      The final field type from the list of |autofill::ServerFieldType| that we
+      choose after rationalization, which is used to determine the autofill
+      suggestion when the user triggers autofilling.
+    </summary>
+  </metric>
   <metric name="RankInFieldSignatureGroup">
     <summary>
       If multiple fields have the same signature, this indicates the position
       within this set of fields. This allows us to understand problems related
       to duplicated field signatures.
+    </summary>
+  </metric>
+  <metric name="SectionId">
+    <summary>
+      A single HTML form can consist of multiple sections. A section is a set of
+      fields that are filled together. For example a single form can contain a
+      shipping and a billing address. Each of those corresponds to one section.
+      The sections are mapped to consecutive natural numbers starting at 1. The
+      section IDs are unique per form.
     </summary>
   </metric>
   <metric name="ServerPredictionSource1" enum="AutofillServerPredictionSource">
@@ -2837,6 +2853,11 @@ be describing additional metrics about the same event.
     <summary>
       Whether a suggestion popup was ever shown on this field (i.e. the field
       had focus and user had data on file).
+    </summary>
+  </metric>
+  <metric name="TypeChangedByRationalization" enum="Boolean">
+    <summary>
+      Whether the field's type was changed by running the rationalization.
     </summary>
   </metric>
   <metric name="UserTypedIntoField" enum="Boolean">
@@ -6677,8 +6698,24 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="DIPS.Deletion" singular="True">
+  <owner>rtarpine@google.com</owner>
+  <owner>dc-komics@google.com</owner>
+  <summary>
+    Recorded when DIPS judges a site to be an incidental party and deletes its
+    storage.
+  </summary>
+  <metric name="Detected" enum="BooleanDetected">
+    <summary>
+      Always set to true (only present because UKM events require at least one
+      metric).
+    </summary>
+  </metric>
+</event>
+
 <event name="DIPS.Redirect" singular="True">
   <owner>rtarpine@google.com</owner>
+  <owner>dc-komics@google.com</owner>
   <summary>
     Recorded on every HTTP redirect or client-side bounce, where a client-side
     bounce is a non-user-initiated navigation starting soon after the previous
@@ -6745,6 +6782,7 @@ be describing additional metrics about the same event.
 
 <event name="DIPS.TriggeringAction">
   <owner>kaklilu@google.com</owner>
+  <owner>dc-komics@google.com</owner>
   <summary>
     Recorded on a repeated interval when DIPS may want to clear site storage to
     improve user privacy. These metrics will be used to determine which
@@ -17023,7 +17061,7 @@ be describing additional metrics about the same event.
   <metric name="ResidentSetSize">
     <summary>
       The total resident set size footprint of this page at the moment the
-      sample was recorded, in bytes.
+      sample was recorded, in kilobytes.
     </summary>
   </metric>
   <metric name="SliceId">

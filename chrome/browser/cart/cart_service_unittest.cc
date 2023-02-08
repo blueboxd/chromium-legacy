@@ -1333,7 +1333,9 @@ TEST_F(CartServiceTest, TestExpiredDataDeleted) {
   const ShoppingCarts result = {{kMockMerchantA, merchant_proto}};
 
   merchant_proto.set_timestamp(
-      (base::Time::Now() - base::Days(16)).ToDoubleT());
+      (base::Time::Now() -
+       base::Days(CartService::kCartExpirationTimeInDays + 2))
+          .ToDoubleT());
   service_->AddCart(mock_merchant_url_A_, absl::nullopt, merchant_proto);
   task_environment_.RunUntilIdle();
 
@@ -1368,7 +1370,9 @@ TEST_F(CartServiceTest, TestExpiredDataDeleted) {
   run_loop[3].Run();
 
   merchant_proto.set_timestamp(
-      (base::Time::Now() - base::Days(13)).ToDoubleT());
+      (base::Time::Now() -
+       base::Days(CartService::kCartExpirationTimeInDays - 2))
+          .ToDoubleT());
   merchant_proto.set_is_removed(false);
   service_->GetDB()->AddCart(
       kMockMerchantA, merchant_proto,
@@ -1441,6 +1445,49 @@ TEST_F(CartServiceTest, TestAcknowledgeDiscountConsent) {
   ASSERT_FALSE(profile_->GetPrefs()->GetBoolean(prefs::kCartDiscountEnabled));
   ASSERT_TRUE(
       profile_->GetPrefs()->GetBoolean(prefs::kCartDiscountAcknowledged));
+}
+
+// Tests HasActiveCartForURL API correctly checks cart existence.
+TEST_F(CartServiceTest, TestHHasActiveCartForURL) {
+  base::RunLoop run_loop[4];
+  const GURL url_with_cart_A = GURL("https://www.foo.com/A");
+  const GURL url_with_cart_B = GURL("https://www.foo.com/B");
+  const GURL url_without_cart = GURL("https://www.bar.com/A");
+  cart_db::ChromeCartContentProto merchant_proto =
+      BuildProto(kMockMerchantA, "https://www.foo.com/A");
+
+  service_->AddCart(url_with_cart_A, absl::nullopt, merchant_proto);
+  task_environment_.RunUntilIdle();
+
+  service_->HasActiveCartForURL(
+      url_with_cart_A,
+      base::BindOnce(&CartServiceTest::GetEvaluationBoolResult,
+                     base::Unretained(this), run_loop[0].QuitClosure(), true));
+  run_loop[0].Run();
+  service_->HasActiveCartForURL(
+      url_with_cart_B,
+      base::BindOnce(&CartServiceTest::GetEvaluationBoolResult,
+                     base::Unretained(this), run_loop[1].QuitClosure(), true));
+  run_loop[1].Run();
+  service_->HasActiveCartForURL(
+      url_without_cart,
+      base::BindOnce(&CartServiceTest::GetEvaluationBoolResult,
+                     base::Unretained(this), run_loop[2].QuitClosure(), false));
+  run_loop[2].Run();
+
+  // Overwrite the cart entry for current domain with an expired cart.
+  merchant_proto.set_timestamp(
+      (base::Time::Now() -
+       base::Days(CartService::kCartExpirationTimeInDays + 2))
+          .ToDoubleT());
+  service_->AddCart(url_with_cart_A, absl::nullopt, merchant_proto);
+  task_environment_.RunUntilIdle();
+
+  service_->HasActiveCartForURL(
+      url_with_cart_A,
+      base::BindOnce(&CartServiceTest::GetEvaluationBoolResult,
+                     base::Unretained(this), run_loop[3].QuitClosure(), false));
+  run_loop[3].Run();
 }
 
 class CartServiceNoDiscountTest : public CartServiceTest {

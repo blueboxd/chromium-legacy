@@ -80,6 +80,7 @@
 <translation id="149095475893949513">האתר הזה מנסה להוריד פרופיל של הגדרות אישיות.</translation>
 <translation id="1491277525950327607">יש ללחוץ פעמיים כדי להחליף את מצב ההגדרה</translation>
 <translation id="1492417797159476138">שם המשתמש הזה כבר נשמר לאתר זה</translation>
+<translation id="1498283581832036924">החשבון שלך ב-<ph name="WEBSITE" /> לא יימחק.</translation>
 <translation id="1506063256525392513">‏כך תהיה לך אפשרות לצלם ולהעלות תמונות, וגם לסרוק קודי QR</translation>
 <translation id="1509486075633541495">כניסה לאתר</translation>
 <translation id="1509960214886564027">ייתכן שהתכונות של חלק גדול מהאתרים לא יפעלו כראוי</translation>
@@ -205,7 +206,6 @@
 <translation id="2529021024822217800">פתיחת הכול</translation>
 <translation id="2556092377360758201">ללא הגנה (לא מומלץ)</translation>
 <translation id="2562041823070056534">הכרטיסייה נשלחת אל <ph name="DEVICE_NAME" />...</translation>
-<translation id="2570206273416014374">‏חלק מקובצי ה-Cookie והחיפושים נשלחים מסרגל הכתובות ומתיבת החיפוש אל מנוע החיפוש שהוגדר כברירת מחדל.</translation>
 <translation id="2578571896248130439">שליחת דף האינטרנט</translation>
 <translation id="2584132361465095047">חשבון חדש…</translation>
 <translation id="2600682495497606169">‏ניקוי קובצי ה-cookie של אתרים</translation>
@@ -219,6 +219,7 @@
 <translation id="2664621323652615289">עצירה</translation>
 <translation id="2671426118752779020">‏יש לך אפשרות להשתמש בסיסמאות ששמרת במנהל הסיסמאות של Google באפליקציות אחרות ב-iPhone.</translation>
 <translation id="2690858294534178585">המצלמה נמצאת בשימוש</translation>
+<translation id="26915454213703967">‏חיפוש בתמונה עם Google</translation>
 <translation id="2691653761409724435">לא זמין במצב אופליין</translation>
 <translation id="2695507686909505111">הדף תורגם</translation>
 <translation id="2697526135132990015">יציאה וניקוי נתונים</translation>
@@ -259,7 +260,6 @@
 <translation id="2890171748217283516">‏אתרים שנמצאים במעקב נשמרים בחשבון Google שלך. ניתן לנהל אותם בהגדרות של Discover.</translation>
 <translation id="2898963176829412617">תיקייה חדשה…</translation>
 <translation id="2902684821701498619">הוספה לרשימת הקריאה</translation>
-<translation id="2916171785467530738">השלמה אוטומטית של חיפושים וכתובות אתרים</translation>
 <translation id="291754862089661335">‏יש למקם את קוד ה-QR או הברקוד במסגרת זו</translation>
 <translation id="2920866371965792875">כאן אפשר לעקוב אחר האתר הזה כדי לקבל ממנו עדכונים.</translation>
 <translation id="2921219216347069551">לא ניתן לשתף את הדף</translation>
@@ -382,6 +382,7 @@
 <translation id="3819183753496523827">אין לך חיבור לאינטרנט. צריך לבדוק את החיבור לאינטרנט ולנסות שוב.</translation>
 <translation id="3835964409414434850">מעבר לכרטיסייה הבאה</translation>
 <translation id="385051799172605136">חזרה</translation>
+<translation id="3851938967634752633">הסיסמאות של <ph name="WEBSITE" />, של <ph name="SECOND_WEBSITE" /> ושל <ph name="NUMBER_OF_ACCOUNTS" /> אתרים נוספים יימחקו. החשבונות שלך לא יימחקו.</translation>
 <translation id="3858860766373142691">שם</translation>
 <translation id="3861486700625780712">ביטול המעקב</translation>
 <translation id="3863769054730344136">שליחה אל המכשירים שלך</translation>
@@ -517,6 +518,7 @@
 <translation id="4833786495304741580">‏שליחת דוחות קריסה וסטטיסטיקות שימוש אל Google באופן אוטומטי.</translation>
 <translation id="4840495572919996524">‏הסימניות, ההיסטוריה, הסיסמאות ונתונים אחרים שלך כבר לא יסונכרנו עם חשבון Google.</translation>
 <translation id="4844899002472726590">הצגה ועריכה של הנושאים שמעניינים אותך</translation>
+<translation id="4848999860252535517">למחוק את הסיסמה של <ph name="WEBSITE" />?</translation>
 <translation id="4854345657858711387">עליך להגדיר קוד גישה</translation>
 <translation id="4858786880085262208">‏שדרוג ל-HTTPS, כשיש אפשרות כזו. אתרים מאובטחים עשויים להטמיע תוכן לא מאובטח.</translation>
 <translation id="4860895144060829044">תרימו טלפון</translation>
@@ -665,6 +667,7 @@
 <translation id="5988097621740394599">יוצגו הנחות בכרטיסיות.</translation>
 <translation id="5988851877894965432">‏פתיחת כתובות URL ב-Chrome</translation>
 <translation id="6006672969046233841">כרטיסייה חדשה</translation>
+<translation id="6011308810877101166">שיפור של ההצעות לחיפוש</translation>
 <translation id="6012140227487808125">ההצפנה מתבצעת…</translation>
 <translation id="6021332621416007159">פתיחה ב...</translation>
 <translation id="6027945736510816438">האם התכוונת לאתר <ph name="WEBSITE" />?</translation>
@@ -708,6 +711,7 @@
 <translation id="6284652193729350524">הצגת הצעה לתרגום <ph name="LANGUAGE" /></translation>
 <translation id="6289501276895392862">בוטל המעקב אחר <ph name="CHANNEL_NAME" /></translation>
 <translation id="6293101329759844770">‏כדי להפעיל גלישה בטוחה, יש להיכנס ל<ph name="BEGIN_LINK" />שירותי Google<ph name="END_LINK" /> ולהקיש על 'גלישה בטוחה'.</translation>
+<translation id="6320780930074869063">כשההגדרה מופעלת, הסיסמאות נשמרות בחשבון <ph name="ACCOUNT" />. כשההגדרה מושבתת, הסיסמאות נשמרות רק במכשיר הזה.</translation>
 <translation id="6321526113093607004">הוספה לסימניות</translation>
 <translation id="6324669097367352121">הגדרות כניסה</translation>
 <translation id="6337234675334993532">הצפנה</translation>
@@ -769,6 +773,7 @@
 <translation id="6598875554591387303">מיון לפי 'בעל האפליקציה'</translation>
 <translation id="6603393121510733479">הארגון שלך כיבה את אפשרות הגלישה הפרטית.
 <ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /></translation>
+<translation id="6609890790934458793">הסיסמאות של <ph name="WEBSITE" />, של <ph name="SECOND_WEBSITE" /> ושל <ph name="THIRD_WEBSITE" /> יימחקו. החשבונות שלך לא יימחקו.</translation>
 <translation id="6610002944194042868">אפשרויות תרגום</translation>
 <translation id="661266467055912436">רמת אבטחה משופרת עבורך ועבור כל מי שמתחבר לאינטרנט.</translation>
 <translation id="6620279676667515405">ביטול</translation>
@@ -882,6 +887,7 @@
 <translation id="746684838091935575">‏3. בוחרים באפשרות Chrome.</translation>
 <translation id="7472734401283673885">שם החברה</translation>
 <translation id="7473891865547856676">לא, תודה</translation>
+<translation id="7491131399623468277">להגדרות…</translation>
 <translation id="750493650310597496">0 נבחרו</translation>
 <translation id="7508728395076009983">‏כדי לנעול את כרטיסיות המצב האנונימי, יש להגדיר Touch ID,‏ Face ID או קוד גישה.</translation>
 <translation id="7514365320538308">הורדה</translation>
@@ -1046,6 +1052,7 @@
 <translation id="8756969031206844760">לעדכן את הסיסמה?</translation>
 <translation id="8763613688786959833">מעבר לכרטיסייה האחרונה</translation>
 <translation id="8764015330924122850">ביטול המעקב אחר <ph name="DOMAIN_NAME" /></translation>
+<translation id="8766790350274092814">הסיסמאות של <ph name="WEBSITE" /> ושל <ph name="SECOND_WEBSITE" /> יימחקו. החשבונות שלך לא יימחקו.</translation>
 <translation id="8775144690796719618">כתובת אתר לא חוקית</translation>
 <translation id="8787968206789828143">חיפוש באינטרנט</translation>
 <translation id="8792626944327216835">מיקרופון</translation>
@@ -1095,6 +1102,7 @@
 <translation id="9093271241977565440">בחלק העליון של המסך, מקישים על סמל החיפוש</translation>
 <translation id="9094033019050270033">עדכון סיסמה</translation>
 <translation id="9097506547406246598">לא ניתן לבטל את המעקב. משהו השתבש.</translation>
+<translation id="9098541895599151034">למחוק <ph name="NUMBER_OF_ACCOUNTS" /> סיסמאות?</translation>
 <translation id="9100610230175265781">יש להזין ביטוי סיסמה</translation>
 <translation id="9107664647686727385">בדיקה לאיתור סיסמאות שנחשפו</translation>
 <translation id="9124387962554796433">‏Google עשויה להשתמש בהיסטוריית הגלישה שלך כדי להתאים אישית את החיפוש ושירותי Google נוספים.</translation>

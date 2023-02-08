@@ -31,14 +31,13 @@ class Browser;
 @property(nonatomic, strong, readonly) UIBarButtonItem* cancelItem;
 // Mutator for the presented bookmark.
 @property(nonatomic, weak) id<BookmarksEditorMutator> mutator;
+// Whether some value was edited.
+@property(nonatomic, assign) BOOL edited;
 
 // Designated initializer.
 // TODO(crbug.com/1404311) Remove the model from init.
 - (instancetype)initWithBrowser:(Browser*)browser NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
-
-// Called before the instance is deallocated.
-- (void)shutdown;
 
 // Cancels the editor.
 - (void)cancel;
@@ -50,7 +49,7 @@ class Browser;
 - (void)setNavigationItemsEnabled:(BOOL)enabled;
 
 // Dismisses the bookmark edit view.
-- (void)dismissBookmarkEditView;
+- (void)dismissBookmarkEditorView;
 
 @end
 

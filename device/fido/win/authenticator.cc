@@ -44,6 +44,29 @@ struct PlatformCredentialListDeleter {
   raw_ptr<WinWebAuthnApi> win_api_;
 };
 
+AuthenticatorSupportedOptions WinWebAuthnApiOptions(int api_version) {
+  AuthenticatorSupportedOptions options;
+  options.is_platform_device =
+      AuthenticatorSupportedOptions::PlatformDevice::kBoth;
+  options.supports_resident_key = true;
+  options.user_verification_availability = AuthenticatorSupportedOptions::
+      UserVerificationAvailability::kSupportedAndConfigured;
+  options.supports_user_presence = true;
+  options.supports_cred_protect = api_version >= WEBAUTHN_API_VERSION_2;
+  options.enterprise_attestation = api_version >= WEBAUTHN_API_VERSION_3;
+  options.supports_large_blobs = api_version >= WEBAUTHN_API_VERSION_3;
+  options.supports_min_pin_length_extension =
+      api_version >= WEBAUTHN_API_VERSION_3;
+  if (api_version >= WEBAUTHN_API_VERSION_3) {
+    // The 256-byte maximum length here is an arbitrary sanity limit. Blobs are
+    // generally 32 bytes so this is intended to be larger than any reasonable
+    // request.
+    options.max_cred_blob_length = 256;
+  }
+  options.supports_hmac_secret = true;
+  return options;
+}
+
 }  // namespace
 
 // static
@@ -150,7 +173,9 @@ void WinWebAuthnApiAuthenticator::DeletePlatformCredential(
 WinWebAuthnApiAuthenticator::WinWebAuthnApiAuthenticator(
     HWND current_window,
     WinWebAuthnApi* win_api)
-    : current_window_(current_window), win_api_(win_api) {
+    : options_(WinWebAuthnApiOptions(win_api->Version())),
+      current_window_(current_window),
+      win_api_(win_api) {
   CHECK(win_api_->IsAvailable());
   CoCreateGuid(&cancellation_id_);
 }
@@ -296,7 +321,7 @@ void WinWebAuthnApiAuthenticator::GetCredentialInformationForRequest(
     }
     case NTE_NOT_FOUND:
       FIDO_LOG(DEBUG) << "No credentials found";
-      std::move(callback).Run(/*credentials=*/{}, /*has_credentials=*/true);
+      std::move(callback).Run(/*credentials=*/{}, /*has_credentials=*/false);
       return;
     default:
       FIDO_LOG(ERROR) << "Windows API returned unknown result: " << hresult;
@@ -333,35 +358,13 @@ WinWebAuthnApiAuthenticator::AuthenticatorTransport() const {
   return absl::nullopt;
 }
 
-bool WinWebAuthnApiAuthenticator::SupportsCredProtectExtension() const {
-  return win_api_->Version() >= WEBAUTHN_API_VERSION_2;
-}
-
-bool WinWebAuthnApiAuthenticator::SupportsHMACSecretExtension() const {
-  return true;
-}
-
-bool WinWebAuthnApiAuthenticator::SupportsEnterpriseAttestation() const {
-  return win_api_->Version() >= WEBAUTHN_API_VERSION_3;
-}
-
-bool WinWebAuthnApiAuthenticator::SupportsCredBlobOfSize(
-    size_t num_bytes) const {
-  return win_api_->Version() >= WEBAUTHN_API_VERSION_3;
-}
-
 bool WinWebAuthnApiAuthenticator::SupportsLargeBlobs() const {
   return win_api_->SupportsLargeBlobs();
 }
 
-const absl::optional<AuthenticatorSupportedOptions>&
-WinWebAuthnApiAuthenticator::Options() const {
-  // The request can potentially be fulfilled by any device that Windows
-  // communicates with, so returning AuthenticatorSupportedOptions really
-  // doesn't make much sense.
-  static const absl::optional<AuthenticatorSupportedOptions> no_options =
-      absl::nullopt;
-  return no_options;
+const AuthenticatorSupportedOptions& WinWebAuthnApiAuthenticator::Options()
+    const {
+  return options_;
 }
 
 base::WeakPtr<FidoAuthenticator> WinWebAuthnApiAuthenticator::GetWeakPtr() {

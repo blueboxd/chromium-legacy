@@ -334,6 +334,10 @@ absl::optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
         cred_blob_extension_seen = true;
       } else if (extension_str == kExtensionMinPINLength) {
         options.supports_min_pin_length_extension = true;
+      } else if (extension_str == kExtensionHmacSecret) {
+        options.supports_hmac_secret = true;
+      } else if (extension_str == kExtensionDevicePublicKey) {
+        options.supports_device_public_key = true;
       }
       extensions.push_back(extension_str);
     }
@@ -665,13 +669,13 @@ absl::optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
     if (!it->second.is_unsigned()) {
       return absl::nullopt;
     }
-    const uint32_t max_cred_blob_length =
-        base::saturated_cast<uint32_t>(it->second.GetUnsigned());
+    const uint16_t max_cred_blob_length =
+        base::saturated_cast<uint16_t>(it->second.GetUnsigned());
     // CTAP 2.1 requires at least 32 bytes of credBlob to be supported.
     if (max_cred_blob_length < 32) {
       return absl::nullopt;
     }
-    response.max_cred_blob_length = max_cred_blob_length;
+    response.options.max_cred_blob_length = max_cred_blob_length;
   }
 
   it = response_map.find(CBOR(0x14));

@@ -1105,7 +1105,6 @@
 <translation id="1975841812214822307">移除...</translation>
 <translation id="1976150099241323601">登入安全性裝置</translation>
 <translation id="1977965994116744507">讓你的手機靠近 <ph name="DEVICE_TYPE" />，即可將其解鎖。</translation>
-<translation id="1978057560491495741">移除地址</translation>
 <translation id="1979095679518582070">即使關閉了這項功能，這部裝置仍然可以傳送基本服務 (例如系統更新和安全防護) 所需的資訊。</translation>
 <translation id="1979280758666859181">你即將變更為較舊版本的 <ph name="PRODUCT_NAME" />。該版本的版本號與你電腦上所安裝的版本號必須相符，系統才會套用版本變更。</translation>
 <translation id="197989455406964291">KDC 不支援加密類型</translation>
@@ -1127,7 +1126,6 @@
 <translation id="1997433994358798851">Chrome 需要權限才能使用藍牙連線至你的裝置</translation>
 <translation id="1997616988432401742">您的憑證</translation>
 <translation id="1999115740519098545">起始畫面</translation>
-<translation id="2000419248597011803">將網址列和搜尋框中的部分 Cookie 和搜尋字詞傳送給你的預設搜尋引擎</translation>
 <translation id="2002109485265116295">即時</translation>
 <translation id="2003130567827682533">如要啟用「<ph name="NAME" />」的數據服務，請先連上 Wi-Fi 網路</translation>
 <translation id="2004697686368036666">某些網站的功能可能無法運作</translation>
@@ -2180,7 +2178,6 @@
 <translation id="2908358077082926882">再次按下「<ph name="CURRENTKEY" />」鍵即可移除指派設定並<ph name="RESPONSE" /></translation>
 <translation id="2909506265808101667">無法連上 Google 服務。請檢查網路連線，然後再試一次。錯誤代碼：<ph name="ERROR_CODE" />。</translation>
 <translation id="2910318910161511225">請連線至網路，然後再試一次</translation>
-<translation id="291056154577034373">未讀取</translation>
 <translation id="2910718431259223434">發生錯誤。請再試一次，或與裝置擁有者或系統管理員聯絡。錯誤代碼：<ph name="ERROR_CODE" />。</translation>
 <translation id="2912247081180973411">關閉視窗</translation>
 <translation id="2913331724188855103">允許網站儲存及讀取 Cookie 資料 (建議)</translation>
@@ -2605,6 +2602,7 @@
 <translation id="3315442055907669208">進入閱讀器模式</translation>
 <translation id="3317459757438853210">雙面</translation>
 <translation id="3317678681329786349">無法使用攝影機和麥克風</translation>
+<translation id="3319306431415395200">使用 <ph name="VISUAL_SEARCH_PROVIDER" /> 翻譯圖片中的文字</translation>
 <translation id="3320630259304269485">安全瀏覽功能 (可防範不安全的網站) 和其他安全性設定</translation>
 <translation id="3323521181261657960">恭喜！你的裝置使用時間增加了</translation>
 <translation id="3323577066981719144">你在這裡所做的變更僅適用於 Chrome 瀏覽器。如要變更 Lacros Chrome 瀏覽器設定，請開啟 Lacros Chrome 瀏覽器並前往設定頁面。</translation>
@@ -3041,6 +3039,7 @@
 <translation id="372062398998492895">CUPS</translation>
 <translation id="3721119614952978349">你與 Google</translation>
 <translation id="3722108462506185496">啟用虛擬機器服務時發生錯誤，請再試一次。</translation>
+<translation id="3722624153992426516">已收到<ph name="IMPORT_CERTIFICATE__INSTRUCTION_NAME" />的操作說明</translation>
 <translation id="3726965532284929944">QT</translation>
 <translation id="3727144509609414201">可用的 WiFi 網路</translation>
 <translation id="3727187387656390258">檢查彈出式視窗</translation>
@@ -3396,6 +3395,7 @@
 <translation id="402211067068791756">這會清除目前顯示的網站所儲存的資料，共 <ph name="TOTAL_USAGE" /></translation>
 <translation id="4022426551683927403">新增到字典(&amp;A)</translation>
 <translation id="4025039777635956441">關閉所選網站的音訊</translation>
+<translation id="402707738228916911">已收到<ph name="AUTHORIZE_INSTRUCTION_NAME" />的操作說明</translation>
 <translation id="4027958407426528157">使用 <ph name="DEVICE_TYPE" /> 上安裝的應用程式開啟網站</translation>
 <translation id="4028467762035011525">新增輸入法</translation>
 <translation id="4029556917477724407">從「<ph name="PAGE_TITLE" />」頁面返回</translation>
@@ -3788,7 +3788,6 @@
 <translation id="4404843640767531781">貴家長已封鎖「<ph name="APP_NAME" />」。如要使用這個應用程式，請要求家長授予權限。</translation>
 <translation id="4405117686468554883">*.jpeg、*.jpg、*.png</translation>
 <translation id="4405224443901389797">移至…</translation>
-<translation id="440653823335387109">你看過的網頁</translation>
 <translation id="4406883609789734330">即時字幕</translation>
 <translation id="4407039574263172582">如要繼續，<ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> 會將你的姓名、電子郵件地址和個人資料相片提供給這個網站。請參閱這個網站的《<ph name="BEGIN_LINK" />服務條款<ph name="END_LINK" />》。</translation>
 <translation id="4408599188496843485">說明(&amp;E)</translation>
@@ -4279,7 +4278,6 @@
 <translation id="4852916668365817106">游標顏色</translation>
 <translation id="4853020600495124913">在新視窗中開啟(&amp;N)</translation>
 <translation id="4854317507773910281">選擇進行審核的家長帳戶</translation>
-<translation id="4854603338816296098">地址已移除</translation>
 <translation id="485480310608090163">更多設定和權限</translation>
 <translation id="4858913220355269194">飛球</translation>
 <translation id="4862642413395066333">簽署 OCSP 回應</translation>
@@ -5517,6 +5515,7 @@
 <translation id="6011193465932186973">指紋</translation>
 <translation id="6011908034087870826">正在將連結傳送至「<ph name="DEVICE_NAME" />」</translation>
 <translation id="6013027779243312217">取得音訊和視訊的字幕</translation>
+<translation id="6014293228235665243">未讀取</translation>
 <translation id="6015796118275082299">年</translation>
 <translation id="6016178549409952427">前往 <ph name="TOTAL_ELEMENTS" /> 個額外內容裡的第 <ph name="CURRENT_ELEMENT" /> 個</translation>
 <translation id="6016551720757758985">確認執行 Powerwash 並還原至上一個版本</translation>
@@ -5674,6 +5673,7 @@
 <translation id="6150961653851236686">這是翻譯網頁時使用的語言</translation>
 <translation id="6151323131516309312">按一下 <ph name="SEARCH_KEY" /> 以搜尋 <ph name="SITE_NAME" /></translation>
 <translation id="6151771661215463137">下載資料夾中已有這個檔案。</translation>
+<translation id="6152918902620844577">正在等待下一次操作</translation>
 <translation id="6154240335466762404">移除所有連接埠</translation>
 <translation id="615436196126345398">通訊協定</translation>
 <translation id="6155141482566063812">背景分頁正在分享你的螢幕畫面</translation>
@@ -5717,7 +5717,7 @@
 <translation id="6200151268994853226">管理擴充功能</translation>
 <translation id="6201608810045805374">要移除這個帳戶嗎？</translation>
 <translation id="6202304368170870640">你可以使用 PIN 碼登入裝置，或將裝置解鎖。</translation>
-<translation id="6205314730813004066">廣告隱私設定</translation>
+<translation id="6205314730813004066">廣告隱私權設定</translation>
 <translation id="6206199626856438589">系統會將你登出這些目前顯示的網站，包含已開啟的分頁</translation>
 <translation id="6206311232642889873">複製圖片(&amp;Y)</translation>
 <translation id="6206521455877863927">包括同一網域中的網站，例如 google.com 和 mail.google.com。你目前瀏覽的網站可將資料儲存到你的裝置。</translation>
@@ -7349,7 +7349,6 @@
 <translation id="7702574632857388784">從清單中移除 <ph name="FILE_NAME" /></translation>
 <translation id="7702907602086592255">網域</translation>
 <translation id="7704305437604973648">工作</translation>
-<translation id="7704317875155739195">自動完成搜尋字詞與網址</translation>
 <translation id="7704521324619958564">開啟 Play 商店</translation>
 <translation id="7705276765467986571">無法載入書籤模型。</translation>
 <translation id="7705334495398865155">隨機設定硬體 ID (BSSID)，避免其他人追蹤這部裝置。</translation>
@@ -7385,6 +7384,7 @@
 <translation id="7730683939467795481">「<ph name="EXTENSION_NAME" />」擴充功能已變更這個頁面</translation>
 <translation id="7735165285389721951">正在執行另一項 Steam 設定，請等到該設定完成後再試</translation>
 <translation id="7737115349420013392">正在與「<ph name="DEVICE_NAME" />」配對…</translation>
+<translation id="7737203573077018777">已收到<ph name="PROOF_OF_POSSESSION_INSTRUCTION_NAME" />的操作說明</translation>
 <translation id="7737846262459425222">你隨時可以前往 [設定] &gt; [Google 助理] &gt; [畫面內容] 變更這項設定。</translation>
 <translation id="7737948071472253612">不得使用攝影機</translation>
 <translation id="77381465218432215">顯示重音標記和特殊字元</translation>
@@ -7482,7 +7482,6 @@
 <translation id="7819605256207059717">遭到貴機構封鎖</translation>
 <translation id="7820561748632634942">要指派其他外接切換裝置嗎？</translation>
 <translation id="782057141565633384">複製影片位址(&amp;O)</translation>
-<translation id="7822187537422052256">確定要移除這個地址嗎？</translation>
 <translation id="7824864914877854148">發生錯誤，因此無法完成備份程序</translation>
 <translation id="782590969421016895">使用目前的網頁</translation>
 <translation id="7826174860695147464">舊版瀏覽器支援 (LBS) 功能 - 內部設定</translation>
@@ -7680,6 +7679,7 @@
 <translation id="7990863024647916394"><ph name="DISPLAY_NAME" /> 語音 <ph name="COUNT" /></translation>
 <translation id="7991296728590311172">切換控制功能設定</translation>
 <translation id="7992203134935383159">語音合成</translation>
+<translation id="7994515119120860317">使用 <ph name="VISUAL_SEARCH_PROVIDER" /> 翻譯圖片中的文字</translation>
 <translation id="799570308305997052">網頁檢視</translation>
 <translation id="7997826902155442747">處理優先順序</translation>
 <translation id="7999229196265990314">已建立下列檔案：
@@ -8371,6 +8371,7 @@
 <translation id="8639635302972078117">傳送使用狀況與診斷資料。這部裝置目前會自動將診斷資料、裝置和應用程式的使用資料傳送給 Google。這些資料將有助於改善系統和應用程式的穩定性與其他功能，並不會用於識別貴子女的身分。此外，部分匯總資料還能協助 Google 應用程式和合作夥伴 (例如 Android 開發人員) 改善自己的產品和服務。如果貴子女的「其他網路和應用程式活動」設定為開啟，這些資料可能會儲存在他們的 Google 帳戶中。</translation>
 <translation id="8642900771896232685">2 秒</translation>
 <translation id="8642947597466641025">放大文字</translation>
+<translation id="8643403533759285912">刪除群組</translation>
 <translation id="8643443571868262066"><ph name="FILE_NAME" /> 可能含有危險內容。要傳送到 Google 進階保護進行掃描嗎？</translation>
 <translation id="8644047503904673749">{COUNT,plural, =0{沒有 Cookie}=1{已封鎖 1 個 Cookie}other{已封鎖 # 個 Cookie}}</translation>
 <translation id="864423554496711319">已儲存到你的帳戶的裝置</translation>
@@ -8844,6 +8845,7 @@
 <translation id="90528604757378587">背景活動和某些視覺效果 (例如平滑捲動) 可能會受到限制。</translation>
 <translation id="9053563360605707198">雙面列印</translation>
 <translation id="9055636786322918818">強制執行 RC4 加密。由於 RC4 加密不安全，使用這個加密選項會提高風險。</translation>
+<translation id="9056788090206401048">在其他裝置上使用密碼金鑰時必須開啟藍牙，你隨時可以在設定中管理這項功能。</translation>
 <translation id="9056810968620647706">找不到相符項目。</translation>
 <translation id="9057007989365783744"><ph name="SUPERVISED_USER_NAME" />想存取下列內容：</translation>
 <translation id="9057354806206861646">更新時間表</translation>
@@ -8892,7 +8894,6 @@
 <translation id="9094038138851891550">使用者名稱無效</translation>
 <translation id="9094859731829297286">確定要為 Linux 預留固定大小的磁碟空間嗎？</translation>
 <translation id="9094982973264386462">移除</translation>
-<translation id="9095253524804455615">移除</translation>
 <translation id="9095364055741191097">無法復原本機資料</translation>
 <translation id="909554839118732438">關閉無痕模式</translation>
 <translation id="9099220545925418560">根據你的瀏覽記錄獨家推薦。這項設定已關閉。</translation>

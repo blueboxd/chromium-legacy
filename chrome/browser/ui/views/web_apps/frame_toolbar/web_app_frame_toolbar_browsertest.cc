@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
+#include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
@@ -36,9 +37,12 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
+#include "chrome/browser/web_applications/isolation_data.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -67,6 +71,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view_chromeos.h"
@@ -156,7 +161,14 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, SpaceConstrained) {
 #if BUILDFLAG(IS_CHROMEOS)
   EXPECT_FALSE(window_title);
 #else
-  EXPECT_EQ(window_title->parent(), helper()->frame_view());
+  if (base::FeatureList::IsEnabled(
+          features::kWebAppFrameToolbarInBrowserView)) {
+    EXPECT_EQ(window_title->parent(),
+              helper()->browser_view()->top_container());
+
+  } else {
+    EXPECT_EQ(window_title->parent(), helper()->frame_view());
+  }
 #endif
 
   WebAppToolbarButtonContainer* const toolbar_right_container =
@@ -297,20 +309,26 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, TitleHover) {
   const GURL app_url("https://test.org");
   helper()->InstallAndLaunchWebApp(browser(), app_url);
 
-  WebAppNavigationButtonContainer* const toolbar_left_container =
-      helper()->web_app_frame_toolbar()->get_left_container_for_testing();
-  WebAppToolbarButtonContainer* const toolbar_right_container =
-      helper()->web_app_frame_toolbar()->get_right_container_for_testing();
-
   auto* const window_title = static_cast<views::Label*>(
       helper()->frame_view()->GetViewByID(VIEW_ID_WINDOW_TITLE));
 #if BUILDFLAG(IS_CHROMEOS)
   // Chrome OS PWA windows do not display app titles.
   EXPECT_EQ(nullptr, window_title);
   return;
-#endif
-  EXPECT_EQ(window_title->parent(), helper()->frame_view());
+#else
+  WebAppNavigationButtonContainer* const toolbar_left_container =
+      helper()->web_app_frame_toolbar()->get_left_container_for_testing();
+  WebAppToolbarButtonContainer* const toolbar_right_container =
+      helper()->web_app_frame_toolbar()->get_right_container_for_testing();
 
+  if (base::FeatureList::IsEnabled(
+          features::kWebAppFrameToolbarInBrowserView)) {
+    EXPECT_EQ(window_title->parent(),
+              helper()->browser_view()->top_container());
+
+  } else {
+    EXPECT_EQ(window_title->parent(), helper()->frame_view());
+  }
   window_title->SetText(std::u16string(30, 't'));
 
   // Ensure we initially have abundant space. Set the size from the root view
@@ -337,9 +355,12 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest, TitleHover) {
   EXPECT_EQ(window_title->GetTooltipHandlerForPoint(gfx::Point(0, 0)),
             window_title);
 
+  gfx::Point origin_in_frame_view = views::View::ConvertPointToTarget(
+      window_title->parent(), helper()->frame_view(), window_title->origin());
   EXPECT_EQ(
-      helper()->frame_view()->GetTooltipHandlerForPoint(window_title->origin()),
+      helper()->frame_view()->GetTooltipHandlerForPoint(origin_in_frame_view),
       window_title);
+#endif
 }
 
 class WebAppFrameToolbarBrowserTest_ElidedExtensionsMenu
@@ -451,11 +472,20 @@ class WebAppFrameToolbarBrowserTest_Borderless
 
     if (uses_borderless) {
       web_app_info->display_override = {web_app::DisplayMode::kBorderless};
-      web_app_info->is_storage_isolated = true;
     }
 
     web_app::AppId app_id = helper()->InstallAndLaunchCustomWebApp(
         browser(), std::move(web_app_info), start_url);
+
+    {
+      // TODO(b/267797051): Use IWA installation commands to install the app.
+      auto* provider = web_app::WebAppProvider::GetForTest(profile());
+      web_app::ScopedRegistryUpdate(&provider->sync_bridge_unsafe())
+          ->UpdateApp(app_id)
+          ->SetIsolationData(
+              web_app::IsolationData(web_app::IsolationData::DevModeProxy{
+                  .proxy_url = url::Origin::Create(start_url)}));
+    }
 
     // Inside LoadBorderlessTestPageWithDataAndGetURL() the title is set on
     // window.onload. This is to make sure that the web contents have loaded
@@ -997,9 +1027,13 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
   ToggleWindowControlsOverlayAndWait();
   EXPECT_TRUE(GetWindowControlOverlayVisibility());
 
-  // Popup to any other website outside of the same origin.
+  // Popup to any other website outside of the same origin, and wait
+  // for the page to load.
+  ui_test_utils::UrlLoadObserver observer(
+      GURL("https://google.com"), content::NotificationService::AllSources());
   BrowserView* popup_browser_view = helper()->OpenPopup(
       "window.open('https://google.com', '_blank', 'popup');");
+  observer.Wait();
 
   // When popup is opened pointing to any other site, it will not know whether
   // the popup app uses WCO or not. This test also ensures it does not crash.
@@ -1372,12 +1406,8 @@ IN_PROC_BROWSER_TEST_F(WebAppFrameToolbarBrowserTest_WindowControlsOverlay,
 
   BrowserView* browser_view =
       BrowserView::GetBrowserViewForBrowser(app_browser);
-  views::NonClientFrameView* frame_view =
-      browser_view->GetWidget()->non_client_view()->frame_view();
-  BrowserNonClientFrameView* browser_frame_view =
-      static_cast<BrowserNonClientFrameView*>(frame_view);
   auto* web_app_frame_toolbar =
-      browser_frame_view->web_app_frame_toolbar_for_testing();
+      browser_view->web_app_frame_toolbar_for_testing();
 
   // There should be a visible Extensions icon.
   EXPECT_TRUE(web_app_frame_toolbar->get_right_container_for_testing()

@@ -6,14 +6,11 @@ package org.chromium.net;
 
 import static org.junit.Assert.assertEquals;
 
-import android.support.test.runner.AndroidJUnit4;
-
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import org.chromium.base.test.util.Feature;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,7 +28,6 @@ public class CronetOnboardingTest {
     // TODO(noogler): STEP 2 - run the test suite and see it fail
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testNumberOfCronetContributors() throws Exception {
         // TODO(noogler): STEP 3 - fix the test, rerun it and see it pass
         assertEquals(5, CRONET_CONTRIBUTORS.size());

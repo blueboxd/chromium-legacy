@@ -526,12 +526,12 @@ class AutofillMetrics {
   enum WalletErrorMetric {
     // Baseline metric: Issued a request to the Wallet server.
     WALLET_ERROR_BASELINE_ISSUED_REQUEST = 0,
-    // A fatal error occured while communicating with the Wallet server. This
+    // A fatal error occurred while communicating with the Wallet server. This
     // value has been deprecated.
     WALLET_FATAL_ERROR_DEPRECATED,
     // Received a malformed response from the Wallet server.
     WALLET_MALFORMED_RESPONSE,
-    // A network error occured while communicating with the Wallet server.
+    // A network error occurred while communicating with the Wallet server.
     WALLET_NETWORK_ERROR,
     // The request was malformed.
     WALLET_BAD_REQUEST,
@@ -595,53 +595,59 @@ class AutofillMetrics {
   // To record whether the upload event was sent.
   enum class UploadEventStatus { kNotSent, kSent, kMaxValue = kSent };
 
-  // Enumerates the status of the  different requirements to successfully import
-  // an address profile from a form submission.
+  // These values are persisted to UMA logs. Entries should not be renumbered
+  // and numeric values should never be reused. These values enumerates the
+  // status of the different requirements to successfully import an address
+  // profile from a form submission.
   enum class AddressProfileImportRequirementMetric {
     // The form must contain either no or only a single unique email address.
-    EMAIL_ADDRESS_UNIQUE_REQUIREMENT_FULFILLED = 0,
-    EMAIL_ADDRESS_UNIQUE_REQUIREMENT_VIOLATED = 1,
+    kEmailAddressUniqueRequirementFulfilled = 0,
+    kEmailAddressUniqueRequirementViolated = 1,
     // The form is not allowed to contain invalid field types.
-    NO_INVALID_FIELD_TYPES_REQUIREMENT_FULFILLED = 2,
-    NO_INVALID_FIELD_TYPES_REQUIREMENT_VIOLATED = 3,
+    kNoInvalidFieldTypesRequirementFulfilled = 2,
+    kNoInvalidFieldTypesRequirementViolated = 3,
     // If required by |CountryData|, the form must contain a city entry.
-    CITY_REQUIREMENT_FULFILLED = 4,
-    CITY_REQUIREMENT_VIOLATED = 5,
+    kCityRequirementFulfilled = 4,
+    kCityRequirementViolated = 5,
     // If required by |CountryData|, the form must contain a state entry.
-    STATE_REQUIREMENT_FULFILLED = 6,
-    STATE_REQUIREMENT_VIOLATED = 7,
+    kStateRequirementFulfilled = 6,
+    kStateRequirementViolated = 7,
     // If required by |CountryData|, the form must contain a ZIP entry.
-    ZIP_REQUIREMENT_FULFILLED = 8,
-    ZIP_REQUIREMENT_VIOLATED = 9,
+    kZipRequirementFulfilled = 8,
+    kZipRequirementViolated = 9,
     // If present, the email address must be valid.
-    EMAIL_VALID_REQUIREMENT_FULFILLED = 10,
-    EMAIL_VALID_REQUIREMENT_VIOLATED = 11,
+    kEmailValidRequirementFulfilled = 10,
+    kEmailValidRequirementViolated = 11,
     // If present, the country must be valid.
-    COUNTRY_VALID_REQUIREMENT_FULFILLED = 12,
-    COUNTRY_VALID_REQUIREMENT_VIOLATED = 13,
+    kCountryValidRequirementFulfilled = 12,
+    kCountryValidRequirementViolated = 13,
     // If present, the state must be valid (if verifiable).
-    STATE_VALID_REQUIREMENT_FULFILLED = 14,
-    STATE_VALID_REQUIREMENT_VIOLATED = 15,
+    kStateValidRequirementFulfilled = 14,
+    kStateValidRequirementViolated = 15,
     // If present, the ZIP must be valid (if verifiable).
-    ZIP_VALID_REQUIREMENT_FULFILLED = 16,
-    ZIP_VALID_REQUIREMENT_VIOLATED = 17,
+    kZipValidRequirementFulfilled = 16,
+    kZipValidRequirementViolated = 17,
     // 18 and 19 are deprecated, as phone numbers are not a requirement anymore.
     // Indicates the overall status of the import requirements check.
-    OVERALL_REQUIREMENT_FULFILLED = 20,
-    OVERALL_REQUIREMENT_VIOLATED = 21,
+    kOverallRequirementFulfilled = 20,
+    kOverallRequirementViolated = 21,
     // If required by |CountryData|, the form must contain a line1 entry.
-    LINE1_REQUIREMENT_FULFILLED = 22,
-    LINE1_REQUIREMENT_VIOLATED = 23,
+    kLine1RequirementFulfilled = 22,
+    kLine1RequirementViolated = 23,
     // If required by |CountryData|, the form must contain a either a zip or a
     // state entry.
-    ZIP_OR_STATE_REQUIREMENT_FULFILLED = 24,
-    ZIP_OR_STATE_REQUIREMENT_VIOLATED = 25,
+    kZipOrStateRequirementFulfilled = 24,
+    kZipOrStateRequirementViolated = 25,
     // If required by |CountryData|, the form must contain a either an address
     // line 1 or a house number.
-    LINE1_OR_HOUSE_NUMBER_REQUIREMENT_FULFILLED = 26,
-    LINE1_OR_HOUSE_NUMBER_REQUIREMENT_VIOLATED = 27,
+    kLine1OrHouseNumberRequirementFulfilled = 26,
+    kLine1OrHouseNumberRequirementViolated = 27,
+    // If required by `kAutofillRequireNameForProfileImportsFromForms` feature,
+    // the form must contain a non-empty name.
+    kNameRequirementFulfilled = 28,
+    kNameRequirementViolated = 29,
     // Must be set to the last entry.
-    kMaxValue = LINE1_OR_HOUSE_NUMBER_REQUIREMENT_VIOLATED,
+    kMaxValue = kNameRequirementViolated,
   };
 
   // Represents the status of the field type requirements that are specific to
@@ -706,17 +712,6 @@ class AutofillMetrics {
     // The field was left empty.
     kLeftEmpty = 8,
     kMaxValue = kLeftEmpty
-  };
-
-  // kAccount profiles are synced from an external source and have potentially
-  // originated from outside of Autofill. In order to determine the added value
-  // for Autofill, the `AutofillProfile::Source` is further resolved in some
-  // metrics.
-  enum class AutofillProfileSourceCategory {
-    kLocalOrSyncable = 0,
-    kAccountChrome = 1,
-    kAccountNonChrome = 2,
-    kMaxValue = kAccountNonChrome
   };
 
   // Utility class for determining the seamlessness of a credit card fill.
@@ -1097,41 +1092,6 @@ class AutofillMetrics {
 
   // This should be called each time a new chrome profile is launched.
   static void LogIsAutofillCreditCardEnabledAtStartup(bool enabled);
-
-  // Maps the `profile` to its category, depending on the profile's `source()`
-  // and `initial_creator()`.
-  static AutofillProfileSourceCategory GetCategoryOfProfile(
-      const AutofillProfile& profile);
-
-  // Converts the `category` to the histogram-suffix used for resolving some
-  // metrics by category.
-  static const char* GetProfileCategorySuffix(
-      AutofillProfileSourceCategory category);
-
-  // The data logged for the stored profiles metric. This is counted separately
-  // for each `AutofillProfileCategory`.
-  struct StoredProfileCounts {
-    // Total number of stored profiles of the corresponding category.
-    size_t total = 0;
-    // The subset of profiles that hasn't been used in a fixed period of time.
-    size_t disused = 0;
-    // The subset of profiles that doesn't have a country stored.
-    size_t without_country = 0;
-  };
-  // Records statistics for the number of used, disused, and potentially,
-  // depending on the `category`, country-less address profiles.
-  // This metric is emitted each time a new Chrome profile is started. It is
-  // tracked separately for each `category`.
-  static void LogStoredProfileCountStatistics(
-      AutofillProfileSourceCategory category,
-      const StoredProfileCounts& counts);
-
-  // Records the number of days since an address profile was last used. This is
-  // logged separately for each profile of every `category`, each time a new
-  // Chrome profile is launched.
-  static void LogStoredProfileDaysSinceLastUse(
-      AutofillProfileSourceCategory category,
-      size_t days);
 
   // Logs various metrics about the local and server cards associated with a
   // profile. This should be called each time a new chrome profile is launched.

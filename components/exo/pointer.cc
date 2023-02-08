@@ -50,13 +50,8 @@
 #include "ui/wm/core/cursor_util.h"
 
 namespace exo {
-namespace {
 
-// TODO(oshima): Some accessibility features, including large cursors, disable
-// hardware cursors. Ash does not support compositing for custom cursors, so it
-// replaces them with the default cursor. As a result, this scale has no effect
-// for now. See crbug.com/708378.
-const float kLargeCursorScale = 2.8f;
+namespace {
 
 const double kLocatedEventEpsilonSquared = 1.0 / (2000.0 * 2000.0);
 
@@ -522,10 +517,10 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
       ordinal_motion = event->movement();
     }
 
-    // Generate motion event if location changed. We need to check location
-    // here as mouse movement can generate both "moved" and "entered" events
-    // but OnPointerMotion should only be called if location changed since
-    // OnPointerEnter was called.
+    // Generate motion event if location changed or the location hasn't been
+    // sent yet. We need to check location here as mouse movement can generate
+    // both "moved" and "entered" events but OnPointerMotion should only be
+    // called if location changed since OnPointerEnter was called.
     if (!CheckIfSameLocation(event->IsSynthesized(), location_in_root,
                              location_in_target)) {
       bool ignore_motion = false;
@@ -548,12 +543,14 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
       if (capture_window_) {
         if (ShouldMoveToCenter())
           MoveCursorToCenterOfActiveDisplay();
+        location_in_root_ = location_in_root;
+        location_in_surface_ = location_in_target;
       } else if (event->type() != ui::ET_MOUSE_EXITED && !ignore_motion) {
         delegate_->OnPointerMotion(event->time_stamp(), location_in_target);
         needs_frame |= true;
+        location_in_root_ = location_in_root;
+        location_in_surface_ = location_in_target;
       }
-      location_in_root_ = location_in_root;
-      location_in_surface_ = location_in_target;
     }
   }
   switch (event->type()) {
@@ -937,8 +934,6 @@ void Pointer::UpdateCursor() {
         ui::GetScaleForResourceScaleFactor(ui::GetSupportedResourceScaleFactor(
             display.device_scale_factor())) /
         capture_scale_;
-    if (cursor_client->GetCursorSize() == ui::CursorSize::kLarge)
-      scale *= kLargeCursorScale;
 
     // Use panel_rotation() rather than "natural" rotation, as it actually
     // relates to the hardware you're about to draw the cursor bitmap on.

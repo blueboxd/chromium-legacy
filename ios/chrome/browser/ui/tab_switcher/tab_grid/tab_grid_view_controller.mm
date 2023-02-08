@@ -260,7 +260,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
         ];
         break;
     }
-    _pinnedTabsViewController = [[PinnedTabsViewController alloc] init];
+
+    if (IsPinnedTabsEnabled()) {
+      _pinnedTabsViewController = [[PinnedTabsViewController alloc] init];
+    }
   }
   return self;
 }
@@ -415,7 +418,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)scrollViewDidEndScrollingAnimation:(UIScrollView*)scrollView {
   TabGridPage currentPage = GetPageFromScrollView(scrollView);
-  if (currentPage != self.currentPage) {
+  if (currentPage != self.currentPage && self.isDragSeesionInProgress) {
     // This happens when the user drags an item from one scroll view into
     // another.
     self.pageChangeInteraction = PageChangeInteractionItemDrag;
@@ -450,12 +453,23 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 #pragma mark - GridTransitionAnimationLayoutProviding properties
 
 - (BOOL)isSelectedCellVisible {
-  if (self.activePage != self.currentPage)
+  if (self.activePage != self.currentPage) {
     return NO;
-  GridViewController* gridViewController =
-      [self gridViewControllerForPage:self.activePage];
-  return gridViewController == nil ? NO
-                                   : gridViewController.selectedCellVisible;
+  }
+
+  return [self isSelectedCellVisibleForPage:self.activePage];
+}
+
+- (BOOL)shouldReparentSelectedCell:(GridAnimationDirection)animationDirection {
+  switch (animationDirection) {
+    // For contracting animation only selected pinned cells should be
+    // reparented.
+    case GridAnimationDirectionContracting:
+      return [self isPinnedCellSelected];
+    // For expanding animation any selected cell should be reparented.
+    case GridAnimationDirectionExpanding:
+      return YES;
+  }
 }
 
 - (GridTransitionLayout*)transitionLayout:(TabGridPage)activePage {
@@ -978,6 +992,39 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 #pragma mark - Private
+
+// Returns wether there is a selected pinned cell.
+- (BOOL)isPinnedCellSelected {
+  if (!IsPinnedTabsEnabled() || self.currentPage != TabGridPageRegularTabs) {
+    return NO;
+  }
+
+  return [self.pinnedTabsViewController hasSelectedCell];
+}
+
+// Returns whether selcted cell is visible for the provided `page`.
+- (BOOL)isSelectedCellVisibleForPage:(TabGridPage)page {
+  switch (page) {
+    case TabGridPageIncognitoTabs:
+      return self.incognitoTabsViewController.selectedCellVisible;
+    case TabGridPageRegularTabs:
+      return [self isSelectedCellVisibleForRegularTabsPage];
+    case TabGridPageRemoteTabs:
+      return NO;
+  }
+}
+
+// Returns whether selcted cell is visible for the regular tabs `page`.
+- (BOOL)isSelectedCellVisibleForRegularTabsPage {
+  BOOL isSelectedCellVisible =
+      self.regularTabsViewController.selectedCellVisible;
+
+  if (IsPinnedTabsEnabled()) {
+    isSelectedCellVisible |= self.pinnedTabsViewController.selectedCellVisible;
+  }
+
+  return isSelectedCellVisible;
+}
 
 // Returns transition layout for the provided `page`.
 - (GridTransitionLayout*)transitionLayoutForPage:(TabGridPage)page {

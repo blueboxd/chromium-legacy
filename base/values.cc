@@ -1031,22 +1031,6 @@ bool operator>=(const Value::List& lhs, const Value::List& rhs) {
   return !(lhs < rhs);
 }
 
-void Value::Append(const char* value) {
-  GetList().Append(value);
-}
-
-void Value::Append(StringPiece value) {
-  GetList().Append(value);
-}
-
-void Value::Append(std::string&& value) {
-  GetList().Append(std::move(value));
-}
-
-void Value::Append(Value&& value) {
-  GetList().Append(std::move(value));
-}
-
 Value* Value::FindKey(StringPiece key) {
   return GetDict().Find(key);
 }
@@ -1227,52 +1211,6 @@ Value* Value::SetStringPath(StringPiece path, StringPiece16 value) {
 
 bool Value::RemovePath(StringPiece path) {
   return GetDict().RemoveByDottedPath(path);
-}
-
-// DEPRECATED METHODS
-Value* Value::FindPath(std::initializer_list<StringPiece> path) {
-  return const_cast<Value*>(std::as_const(*this).FindPath(path));
-}
-
-Value* Value::FindPath(span<const StringPiece> path) {
-  return const_cast<Value*>(std::as_const(*this).FindPath(path));
-}
-
-const Value* Value::FindPath(std::initializer_list<StringPiece> path) const {
-  DCHECK_GE(path.size(), 2u) << "Use FindKey() for a path of length 1.";
-  return FindPath(make_span(path.begin(), path.size()));
-}
-
-const Value* Value::FindPath(span<const StringPiece> path) const {
-  const Value* cur = this;
-  for (const StringPiece& component : path) {
-    if (!cur->is_dict() || (cur = cur->FindKey(component)) == nullptr)
-      return nullptr;
-  }
-  return cur;
-}
-
-Value* Value::FindPathOfType(std::initializer_list<StringPiece> path,
-                             Type type) {
-  return const_cast<Value*>(std::as_const(*this).FindPathOfType(path, type));
-}
-
-Value* Value::FindPathOfType(span<const StringPiece> path, Type type) {
-  return const_cast<Value*>(std::as_const(*this).FindPathOfType(path, type));
-}
-
-const Value* Value::FindPathOfType(std::initializer_list<StringPiece> path,
-                                   Type type) const {
-  DCHECK_GE(path.size(), 2u) << "Use FindKeyOfType() for a path of length 1.";
-  return FindPathOfType(make_span(path.begin(), path.size()), type);
-}
-
-const Value* Value::FindPathOfType(span<const StringPiece> path,
-                                   Type type) const {
-  const Value* result = FindPath(path);
-  if (!result || result->type() != type)
-    return nullptr;
-  return result;
 }
 
 Value* Value::SetPath(std::initializer_list<StringPiece> path, Value&& value) {

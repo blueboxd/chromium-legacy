@@ -712,7 +712,7 @@ void StyleEngine::SetRuleUsageTracker(StyleRuleUsageTracker* tracker) {
 }
 
 Font StyleEngine::ComputeFont(Element& element,
-                              ComputedStyle& font_style,
+                              const ComputedStyle& font_style,
                               const CSSPropertyValueSet& font_properties) {
   UpdateActiveStyle();
   return GetStyleResolver().ComputeFont(element, font_style, font_properties);
@@ -1607,10 +1607,8 @@ void StyleEngine::PseudoStateChangedForElement(
     Element& element,
     bool invalidate_descendants_or_siblings,
     bool invalidate_ancestors_or_siblings) {
-  if (!invalidate_descendants_or_siblings &&
-      !invalidate_ancestors_or_siblings) {
-    return;
-  }
+  DCHECK(invalidate_descendants_or_siblings ||
+         invalidate_ancestors_or_siblings);
 
   if (ShouldSkipInvalidationFor(element)) {
     return;

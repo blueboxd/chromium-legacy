@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/strings/strcat.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
@@ -78,6 +80,7 @@ class DlpRulesManagerImplTest : public testing::Test {
   ScopedTestingLocalState testing_local_state_;
   MockDlpRulesManager dlp_rules_manager_;
   base::HistogramTester histogram_tester_;
+  base::RunLoop run_loop_;
 };
 
 TEST_F(DlpRulesManagerImplTest, EmptyPref) {
@@ -110,6 +113,7 @@ TEST_F(DlpRulesManagerImplTest, UnknownRestriction) {
       DlpRulesManager::Restriction::kUnknownRestriction, 0);
 }
 
+// Unknown Components should be allowed, (b/267622459).
 TEST_F(DlpRulesManagerImplTest, UnknownComponent) {
   dlp_test_util::DlpRule rule("rule #1", "Unknown");
   rule.AddSrcUrl(kExampleUrl)
@@ -123,13 +127,12 @@ TEST_F(DlpRulesManagerImplTest, UnknownComponent) {
                                       1);
 
   std::string src_pattern;
-  std::string dst_pattern;
   EXPECT_EQ(
-      DlpRulesManager::Level::kBlock,
+      DlpRulesManager::Level::kAllow,
       dlp_rules_manager_.IsRestrictedComponent(
           GURL(kExampleUrl), DlpRulesManager::Component::kUnknownComponent,
           DlpRulesManager::Restriction::kClipboard, &src_pattern));
-  EXPECT_EQ(src_pattern, kExampleUrl);
+  EXPECT_EQ(src_pattern, "");
 }
 
 TEST_F(DlpRulesManagerImplTest, UnknownLevel) {
@@ -566,14 +569,21 @@ TEST_F(DlpRulesManagerImplTest, FilesRestriction_DlpClientNotified) {
   EXPECT_EQ(1, chromeos::DlpClient::Get()
                    ->GetTestInterface()
                    ->GetSetDlpFilesPolicyCount());
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(dlp_rules_manager_.IsFilesPolicyEnabled());
 
   dlp_rules_manager_.DlpDaemonRestarted();
+
+  // The above call to DlpRulesManagerImpl::DlpDaemonRestarted posts a task to
+  // the same task runner as the one used here. Doing this ensures that the call
+  // chromeos::DlpClient::Shutdown() does not happen before the task is
+  // completed. The same approach is used on multiple other tests in this file.
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, run_loop_.QuitClosure());
+
   EXPECT_EQ(2, chromeos::DlpClient::Get()
                    ->GetTestInterface()
                    ->GetSetDlpFilesPolicyCount());
-  base::RunLoop().RunUntilIdle();
+  run_loop_.Run();
 
   chromeos::DlpClient::Shutdown();
 }
@@ -729,7 +739,12 @@ TEST_F(DlpRulesManagerImplTest, FilesRestriction_GetAggregatedDestinations) {
 
   UpdatePolicyPref({rule1, rule2});
 
-  base::RunLoop().RunUntilIdle();
+  // See call to PostTask in a test above for more detail. In this case,
+  // UpdatePolicyPref posts the task to the same task runner.
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, run_loop_.QuitClosure());
+  run_loop_.Run();
+
   EXPECT_TRUE(dlp_rules_manager_.IsFilesPolicyEnabled());
 
   auto result = dlp_rules_manager_.GetAggregatedDestinations(
@@ -760,7 +775,11 @@ TEST_F(DlpRulesManagerImplTest,
 
   UpdatePolicyPref({rule});
 
-  base::RunLoop().RunUntilIdle();
+  // See call to PostTask in a test above for more detail.
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, run_loop_.QuitClosure());
+  run_loop_.Run();
+
   EXPECT_TRUE(dlp_rules_manager_.IsFilesPolicyEnabled());
 
   auto result = dlp_rules_manager_.GetAggregatedDestinations(
@@ -857,7 +876,11 @@ TEST_F(DlpRulesManagerImplTest, FilesRestriction_GetAggregatedComponents) {
 
   UpdatePolicyPref({rule});
 
-  base::RunLoop().RunUntilIdle();
+  // See call to PostTask in a test above for more detail.
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, run_loop_.QuitClosure());
+  run_loop_.Run();
+
   EXPECT_TRUE(dlp_rules_manager_.IsFilesPolicyEnabled());
 
   auto result = dlp_rules_manager_.GetAggregatedComponents(
@@ -896,7 +919,11 @@ TEST_F(DlpRulesManagerImplTest, SetFilesPolicyWithOnlyComponents) {
 
   UpdatePolicyPref({rule});
 
-  base::RunLoop().RunUntilIdle();
+  // See call to PostTask in a test above for more detail.
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, run_loop_.QuitClosure());
+  run_loop_.Run();
+
   EXPECT_TRUE(dlp_rules_manager_.IsFilesPolicyEnabled());
   EXPECT_EQ(chromeos::DlpClient::Get()
                 ->GetTestInterface()

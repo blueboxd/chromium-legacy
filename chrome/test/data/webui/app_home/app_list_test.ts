@@ -7,6 +7,7 @@ import 'chrome://apps/app_list.js';
 import 'chrome://apps/app_item.js';
 
 import {AppInfo, PageRemote, RunOnOsLoginMode} from 'chrome://apps/app_home.mojom-webui.js';
+import {AppHomeUserAction} from 'chrome://apps/app_home_utils.js';
 import {AppListElement} from 'chrome://apps/app_list.js';
 import {BrowserProxy} from 'chrome://apps/browser_proxy.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -19,12 +20,29 @@ interface AppList {
   appList: AppInfo[];
 }
 
+/**
+ * A mock to intercept User Action logging calls and verify how many times they
+ * were called.
+ */
+class MetricsPrivateMock {
+  userActionMap: Map<string, number> = new Map();
+
+  getUserActionCount(metricName: string): number {
+    return this.userActionMap.get(metricName) || 0;
+  }
+
+  recordUserAction(metricName: string) {
+    this.userActionMap.set(metricName, this.getUserActionCount(metricName) + 1);
+  }
+}
+
 suite('AppListTest', () => {
   let appListElement: AppListElement;
   let apps: AppList;
   let testBrowserProxy: TestAppHomeBrowserProxy;
   let callbackRouterRemote: PageRemote;
   let testAppInfo: AppInfo;
+  let metricsPrivateMock: MetricsPrivateMock;
 
   setup(async () => {
     apps = {
@@ -41,6 +59,7 @@ suite('AppListTest', () => {
           mayToggleRunOnOsLoginMode: true,
           runOnOsLoginMode: RunOnOsLoginMode.kNotRun,
           isLocallyInstalled: true,
+          mayUninstall: true,
           openInWindow: false,
         },
         {
@@ -55,6 +74,7 @@ suite('AppListTest', () => {
           mayToggleRunOnOsLoginMode: false,
           runOnOsLoginMode: RunOnOsLoginMode.kNotRun,
           isLocallyInstalled: false,
+          mayUninstall: false,
           openInWindow: false,
         },
       ],
@@ -72,11 +92,14 @@ suite('AppListTest', () => {
       runOnOsLoginMode: RunOnOsLoginMode.kNotRun,
       isLocallyInstalled: true,
       openInWindow: false,
+      mayUninstall: true,
     };
+    metricsPrivateMock = new MetricsPrivateMock();
+    chrome.metricsPrivate =
+        metricsPrivateMock as unknown as typeof chrome.metricsPrivate;
     testBrowserProxy = new TestAppHomeBrowserProxy(apps);
     callbackRouterRemote = testBrowserProxy.callbackRouterRemote;
     BrowserProxy.setInstance(testBrowserProxy);
-
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
     appListElement = document.createElement('app-list');
     document.body.appendChild(appListElement);
@@ -85,6 +108,9 @@ suite('AppListTest', () => {
 
   test('app list present', () => {
     assertTrue(!!appListElement);
+    assertEquals(
+        1,
+        metricsPrivateMock.getUserActionCount(AppHomeUserAction.APP_HOME_INIT));
 
     const appItems = appListElement.shadowRoot!.querySelectorAll('app-item');
     assertTrue(!!appItems);
@@ -142,6 +168,10 @@ suite('AppListTest', () => {
 
     appItem.dispatchEvent(new CustomEvent('contextmenu'));
     assertTrue(contextMenu.open);
+    assertEquals(
+        1,
+        metricsPrivateMock.getUserActionCount(
+            AppHomeUserAction.CONTEXT_MENU_TRIGGERED));
 
     assertTrue(apps.appList.length >= 1);
     const appInfo = apps.appList[0]!;
@@ -175,6 +205,8 @@ suite('AppListTest', () => {
         contextMenu.querySelector<HTMLElement>('#create-shortcut')!.hidden);
     assertFalse(contextMenu.querySelector<HTMLElement>('#uninstall')!.hidden);
     assertFalse(
+        contextMenu.querySelector<HTMLButtonElement>('#uninstall')!.disabled);
+    assertFalse(
         contextMenu.querySelector<HTMLElement>('#app-settings')!.hidden);
     assertTrue(
         contextMenu.querySelector<HTMLElement>('#install-locally')!.hidden);
@@ -190,6 +222,10 @@ suite('AppListTest', () => {
     const contextMenu = appItem.shadowRoot!.querySelector('cr-action-menu');
     assertTrue(!!contextMenu);
     assertFalse(contextMenu.open);
+    assertEquals(
+        0,
+        metricsPrivateMock.getUserActionCount(
+            AppHomeUserAction.CONTEXT_MENU_TRIGGERED));
 
     appItem.dispatchEvent(new CustomEvent('contextmenu'));
     assertTrue(contextMenu.open);
@@ -202,6 +238,8 @@ suite('AppListTest', () => {
         contextMenu.querySelector<HTMLElement>('#create-shortcut')!.hidden);
     assertTrue(contextMenu.querySelector<HTMLElement>('#app-settings')!.hidden);
     assertFalse(contextMenu.querySelector<HTMLElement>('#uninstall')!.hidden);
+    assertTrue(
+        contextMenu.querySelector<HTMLButtonElement>('#uninstall')!.disabled);
     assertFalse(
         contextMenu.querySelector<HTMLElement>('#install-locally')!.hidden);
   });
@@ -230,6 +268,10 @@ suite('AppListTest', () => {
     flush();
     appItem.dispatchEvent(new CustomEvent('contextmenu'));
     assertTrue(openInWindow.querySelector('cr-checkbox')!.checked);
+    assertEquals(
+        1,
+        metricsPrivateMock.getUserActionCount(
+            AppHomeUserAction.OPEN_IN_WINDOW_CHECKED));
     assertTrue(apps.appList[0]!.openInWindow);
 
     openInWindow.click();
@@ -237,6 +279,10 @@ suite('AppListTest', () => {
     flush();
     appItem.dispatchEvent(new CustomEvent('contextmenu'));
     assertFalse(openInWindow.querySelector('cr-checkbox')!.checked);
+    assertEquals(
+        1,
+        metricsPrivateMock.getUserActionCount(
+            AppHomeUserAction.OPEN_IN_WINDOW_UNCHECKED));
     assertFalse(apps.appList[0]!.openInWindow);
 
     // Clicking the checkbox should have the same effect as click the parent
@@ -246,7 +292,15 @@ suite('AppListTest', () => {
     await callbackRouterRemote.$.flushForTesting();
     flush();
     assertTrue(openInWindow.querySelector('cr-checkbox')!.checked);
+    assertEquals(
+        2,
+        metricsPrivateMock.getUserActionCount(
+            AppHomeUserAction.OPEN_IN_WINDOW_CHECKED));
     assertTrue(apps.appList[0]!.openInWindow);
+    assertEquals(
+        4,
+        metricsPrivateMock.getUserActionCount(
+            AppHomeUserAction.CONTEXT_MENU_TRIGGERED));
   });
 
   test('toggle launch on startup', async () => {
@@ -273,6 +327,10 @@ suite('AppListTest', () => {
     flush();
     appItem.dispatchEvent(new CustomEvent('contextmenu'));
     assertTrue(launchOnStartup.querySelector('cr-checkbox')!.checked);
+    assertEquals(
+        1,
+        metricsPrivateMock.getUserActionCount(
+            AppHomeUserAction.LAUNCH_AT_STARTUP_CHECKED));
     assertEquals(apps.appList[0]!.runOnOsLoginMode, RunOnOsLoginMode.kWindowed);
 
     launchOnStartup.click();
@@ -280,6 +338,10 @@ suite('AppListTest', () => {
     flush();
     appItem.dispatchEvent(new CustomEvent('contextmenu'));
     assertFalse(launchOnStartup.querySelector('cr-checkbox')!.checked);
+    assertEquals(
+        1,
+        metricsPrivateMock.getUserActionCount(
+            AppHomeUserAction.LAUNCH_AT_STARTUP_UNCHECKED));
     assertEquals(apps.appList[0]!.runOnOsLoginMode, RunOnOsLoginMode.kNotRun);
 
     // Clicking the checkbox should have the same effect as click the parent
@@ -289,7 +351,15 @@ suite('AppListTest', () => {
     flush();
     appItem.dispatchEvent(new CustomEvent('contextmenu'));
     assertTrue(launchOnStartup!.querySelector('cr-checkbox')!.checked);
+    assertEquals(
+        2,
+        metricsPrivateMock.getUserActionCount(
+            AppHomeUserAction.LAUNCH_AT_STARTUP_CHECKED));
     assertEquals(apps.appList[0]!.runOnOsLoginMode, RunOnOsLoginMode.kWindowed);
+    assertEquals(
+        4,
+        metricsPrivateMock.getUserActionCount(
+            AppHomeUserAction.CONTEXT_MENU_TRIGGERED));
   });
 
   test('toggle launch on startup disabled', async () => {
@@ -311,12 +381,17 @@ suite('AppListTest', () => {
     assertEquals(apps.appList[1]!.runOnOsLoginMode, RunOnOsLoginMode.kNotRun);
 
     // Clicking on the launch on startup context menu option should not toggle
-    // if mayToggleRunOnOsLoginMode is false.
+    // if mayToggleRunOnOsLoginMode is false. The user actions should also
+    // not get fired.
     launchOnStartup.click();
     await callbackRouterRemote.$.flushForTesting();
     flush();
     appItem.dispatchEvent(new CustomEvent('contextmenu'));
     assertFalse(launchOnStartup.querySelector('cr-checkbox')!.checked);
+    assertEquals(
+        0,
+        metricsPrivateMock.getUserActionCount(
+            AppHomeUserAction.LAUNCH_AT_STARTUP_CHECKED));
     assertEquals(apps.appList[1]!.runOnOsLoginMode, RunOnOsLoginMode.kNotRun);
 
     // Clicking the checkbox should have the same effect as clicking the parent
@@ -326,6 +401,10 @@ suite('AppListTest', () => {
     flush();
     appItem.dispatchEvent(new CustomEvent('contextmenu'));
     assertFalse(launchOnStartup!.querySelector('cr-checkbox')!.checked);
+    assertEquals(
+        0,
+        metricsPrivateMock.getUserActionCount(
+            AppHomeUserAction.LAUNCH_AT_STARTUP_CHECKED));
     assertEquals(apps.appList[1]!.runOnOsLoginMode, RunOnOsLoginMode.kNotRun);
   });
 
@@ -342,6 +421,8 @@ suite('AppListTest', () => {
     uninstall.click();
     await testBrowserProxy.fakeHandler.whenCalled('uninstallApp')
         .then((appId: string) => assertEquals(appId, apps.appList[0]!.id));
+    assertEquals(
+        1, metricsPrivateMock.getUserActionCount(AppHomeUserAction.UNINSTALL));
   });
 
   test('click app settings', async () => {
@@ -357,6 +438,10 @@ suite('AppListTest', () => {
     appSettings.click();
     await testBrowserProxy.fakeHandler.whenCalled('showAppSettings')
         .then((appId: string) => assertEquals(appId, apps.appList[0]!.id));
+    assertEquals(
+        1,
+        metricsPrivateMock.getUserActionCount(
+            AppHomeUserAction.OPEN_APP_SETTINGS));
   });
 
   test('click create shortcut', async () => {
@@ -372,6 +457,10 @@ suite('AppListTest', () => {
     createShortcut.click();
     await testBrowserProxy.fakeHandler.whenCalled('createAppShortcut')
         .then((appId: string) => assertEquals(appId, apps.appList[0]!.id));
+    assertEquals(
+        1,
+        metricsPrivateMock.getUserActionCount(
+            AppHomeUserAction.CREATE_SHORTCUT));
   });
 
   test('click install locally', async () => {
@@ -422,6 +511,10 @@ suite('AppListTest', () => {
     assertFalse(contextMenu.querySelector<HTMLElement>('#uninstall')!.hidden);
     assertTrue(
         contextMenu.querySelector<HTMLElement>('#install-locally')!.hidden);
+    assertEquals(
+        1,
+        metricsPrivateMock.getUserActionCount(
+            AppHomeUserAction.INSTALL_APP_LOCALLY));
   });
 
   test(

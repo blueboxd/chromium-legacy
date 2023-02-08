@@ -112,14 +112,26 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
     base::TimeDelta bid_duration;
 
     absl::optional<uint32_t> bidding_signals_data_version;
+
+    // The metadata associated with the winning ad, to be made available to the
+    // interest group in future auctions in the `prevWins` field.
+    std::string ad_metadata;
   };
 
   // All passed in raw pointers, including those in *BidInfo fields must outlive
   // the created InterestGroupAuctionReporter.
   //
   // `frame_origin` is the origin of the frame that ran the auction.
+  //
   // `client_security_state` is the ClientSecurityState of the frame.
+  //
   // `url_loader_factory` is used to send reports.
+  //
+  // `interest_groups_that_bid`, `debug_win_report_urls`,
+  // `debug_loss_report_urls`, and `k_anon_keys_to_join`,  are reported to the
+  // InterestGroupManager when/if the URL of the winning ad is navigated to in a
+  // fenced frame, which is indicated by invoking the callback returned by
+  // OnNavigateToWinningAdCallback().
   InterestGroupAuctionReporter(
       InterestGroupManagerImpl* interest_group_manager,
       AuctionWorkletManager* auction_worklet_manager,
@@ -133,6 +145,7 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
       blink::InterestGroupSet interest_groups_that_bid,
       std::vector<GURL> debug_win_report_urls,
       std::vector<GURL> debug_loss_report_urls,
+      base::flat_set<std::string> k_anon_keys_to_join,
       std::map<url::Origin, PrivateAggregationRequests>
           private_aggregation_requests);
 
@@ -291,6 +304,8 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   // Win/loss report URLs from generateBid() and scoreAd() calls.
   std::vector<GURL> debug_win_report_urls_;
   std::vector<GURL> debug_loss_report_urls_;
+
+  base::flat_set<std::string> k_anon_keys_to_join_;
 
   // Stores all pending Private Aggregation API report requests until they have
   // been flushed. Keyed by the origin of the script that issued the request

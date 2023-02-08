@@ -9,6 +9,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
@@ -51,6 +52,7 @@
 #include "net/base/url_util.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "ui/base/window_open_disposition_utils.h"
+#include "ui/gfx/text_elider.h"
 #include "url/gurl.h"
 
 using content::WebUI;
@@ -63,6 +65,8 @@ namespace webapps {
 namespace {
 
 const int kWebAppIconSize = 64;
+
+const size_t kMaxShortNameLength = 45;
 
 // The Youtube app is incorrectly hardcoded to be a 'bookmark app'. However, it
 // is a platform app.
@@ -179,15 +183,8 @@ void AppHomePageHandler::LaunchAppInternal(
                   : WindowOpenDisposition::CURRENT_TAB;
   GURL override_url;
 
-  if (app_id != extensions::kWebStoreAppId) {
-    CHECK_NE(launch_bucket, extension_misc::APP_LAUNCH_BUCKET_INVALID);
-    extensions::RecordAppLaunchType(launch_bucket, type);
-  } else {
-    extensions::RecordWebStoreLaunch();
-    override_url = net::AppendQueryParameter(
-        full_launch_url, extension_urls::kWebstoreSourceField,
-        "chrome-ntp-icon");
-  }
+  CHECK_NE(launch_bucket, extension_misc::APP_LAUNCH_BUCKET_INVALID);
+  extensions::RecordAppLaunchType(launch_bucket, type);
 
   if (disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
       disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
@@ -198,7 +195,7 @@ void AppHomePageHandler::LaunchAppInternal(
         disposition == WindowOpenDisposition::NEW_WINDOW
             ? apps::LaunchContainer::kLaunchContainerWindow
             : apps::LaunchContainer::kLaunchContainerTab,
-        disposition, apps::LaunchSource::kFromNewTabPage);
+        disposition, apps::LaunchSource::kFromAppHomePage);
     params.override_url = override_url;
     apps::AppServiceProxyFactory::GetForProfile(profile_)
         ->BrowserAppLauncher()
@@ -221,7 +218,7 @@ void AppHomePageHandler::LaunchAppInternal(
         app_id, launch_container,
         old_contents ? WindowOpenDisposition::CURRENT_TAB
                      : WindowOpenDisposition::NEW_FOREGROUND_TAB,
-        apps::LaunchSource::kFromNewTabPage);
+        apps::LaunchSource::kFromAppHomePage);
     params.override_url = override_url;
     apps::AppServiceProxyFactory::GetForProfile(profile_)
         ->BrowserAppLauncher()
@@ -317,8 +314,9 @@ app_home::mojom::AppInfoPtr AppHomePageHandler::CreateAppInfoPtrFromWebApp(
   GURL start_url = registrar.GetAppStartUrl(app_id);
   app_info->start_url = start_url;
 
-  std::string name = registrar.GetAppShortName(app_id);
-  app_info->name = name;
+  std::u16string name = base::UTF8ToUTF16(registrar.GetAppShortName(app_id));
+  app_info->name = base::UTF16ToUTF8(
+      gfx::TruncateString(name, kMaxShortNameLength + 1, gfx::CHARACTER_BREAK));
 
   app_info->icon_url = apps::AppIconSource::GetIconURL(app_id, kWebAppIconSize);
 
@@ -336,6 +334,9 @@ app_home::mojom::AppInfoPtr AppHomePageHandler::CreateAppInfoPtrFromWebApp(
   // Treat all other types of display mode as "open as window".
   app_info->open_in_window = registrar.GetAppEffectiveDisplayMode(app_id) !=
                              blink::mojom::DisplayMode::kBrowser;
+
+  app_info->may_uninstall =
+      web_app_provider_->install_finalizer().CanUserUninstallWebApp(app_id);
   return app_info;
 }
 
@@ -348,7 +349,9 @@ app_home::mojom::AppInfoPtr AppHomePageHandler::CreateAppInfoPtrFromExtension(
   GURL start_url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
   app_info->start_url = start_url;
 
-  app_info->name = extension->name();
+  std::u16string name = base::UTF8ToUTF16(extension->name());
+  app_info->name = base::UTF16ToUTF8(
+      gfx::TruncateString(name, kMaxShortNameLength + 1, gfx::CHARACTER_BREAK));
 
   app_info->icon_url = extensions::ExtensionIconSource::GetIconURL(
       extension, extension_misc::EXTENSION_ICON_LARGE,
@@ -384,7 +387,8 @@ void AppHomePageHandler::FillExtensionInfoList(
                                                ExtensionRegistry::TERMINATED);
   for (const auto& extension : *extension_apps) {
     if (!extensions::ui_util::ShouldDisplayInNewTabPage(extension.get(),
-                                                        profile_)) {
+                                                        profile_) ||
+        extension->id() == extensions::kWebStoreAppId) {
       continue;
     }
 

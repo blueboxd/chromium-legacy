@@ -10,8 +10,7 @@ import static org.chromium.net.CronetTestRule.SERVER_CERT_PEM;
 import static org.chromium.net.CronetTestRule.SERVER_KEY_PKCS8_PEM;
 import static org.chromium.net.CronetTestRule.getContext;
 
-import android.support.test.runner.AndroidJUnit4;
-
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import org.junit.After;
@@ -19,8 +18,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import org.chromium.base.test.util.Feature;
 
 /**
  * Unit tests for {@code MockCertVerifier}.
@@ -53,7 +50,6 @@ public class MockCertVerifierTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testRequest_failsWithoutMockVerifier() {
         ExperimentalCronetEngine.Builder builder =
                 new ExperimentalCronetEngine.Builder(getContext());
@@ -67,7 +63,6 @@ public class MockCertVerifierTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testRequest_passesWithMockVerifier() {
         ExperimentalCronetEngine.Builder builder =
                 new ExperimentalCronetEngine.Builder(getContext());

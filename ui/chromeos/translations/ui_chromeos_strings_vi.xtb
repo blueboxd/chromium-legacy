@@ -59,6 +59,7 @@
 <translation id="1499943022354839699">Tiếng Anh (Mỹ) bằng bàn phím Dvorak</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> – Máy chủ lưu trữ</translation>
 <translation id="1521655867290435174">Google Trang tính</translation>
+<translation id="1521795806314479294">Đang chuẩn bị <ph name="FILE_NAME" />...</translation>
 <translation id="1538729222189715449">Đang mở tệp Linux...</translation>
 <translation id="1547964879613821194">Tiếng Anh ở Canada</translation>
 <translation id="1556189134700913550">Áp dụng cho tất cả</translation>
@@ -83,6 +84,7 @@
 <translation id="1722487484194605434">Đang nén <ph name="NUMBER_OF_ITEMS" /> mục...</translation>
 <translation id="1722687688096767818">Đang thêm hồ sơ...</translation>
 <translation id="1726100011689679555">Máy chủ định danh</translation>
+<translation id="1727562178154619254">Sẵn sàng đồng bộ hoá</translation>
 <translation id="1729953886957086472">Tiếng Đức (Đức)</translation>
 <translation id="1730235522912993863">Tiếng Trung (Thương Hiệt)</translation>
 <translation id="1731889557567069540">Đã sao chép <ph name="NUMBER_OF_ITEMS" /> mục.</translation>
@@ -408,6 +410,7 @@
 <translation id="4462159676511157176">Máy chủ có tên tùy chỉnh</translation>
 <translation id="4465725236958772856">Mạng <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Do quản trị viên của bạn quản lý, Kết nối</translation>
 <translation id="4470564870223067757">Hangul 2 bộ</translation>
+<translation id="4474142134969976028">Không có kết quả nào phù hợp</translation>
 <translation id="4477002475007461989">Tiếng Rumani</translation>
 <translation id="4477219268485577442">Ngữ âm tiếng Bungary</translation>
 <translation id="4508265954913339219">Kích hoạt không thành công</translation>
@@ -479,6 +482,7 @@
 <translation id="4973523518332075481">Hãy sử dụng tên có tối đa <ph name="MAX_LENGTH" /> ký tự</translation>
 <translation id="4973970068702235170">Không nén được, lỗi ngoài mong đợi: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Tiếng Nhật</translation>
+<translation id="4987699874727873250">Tiếng Anh (Ấn Độ)</translation>
 <translation id="4988205478593450158">Bạn có chắc chắn muốn xóa "<ph name="FILE_NAME" />" không?</translation>
 <translation id="498902553138568924">Bướm màu đỏ</translation>
 <translation id="4992066212339426712">Bật âm thanh</translation>
@@ -509,6 +513,7 @@
    Tháo thiết bị của bạn khi đang được sử dụng có thể gây mất dữ liệu. Vui lòng đợi cho đến khi thao tác kết thúc, sau đó đẩy thiết bị ra bằng ứng dụng Tệp.</translation>
 <translation id="5163869187418756376">Chia sẻ không thành công. Hãy kiểm tra kết nối và thử lại sau.</translation>
 <translation id="516592729076796170">US Programmer Dvorak</translation>
+<translation id="5167102019886320507">Đang chuẩn bị <ph name="NUMBER_OF_ITEMS" /> mục...</translation>
 <translation id="5177526793333269655">Chế độ xem hình thu nhỏ</translation>
 <translation id="5181896909298187506">Không có tệp nào gần đây</translation>
 <translation id="5194713942430106590">Nhấp để sắp xếp cột theo thứ tự tăng dần.</translation>
@@ -813,6 +818,7 @@
 <translation id="7655441028674523381">Dễ dàng truy cập vào Google Photos</translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7663224033570512922">Tiếng Hindi</translation>
+<translation id="7665680517722058469">Thử nhập cụm từ tìm kiếm khác</translation>
 <translation id="7689532716264131859">Đã chuyển <ph name="NUMBER_OF_ITEMS" /> mục vào thùng rác</translation>
 <translation id="7693909743393669729">Thao tác định dạng ổ đĩa sẽ xóa toàn bộ dữ liệu lưu trữ trên ổ đĩa đó, đồng thời xóa tất cả phân vùng hiện có, bao gồm cả những phân vùng có thể không hiển thị. Bạn không thể hủy thao tác này sau khi thực hiện.</translation>
 <translation id="7695430100978772476">Không định dạng được <ph name="DRIVE_NAME" /></translation>
@@ -969,6 +975,7 @@
 <translation id="8866284467018526531">Tiếng Ả Rập (chuyển tự)</translation>
 <translation id="8873014196523807561">Để khôi phục, hãy kéo các mục này vào một thư mục mới. Các thư mục gốc của một vài mục trong số này đã bị xoá.</translation>
 <translation id="8874184842967597500">Chưa kết nối</translation>
+<translation id="8876368061475701452">Đã xếp vào hàng đợi</translation>
 <translation id="8900820606136623064">Tiếng Hungary</translation>
 <translation id="8903931173357132290">Người tốt nghiệp</translation>
 <translation id="8912078710089354287">Chó vẫy đuôi</translation>

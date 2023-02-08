@@ -736,104 +736,101 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardCVCTryAgainFailure) {
   EXPECT_EQ(kTestCvc16, accessor_->cvc());
 }
 
-// Ensures that CardUnmaskPreflightCalled metrics are logged correctly.
-TEST_F(CreditCardAccessManagerTest, CardUnmaskPreflightCalledMetric) {
-  std::string verifiability_check_metric =
-      "Autofill.BetterAuth.UserVerifiabilityCheckDuration";
-  std::string preflight_call_metric =
-      "Autofill.BetterAuth.CardUnmaskPreflightCalledWithFidoOptInStatus";
-  std::string preflight_latency_metric =
-      "Autofill.BetterAuth.CardUnmaskPreflightDuration";
-
-  {
-    // Create local card and set user as eligible for FIDO auth.
-    base::HistogramTester histogram_tester;
-    ClearCards();
-    CreateLocalCard(kTestGUID, kTestNumber);
 #if !BUILDFLAG(IS_IOS)
-    GetFIDOAuthenticator()->SetUserVerifiable(true);
-#endif
-    ResetFetchCreditCard();
+// Params of the CreditCardAccessManagerBetterAuthLogTest:
+// -- bool has_server_card;
+// -- bool is_user_opted_in;
+class CreditCardAccessManagerBetterAuthLogTest
+    : public CreditCardAccessManagerTest,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
+ public:
+  CreditCardAccessManagerBetterAuthLogTest() = default;
+  ~CreditCardAccessManagerBetterAuthLogTest() override = default;
 
-    credit_card_access_manager_->PrepareToFetchCreditCard();
-    InvokeUnmaskDetailsTimeout();
-    WaitForCallbacks();
+  bool HasServerCard() { return std::get<0>(GetParam()); }
+  bool IsUserOptedIn() { return std::get<1>(GetParam()); }
 
-    // If only local cards are available, then no preflight call nor check for
-    // verifiability is made.
-    histogram_tester.ExpectTotalCount(verifiability_check_metric, 0);
-    histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
-    histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
-  }
-
-  {
-    // Create server card and set user as ineligible for FIDO auth.
-    base::HistogramTester histogram_tester;
+  void SetUp() override {
     ClearCards();
-    CreateServerCard(kTestGUID, kTestNumber);
-#if !BUILDFLAG(IS_IOS)
-    GetFIDOAuthenticator()->SetUserVerifiable(false);
-#endif
-    ResetFetchCreditCard();
-
-    credit_card_access_manager_->PrepareToFetchCreditCard();
-    InvokeUnmaskDetailsTimeout();
-    WaitForCallbacks();
-
-    // Server cards are available, check for verifiability is made.
-    // But since user is not verifiable, no preflight call is made.
-#if BUILDFLAG(IS_IOS)
-    histogram_tester.ExpectTotalCount(verifiability_check_metric, 0);
-#else
-    histogram_tester.ExpectTotalCount(verifiability_check_metric, 1);
-#endif
-    histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
-    histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
-  }
-
-  {
-    // Tests that the metrics log correctly when the user is eligible for FIDO,
-    // and has only masked server cards.
-    for (bool is_user_opted_in_to_fido : {true, false}) {
-      SCOPED_TRACE(testing::Message()
-                   << " is_user_opted_in_to_fido="
-                   << static_cast<int>(is_user_opted_in_to_fido));
-      // Create server card and set user as eligible for FIDO auth, and set that
-      // the user is either opted-in to FIDO auth or opted-out of FIDO auth
-      // based on `is_user_opted_in_to_fido`.
-      base::HistogramTester histogram_tester;
-      ClearCards();
+    if (HasServerCard()) {
       CreateServerCard(kTestGUID, kTestNumber);
-#if !BUILDFLAG(IS_IOS)
-      auto* fido_authenticator = GetFIDOAuthenticator();
-      fido_authenticator->SetUserVerifiable(true);
-      fido_authenticator->set_is_user_opted_in(
-          /*is_user_opted_in=*/is_user_opted_in_to_fido);
-#endif
-      ResetFetchCreditCard();
-
-      credit_card_access_manager_->PrepareToFetchCreditCard();
-      InvokeUnmaskDetailsTimeout();
-      WaitForCallbacks();
-
-      // Preflight call is made only if a server card is available and the user
-      // is eligible for FIDO authentication, except on iOS.
-#if BUILDFLAG(IS_IOS)
-      histogram_tester.ExpectTotalCount(verifiability_check_metric, 0);
-      histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
-      histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
-#else
-      histogram_tester.ExpectTotalCount(verifiability_check_metric, 1);
-      histogram_tester.ExpectUniqueSample(preflight_call_metric,
-                                          /*sample=*/is_user_opted_in_to_fido,
-                                          /*expected_bucket_count=*/1);
-      histogram_tester.ExpectTotalCount(preflight_latency_metric, 1);
-#endif
+    } else {
+      CreateLocalCard(kTestGUID, kTestNumber);
     }
+    CreditCardAccessManagerTest::SetUp();
   }
+
+  const std::string kVerifiabilityCheckDurationMetrics =
+      "Autofill.BetterAuth.UserVerifiabilityCheckDuration";
+  const std::string kPreflightCallMetrics =
+      "Autofill.BetterAuth.CardUnmaskPreflightCalledWithFidoOptInStatus";
+  const std::string kPreflightLatencyMetrics =
+      "Autofill.BetterAuth.CardUnmaskPreflightDuration";
+  const std::string kPreflightFlowInitiatedMetrics =
+      "Autofill.BetterAuth.CardUnmaskPreflightInitiated";
+};
+
+TEST_P(CreditCardAccessManagerBetterAuthLogTest,
+       CardUnmaskPreflightCalledMetric_FidoEligible) {
+  base::HistogramTester histogram_tester;
+  auto* fido_authenticator = GetFIDOAuthenticator();
+  fido_authenticator->SetUserVerifiable(/*is_user_verifiable=*/true);
+  fido_authenticator->set_is_user_opted_in(IsUserOptedIn());
+  ResetFetchCreditCard();
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  InvokeUnmaskDetailsTimeout();
+  WaitForCallbacks();
+  histogram_tester.ExpectTotalCount(/*name=*/kVerifiabilityCheckDurationMetrics,
+                                    /*expected_count=*/HasServerCard() ? 1 : 0);
+  if (HasServerCard()) {
+    histogram_tester.ExpectUniqueSample(kPreflightCallMetrics,
+                                        /*sample=*/IsUserOptedIn(),
+                                        /*expected_bucket_count=*/1);
+  } else {
+    histogram_tester.ExpectTotalCount(/*name=*/kPreflightCallMetrics,
+                                      /*expected_count=*/0);
+  }
+  histogram_tester.ExpectTotalCount(/*name=*/kPreflightCallMetrics,
+                                    /*expected_count=*/HasServerCard() ? 1 : 0);
+  histogram_tester.ExpectTotalCount(/*name=*/kPreflightLatencyMetrics,
+                                    /*expected_count=*/HasServerCard() ? 1 : 0);
+  histogram_tester.ExpectTotalCount(/*name=*/kPreflightFlowInitiatedMetrics,
+                                    /*expected_count=*/HasServerCard() ? 1 : 0);
 }
 
-#if !BUILDFLAG(IS_IOS)
+TEST_P(CreditCardAccessManagerBetterAuthLogTest,
+       CardUnmaskPreflightCalledMetric_NotFidoEligible) {
+  base::HistogramTester histogram_tester;
+  GetFIDOAuthenticator()->SetUserVerifiable(/*is_user_verifiable=*/false);
+  ResetFetchCreditCard();
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  InvokeUnmaskDetailsTimeout();
+  WaitForCallbacks();
+  if (HasServerCard()) {
+    histogram_tester.ExpectUniqueSample(
+        /*name=*/kPreflightFlowInitiatedMetrics, /*sample=*/true,
+        /*expected_bucket_count=*/1);
+    histogram_tester.ExpectTotalCount(
+        /*name=*/kVerifiabilityCheckDurationMetrics,
+        /*expected_count=*/1);
+  } else {
+    histogram_tester.ExpectTotalCount(/*name=*/kPreflightFlowInitiatedMetrics,
+                                      /*expected_count=*/0);
+    histogram_tester.ExpectTotalCount(
+        /*name=*/kVerifiabilityCheckDurationMetrics,
+        /*expected_count=*/0);
+  }
+  histogram_tester.ExpectTotalCount(
+      /*name=*/kPreflightCallMetrics,
+      /*expected_count=*/0);
+  histogram_tester.ExpectTotalCount(/*name=*/kPreflightLatencyMetrics,
+                                    /*expected_count=*/0);
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         CreditCardAccessManagerBetterAuthLogTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
+
 // Ensures that FetchCreditCard() returns the full PAN upon a successful
 // WebAuthn verification and response from payments.
 TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOSuccess) {

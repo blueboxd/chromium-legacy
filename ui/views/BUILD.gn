@@ -1037,6 +1037,8 @@ source_set("test_support") {
     "view_test_api.h",
     "views_test_suite.cc",
     "views_test_suite.h",
+    "widget/widget_interactive_uitest_utils.cc",
+    "widget/widget_interactive_uitest_utils.h",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]
@@ -1130,7 +1132,6 @@ source_set("test_support") {
       "test/test_desktop_screen_ozone.cc",
       "test/test_desktop_screen_ozone.h",
       "test/ui_controls_factory_desktop_aura_ozone.cc",
-      "test/ui_controls_factory_desktop_aura_ozone.h",
     ]
     deps += [ "//ui/ozone:ui_test_support" ]
   }

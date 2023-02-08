@@ -319,8 +319,6 @@ component("base") {
       "cocoa/nswindow_test_util.h",
       "cocoa/permissions_utils.h",
       "cocoa/permissions_utils.mm",
-      "cocoa/quartz_util.h",
-      "cocoa/quartz_util.mm",
       "cocoa/remote_accessibility_api.h",
       "cocoa/remote_accessibility_api.mm",
       "cocoa/remote_layer_api.h",
@@ -352,6 +350,13 @@ component("base") {
       "l10n/l10n_util_mac.h",
       "l10n/l10n_util_mac.mm",
       "resource/resource_bundle_mac.mm",
+    ]
+  }
+
+  if (is_apple) {
+    sources += [
+      "cocoa/quartz_util.h",
+      "cocoa/quartz_util.mm",
     ]
   }
 
@@ -427,6 +432,20 @@ component("base") {
         "dragdrop/cocoa_dnd_util.mm",
       ]
     }
+
+    if (is_win) {
+      sources += [ "pointer/pointer_device_win.cc" ]
+    } else if (is_android) {
+      sources += [ "pointer/pointer_device_android.cc" ]
+    } else if (is_ios) {
+      sources += [ "pointer/pointer_device_ios.cc" ]
+    } else if (is_linux || is_chromeos) {
+      sources += [ "pointer/pointer_device_linux.cc" ]
+    } else {
+      # Empty implementation for all other cases.
+      sources += [ "pointer/pointer_device.cc" ]
+      sources -= [ "pointer/pointer_device_util.cc" ]
+    }
   }
 
   if (is_mac) {
@@ -439,20 +458,6 @@ component("base") {
     ]
   } else {
     sources += [ "accelerators/media_keys_listener_stub.cc" ]
-  }
-
-  if (is_win) {
-    sources += [ "pointer/pointer_device_win.cc" ]
-  } else if (is_android) {
-    sources += [ "pointer/pointer_device_android.cc" ]
-  } else if (is_ios) {
-    sources += [ "pointer/pointer_device_ios.cc" ]
-  } else if (is_linux || is_chromeos) {
-    sources += [ "pointer/pointer_device_linux.cc" ]
-  } else {
-    # Empty implementation for all other cases.
-    sources += [ "pointer/pointer_device.cc" ]
-    sources -= [ "pointer/pointer_device_util.cc" ]
   }
 
   if (is_fuchsia) {
@@ -819,7 +824,7 @@ static_library("test_support") {
     ]
   }
 
-  if (use_aura) {
+  if (use_aura && (is_win || is_chromeos_ash || is_castos)) {
     sources += [
       "test/ui_controls_aura.cc",
       "test/ui_controls_aura.h",

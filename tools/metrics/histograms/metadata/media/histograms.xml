@@ -22,6 +22,13 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<variants name="CastStreamingSender">
+  <variant name="Audio"/>
+  <variant name="Remoting.Audio"/>
+  <variant name="Remoting.Video"/>
+  <variant name="Video"/>
+</variants>
+
 <variants name="DbOperation">
   <variant name="Clear" summary="Remove all keys from the DB"/>
   <variant name="Initialize" summary="Initialize the DB."/>
@@ -87,6 +94,38 @@ chromium-metrics-reviews@google.com.
   <variant name="VP8"/>
   <variant name="VP9"/>
 </variants>
+
+<histogram name="CastStreaming.Sender.Video.Bitrate" units="kbps"
+    expires_after="2024-02-06">
+  <owner>jophba@chromium.org</owner>
+  <owner>mfoltz@chromium.org</owner>
+  <summary>
+    Records the currently set video bit rate during a Cast Streaming mirroring
+    session. This metric is subsampled every 500 frames.
+  </summary>
+</histogram>
+
+<histogram name="CastStreaming.Sender.{CastStreamingSender}.FrameDropped"
+    enum="CastStreamingFrameDropReason" expires_after="2024-02-06">
+  <owner>jophba@chromium.org</owner>
+  <owner>mfoltz@chromium.org</owner>
+  <summary>
+    Records the reason when an frame is dropped during a Cast Streaming session.
+  </summary>
+  <token key="CastStreamingSender" variants="CastStreamingSender"/>
+</histogram>
+
+<histogram
+    name="CastStreaming.Sender.{CastStreamingSender}.PercentDroppedFrames"
+    units="%" expires_after="2024-02-06">
+  <owner>jophba@chromium.org</owner>
+  <owner>mfoltz@chromium.org</owner>
+  <summary>
+    Records the total percentage of frames dropped for a given Cast Streaming
+    session.
+  </summary>
+  <token key="CastStreamingSender" variants="CastStreamingSender"/>
+</histogram>
 
 <histogram name="Media.AImageReaderGLOwner.AcquireImageResult"
     enum="MediaStatus" expires_after="2023-07-02">
@@ -239,7 +278,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.Audio.Capture.InputStreamDuration" units="ms"
-    expires_after="2023-06-04">
+    expires_after="2023-08-06">
   <owner>olka@chromium.org</owner>
   <owner>saza@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
@@ -1366,10 +1405,11 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.AudioRendererAudioGlitches2.{LatencyTag}"
-    enum="AudioGlitchResult" expires_after="2023-02-05">
+    enum="AudioGlitchResult" expires_after="2024-02-05">
   <owner>dalecurtis@chromium.org</owner>
   <owner>olka@chromium.org</owner>
   <owner>tguilbert@chromium.org</owner>
+  <owner>fhernqvist@google.com</owner>
   <owner>webrtc-audio-uma@google.com</owner>
   <summary>
     Captures if render-side audio glitches are detected or not. Sampled when a
@@ -5133,7 +5173,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.VideoCapture.Win.D3DDeviceRemovedReason" enum="Hresult"
-    expires_after="2023-07-30">
+    expires_after="2024-05-10">
   <owner>ilnik@chromium.org</owner>
   <owner>video-cmi-mpp@chromium.org</owner>
   <summary>
@@ -5143,7 +5183,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.VideoCapture.Win.Device.CapturePixelFormat"
-    enum="VideoPixelFormatUnion" expires_after="2023-03-19">
+    enum="VideoPixelFormatUnion" expires_after="2024-03-19">
   <owner>ilnik@google.com</owner>
   <owner>video-cmi-mpp@google.com</owner>
   <summary>
@@ -5153,7 +5193,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.VideoCapture.Win.Device.InternalPixelFormat"
-    enum="VideoPixelFormatUnion" expires_after="2023-06-04">
+    enum="VideoPixelFormatUnion" expires_after="2024-06-04">
   <owner>ilnik@google.com</owner>
   <owner>video-cmi-mpp@google.com</owner>
   <summary>
@@ -5163,12 +5203,23 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.VideoCapture.Win.Device.RequestedPixelFormat"
-    enum="VideoPixelFormatUnion" expires_after="2023-03-19">
+    enum="VideoPixelFormatUnion" expires_after="2024-03-19">
   <owner>ilnik@google.com</owner>
   <owner>video-cmi-mpp@google.com</owner>
   <summary>
     Counts the pixel formats requested by the consumer on Windows. This is
     recorded when the camera is opened.
+  </summary>
+</histogram>
+
+<histogram name="Media.VideoCapture.Win.DeviceFactory.CaptureApi"
+    enum="VideoCaptureApi" expires_after="2023-08-03">
+  <owner>ilnik@google.com</owner>
+  <owner>handellm@google.com</owner>
+  <owner>video-performance-team@google.com</owner>
+  <summary>
+    The Capture API that is used on Windows. This is recorded when the camera is
+    opened.
   </summary>
 </histogram>
 
@@ -5610,6 +5661,28 @@ chromium-metrics-reviews@google.com.
     media playback. Multiple WebMediaPlayer instances can together accumulate
     watch time faster than real time.
   </summary>
+</histogram>
+
+<histogram
+    name="Media.WebmMuxer.DidAdjustTimestamp.{StreamTypesRecorded}.{Domain}"
+    enum="Boolean" expires_after="2023-06-26">
+  <owner>handellm@google.com</owner>
+  <owner>video-performance-team@google.com</owner>
+  <summary>
+    Boolean indicating if {Domain} stream timestamps had to be corrected during
+    a muxing session with {StreamTypesRecorded} present. Reported on muxer
+    destructor.
+  </summary>
+  <token key="StreamTypesRecorded">
+    <variant name="AudioOnly"/>
+    <variant name="AudioVideo"/>
+    <variant name="VideoOnly"/>
+  </token>
+  <token key="Domain">
+    <variant name="Audio"/>
+    <variant name="Muxer"/>
+    <variant name="Video"/>
+  </token>
 </histogram>
 
 <histogram name="Media.WebrtcVideoPerfHistory.GetPerfInfoCodecProfile"
@@ -6425,34 +6498,6 @@ chromium-metrics-reviews@google.com.
     loads. Always expected to be non-negative. This includes data recorded from
     Clank, which uses Android's MediaRouter framework.
   </summary>
-</histogram>
-
-<histogram name="MediaRouter.Ui.Device.Count.{Ui}.{Trigger}.{Mrp}.{State}"
-    units="units" expires_after="2023-05-03">
-  <owner>takumif@chromium.org</owner>
-  <owner>openscreen-eng@google.com</owner>
-  <summary>
-    Counts the number of {Mrp} devices that are shown as {State} in the {Ui} UI
-    three seconds after the UI was opened via {Trigger}. Always expected to be
-    non-negative.
-  </summary>
-  <token key="Ui">
-    <variant name="CastHarmony"/>
-    <variant name="GlobalMediaControls"/>
-  </token>
-  <token key="Trigger">
-    <variant name="BrowserUi"/>
-    <variant name="PresentationApi"/>
-  </token>
-  <token key="Mrp">
-    <variant name="CAST"/>
-    <variant name="DIAL"/>
-    <variant name="WIRED_DISPLAY"/>
-  </token>
-  <token key="State">
-    <variant name="Available"/>
-    <variant name="Unavailable"/>
-  </token>
 </histogram>
 
 <histogram name="MediaRouter.Ui.Dialog.ActivationLocationAndCastMode"

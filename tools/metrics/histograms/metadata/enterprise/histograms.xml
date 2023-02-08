@@ -1403,7 +1403,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Dlp.ReportedReportLevelRestriction"
-    enum="EnterpriseDlpPolicyRestriction" expires_after="2023-06-01">
+    enum="EnterpriseDlpPolicyRestriction" expires_after="2023-08-06">
   <owner>poromov@chromium.org</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
@@ -2227,13 +2227,13 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
-    name="Enterprise.ManagementAuthorityThrustworthiness.Cache.ValueChange"
-    enum="BooleanChanged" expires_after="2023-01-15">
+    name="Enterprise.ManagementAuthorityTrustworthiness.Cache.ValueChange"
+    enum="BooleanChanged" expires_after="2023-07-15">
   <owner>ydago@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
   <summary>
     Recorded after the ManagementStatus cache is updated. Reports whether the
-    Management authority thrustworthiness changed after the cache update.
+    Management authority trustworthiness changed after the cache update.
   </summary>
 </histogram>
 
@@ -2320,19 +2320,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     A set of enterprise policy rules that are in use. This is recorded every 24
     hours and at startup, if the last recording was earlier than a day before.
-  </summary>
-</histogram>
-
-<histogram name="Enterprise.Policies.IgnoredByPolicyGroup"
-    enum="EnterprisePolicies" expires_after="2023-02-12">
-  <owner>ydago@chromium.org</owner>
-  <owner>pastarmovj@chromium.org</owner>
-  <owner>chromeos-commercial-remote-management@google.com</owner>
-  <summary>
-    A set of enterprise policy rules that are ignored because they do not share
-    the highest priority from their policy atomic group. This is recorded at
-    startup, then every 24 hours. If chrome is not running at the 24 hours mark,
-    this will be recorded at the next startup.
   </summary>
 </histogram>
 

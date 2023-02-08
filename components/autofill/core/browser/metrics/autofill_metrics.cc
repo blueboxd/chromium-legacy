@@ -216,7 +216,7 @@ const char* GetSaveAndUpdatePromptDecisionMetricsSuffix(
 // }.
 //
 // Clients must ensure that |field_type| is one of the types Chrome supports
-// natively, e.g. |field_type| must not be a billng address.
+// natively, e.g. |field_type| must not be a billing address.
 // NOTE: This is defined outside of the anonymous namespace so that it can be
 // accessed from the unit test file. It is not exposed in the header file,
 // however, because it is not intended for consumption outside of the metrics
@@ -448,7 +448,7 @@ int GetFieldTypeGroupPredictionQualityMetric(
 }
 
 // This function encodes the integer value of a |ServerFieldType| and the
-// metric value of an |AutofilledFieldUserEdtingStatus| into a 16 bit integer.
+// metric value of an |AutofilledFieldUserEditingStatus| into a 16 bit integer.
 // The lower four bits are used to encode the editing status and the higher
 // 12 bits are used to encode the field type.
 int GetFieldTypeUserEditStatusMetric(
@@ -549,7 +549,7 @@ ServerFieldType GetActualFieldType(const ServerFieldTypeSet& possible_types,
 
 // Check if the value of |field| is same as one of the previously autofilled
 // values. This indicates a bad rationalization if |field| has
-// only_fill_when_focued set to true.
+// only_fill_when_focused set to true.
 bool DuplicatedFilling(const FormStructure& form, const AutofillField& field) {
   for (const auto& form_field : form) {
     if (field.value == form_field->value && form_field->is_autofilled)
@@ -1545,75 +1545,6 @@ void AutofillMetrics::LogIsAutofillCreditCardEnabledAtPageLoad(
 }
 
 // static
-AutofillMetrics::AutofillProfileSourceCategory
-AutofillMetrics::GetCategoryOfProfile(const AutofillProfile& profile) {
-  switch (profile.source()) {
-    case AutofillProfile::Source::kLocalOrSyncable:
-      return AutofillMetrics::AutofillProfileSourceCategory::kLocalOrSyncable;
-    case AutofillProfile::Source::kAccount:
-      return profile.initial_creator_id() ==
-                     AutofillProfile::kInitialCreatorOrModifierChrome
-                 ? AutofillMetrics::AutofillProfileSourceCategory::
-                       kAccountChrome
-                 : AutofillMetrics::AutofillProfileSourceCategory::
-                       kAccountNonChrome;
-  }
-}
-
-// static
-const char* AutofillMetrics::GetProfileCategorySuffix(
-    AutofillMetrics::AutofillProfileSourceCategory category) {
-  switch (category) {
-    case AutofillMetrics::AutofillProfileSourceCategory::kLocalOrSyncable:
-      return "Legacy";
-    case AutofillMetrics::AutofillProfileSourceCategory::kAccountChrome:
-      return "AccountChrome";
-    case AutofillMetrics::AutofillProfileSourceCategory::kAccountNonChrome:
-      return "AccountNonChrome";
-  }
-}
-
-// static
-void AutofillMetrics::LogStoredProfileCountStatistics(
-    AutofillProfileSourceCategory category,
-    const StoredProfileCounts& counts) {
-  const std::string kSuffix = GetProfileCategorySuffix(category);
-
-  base::UmaHistogramCounts1M("Autofill.StoredProfileCount." + kSuffix,
-                             counts.total);
-  // For users without any profiles do not record the other metrics.
-  if (counts.total == 0) {
-    return;
-  }
-  DCHECK_LE(counts.disused, counts.total);
-  size_t used = counts.total - counts.disused;
-  base::UmaHistogramCounts1000("Autofill.StoredProfileUsedCount." + kSuffix,
-                               used);
-  base::UmaHistogramCounts1000("Autofill.StoredProfileDisusedCount." + kSuffix,
-                               counts.disused);
-  base::UmaHistogramPercentage(
-      "Autofill.StoredProfileUsedPercentage." + kSuffix,
-      100 * used / counts.total);
-  // `kAccount` profiles are guaranteed to have a country, so this metric is
-  // only tracked for the `kLocalOrSyncable` category. For this reason `kSuffix`
-  // is not applied to the metrics name either.
-  if (category == AutofillProfileSourceCategory::kLocalOrSyncable) {
-    UMA_HISTOGRAM_COUNTS_1M("Autofill.StoredProfileWithoutCountryCount",
-                            counts.without_country);
-  }
-}
-
-// static
-void AutofillMetrics::LogStoredProfileDaysSinceLastUse(
-    AutofillProfileSourceCategory category,
-    size_t days) {
-  base::UmaHistogramCounts1000(
-      base::StrCat({"Autofill.DaysSinceLastUse.StoredProfile.",
-                    GetProfileCategorySuffix(category)}),
-      days);
-}
-
-// static
 void AutofillMetrics::LogStoredCreditCardMetrics(
     const std::vector<std::unique_ptr<CreditCard>>& local_cards,
     const std::vector<std::unique_ptr<CreditCard>>& server_cards,
@@ -2585,12 +2516,22 @@ void AutofillMetrics::FormInteractionsUkmLogger::
   // that a manual override defines the server type.
   bool server_type_is_override = false;
 
+  // The final field type from the list of |autofill::ServerFieldType| that we
+  // choose after rationalization, which is used to determine
+  // the autofill suggestion when the user triggers autofilling.
+  ServerFieldType overall_type = NO_SERVER_DATA;
+  // The sections are mapped to consecutive natural numbers starting at 1,
+  // numbered according to the ordering of their first fields.
+  size_t section_id = 0;
+  bool type_changed_by_rationalization = false;
+
   bool had_heuristic_type = false;
   bool had_html_type = false;
   bool had_server_type = false;
+  bool had_rationalization_event = false;
 
   for (const auto& log_event : field_log_events) {
-    static_assert(absl::variant_size<AutofillField::FieldLogEventType>() == 8,
+    static_assert(absl::variant_size<AutofillField::FieldLogEventType>() == 9,
                   "When adding new variants check that this function does not "
                   "need to be updated.");
     if (auto* event =
@@ -2686,6 +2627,13 @@ void AutofillMetrics::FormInteractionsUkmLogger::
       rank_in_field_signature_group = event->rank_in_field_signature_group;
       had_server_type = true;
     }
+
+    if (auto* event = absl::get_if<RationalizationFieldLogEvent>(&log_event)) {
+      overall_type = event->field_type;
+      section_id = event->section_id;
+      type_changed_by_rationalization = event->type_changed;
+      had_rationalization_event = true;
+    }
   }
 
   if (had_value_after_filling != OptionalBoolean::kUndefined ||
@@ -2755,6 +2703,12 @@ void AutofillMetrics::FormInteractionsUkmLogger::
         .SetServerType2(server_type2)
         .SetServerPredictionSource2(prediction_source2)
         .SetServerTypeIsOverride(server_type_is_override);
+  }
+
+  if (had_rationalization_event) {
+    builder.SetOverallType(overall_type)
+        .SetSectionId(section_id)
+        .SetTypeChangedByRationalization(type_changed_by_rationalization);
   }
 
   if (rank_in_field_signature_group) {

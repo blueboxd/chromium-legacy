@@ -138,7 +138,7 @@ bool ContentBrowserClient::IsExplicitNavigation(ui::PageTransition transition) {
 }
 
 bool ContentBrowserClient::ShouldUseMobileFlingCurve() {
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   return true;
 #else
   return false;
@@ -330,8 +330,7 @@ ContentBrowserClient::GetAdditionalSiteIsolationModes() {
 
 bool ContentBrowserClient::ShouldUrlUseApplicationIsolationLevel(
     BrowserContext* browser_context,
-    const GURL& url,
-    bool origin_matches_flag) {
+    const GURL& url) {
   return false;
 }
 
@@ -515,18 +514,14 @@ bool ContentBrowserClient::IsSharedStorageAllowed(
     content::RenderFrameHost* rfh,
     const url::Origin& top_frame_origin,
     const url::Origin& accessing_origin) {
-  // TODO(crbug.com/1325103): Change this to false and override in
-  // relevant content_browsertests and web_tests.
-  return true;
+  return false;
 }
 
 bool ContentBrowserClient::IsSharedStorageSelectURLAllowed(
     content::BrowserContext* browser_context,
     const url::Origin& top_frame_origin,
     const url::Origin& accessing_origin) {
-  // TODO(crbug.com/1325103): Change this to false and override in
-  // relevant content_browsertests and web_tests.
-  return true;
+  return false;
 }
 
 bool ContentBrowserClient::IsPrivateAggregationAllowed(
@@ -1432,5 +1427,12 @@ base::FilePath ContentBrowserClient::GetChildProcessPath(
   return base::FilePath();
 }
 #endif
+
+bool ContentBrowserClient::AreIsolatedWebAppsEnabled(
+    BrowserContext* browser_context) {
+  // The whole logic of the IWAs lives in //chrome. So IWAs should be
+  // enabled at that layer.
+  return false;
+}
 
 }  // namespace content

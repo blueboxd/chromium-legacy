@@ -913,6 +913,9 @@ void RenderFrameHostManager::UnloadOldFrame(
     BackForwardCacheImpl& back_forward_cache =
         GetNavigationController().GetBackForwardCache();
 
+    // The result of this eligibility check will only include sticky reasons.
+    // Non-sticky reasons will be checked later and if any, the page will be
+    // evicted from BFCache.
     BackForwardCacheCanStoreDocumentResultWithTree bfcache_eligibility =
         back_forward_cache.GetCurrentBackForwardCacheEligibility(
             old_render_frame_host.get());
@@ -933,8 +936,17 @@ void RenderFrameHostManager::UnloadOldFrame(
     }
 
     if (old_page_back_forward_cache_metrics) {
+      // Reasons set in the metrics object will be used for DevTools and
+      // NotRestoredReasons API. We should include non-sticky reasons as well
+      // here for better debugging, though non-sticky features might get cleaned
+      // in pagehide handlers.
+      BackForwardCacheCanStoreDocumentResultWithTree
+          eligibility_including_non_sticky =
+              back_forward_cache
+                  .GetCompleteBackForwardCacheEligibilityForReporting(
+                      old_render_frame_host.get());
       old_page_back_forward_cache_metrics->SetNotRestoredReasons(
-          bfcache_eligibility);
+          eligibility_including_non_sticky);
     }
   }
 
@@ -2108,14 +2120,21 @@ RenderFrameHostManager::ShouldProactivelySwapBrowsingInstance(
         same_site ? ShouldSwapBrowsingInstance::kYes_SameSiteProactiveSwap
                   : ShouldSwapBrowsingInstance::kYes_CrossSiteProactiveSwap);
   } else {
-    // As GetFutureBackForwardCacheEligibilityPotential is used instead of
-    // GetCurrentBackForwardCacheEligibility, non- sticky reasons are not
-    // recorded here. This is intentional because it is impossible to get
-    // correct non-sticky reasons at this timing.
     BackForwardCacheMetrics* back_forward_cache_metrics =
         render_frame_host_->GetBackForwardCacheMetrics();
     if (back_forward_cache_metrics) {
-      back_forward_cache_metrics->SetNotRestoredReasons(bfcache_eligibility);
+      // Reasons set in the metrics object will be used for DevTools and
+      // NotRestoredReasons API. We should include non-sticky reasons as well
+      // here for better debugging, though non-sticky features might get cleaned
+      // in pagehide handlers.
+      BackForwardCacheCanStoreDocumentResultWithTree
+          eligibility_including_non_sticky =
+              GetNavigationController()
+                  .GetBackForwardCache()
+                  .GetCompleteBackForwardCacheEligibilityForReporting(
+                      render_frame_host_.get());
+      back_forward_cache_metrics->SetNotRestoredReasons(
+          eligibility_including_non_sticky);
     }
     return BrowsingContextGroupSwap::CreateNoSwap(
         ShouldSwapBrowsingInstance::kNo_NotNeededForBackForwardCache);
@@ -3321,7 +3340,31 @@ void RenderFrameHostManager::CreateRenderFrameProxy(
     // object to depend on it is necessarily a main frame one.
     scoped_refptr<RenderViewHostImpl> render_view_host =
         frame_tree_node_->frame_tree().GetRenderViewHost(group);
-    CHECK(render_view_host || frame_tree_node_->IsMainFrame());
+    if (!frame_tree_node_->IsMainFrame()) {
+      SCOPED_CRASH_KEY_BOOL("Bug1400009", "sig_exists", !!group);
+      SCOPED_CRASH_KEY_STRING256("Bug1400009", "current_rfh_url",
+                                 render_frame_host_->GetLastCommittedURL()
+                                     .GetWithEmptyPath()
+                                     .possibly_invalid_spec());
+      SCOPED_CRASH_KEY_NUMBER("Bug1400009", "target_si",
+                              (int)instance->GetId());
+      SCOPED_CRASH_KEY_NUMBER(
+          "Bug1400009", "current_rfh_si",
+          (int)render_frame_host_->GetSiteInstance()->GetId());
+      SCOPED_CRASH_KEY_STRING64("Bug1400009", "current_lifecycle",
+                                RenderFrameHostImpl::LifecycleStateImplToString(
+                                    render_frame_host_->lifecycle_state()));
+      RenderFrameHostImpl* parent_rfh = render_frame_host_->GetParent();
+      SCOPED_CRASH_KEY_NUMBER("Bug1400009", "parent_si",
+                              (int)parent_rfh->GetSiteInstance()->GetId());
+      SCOPED_CRASH_KEY_BOOL("Bug1400009", "parent_rvh_exists",
+                            !!frame_tree_node_->frame_tree().GetRenderViewHost(
+                                parent_rfh->GetSiteInstance()->group()));
+      SCOPED_CRASH_KEY_STRING64("Bug1400009", "parent_lifecycle",
+                                RenderFrameHostImpl::LifecycleStateImplToString(
+                                    parent_rfh->lifecycle_state()));
+      CHECK(render_view_host);
+    }
     if (!render_view_host) {
       // Before creating a new RenderFrameProxyHost, ensure a RenderViewHost
       // exists for |instance|, as it creates the page level structure in Blink.

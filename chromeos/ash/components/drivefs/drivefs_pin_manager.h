@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <ostream>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -71,10 +72,11 @@ struct COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) Progress {
   // of the setup process and left unchanged afterwards.
   int64_t free_space = 0;
 
-  // Estimated number of bytes that are required to store the files to pin. This
-  // is a pessimistic estimate based on the assumption that each file uses an
-  // integral number of fixed-size blocks. Estimated at the beginning of the
-  // setup process and updated if necessary afterwards.
+  // Estimated number of extra bytes that are required to store the files to
+  // pin. This is a pessimistic estimate based on the assumption that each file
+  // uses an integral number of fixed-size blocks. Estimated at the beginning of
+  // the setup process and updated if necessary afterwards. When everything is
+  // pinned and cached, the required space is zero.
   int64_t required_space = 0;
 
   // Estimated number of bytes that are required to download the files to pin.
@@ -86,25 +88,31 @@ struct COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) Progress {
   int64_t pinned_bytes = 0;
 
   // Total number of files to pin.
-  int32_t files_to_pin = 0;
+  int files_to_pin = 0;
 
   // Number of pinned and downloaded files so far.
-  int32_t pinned_files = 0;
+  int pinned_files = 0;
 
   // Number of errors encountered so far.
-  int32_t failed_files = 0;
+  int failed_files = 0;
 
   // Number of files being synced right now.
-  int32_t syncing_files = 0;
+  int syncing_files = 0;
+
+  // Number of skipped files, directories and shortcuts.
+  int skipped_files = 0;
 
   // Number of "useful" (ie non-duplicated) events received from DriveFS so far.
-  int32_t useful_events = 0;
+  int useful_events = 0;
 
   // Number of duplicated events received from DriveFS so far.
-  int32_t duplicated_events = 0;
+  int duplicated_events = 0;
 
   // Stage of the setup process.
   Stage stage = Stage::kNotStarted;
+
+  // Has the PinManager ever emptied its set of tracking items?
+  bool emptied_queue = false;
 
   Progress();
   Progress(const Progress&);
@@ -183,10 +191,6 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   void OnFilesChanged(const std::vector<mojom::FileChange>& changes) override;
   void OnError(const mojom::DriveError& error) override;
 
-  void OnFileCreated(const mojom::FileChange& event);
-  void OnFileDeleted(const mojom::FileChange& event);
-  void OnFileModified(const mojom::FileChange& event);
-
   base::WeakPtr<PinManager> GetWeakPtr() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return weak_ptr_factory_.GetWeakPtr();
@@ -259,7 +263,11 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   // Adds an item to the files to track.  Does nothing if an item with the same
   // ID already exists in the map. Updates the total number of bytes to transfer
   // and the required space. Returns whether an item was actually added.
-  bool Add(Id id, const Path& path, int64_t size, bool pinned);
+  bool Add(Id id,
+           const Path& path,
+           int64_t size,
+           bool pinned,
+           bool available_offline = false);
 
   // Adds an item to the files to track if it is of interest.
   bool Add(const mojom::FileMetadata& md, const Path& path);
@@ -269,6 +277,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   // `transferred` is negative, use the total expected size. Returns whether an
   // item was actually removed.
   bool Remove(Id id, const Path& path, int64_t transferred = -1);
+  void Remove(Files::iterator it, const Path& path, int64_t transferred);
 
   // Updates an item in the files to track. Does nothing if the item is not in
   // the map. Updates the total number of bytes transferred so far. Updates the
@@ -279,6 +288,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
               const Path& path,
               int64_t transferred,
               int64_t total);
+
+  void OnFileCreated(const mojom::FileChange& event);
+  void OnFileDeleted(const mojom::FileChange& event);
+  void OnFileModified(const mojom::FileChange& event);
 
   // Invoked on retrieval of available space in the `~/GCache` directory.
   void OnFreeSpaceRetrieved(int64_t free_space);
@@ -311,13 +324,15 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   // status update but will get pinned.
   void CheckStalledFiles();
 
-  // When an item goes to completed, it doesn't emit the final chunk of progress
-  // nor it's final size, to ensure progress is adequately retrieved, this
-  // method is used to get the total size to keep track of.
-  void OnMetadataRetrieved(Id id,
-                           const Path& path,
-                           drive::FileError error,
-                           mojom::FileMetadataPtr metadata);
+  void OnMetadataForCreatedFile(Id id,
+                                const Path& path,
+                                drive::FileError error,
+                                mojom::FileMetadataPtr metadata);
+
+  void OnMetadataForModifiedFile(Id id,
+                                 const Path& path,
+                                 drive::FileError error,
+                                 mojom::FileMetadataPtr metadata);
 
   // Start or continue pinning some files.
   void PinSomeFiles();
@@ -360,7 +375,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   base::ElapsedTimer timer_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Stable IDs of the files to pin, and which are not already marked as pinned.
-  std::vector<Id> files_to_pin_ GUARDED_BY_CONTEXT(sequence_checker_);
+  std::unordered_set<Id> files_to_pin_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Map that tracks the in-progress files indexed by their stable ID. This
   // contains all the files, either pinned or not, that are not completely

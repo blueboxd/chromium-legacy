@@ -159,6 +159,9 @@
   "chrome/browser/resources/app_icon/app_icon_resources.grd": {
     "structures": [1390],
   },
+  "chrome/browser/resources/chromeos/app_icon/app_icon_resources.grd": {
+    "structures": [1395],
+  },
   "chrome/browser/resources/chromeos/login/oobe_conditional_resources.grd": {
     "META": {"sizes": {"includes": [150], "structures": [300]}},
     "includes": [1400],
@@ -208,7 +211,7 @@
     "META": {"sizes": {"includes": [15]}},
     "includes": [1580],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/discards/discards_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/discards/resources.grd": {
     "META": {"sizes": {"includes": [20],}},
     "includes": [1585],
   },
@@ -227,14 +230,6 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/identity_internals/resources.grd": {
     "META": {"sizes": {"includes": [10]}},
     "includes": [1621],
-  },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/image_editor/resources.grd": {
-    "META": {"sizes": {"includes": [20]}},
-    "includes": [1625],
-  },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/image_editor/image_editor_untrusted_resources.grd": {
-    "META": {"sizes": {"includes": [20]}},
-    "includes": [1630],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/internals/resources.grd": {
     "META": {"sizes": {"includes": [20]}},
@@ -316,7 +311,7 @@
     "includes": [1933],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/shared/resources.grd": {
-    "META": {"sizes": {"includes": [10],}},
+    "META": {"sizes": {"includes": [15],}},
     "includes": [1934],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/user_notes/resources.grd": {
@@ -542,6 +537,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/lens/untrusted_resources.grd": {
     "META": {"sizes": {"includes": [10]}},
     "includes": [2685],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/enterprise_reporting/resources.grd": {
+    "META": {"sizes": {"includes": [20]}},
+    "includes": [2695],
   },
   # END chrome/ WebUI resources section
 

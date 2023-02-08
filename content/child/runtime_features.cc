@@ -217,8 +217,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableDocumentPolicy, features::kDocumentPolicy},
     {wf::EnableDocumentPolicyNegotiation, features::kDocumentPolicyNegotiation},
     {wf::EnableFedCm, features::kFedCm, kSetOnlyIfOverridden},
-    {wf::EnableFedCmAutoSignin, features::kFedCmAutoSignin,
+    {wf::EnableFedCmAutoReauthn, features::kFedCmAutoReauthn,
      kSetOnlyIfOverridden},
+    {wf::EnableFedCmIdPRegistration, features::kFedCmIdPRegistration, kDefault},
     {wf::EnableFedCmIframeSupport, features::kFedCmIframeSupport,
      kSetOnlyIfOverridden},
     {wf::EnableFedCmLoginHint, features::kFedCmLoginHint, kSetOnlyIfOverridden},
@@ -319,7 +320,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            kSetOnlyIfOverridden},
           {"AndroidDownloadableFontsMatching",
            features::kAndroidDownloadableFontsMatching},
-          {"FirstPartySets", features::kFirstPartySets},
           {"Fledge", blink::features::kFledge, kSetOnlyIfOverridden},
           {"Fledge", features::kPrivacySandboxAdsAPIsOverride,
            kSetOnlyIfOverridden},
@@ -329,6 +329,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"OriginIsolationHeader", features::kOriginIsolationHeader},
           {"PartitionedCookies", net::features::kPartitionedCookies},
           {"ReduceAcceptLanguage", network::features::kReduceAcceptLanguage},
+          {"StorageAccessAPI", features::kFirstPartySets},
           {"TopicsAPI", features::kPrivacySandboxAdsAPIsOverride,
            kSetOnlyIfOverridden},
           {"TopicsXHR", features::kPrivacySandboxAdsAPIsOverride,
@@ -404,8 +405,10 @@ void SetRuntimeFeaturesFromCommandLine(const base::CommandLine& command_line) {
        true},
       {wrf::EnableWebGPUDeveloperFeatures,
        switches::kEnableWebGPUDeveloperFeatures, true},
-      {wrf::EnableDirectSockets, switches::kIsolatedAppOrigins, true},
+      {wrf::EnableDirectSockets, switches::kEnableIsolatedWebAppsInRenderer,
+       true},
   };
+
   for (const auto& mapping : switchToFeatureMapping) {
     if (command_line.HasSwitch(mapping.switch_name)) {
       mapping.feature_enabler(mapping.target_enabled_state);

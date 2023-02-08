@@ -103,7 +103,7 @@ export class CategoriesElement extends PolymerElement {
   }
 
   private computeSelectedCategory_() {
-    if (!this.theme_) {
+    if (!this.theme_ || this.theme_.thirdPartyThemeInfo) {
       return {type: CategoryType.NONE};
     }
     if (!this.theme_.backgroundImage) {
@@ -149,6 +149,7 @@ export class CategoriesElement extends PolymerElement {
   private async onUploadImageClick_() {
     const {success} = await this.pageHandler_.chooseLocalCustomBackground();
     if (success) {
+      this.pageHandler_.setDefaultColor();
       this.dispatchEvent(new Event('local-image-upload'));
     }
   }

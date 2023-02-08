@@ -64,6 +64,7 @@ class AddressNormalizer;
 class AutocompleteHistoryManager;
 class AutofillAblationStudy;
 class AutofillDriver;
+class AutofillDownloadManager;
 struct AutofillErrorDialogContext;
 class AutofillManager;
 class AutofillOfferData;
@@ -347,6 +348,10 @@ class AutofillClient : public RiskDataLoader {
   // Returns the URL loader factory associated with this driver.
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactory() = 0;
+
+  // Returns the AutofillDownloadManager for communication with the Autofill
+  // crowdsourcing server.
+  virtual AutofillDownloadManager* GetDownloadManager();
 
   // Gets the PersonalDataManager instance associated with the client.
   virtual PersonalDataManager* GetPersonalDataManager() = 0;
@@ -700,7 +705,7 @@ class AutofillClient : public RiskDataLoader {
   virtual PopupOpenArgs GetReopenPopupArgs() const = 0;
 
   // Returns (not elided) suggestions currently held by the UI.
-  virtual base::span<const Suggestion> GetPopupSuggestions() const = 0;
+  virtual std::vector<Suggestion> GetPopupSuggestions() const = 0;
 
   // Updates the popup contents with the newly given suggestions.
   virtual void UpdatePopup(const std::vector<Suggestion>& suggestions,

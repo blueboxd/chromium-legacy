@@ -58,7 +58,6 @@
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/attribution_data_model.h"
-#include "content/public/browser/attribution_reporting.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/content_browser_client.h"
@@ -383,7 +382,7 @@ bool AttributionManagerImpl::IsReportAllowed(
   return IsOperationAllowed(
       storage_partition_.get(),
       ContentBrowserClient::AttributionReportingOperation::kReport,
-      &*common_info.source_origin(), &*common_info.destination_origin(),
+      &*common_info.source_origin(), &*report.attribution_info().context_origin,
       &*common_info.reporting_origin());
 }
 

@@ -4,6 +4,7 @@
 
 import("//build/buildflag_header.gni")
 import("//build/config/chrome_build.gni")
+import("//build/config/features.gni")
 import("//chrome/version.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//tools/grit/grit_rule.gni")
@@ -288,6 +289,8 @@ static_library("browser") {
     "metrics/payments/virtual_card_manual_fallback_bubble_metrics.h",
     "metrics/shadow_prediction_metrics.cc",
     "metrics/shadow_prediction_metrics.h",
+    "metrics/stored_profile_metrics.cc",
+    "metrics/stored_profile_metrics.h",
     "metrics/suggestions_list_metrics.cc",
     "metrics/suggestions_list_metrics.h",
     "payments/account_info_getter.h",
@@ -591,7 +594,7 @@ static_library("browser") {
     "//ui/accessibility:accessibility",
   ]
 
-  if (!is_ios) {
+  if (use_blink) {
     deps += [
       "//components/webauthn/core/browser",
       "//third_party/blink/public/common",
@@ -762,7 +765,7 @@ static_library("test_support") {
     "//ui/gfx/geometry",
   ]
 
-  if (!is_ios) {
+  if (use_blink) {
     sources += [
       "payments/test_credit_card_fido_authenticator.cc",
       "payments/test_credit_card_fido_authenticator.h",
@@ -903,6 +906,7 @@ source_set("unit_tests") {
     "metrics/autofill_metrics_unittest.cc",
     "metrics/payments/offers_metrics_unittest.cc",
     "metrics/shadow_prediction_metrics_unittest.cc",
+    "metrics/stored_profile_metrics_unittest.cc",
     "metrics/suggestions_list_metrics_unittest.cc",
     "payments/autofill_offer_manager_unittest.cc",
     "payments/credit_card_access_manager_unittest.cc",
@@ -1047,7 +1051,7 @@ source_set("unit_tests") {
     "//url",
   ]
 
-  if (!is_ios) {
+  if (use_blink) {
     deps += [
       "//content/test:test_support",
       "//third_party/blink/public/common",

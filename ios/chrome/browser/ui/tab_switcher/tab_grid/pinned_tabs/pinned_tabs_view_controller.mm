@@ -59,6 +59,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   // Identifier of the selected item.
   NSString* _selectedItemID;
 
+  // Identifier of the last item to be inserted. This is used to track if the
+  // active tab was newly created when building the animation layout for
+  // transitions.
+  NSString* _lastInsertedItemID;
+
   // Constraints used to update the view during drag and drop actions.
   NSLayoutConstraint* _dragEnabledConstraint;
   NSLayoutConstraint* _defaultConstraint;
@@ -114,10 +119,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   [self.collectionView reloadData];
   [self updateEmptyCollectionViewLabelVisibility];
 
-  [self scrollCollectionViewToSelectedItem];
+  [self selectCollectionViewItemWithID:_selectedItemID animated:NO];
 
   // Update the delegate, in case it wasn't set when `items` was populated.
   [self.delegate pinnedTabsViewController:self didChangeItemCount:_items.count];
+
+  _lastInsertedItemID = nil;
 }
 
 - (void)contentWillDisappear {
@@ -172,8 +179,67 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 - (GridTransitionLayout*)transitionLayout {
-  // TODO(crbug.com/1406524): Implement this.
-  return nil;
+  [self.collectionView layoutIfNeeded];
+
+  NSMutableArray<GridTransitionItem*>* items = [[NSMutableArray alloc] init];
+  GridTransitionActiveItem* activeItem;
+  GridTransitionItem* selectionItem;
+
+  for (NSIndexPath* path in self.collectionView.indexPathsForVisibleItems) {
+    PinnedCell* cell = base::mac::ObjCCastStrict<PinnedCell>(
+        [self.collectionView cellForItemAtIndexPath:path]);
+
+    UICollectionViewLayoutAttributes* attributes =
+        [self.collectionView layoutAttributesForItemAtIndexPath:path];
+    // Normalize frame to window coordinates. The attributes class applies this
+    // change to the other properties such as center, bounds, etc.
+    attributes.frame = [self.collectionView convertRect:attributes.frame
+                                                 toView:nil];
+
+    if ([cell hasIdentifier:_selectedItemID]) {
+      PinnedTransitionCell* activeCell =
+          [PinnedTransitionCell transitionCellFromCell:cell];
+      activeItem = [GridTransitionActiveItem itemWithCell:activeCell
+                                                   center:attributes.center
+                                                     size:attributes.size];
+      // If the active item is the last inserted item, it needs to be animated
+      // differently.
+      if ([cell hasIdentifier:_lastInsertedItemID]) {
+        activeItem.isAppearing = YES;
+      }
+
+      selectionItem = [GridTransitionItem
+          itemWithCell:[PinnedTransitionCell transitionCellFromCell:cell]
+                center:attributes.center];
+    } else {
+      UIView* cellSnapshot = [cell snapshotViewAfterScreenUpdates:YES];
+      GridTransitionItem* item =
+          [GridTransitionItem itemWithCell:cellSnapshot
+                                    center:attributes.center];
+      [items addObject:item];
+    }
+  }
+
+  return [GridTransitionLayout layoutWithInactiveItems:items
+                                            activeItem:activeItem
+                                         selectionItem:selectionItem];
+}
+
+- (BOOL)isSelectedCellVisible {
+  // The collection view's selected item may not have updated yet, so use the
+  // selected index.
+  NSUInteger selectedIndex = self.selectedIndex;
+  if (selectedIndex == NSNotFound) {
+    return NO;
+  }
+
+  NSIndexPath* selectedIndexPath = CreateIndexPath(selectedIndex);
+  return [self.collectionView.indexPathsForVisibleItems
+      containsObject:selectedIndexPath];
+}
+
+- (BOOL)hasSelectedCell {
+  return self.selectedIndex != NSNotFound;
 }
 
 #pragma mark - TabCollectionConsumer
@@ -197,10 +263,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   [self.delegate pinnedTabsViewController:self didChangeItemCount:items.count];
 
   [self.collectionView reloadData];
-  [self.collectionView
-      selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                   animated:YES
-             scrollPosition:UICollectionViewScrollPositionNone];
+  [self selectCollectionViewItemWithID:_selectedItemID animated:YES];
 }
 
 - (void)insertItem:(TabSwitcherItem*)item
@@ -247,14 +310,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     return;
   }
 
-  [self.collectionView
-      deselectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                     animated:NO];
+  [self deselectCollectionViewItemWithID:_selectedItemID animated:NO];
   _selectedItemID = selectedItemID;
-  [self.collectionView
-      selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                   animated:NO
-             scrollPosition:UICollectionViewScrollPositionNone];
+  [self selectCollectionViewItemWithID:_selectedItemID animated:NO];
 }
 
 - (void)replaceItemID:(NSString*)itemID withItem:(TabSwitcherItem*)item {
@@ -520,7 +578,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                                    atIndex:(NSUInteger)index
                             selectedItemID:(NSString*)selectedItemID {
   [_items insertObject:item atIndex:index];
-  _selectedItemID = selectedItemID;
+  _selectedItemID = [selectedItemID copy];
+  _lastInsertedItemID = [item.identifier copy];
   [self.delegate pinnedTabsViewController:self didChangeItemCount:_items.count];
 
   [self.collectionView insertItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
@@ -552,19 +611,6 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (void)handleItemRemovalCompletion {
   [self updateCollectionViewAfterItemDeletion];
   [self.delegate pinnedTabsViewController:self didChangeItemCount:_items.count];
-}
-
-// Scrolls collection view to make the selected item visible.
-- (void)scrollCollectionViewToSelectedItem {
-  NSUInteger selectedIndex = self.selectedIndex;
-
-  if (selectedIndex != NSNotFound && selectedIndex < _items.count) {
-    [self.collectionView
-        selectItemAtIndexPath:CreateIndexPath(selectedIndex)
-                     animated:NO
-               scrollPosition:
-                   UICollectionViewScrollPositionCenteredHorizontally];
-  }
 }
 
 // Configures the collectionView.
@@ -632,9 +678,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   [self updateEmptyCollectionViewLabelVisibility];
 }
 
-// Configures `cell`'s title synchronously, and favicon asynchronously with
-// information from `item`. Updates the `cell`'s theme to this view
-// controller's theme.
+// Configures `cell`'s identifier and title synchronously, favicon and snapshot
+// asynchronously with information from `item`.
 - (void)configureCell:(PinnedCell*)cell withItem:(TabSwitcherItem*)item {
   if (item) {
     cell.itemIdentifier = item.identifier;
@@ -648,12 +693,24 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                                         cell.icon = icon;
                                       }
                                     }];
+    [self.imageDataSource
+        snapshotForIdentifier:itemIdentifier
+                   completion:^(UIImage* snapshot) {
+                     if ([cell hasIdentifier:itemIdentifier]) {
+                       cell.snapshot = snapshot;
+                     }
+                   }];
   }
 }
 
 // Returns the index in `_items` of the first item whose identifier is
 // `identifier`.
 - (NSUInteger)indexOfItemWithID:(NSString*)identifier {
+  // Check that identifier exists and not empty.
+  if (identifier.length == 0) {
+    return NSNotFound;
+  }
+
   auto selectedTest =
       ^BOOL(TabSwitcherItem* item, NSUInteger index, BOOL* stop) {
         return [item.identifier isEqualToString:identifier];
@@ -686,15 +743,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 // selected item id.
 - (void)updateCollectionViewAfterItemInsertionWithPreviousItemID:
     (NSString*)previousItemID {
-  [self.collectionView
-      deselectItemAtIndexPath:CreateIndexPath(
-                                  [self indexOfItemWithID:previousItemID])
-                     animated:NO];
+  [self deselectCollectionViewItemWithID:previousItemID animated:NO];
+  [self selectCollectionViewItemWithID:_selectedItemID animated:NO];
 
-  [self.collectionView
-      selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                   animated:NO
-             scrollPosition:UICollectionViewScrollPositionNone];
+  // Scroll the collection view to the newly added item, so it doesn't
+  // disappear from the user's sight.
+  [self scrollCollectionViewToLastItemAnimated:NO];
 
   [self pinnedTabsAvailable:_available];
 }
@@ -702,10 +756,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 // Updates the collection view after an item deletion.
 - (void)updateCollectionViewAfterItemDeletion {
   if (_items.count > 0) {
-    [self.collectionView
-        selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                     animated:NO
-               scrollPosition:UICollectionViewScrollPositionNone];
+    [self selectCollectionViewItemWithID:_selectedItemID animated:NO];
   } else {
     [self pinnedTabsAvailable:_available];
   }
@@ -716,6 +767,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   // Bring back selected halo only for the moved cell, which lost it during
   // the move (drag & drop).
   if (self.selectedIndex != index) {
+    [self scrollCollectionViewToItemWithIndex:index animated:YES];
     return;
   }
   // Force reload of the selected cell now to avoid extra delay for the
@@ -726,10 +778,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                  [self.collectionView reloadItemsAtIndexPaths:@[
                    CreateIndexPath(self.selectedIndex)
                  ]];
-                 [self.collectionView
-                     selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                                  animated:NO
-                            scrollPosition:UICollectionViewScrollPositionNone];
+                 [self selectCollectionViewItemWithID:self->_selectedItemID
+                                             animated:NO];
                }
                completion:nil];
 }
@@ -748,6 +798,61 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (void)resetCollectionViewBackground {
   self.collectionView.backgroundColor = _backgroundColor;
   self.collectionView.backgroundView.hidden = NO;
+}
+
+// Selects the collection view's item with `itemID`.
+- (void)selectCollectionViewItemWithID:(NSString*)itemID
+                              animated:(BOOL)animated {
+  NSUInteger itemIndex = [self indexOfItemWithID:itemID];
+
+  // Check `itemIndex` boundaries in order to filter out possible race
+  // conditions while mutating the collection.
+  if (itemIndex == NSNotFound || itemIndex >= _items.count) {
+    return;
+  }
+
+  NSIndexPath* itemIndexPath = CreateIndexPath(itemIndex);
+
+  [self.collectionView
+      selectItemAtIndexPath:itemIndexPath
+                   animated:animated
+             scrollPosition:UICollectionViewScrollPositionCenteredHorizontally];
+}
+
+// Deselects the collection view's item with `itemID`.
+- (void)deselectCollectionViewItemWithID:(NSString*)itemID
+                                animated:(BOOL)animated {
+  NSUInteger itemIndex = [self indexOfItemWithID:itemID];
+  NSIndexPath* itemIndexPath = CreateIndexPath(itemIndex);
+
+  [self.collectionView deselectItemAtIndexPath:itemIndexPath animated:animated];
+}
+
+// Scrolls the collection view to the currently selected item.
+- (void)scrollCollectionViewToSelectedItemAnimated:(BOOL)animated {
+  [self scrollCollectionViewToItemWithIndex:self.selectedIndex
+                                   animated:animated];
+}
+
+// Scrolls the collection view to the last item.
+- (void)scrollCollectionViewToLastItemAnimated:(BOOL)animated {
+  [self scrollCollectionViewToItemWithIndex:_items.count - 1 animated:animated];
+}
+
+// Scrolls the collection view to the item with specified `itemIndex`.
+- (void)scrollCollectionViewToItemWithIndex:(NSUInteger)itemIndex
+                                   animated:(BOOL)animated {
+  // Check `itemIndex` boundaries in order to filter out possible race
+  // conditions while mutating the collection.
+  if (itemIndex == NSNotFound || itemIndex >= _items.count) {
+    return;
+  }
+
+  NSIndexPath* itemIndexPath = CreateIndexPath(itemIndex);
+  [self.collectionView
+      scrollToItemAtIndexPath:itemIndexPath
+             atScrollPosition:UICollectionViewScrollPositionCenteredHorizontally
+                     animated:animated];
 }
 
 @end

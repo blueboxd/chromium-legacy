@@ -407,8 +407,6 @@
       # TODO(crbug.com/1235218): remove after the migration.
       'chromeos-amd64-generic-rel (reclient compare)': 'chromeos_amd64-generic-vm_use_fake_dbus_clients_reclient',
       'chromeos-amd64-generic-rel (reclient)': 'chromeos_amd64-generic-vm_use_fake_dbus_clients_reclient',
-      'fuchsia-fyi-arm64-cfv2-script': 'release_bot_fuchsia_arm64_reclient',
-      'fuchsia-fyi-cfv2-script': 'release_bot_fuchsia_reclient',
       'ios-fieldtrial-rel': 'ios_simulator_debug_static_bot_xctest_arm64_reclient',
       'ios-m1-simulator': 'ios_simulator_debug_static_bot_xctest_arm64_reclient',
       'ios-m1-simulator-cronet': 'ios_cronet_xctest_arm64_reclient',
@@ -1404,8 +1402,8 @@
     },
 
     'tryserver.v8': {
-      'v8_linux_blink_rel': 'release_trybot_blink',
-      'v8_linux_chromium_gn_rel': 'release_trybot',
+      'v8_linux_blink_rel': 'release_trybot_blink_reclient',
+      'v8_linux_chromium_gn_rel': 'release_trybot_reclient',
     },
 
     'tryserver.webrtc': {
@@ -2551,7 +2549,7 @@
 
     'fuchsia_clang_code_coverage_reclient': [
       'clang', 'fuchsia', 'fuchsia_code_coverage', 'no_symbols', 'release_bot_reclient',
-      'use_clang_coverage', 'fuchsia_legacy_script',
+      'use_clang_coverage',
     ],
 
     'fuchsia_clang_tot_official_arm64': [
@@ -3089,7 +3087,7 @@
     ],
 
     'libfuzzer_ubsan_release_bot_reclient': [
-      'libfuzzer', 'ubsan_security_non_vptr', 'release_bot_reclient', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus',
+      'libfuzzer', 'ubsan_security_non_vptr', 'release_bot_reclient', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing', 'disable_seed_corpus', 'shared',
     ],
 
     'libfuzzer_windows_asan_clang_tot_release_bot': [
@@ -3599,6 +3597,10 @@
 
     'release_trybot_blink_do_typecheck': [
       'release_trybot_blink', 'devtools_do_typecheck',
+    ],
+
+    'release_trybot_blink_reclient': [
+      'release_trybot_blink_reclient',
     ],
 
     'release_trybot_cxx17': [
@@ -4236,11 +4238,6 @@
 
     'fuchsia_include_sd_images': {
       'gn_args': 'fuchsia_additional_boot_images=["//third_party/fuchsia-sdk/images-internal/astro-release/","//third_party/fuchsia-sdk/images-internal/sherlock-release/","//third_party/fuchsia-sdk/images-internal/nelson-release/"]',
-    },
-
-    # TODO(crbug/1336775): Remove when --ram-size-mb is added in new scripts
-    'fuchsia_legacy_script': {
-      'gn_args': 'use_v2_script_default=false',
     },
 
     'full_symbols': {

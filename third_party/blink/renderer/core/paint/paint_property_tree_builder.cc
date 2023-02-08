@@ -250,7 +250,7 @@ class FragmentPaintPropertyTreeBuilder {
 
   void UpdateIndividualTransform(
       bool (*needs_property)(const LayoutObject&, CompositingReasons),
-      void (*compute_matrix)(const ComputedStyle& style,
+      void (*compute_matrix)(const LayoutBox* box,
                              const PhysicalSize& size,
                              gfx::Transform& matrix),
       CompositingReasons compositing_reasons_for_property,
@@ -1082,11 +1082,11 @@ static bool UpdateBoxSizeAndCheckActiveAnimationAxisAlignment(
 static TransformPaintPropertyNode::TransformAndOrigin TransformAndOriginState(
     const LayoutBox& box,
     const PhysicalSize& size,
-    void (*compute_matrix)(const ComputedStyle& style,
+    void (*compute_matrix)(const LayoutBox* box,
                            const PhysicalSize& size,
                            gfx::Transform& matrix)) {
   gfx::Transform matrix;
-  compute_matrix(box.StyleRef(), size, matrix);
+  compute_matrix(&box, size, matrix);
   return {matrix, GetTransformOrigin(box, size)};
 }
 
@@ -1099,7 +1099,7 @@ static bool IsLayoutShiftRootTransform(
 
 void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
     bool (*needs_property)(const LayoutObject&, CompositingReasons),
-    void (*compute_matrix)(const ComputedStyle& style,
+    void (*compute_matrix)(const LayoutBox* box,
                            const PhysicalSize& size,
                            gfx::Transform& matrix),
     CompositingReasons compositing_reasons_for_property,
@@ -1222,8 +1222,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateIndividualTransform(
 void FragmentPaintPropertyTreeBuilder::UpdateTranslate() {
   UpdateIndividualTransform(
       &NeedsTranslate,
-      [](const ComputedStyle& style, const PhysicalSize& size,
+      [](const LayoutBox* box, const PhysicalSize& size,
          gfx::Transform& matrix) {
+        const auto& style = box->StyleRef();
         if (style.Translate())
           style.Translate()->Apply(matrix, gfx::SizeF(size));
       },
@@ -1238,8 +1239,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateTranslate() {
 void FragmentPaintPropertyTreeBuilder::UpdateRotate() {
   UpdateIndividualTransform(
       &NeedsRotate,
-      [](const ComputedStyle& style, const PhysicalSize& size,
+      [](const LayoutBox* box, const PhysicalSize& size,
          gfx::Transform& matrix) {
+        const auto& style = box->StyleRef();
         if (style.Rotate())
           style.Rotate()->Apply(matrix, gfx::SizeF(size));
       },
@@ -1253,8 +1255,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateRotate() {
 void FragmentPaintPropertyTreeBuilder::UpdateScale() {
   UpdateIndividualTransform(
       &NeedsScale,
-      [](const ComputedStyle& style, const PhysicalSize& size,
+      [](const LayoutBox* box, const PhysicalSize& size,
          gfx::Transform& matrix) {
+        const auto& style = box->StyleRef();
         if (style.Scale())
           style.Scale()->Apply(matrix, gfx::SizeF(size));
       },
@@ -1268,10 +1271,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateScale() {
 void FragmentPaintPropertyTreeBuilder::UpdateOffset() {
   UpdateIndividualTransform(
       &NeedsOffset,
-      [](const ComputedStyle& style, const PhysicalSize& size,
+      [](const LayoutBox* box, const PhysicalSize& size,
          gfx::Transform& matrix) {
+        const auto& style = box->StyleRef();
         style.ApplyTransform(
-            matrix, size.ToLayoutSize(),
+            matrix, box, size.ToLayoutSize(),
             ComputedStyle::kExcludeTransformOperations,
             ComputedStyle::kExcludeTransformOrigin,
             ComputedStyle::kIncludeMotionPath,
@@ -1289,10 +1293,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateOffset() {
 void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
   UpdateIndividualTransform(
       &NeedsTransform,
-      [](const ComputedStyle& style, const PhysicalSize& size,
+      [](const LayoutBox* box, const PhysicalSize& size,
          gfx::Transform& matrix) {
+        const auto& style = box->StyleRef();
         style.ApplyTransform(
-            matrix, size.ToLayoutSize(),
+            matrix, box, size.ToLayoutSize(),
             ComputedStyle::kIncludeTransformOperations,
             ComputedStyle::kExcludeTransformOrigin,
             ComputedStyle::kExcludeMotionPath,
@@ -2902,48 +2907,6 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
   }
 
   context_.current.paint_offset += context_.repeating_paint_offset_adjustment;
-
-  // If a transition is in progress, the root transition container is shifted
-  // up and left to be at the origin "as-if all viewport-insetting UI were
-  // hidden". This is done so that the transition container is stable across
-  // navigations where the state of such UI can change (e.g. URL bar hidden ->
-  // shown). Offset painting of all other content so that it appears at its
-  // original location on the screen. Non-root transitions paint at their
-  // layer's origin and the layer is positioned with this offset included.
-  Document& document = object_.GetDocument();
-  ViewTransition* transition =
-      ViewTransitionUtils::GetActiveTransition(document);
-  PseudoElement* view_transition_pseudo =
-      ViewTransitionUtils::GetRootPseudo(document);
-
-  // We may have a transition but not yet have setup the pseudo element tree.
-  // This can happen in view-transition-on-navigation where a transition is
-  // created waiting for rendering to unblock but pre-paint can still be
-  // triggered in this state.
-  DCHECK(!view_transition_pseudo || transition);
-
-  if (view_transition_pseudo && transition->IsRootTransitioning()) {
-    DCHECK(document.documentElement());
-    DCHECK(view_transition_pseudo->GetLayoutObject());
-    DCHECK(view_transition_pseudo->GetLayoutObject()->Parent()->IsLayoutView());
-
-    bool is_child_of_root =
-        object_.Parent() && object_.Parent()->IsLayoutView();
-    bool is_view_transition_pseudo =
-        object_.GetNode() == view_transition_pseudo;
-    if (is_child_of_root && !is_view_transition_pseudo) {
-      // Frame scrollbars belong to the frame so page content (children of the
-      // LayoutView) already has a paint offset from any left-side vertical
-      // scrollbar. Thus, offset by snapshot-root-to-frame (rather than to
-      // fixed-viewport) so we don't apply the scrollbar offset a second time.
-      PhysicalOffset offset =
-          -PhysicalOffset(transition->GetFrameToSnapshotRootOffset());
-      context_.current.paint_offset += offset;
-      context_.absolute_position.paint_offset += offset;
-      context_.fixed_position.paint_offset += offset;
-    }
-  }
-
   context_.current.additional_offset_to_layout_shift_root_delta +=
       context_.pending_additional_offset_to_layout_shift_root_delta;
   context_.pending_additional_offset_to_layout_shift_root_delta =
@@ -4272,10 +4235,11 @@ void PaintPropertyTreeBuilder::DirectlyUpdateTransformMatrix(
   auto* transform = properties->Transform();
   auto transform_and_origin = TransformAndOriginState(
       box, size,
-      [](const ComputedStyle& style, const PhysicalSize& size,
+      [](const LayoutBox* box, const PhysicalSize& size,
          gfx::Transform& matrix) {
+        const auto& style = box->StyleRef();
         style.ApplyTransform(
-            matrix, size.ToLayoutSize(),
+            matrix, box, size.ToLayoutSize(),
             ComputedStyle::kIncludeTransformOperations,
             ComputedStyle::kExcludeTransformOrigin,
             ComputedStyle::kExcludeMotionPath,

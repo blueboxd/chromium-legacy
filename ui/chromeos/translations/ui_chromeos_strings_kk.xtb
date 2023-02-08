@@ -51,6 +51,7 @@
 <translation id="1433628812591023318">Файлдарды Parallels Desktop-қа апару үшін "Windows файлдары" қалтасына орналастыру керек.</translation>
 <translation id="1435838927755162558">Қалтаны Parallels Desktop арқылы бөлісу</translation>
 <translation id="1439919885608649279">Гүл ұстаған адам</translation>
+<translation id="1458457385801829801"><ph name="TARGET_NAME" /> шығарылсын</translation>
 <translation id="1471718551822868769">Словак</translation>
 <translation id="1482884275703521657">Фин</translation>
 <translation id="148466539719134488">Швейцария</translation>
@@ -407,6 +408,7 @@
 <translation id="4462159676511157176">Реттелетін атау серверлері</translation>
 <translation id="4465725236958772856"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> желі, <ph name="NETWORK_NAME" />, әкімші басқарады, контент</translation>
 <translation id="4470564870223067757">2-ханғыл жинағы</translation>
+<translation id="4474142134969976028">Сәйкес нәтижелер табылмады</translation>
 <translation id="4477002475007461989">Румын</translation>
 <translation id="4477219268485577442">Болгар (фонетикалық)</translation>
 <translation id="4508265954913339219">Белсендіру сәтсіз аяқталды</translation>
@@ -811,6 +813,7 @@
 <translation id="7655441028674523381">Google Photos қызметін оңай пайдаланыңыз</translation>
 <translation id="7658239707568436148">Бас тарту</translation>
 <translation id="7663224033570512922">Хинди</translation>
+<translation id="7665680517722058469">Басқаша іздеп көріңіз</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> элемент себетке жіберілді.</translation>
 <translation id="7693909743393669729">Дискіні форматтасаңыз, онда сақталған деректердің барлығы өшіп қалады және қолданыстағы бөлімдердің барлығы (оның ішінде көрінбейтін бөлімдер) жойылып кетеді. Бұл әрекетті кері қайтару мүмкін емес.</translation>
 <translation id="7695430100978772476"><ph name="DRIVE_NAME" /> форматталмады.</translation>
@@ -967,6 +970,7 @@
 <translation id="8866284467018526531">Arabic (транслитерация)</translation>
 <translation id="8873014196523807561">Бұл элементтерді қалпына келтіру үшін оларды жаңа қалтаға сүйреңіз. Кейбір элементтерге арналған бастапқы қалталар жойылған.</translation>
 <translation id="8874184842967597500">Қосылмаған</translation>
+<translation id="8876368061475701452">Кезекте</translation>
 <translation id="8900820606136623064">мадьяр</translation>
 <translation id="8903931173357132290">Түлек</translation>
 <translation id="8912078710089354287">Құйрығын бұлғаңдатқан ит</translation>

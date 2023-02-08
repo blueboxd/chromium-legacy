@@ -59,6 +59,7 @@
 <translation id="1499943022354839699">ភាសា​អង់គ្លេស (សហរដ្ឋអាមេរិក) ដែលប្រើ​ក្ដារចុច Dvorak</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> - ម៉ាស៊ីន</translation>
 <translation id="1521655867290435174">Google បញ្ជី</translation>
+<translation id="1521795806314479294">កំពុង​រៀបចំ <ph name="FILE_NAME" />...</translation>
 <translation id="1538729222189715449">កំពុងបើក​ឯកសារ Linux...</translation>
 <translation id="1547964879613821194">ភាសាអង់គ្លេសកាណាដា</translation>
 <translation id="1556189134700913550">អនុវត្តទៅទាំងអស់</translation>
@@ -83,6 +84,7 @@
 <translation id="1722487484194605434">កំពុងបង្រួមធាតុ <ph name="NUMBER_OF_ITEMS" /> ...</translation>
 <translation id="1722687688096767818">កំពុងបញ្ចូល​កម្រងព័ត៌មាន...</translation>
 <translation id="1726100011689679555">ដាក់​ឈ្មោះ​ឲ្យ​ម៉ាស៊ីន​មេ</translation>
+<translation id="1727562178154619254">ត្រៀមរួចរាល់​ក្នុងការធ្វើ​សមកាលកម្ម</translation>
 <translation id="1729953886957086472">ភាសា​អាល្លឺម៉ង់ (អាល្លឺម៉ង់)</translation>
 <translation id="1730235522912993863">ភាសាចិនខាន់ជី</translation>
 <translation id="1731889557567069540">បានចម្លង​ធាតុ <ph name="NUMBER_OF_ITEMS" />។</translation>
@@ -408,6 +410,7 @@
 <translation id="4462159676511157176">ម៉ាស៊ីនមេឈ្មោះផ្ទាល់ខ្លូន</translation>
 <translation id="4465725236958772856">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, គ្រប់គ្រងដោយ​អ្នកគ្រប់គ្រង​របស់អ្នក, ភ្ជាប់</translation>
 <translation id="4470564870223067757">ហានគុល 2 ឈុត</translation>
+<translation id="4474142134969976028">គ្មានលទ្ធផលដែលត្រូវគ្នាទេ</translation>
 <translation id="4477002475007461989">ភាសា​រូម៉ានី</translation>
 <translation id="4477219268485577442">សូរសព្ទប៊ុលហ្គារី</translation>
 <translation id="4508265954913339219">ការធ្វើសកម្មភាពបានបរាជ័យ</translation>
@@ -479,6 +482,7 @@
 <translation id="4973523518332075481">ប្រើឈ្មោះដែលមានអក្សរ <ph name="MAX_LENGTH" /> តួ ឬតិចជាងនេះ</translation>
 <translation id="4973970068702235170">មិនអាច​បង្រួមបានទេ បញ្ហាមិនបានរំពឹងទុក៖ <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">ភាសា​ជប៉ុន</translation>
+<translation id="4987699874727873250">អង់គ្លេស (ឥណ្ឌា)</translation>
 <translation id="4988205478593450158">តើអ្នកប្រាកដថា​ចង់លុប "<ph name="FILE_NAME" />" ដែរទេ?</translation>
 <translation id="498902553138568924">មេអំបៅ​ពណ៌​ក្រហម</translation>
 <translation id="4992066212339426712">បើកសម្លេង</translation>
@@ -509,6 +513,7 @@
    ការដកឧបករណ៍របស់អ្នកចេញ ខណៈពេលកំពុងប្រើប្រាស់អាចបណ្តាលឲ្យបាត់បង់ទិន្នន័យ។ សូមរង់ចាំរហូតដល់ប្រតិបត្តិការត្រូវបានបញ្ចប់ បន្ទាប់មកបញ្ចេញឧបករណ៍ដោយប្រើកម្មវិធីឯកសារ។</translation>
 <translation id="5163869187418756376">ការចែករំលែកបានបរាជ័យ។ ពិនិត្យការភ្ជាប់របស់អ្នក ហើយព្យាយាមម្តងទៀត។</translation>
 <translation id="516592729076796170">អ្នកសរសេរកម្មវិធីអាមេរិក Dvorak</translation>
+<translation id="5167102019886320507">កំពុង​រៀបចំ​ធាតុ <ph name="NUMBER_OF_ITEMS" />...</translation>
 <translation id="5177526793333269655">មើលរូបតំណាងតូច</translation>
 <translation id="5181896909298187506">គ្មាន​ឯកសារ​ថ្មីៗ​ទេ</translation>
 <translation id="5194713942430106590">ចុចដើម្បី​តម្រៀបជួរឈរ​តាមលំដាប់កើន។</translation>
@@ -812,6 +817,7 @@
 <translation id="7655441028674523381">ចូលប្រើ Google រូបថតបាន​យ៉ាងងាយស្រួល</translation>
 <translation id="7658239707568436148">បដិសេធ</translation>
 <translation id="7663224033570512922">ភាសា​ហិណ្ឌី</translation>
+<translation id="7665680517722058469">សាកល្បង​ធ្វើការ​ស្វែងរក​មួយទៀត</translation>
 <translation id="7689532716264131859">បានផ្លាស់ទីធាតុ <ph name="NUMBER_OF_ITEMS" /> ទៅ​ក្នុង​ធុង​សំរាម</translation>
 <translation id="7693909743393669729">ការសម្អាត​ថាសនឹងលុបទិន្នន័យ​ទាំងអស់ ​ដែលបានរក្សាទុក​នៅក្នុងថាសនោះ និងលុបផ្នែកដែលមានស្រាប់ទាំងអស់ រួមទាំងផ្នែកដែលប្រហែលជាមិនអាចមើលឃើញផងដែរ។ សកម្មភាព​នេះ​មិន​អាច​​ត្រឡប់វិញ​បានទេ។</translation>
 <translation id="7695430100978772476">មិនអាច​សម្អាត <ph name="DRIVE_NAME" /> បានទេ</translation>
@@ -968,6 +974,7 @@
 <translation id="8866284467018526531">ការសរសេរតាម​សូរសព្ទជាភាសា​អារ៉ាប់</translation>
 <translation id="8873014196523807561">ដើម្បី​ស្ដារ​ធាតុ​ទាំងនេះ សូម​អូស​ធាតុ​ទៅ​ថត​ថ្មី។ ថត​ដើម​សម្រាប់​ធាតុ​មួយចំនួន​ក្នុងចំណោម​ធាតុ​ទាំងនេះ​ត្រូវ​បាន​លុប។</translation>
 <translation id="8874184842967597500">មិនបានភ្ជាប់ទេ</translation>
+<translation id="8876368061475701452">​បាន​ដាក់​ក្នុង​ជួរ</translation>
 <translation id="8900820606136623064">ភាសាហុងគ្រី</translation>
 <translation id="8903931173357132290">និស្សិតបញ្ចប់ការសិក្សា</translation>
 <translation id="8912078710089354287">ឆ្កែកំពុង​បក់កន្ទុយ</translation>

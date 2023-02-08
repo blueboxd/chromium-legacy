@@ -208,6 +208,8 @@ class V4GetHashProtocolManager {
   void SetLookupMechanismExperimentIsEnabled();
 
  protected:
+  friend class GetHashProtocolManagerFactoryWithTestUrlLoader;
+
   // Constructs a V4GetHashProtocolManager that issues network requests using
   // |url_loader_factory|.
   V4GetHashProtocolManager(

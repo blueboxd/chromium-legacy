@@ -36,6 +36,8 @@
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/platform_window/wm/wm_drag_handler.h"
 
+struct zwp_keyboard_shortcuts_inhibitor_v1;
+
 namespace wl {
 
 struct WaylandOverlayConfig;
@@ -254,33 +256,15 @@ class WaylandWindow : public PlatformWindow,
   // frames. Updating state based on configure is handled separately to this.
   void OnSurfaceConfigureEvent();
 
-  // State describes important data about this window, for example data that
-  // needs to be synchronized and acked. We apply this state to the client
-  // (us) and wait for a frame to be produced matching this state. That frame
-  // is identified by the sequence id.
-  struct State {
-    bool operator==(const State& rhs) const {
-      return std::tie(bounds_dip, size_px, window_scale) ==
-             std::tie(rhs.bounds_dip, rhs.size_px, rhs.window_scale);
-    }
-
-    // Bounds in DIP.
-    gfx::Rect bounds_dip;
-    // Size in pixels. Note that it's required to keep information in both DIP
-    // and pixels since it is not always possible to convert between them.
-    gfx::Size size_px;
-    // Current scale factor of the output where the window is located at.
-    float window_scale = 1.0;
-    // TODO(crbug.com/1395267): Add window states here.
-
-    std::string ToString() const;
-  };
+  // See comments on the member variable for an explanation of this.
+  const PlatformWindowDelegate::State& applied_state() const {
+    return applied_state_;
+  }
 
   // See comments on the member variable for an explanation of this.
-  const State& applied_state() const { return applied_state_; }
-
-  // See comments on the member variable for an explanation of this.
-  const State& latched_state() const { return latched_state_; }
+  const PlatformWindowDelegate::State& latched_state() const {
+    return latched_state_;
+  }
 
   // Tells if the surface has already been configured. This will be true after
   // the first set of configure event and ack request, meaning that wl_surface
@@ -362,12 +346,6 @@ class WaylandWindow : public PlatformWindow,
 #endif
 
  protected:
-  enum class KeyboardShortcutsInhibitionMode {
-    kDisabled,
-    kAlwaysEnabled,
-    kFullscreenOnly
-  };
-
   WaylandWindow(PlatformWindowDelegate* delegate,
                 WaylandConnection* connection);
 
@@ -403,10 +381,6 @@ class WaylandWindow : public PlatformWindow,
 
   const gfx::Size& restored_size_dip() const { return restored_size_dip_; }
 
-  KeyboardShortcutsInhibitionMode keyboard_shortcuts_inhibition_mode() const {
-    return keyboard_shortcuts_inhibition_mode_;
-  }
-
   // Configure related:
 
   // Processes the currently pending State. This may generate a new in-flight
@@ -418,16 +392,19 @@ class WaylandWindow : public PlatformWindow,
 
   // Requests the given state via RequestState, given that this was a server
   // initiated change (e.g. configure).
-  void RequestStateFromServer(State state, int64_t serial);
+  void RequestStateFromServer(PlatformWindowDelegate::State state,
+                              int64_t serial);
 
   // Requests the given state via RequestState, given that this was a client
   // initiated change.
-  void RequestStateFromClient(State state);
+  void RequestStateFromClient(PlatformWindowDelegate::State state);
 
   // Requests the given state. If this request originates from a configure from
   // the server, specify |serial|. If |force| is true, the state will always be
   // applied, even if requests are being throttled.
-  void RequestState(State state, int64_t serial, bool force);
+  void RequestState(PlatformWindowDelegate::State state,
+                    int64_t serial,
+                    bool force);
 
   // Processes the given sequence point number. It will also latch and ack
   // the latest fulfilled in-flight request if it exists.
@@ -473,11 +450,7 @@ class WaylandWindow : public PlatformWindow,
 
   // Additional initialization of derived classes.
   virtual bool OnInitialize(PlatformWindowInitProperties properties,
-                            State* state) = 0;
-
-  // Determines which keyboard shortcuts inhibition mode to be used and perform
-  // required initialization steps, if any.
-  void InitKeyboardShortcutsInhibition();
+                            PlatformWindowDelegate::State* state) = 0;
 
   // WaylandWindowDragController might need to take ownership of the wayland
   // surface whether the window that originated the DND session gets destroyed
@@ -495,7 +468,7 @@ class WaylandWindow : public PlatformWindow,
   // came from a configure), or the viz sequence number.
   struct StateRequest {
     // State that has been requested.
-    State state;
+    PlatformWindowDelegate::State state;
 
     // Wayland serial number for acking a configure. This is -1 if there is no
     // serial number (e.g. from client initiated change).
@@ -627,12 +600,12 @@ class WaylandWindow : public PlatformWindow,
   //    the frame to come back
   // 4. Latched - the frame corresponding to this state came back, we can ack
   //    the configure if there was one
-  State applied_state_;
+  PlatformWindowDelegate::State applied_state_;
 
   // The current configuration state of the window. This is initially set to
   // values provided by the client, until we get an actual configure from the
   // server. See the comments on applied_state_ for further explanation.
-  State latched_state_;
+  PlatformWindowDelegate::State latched_state_;
 
   // In-flight state requests. Once a frame comes from the GPU
   // process with the appropriate viz sequence number, ack_configure request
@@ -646,8 +619,10 @@ class WaylandWindow : public PlatformWindow,
 
   base::OnceClosure drag_loop_quit_closure_;
 
-  KeyboardShortcutsInhibitionMode keyboard_shortcuts_inhibition_mode_{
-      KeyboardShortcutsInhibitionMode::kDisabled};
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  wl::Object<zwp_keyboard_shortcuts_inhibitor_v1>
+      permanent_keyboard_shortcuts_inhibitor_;
+#endif
 
 #if DCHECK_IS_ON()
   bool disable_null_target_dcheck_for_test_ = false;

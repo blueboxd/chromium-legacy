@@ -38,8 +38,7 @@ void BrowserUpdaterClient::Register(base::OnceClosure complete) {
              const updater::RegistrationRequest& request) {
             update_service->RegisterApp(request, std::move(callback));
           },
-          base::BindPostTask(
-              base::SequencedTaskRunner::GetCurrentDefault(),
+          base::BindPostTaskToCurrentDefault(
               base::BindOnce(&BrowserUpdaterClient::RegistrationCompleted, this,
                              std::move(complete))),
           update_service_));
@@ -57,8 +56,7 @@ void BrowserUpdaterClient::RegistrationCompleted(base::OnceClosure complete,
 void BrowserUpdaterClient::GetUpdaterVersion(
     base::OnceCallback<void(const base::Version&)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  update_service_->GetVersion(base::BindPostTask(
-      base::SequencedTaskRunner::GetCurrentDefault(),
+  update_service_->GetVersion(base::BindPostTaskToCurrentDefault(
       base::BindOnce(&BrowserUpdaterClient::GetUpdaterVersionCompleted, this,
                      std::move(callback))));
 }
@@ -80,17 +78,17 @@ void BrowserUpdaterClient::CheckForUpdate(
       updater::UpdateService::UpdateState::State::kCheckingForUpdates;
   version_updater_callback.Run(update_state);
   update_service_->Update(
-      GetAppId(), {},
+      GetAppId(), {}, updater::UpdateService::Priority::kForeground,
+      updater::UpdateService::PolicySameVersionUpdate::kNotAllowed,
+// TODO(crbug.com/1396103): remove this `#if` once mojo interface changes are
+// done in separate CL.
 #if BUILDFLAG(IS_WIN)
       /*do_update_check_only=*/false,
 #endif  // BUILDFLAG(IS_WIN)
-      updater::UpdateService::Priority::kForeground,
-      updater::UpdateService::PolicySameVersionUpdate::kNotAllowed,
-      base::BindPostTask(base::SequencedTaskRunner::GetCurrentDefault(),
-                         version_updater_callback),
-      base::BindPostTask(base::SequencedTaskRunner::GetCurrentDefault(),
-                         base::BindOnce(&BrowserUpdaterClient::UpdateCompleted,
-                                        this, version_updater_callback)));
+      base::BindPostTaskToCurrentDefault(version_updater_callback),
+      base::BindPostTaskToCurrentDefault(
+          base::BindOnce(&BrowserUpdaterClient::UpdateCompleted, this,
+                         version_updater_callback)));
 }
 
 void BrowserUpdaterClient::UpdateCompleted(
@@ -113,8 +111,7 @@ void BrowserUpdaterClient::UpdateCompleted(
 
 void BrowserUpdaterClient::RunPeriodicTasks(base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  update_service_->RunPeriodicTasks(base::BindPostTask(
-      base::SequencedTaskRunner::GetCurrentDefault(),
+  update_service_->RunPeriodicTasks(base::BindPostTaskToCurrentDefault(
       base::BindOnce(&BrowserUpdaterClient::RunPeriodicTasksCompleted, this,
                      std::move(callback))));
 }
@@ -128,8 +125,7 @@ void BrowserUpdaterClient::RunPeriodicTasksCompleted(
 void BrowserUpdaterClient::IsBrowserRegistered(
     base::OnceCallback<void(bool)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  update_service_->GetAppStates(base::BindPostTask(
-      base::SequencedTaskRunner::GetCurrentDefault(),
+  update_service_->GetAppStates(base::BindPostTaskToCurrentDefault(
       base::BindOnce(&BrowserUpdaterClient::IsBrowserRegisteredCompleted, this,
                      std::move(callback))));
 }

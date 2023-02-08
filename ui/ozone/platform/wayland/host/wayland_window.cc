@@ -44,6 +44,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_output.h"
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_screen.h"
+#include "ui/ozone/platform/wayland/host/wayland_seat.h"
 #include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
 #include "ui/ozone/platform/wayland/host/wayland_surface.h"
 #include "ui/ozone/platform/wayland/host/wayland_zaura_shell.h"
@@ -89,6 +90,8 @@ WaylandWindow::~WaylandWindow() {
   if (wayland_overlay_delegation_enabled_) {
     connection_->window_manager()->RemoveSubsurface(GetWidget(),
                                                     primary_subsurface_.get());
+    connection_->window_manager()->RecycleSubsurface(
+        std::move(primary_subsurface_));
   }
   for (const auto& widget_subsurface : wayland_subsurfaces()) {
     connection_->window_manager()->RemoveSubsurface(GetWidget(),
@@ -282,7 +285,6 @@ void WaylandWindow::Show(bool inactive) {
 void WaylandWindow::Hide() {
   received_configure_event_ = false;
 
-  // Mutter compositor crashes if we don't remove subsurface roles when hiding.
   if (primary_subsurface_) {
     primary_subsurface()->Hide();
   }
@@ -654,7 +656,7 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
     return false;
   }
 
-  State state;
+  PlatformWindowDelegate::State state;
   state.bounds_dip = properties.bounds;
   // Properties contain DIP bounds but the buffer scale is initially 1 so it's
   // OK to assign.  The bounds will be recalculated when the buffer scale
@@ -664,9 +666,18 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   opacity_ = properties.opacity;
   type_ = properties.type;
 
-  if (properties.inhibit_keyboard_shortcuts) {
-    InitKeyboardShortcutsInhibition();
+  // Lacros currently uses a different approach to support KeyboardLock,
+  // which relies on the Exo-specific zcr-keyboard-extension-v1 + a permanent
+  // zwp-keyboard-shortcuts-inhibitor-v1. For more details, see comments in
+  // OzonePlatformWayland::CreateKeyboardHook function.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  WaylandKeyboard* keyboard =
+      connection_->seat() ? connection_->seat()->keyboard() : nullptr;
+  if (keyboard && properties.inhibit_keyboard_shortcuts) {
+    permanent_keyboard_shortcuts_inhibitor_ =
+        keyboard->CreateShortcutsInhibitor(this);
   }
+#endif
 
   connection_->window_manager()->AddWindow(GetWidget(), this);
 
@@ -696,40 +707,6 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   connection_->Flush();
 
   return true;
-}
-
-// When upper layer requests to 'inhibit keyboard shortcuts', two different
-// behaviors are currently implemented:
-//
-// 1. If `zcr_keyboard_extension_v1` extension is available (typically meaning
-// it is running under Exo compositor), shortcuts are kept inhibited since the
-// window initialization. That is required to keep Lacros behaving just like
-// Ash Chrome's classic browser.
-//
-// 2. Otherwise, keyboard shortcuts will be inhibited only when in fullscreen.
-// See KeyboardLock spec for more details: https://wicg.github.io/keyboard-lock
-//
-// The main technical difference here is that keyboard-extension-v1 extension
-// allows ozone/wayland to report back to the Wayland compositor that a given
-// key was not processed by the client, giving it a chance of processing global
-// shortcuts (even with a shortcuts inhibitor in place), which is not currently
-// possible with standard Wayland protocol and extensions.
-//
-// TODO(crbug.com/1338554): Revisit and update when/if this scenario changes.
-void WaylandWindow::InitKeyboardShortcutsInhibition() {
-  DCHECK_EQ(keyboard_shortcuts_inhibition_mode_,
-            KeyboardShortcutsInhibitionMode::kDisabled);
-  if (!connection_->keyboard_extension_v1()) {
-    // Only set inhibition mode to kFullscreenOnly and defer the actual handling
-    // to the subsequent shell surface configure events, where window state is
-    // applied/updated. See WaylandToplevelWindow::HandleAuraToplevelConfigure.
-    keyboard_shortcuts_inhibition_mode_ =
-        KeyboardShortcutsInhibitionMode::kFullscreenOnly;
-    return;
-  }
-  keyboard_shortcuts_inhibition_mode_ =
-      KeyboardShortcutsInhibitionMode::kAlwaysEnabled;
-  root_surface()->SetKeyboardShortcutsInhibition(/*enabled=*/true);
 }
 
 void WaylandWindow::SetWindowGeometry(gfx::Size size_dip) {}
@@ -1034,17 +1011,21 @@ void WaylandWindow::ProcessPendingConfigureState(uint32_t serial) {
   pending_configure_state_ = PendingConfigureState();
 }
 
-void WaylandWindow::RequestStateFromServer(State state, int64_t serial) {
+void WaylandWindow::RequestStateFromServer(PlatformWindowDelegate::State state,
+                                           int64_t serial) {
   RequestState(state, serial, /*force=*/false);
 }
 
-void WaylandWindow::RequestStateFromClient(State state) {
+void WaylandWindow::RequestStateFromClient(
+    PlatformWindowDelegate::State state) {
   // In general, client requested changes should not be throttled so force
   // apply this.
   RequestState(state, /*serial=*/-1, /*force=*/true);
 }
 
-void WaylandWindow::RequestState(State state, int64_t serial, bool force) {
+void WaylandWindow::RequestState(PlatformWindowDelegate::State state,
+                                 int64_t serial,
+                                 bool force) {
   LOG_IF(WARNING, in_flight_requests_.size() > 100u)
       << "The queue of configures is longer than 100!";
 
@@ -1111,8 +1092,8 @@ void WaylandWindow::ProcessSequencePoint(int64_t viz_seq) {
     // increase, since each request needs to produce a new sequence point. Any
     // requests that don't have a sequence id (-1) will be treated as done if
     // they have been applied. To latch a request, our sequence number must
-    // be larger than the request's sequence number.
-    if (i->viz_seq >= viz_seq && i->viz_seq != -1) {
+    // be greater than or equal to the request's sequence number.
+    if (i->viz_seq > viz_seq && i->viz_seq != -1) {
       break;
     }
     if (i->applied) {
@@ -1232,37 +1213,13 @@ void WaylandWindow::MaybeApplyLatestStateRequest(bool force) {
   auto old = applied_state_;
   applied_state_ = latest.state;
 
-  // Only set the sequence ID if this change will produce a frame.
-  // If it won't, we may wait indefinitely for a frame that will never come.
-  if (old.bounds_dip.size() != latest.state.bounds_dip.size() ||
-      old.size_px != latest.state.size_px ||
-      old.window_scale != latest.state.window_scale) {
-    latest.viz_seq = delegate()->InsertSequencePoint();
-  }
-
-  if (old.bounds_dip != latest.state.bounds_dip ||
-      old.size_px != latest.state.size_px ||
-      old.window_scale != latest.state.window_scale) {
-    bool origin_changed =
-        old.bounds_dip.origin() != latest.state.bounds_dip.origin();
-    delegate_->OnBoundsChanged({origin_changed});
-  }
+  latest.viz_seq = delegate()->OnStateUpdate(old, latest.state);
 
   // Latch in tests immediately if the test config is set.
   // Otherwise, such tests as interactive_ui_tests fail.
   if (UseTestConfigForPlatformWindows()) {
     ProcessSequencePoint(INT64_MAX);
   }
-}
-
-std::string WaylandWindow::State::ToString() const {
-  std::stringstream result;
-  result << "State {";
-  result << "bounds_dip = " << bounds_dip.ToString();
-  result << ", size_px = " << size_px.ToString();
-  result << ", window_scale = " << window_scale;
-  result << "}";
-  return result.str();
 }
 
 }  // namespace ui

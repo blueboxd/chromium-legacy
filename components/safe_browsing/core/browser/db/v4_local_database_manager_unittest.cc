@@ -106,6 +106,47 @@ class ScopedFakeGetHashProtocolManagerFactory {
 
 }  // namespace
 
+// Use this if you want to use a real V4GetHashProtocolManager, but substitute
+// the server response via the |test_url_loader_factory|.
+// This must be defined outside the anonymous namespace so that it can be
+// included as a friend class for V4GetHashProtocolManager.
+class GetHashProtocolManagerFactoryWithTestUrlLoader
+    : public V4GetHashProtocolManagerFactory {
+ public:
+  GetHashProtocolManagerFactoryWithTestUrlLoader(
+      network::TestURLLoaderFactory* test_url_loader_factory) {
+    test_shared_loader_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            test_url_loader_factory);
+  }
+
+  std::unique_ptr<V4GetHashProtocolManager> CreateProtocolManager(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const StoresToCheck& stores_to_check,
+      const V4ProtocolConfig& config) override {
+    return base::WrapUnique(new V4GetHashProtocolManager(
+        test_shared_loader_factory_, stores_to_check, config));
+  }
+
+ private:
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
+};
+
+// Use ScopedGetHashProtocolManagerFactoryWithTestUrlLoader in scope, then
+// reset. You should make sure the DatabaseManager is created _after_ this.
+class ScopedGetHashProtocolManagerFactoryWithTestUrlLoader {
+ public:
+  ScopedGetHashProtocolManagerFactoryWithTestUrlLoader(
+      network::TestURLLoaderFactory* test_url_loader_factory) {
+    V4GetHashProtocolManager::RegisterFactory(
+        std::make_unique<GetHashProtocolManagerFactoryWithTestUrlLoader>(
+            test_url_loader_factory));
+  }
+  ~ScopedGetHashProtocolManagerFactoryWithTestUrlLoader() {
+    V4GetHashProtocolManager::RegisterFactory(nullptr);
+  }
+};
+
 class FakeV4Database : public V4Database {
  public:
   static void Create(
@@ -1241,6 +1282,52 @@ TEST_F(V4LocalDatabaseManagerTest, TestCheckExtensionIDsOneIsBlocklisted) {
   EXPECT_FALSE(
       v4_local_database_manager_->CheckExtensionIDs(extension_ids, &client));
   EXPECT_FALSE(client.on_check_extensions_result_called());
+  WaitForTasksOnTaskRunner();
+  EXPECT_TRUE(client.on_check_extensions_result_called());
+}
+
+// This is similar to |TestCheckExtensionIDsOneIsBlocklisted|, but it uses a
+// real |V4GetHashProtocolManager| instead of |FakeGetHashProtocolManager|. This
+// tests that the values passed into the protocol manager are usable.
+TEST_F(V4LocalDatabaseManagerTest,
+       TestCheckExtensionIDsOneIsBlocklisted_RealProtocolManager) {
+  // bad_extension_id is in the local DB and the full hash will match.
+  const FullHashStr bad_extension_id("aaaabbbbccccdddd"),
+      good_extension_id("ddddccccbbbbaaaa");
+
+  auto test_url_loader_factory =
+      std::make_unique<network::TestURLLoaderFactory>();
+  ASSERT_EQ(test_url_loader_factory->NumPending(), 0);
+  ScopedGetHashProtocolManagerFactoryWithTestUrlLoader pin(
+      test_url_loader_factory.get());
+
+  // Reset the database manager so it picks up the replacement protocol manager.
+  ResetLocalDatabaseManager();
+  WaitForTasksOnTaskRunner();
+
+  // Put a match in the db that will cause a protocol-manager request.
+  StoreAndHashPrefixes store_and_hash_prefixes;
+  store_and_hash_prefixes.emplace_back(GetChromeExtMalwareId(),
+                                       bad_extension_id);
+  ReplaceV4Database(store_and_hash_prefixes, /* stores_available= */ true);
+
+  const std::set<FullHashStr> expected_bad_crxs({bad_extension_id});
+  const std::set<FullHashStr> extension_ids(
+      {good_extension_id, bad_extension_id});
+  TestExtensionClient client(expected_bad_crxs);
+  EXPECT_FALSE(
+      v4_local_database_manager_->CheckExtensionIDs(extension_ids, &client));
+  EXPECT_FALSE(client.on_check_extensions_result_called());
+
+  // Setup to receive full-hash hit.
+  ASSERT_EQ(test_url_loader_factory->NumPending(), 1);
+  std::vector<TestV4HashResponseInfo> response_infos;
+  response_infos.emplace_back(bad_extension_id, GetChromeExtMalwareId());
+  std::string response = GetV4HashResponse(response_infos);
+  test_url_loader_factory->AddResponse(
+      test_url_loader_factory->GetPendingRequest(0)->request.url.spec(),
+      response);
+
   WaitForTasksOnTaskRunner();
   EXPECT_TRUE(client.on_check_extensions_result_called());
 }

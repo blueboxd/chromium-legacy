@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
-#include "third_party/blink/renderer/core/layout/deferred_shaping_controller.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/page/print_context.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -31,8 +30,9 @@ namespace blink {
 
 using Corner = ScrollAnchor::Corner;
 
-#if BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_IOS)
 // TODO(crbug.com/1313270): Fix this test on Fuchsia and re-enable.
+// TODO(crbug.com/1413820): Fix this test on iOS and re-enable.
 #define MAYBE_ScrollAnchorTest DISABLED_ScrollAnchorTest
 #else
 #define MAYBE_ScrollAnchorTest ScrollAnchorTest
@@ -1111,13 +1111,6 @@ class MAYBE_ScrollAnchorFindInPageTest : public testing::Test {
 };
 
 TEST_F(MAYBE_ScrollAnchorFindInPageTest, FindInPageResultPrioritized) {
-  // getBoundingClientRect() clears physical fragments of deferred boxes to
-  // return precise geometry. So the sizes of some boxes are 0x0 during
-  // ScrollAnchor handling.
-  // The behavior doesn't cause issues in production because deferred boxes
-  // are usually re-shaped before user interaction.
-  DeferredShapingController::From(GetDocument())->DisallowDeferredShaping();
-
   ResizeAndFocus();
   SetHtmlInnerHTML(R"HTML(
     <style>

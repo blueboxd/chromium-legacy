@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -57,6 +58,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   version_info::Channel GetChannel() const override;
   bool IsOffTheRecord() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
+  AutofillDownloadManager* GetDownloadManager() override;
   PersonalDataManager* GetPersonalDataManager() override;
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   CreditCardCvcAuthenticator* GetCvcAuthenticator() override;
@@ -126,7 +128,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   void UpdateAutofillPopupDataListValues(
       const std::vector<std::u16string>& values,
       const std::vector<std::u16string>& labels) override;
-  base::span<const Suggestion> GetPopupSuggestions() const override;
+  std::vector<Suggestion> GetPopupSuggestions() const override;
   void PinPopupView() override;
   PopupOpenArgs GetReopenPopupArgs() const override;
   void UpdatePopup(const std::vector<Suggestion>& suggestions,
@@ -153,6 +155,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
  private:
   PrefService* pref_service_;
   syncer::SyncService* sync_service_;
+  std::unique_ptr<AutofillDownloadManager> download_manager_;
   PersonalDataManager* personal_data_manager_;
   AutocompleteHistoryManager* autocomplete_history_manager_;
   ChromeBrowserState* browser_state_;

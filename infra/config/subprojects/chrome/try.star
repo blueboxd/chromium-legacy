@@ -50,6 +50,22 @@ def chrome_internal_verifier(
             **kwargs
         )
 
+### Mandatory builders ###
+
+chrome_internal_verifier(
+    builder = "internal-cq-builder-verifier",
+    tryjob = try_.job(
+        location_filters = ["infra/config/generated/cq-usage/full.cfg"],
+    ),
+)
+
+chrome_internal_verifier(
+    builder = "linux-chromeos-compile-chrome",
+    tryjob = try_.job(),
+)
+
+### Optional builders ###
+
 chrome_internal_verifier(
     builder = "android-internal-binary-size",
 )
@@ -160,17 +176,7 @@ chrome_internal_verifier(
 )
 
 chrome_internal_verifier(
-    branch_selector = branches.STANDARD_MILESTONE,
-    builder = "linux-chrome-stable",
-)
-
-chrome_internal_verifier(
     builder = "linux-chromeos-chrome",
-)
-
-chrome_internal_verifier(
-    builder = "linux-chromeos-compile-chrome",
-    tryjob = try_.job(),
 )
 
 chrome_internal_verifier(
@@ -185,11 +191,6 @@ chrome_internal_verifier(
 chrome_internal_verifier(
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     builder = "mac-chrome",
-)
-
-chrome_internal_verifier(
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
-    builder = "mac-chrome-stable",
 )
 
 chrome_internal_verifier(
@@ -212,11 +213,6 @@ chrome_internal_verifier(
 )
 
 chrome_internal_verifier(
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
-    builder = "win-chrome-stable",
-)
-
-chrome_internal_verifier(
     branch_selector = branches.STANDARD_MILESTONE,
     builder = "win32-pgo",
 )
@@ -224,11 +220,6 @@ chrome_internal_verifier(
 chrome_internal_verifier(
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
     builder = "win64-chrome",
-)
-
-chrome_internal_verifier(
-    branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
-    builder = "win64-chrome-stable",
 )
 
 chrome_internal_verifier(

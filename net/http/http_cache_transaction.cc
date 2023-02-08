@@ -2767,10 +2767,11 @@ bool HttpCache::Transaction::ShouldPassThrough() {
 
 int HttpCache::Transaction::BeginCacheRead() {
   // We don't support any combination of LOAD_ONLY_FROM_CACHE and byte ranges.
-  // TODO(jkarlin): Either handle this case or DCHECK.
+  // It's possible to trigger this from JavaScript using the Fetch API with
+  // `cache: 'only-if-cached'` so ideally we should support it.
+  // TODO(ricea): Correctly read from the cache in this case.
   if (response_.headers->response_code() == net::HTTP_PARTIAL_CONTENT ||
       partial_) {
-    NOTREACHED();
     TransitionToState(STATE_FINISH_HEADERS);
     return ERR_CACHE_MISS;
   }
@@ -4000,7 +4001,6 @@ void HttpCache::Transaction::RecordHistograms() {
 
   base::TimeDelta before_send_time =
       send_request_since_ - first_cache_access_since_;
-  base::TimeDelta after_send_time = now - send_request_since_;
 
   UMA_HISTOGRAM_TIMES("HttpCache.AccessToDone.SentRequest", total_time);
   UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend", before_send_time);
@@ -4011,22 +4011,17 @@ void HttpCache::Transaction::RecordHistograms() {
     case CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE: {
       UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend.CantConditionalize",
                           before_send_time);
-      UMA_HISTOGRAM_TIMES("HttpCache.AfterSend.CantConditionalize",
-                          after_send_time);
       break;
     }
     case CacheEntryStatus::ENTRY_NOT_IN_CACHE: {
       UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend.NotCached", before_send_time);
-      UMA_HISTOGRAM_TIMES("HttpCache.AfterSend.NotCached", after_send_time);
       break;
     }
     case CacheEntryStatus::ENTRY_VALIDATED: {
       UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend.Validated", before_send_time);
-      UMA_HISTOGRAM_TIMES("HttpCache.AfterSend.Validated", after_send_time);
       break;
     }
     case CacheEntryStatus::ENTRY_UPDATED: {
-      UMA_HISTOGRAM_TIMES("HttpCache.AfterSend.Updated", after_send_time);
       UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend.Updated", before_send_time);
       break;
     }

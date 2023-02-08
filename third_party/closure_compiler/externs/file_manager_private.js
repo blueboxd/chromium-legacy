@@ -584,7 +584,8 @@ chrome.fileManagerPrivate.SearchParams;
  *   query: string,
  *   types: !chrome.fileManagerPrivate.SearchType,
  *   maxResults: number,
- *   timestamp: (number|undefined)
+ *   timestamp: (number|undefined),
+ *   category: (!chrome.fileManagerPrivate.FileCategory|undefined)
  * }}
  */
 chrome.fileManagerPrivate.SearchMetadataParams;
@@ -1579,6 +1580,12 @@ chrome.fileManagerPrivate.cancelIOTask = function (taskId) { };
  * @param {!chrome.fileManagerPrivate.ResumeParams} params
  */
 chrome.fileManagerPrivate.resumeIOTask = function (taskId, params) {};
+
+/**
+ * Makes all I/O tasks in state::PAUSED emit (broadcast) their current I/O
+ * task progress status.
+ */
+chrome.fileManagerPrivate.progressPausedTasks = function () {};
 
 /**
  * Tells DriveFS to update its cached pin states of hosted files (once).

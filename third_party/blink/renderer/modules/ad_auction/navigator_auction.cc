@@ -12,6 +12,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
+#include "base/types/pass_key.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/map_traits_wtf_hash_map.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
@@ -20,6 +21,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/fenced_frame/fenced_frame_utils.h"
 #include "third_party/blink/public/common/interest_group/ad_auction_constants.h"
+#include "third_party/blink/public/common/interest_group/interest_group_utils.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom-blink.h"
 #include "third_party/blink/public/mojom/parakeet/ad_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
@@ -29,6 +31,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_fencedframeconfig_usvstring.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_usvstring_usvstringsequence.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ad_properties.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ad_request_config.h"
@@ -37,6 +40,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_auction_ad.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_auction_ad_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_auction_ad_interest_group.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_auction_ad_interest_group_size.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_auction_report_buyers_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_adproperties_adpropertiessequence.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
@@ -586,6 +590,43 @@ bool CopyAdComponentsFromIdlToMojo(const ExecutionContext& context,
       }
     }
     output.ad_components->push_back(std::move(mojo_ad));
+  }
+  return true;
+}
+
+bool CopyAdSizesFromIdlToMojo(const ExecutionContext& context,
+                              const ScriptState& script_state,
+                              ExceptionState& exception_state,
+                              const AuctionAdInterestGroup& input,
+                              mojom::blink::InterestGroup& output) {
+  if (!input.hasAdSizes()) {
+    return true;
+  }
+  output.ad_sizes.emplace();
+  for (const auto& [name, size] : input.adSizes()) {
+    auto [width_val, width_units] =
+        blink::ParseInterestGroupSizeString(size->width().Ascii());
+    auto [height_val, height_units] =
+        blink::ParseInterestGroupSizeString(size->height().Ascii());
+
+    output.ad_sizes->insert(
+        name, mojom::blink::InterestGroupSize::New(width_val, width_units,
+                                                   height_val, height_units));
+  }
+  return true;
+}
+
+bool CopySizeGroupsFromIdlToMojo(const ExecutionContext& context,
+                                 const ScriptState& script_state,
+                                 ExceptionState& exception_state,
+                                 const AuctionAdInterestGroup& input,
+                                 mojom::blink::InterestGroup& output) {
+  if (!input.hasSizeGroups()) {
+    return true;
+  }
+  output.size_groups.emplace();
+  for (const auto& group : input.sizeGroups()) {
+    output.size_groups->insert(group.first, group.second);
   }
   return true;
 }
@@ -1826,6 +1867,14 @@ ScriptPromise NavigatorAuction::joinAdInterestGroup(
                                      *group, *mojo_group)) {
     return ScriptPromise();
   }
+  if (!CopyAdSizesFromIdlToMojo(*context, *script_state, exception_state,
+                                *group, *mojo_group)) {
+    return ScriptPromise();
+  }
+  if (!CopySizeGroupsFromIdlToMojo(*context, *script_state, exception_state,
+                                   *group, *mojo_group)) {
+    return ScriptPromise();
+  }
 
   String error_field_name;
   String error_field_value;
@@ -2132,11 +2181,27 @@ ScriptPromise NavigatorAuction::deprecatedURNToURL(
 ScriptPromise NavigatorAuction::deprecatedURNToURL(
     ScriptState* script_state,
     Navigator& navigator,
-    const String& uuid_url,
+    const V8UnionFencedFrameConfigOrUSVString* urn_or_config,
     bool send_reports,
     ExceptionState& exception_state) {
+  String uuid_url_string;
+  switch (urn_or_config->GetContentType()) {
+    case V8UnionFencedFrameConfigOrUSVString::ContentType::kUSVString:
+      uuid_url_string = urn_or_config->GetAsUSVString();
+      break;
+    case V8UnionFencedFrameConfigOrUSVString::ContentType::kFencedFrameConfig:
+      absl::optional<KURL> uuid_url_opt =
+          urn_or_config->GetAsFencedFrameConfig()->urn_uuid(
+              base::PassKey<NavigatorAuction>());
+      if (!uuid_url_opt.has_value()) {
+        exception_state.ThrowTypeError("Passed config must have a mapped URL.");
+        return ScriptPromise();
+      }
+      uuid_url_string = uuid_url_opt->GetString();
+      break;
+  }
   return From(ExecutionContext::From(script_state), navigator)
-      .deprecatedURNToURL(script_state, uuid_url, send_reports,
+      .deprecatedURNToURL(script_state, uuid_url_string, send_reports,
                           exception_state);
 }
 
@@ -2175,9 +2240,25 @@ ScriptPromise NavigatorAuction::deprecatedReplaceInURN(
 ScriptPromise NavigatorAuction::deprecatedReplaceInURN(
     ScriptState* script_state,
     Navigator& navigator,
-    const String& uuid_url_string,
+    const V8UnionFencedFrameConfigOrUSVString* urn_or_config,
     const Vector<std::pair<String, String>>& replacements,
     ExceptionState& exception_state) {
+  String uuid_url_string;
+  switch (urn_or_config->GetContentType()) {
+    case V8UnionFencedFrameConfigOrUSVString::ContentType::kUSVString:
+      uuid_url_string = urn_or_config->GetAsUSVString();
+      break;
+    case V8UnionFencedFrameConfigOrUSVString::ContentType::kFencedFrameConfig:
+      absl::optional<KURL> uuid_url_opt =
+          urn_or_config->GetAsFencedFrameConfig()->urn_uuid(
+              base::PassKey<NavigatorAuction>());
+      if (!uuid_url_opt.has_value()) {
+        exception_state.ThrowTypeError("Passed config must have a mapped URL.");
+        return ScriptPromise();
+      }
+      uuid_url_string = uuid_url_opt->GetString();
+      break;
+  }
   return From(ExecutionContext::From(script_state), navigator)
       .deprecatedReplaceInURN(script_state, uuid_url_string,
                               std::move(replacements), exception_state);

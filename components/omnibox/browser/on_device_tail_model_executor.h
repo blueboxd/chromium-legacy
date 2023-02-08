@@ -16,6 +16,7 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/memory/raw_ptr.h"
 #include "components/omnibox/browser/on_device_tail_tokenizer.h"
+#include "components/optimization_guide/proto/on_device_tail_suggest_model_metadata.pb.h"
 #include "third_party/tflite/src/tensorflow/lite/interpreter.h"
 #include "third_party/tflite/src/tensorflow/lite/signature_runner.h"
 
@@ -34,15 +35,16 @@ class OnDeviceTailModelExecutor {
     float probability;
   };
 
+  using ModelMetadata =
+      optimization_guide::proto::OnDeviceTailSuggestModelMetadata;
+
   OnDeviceTailModelExecutor();
   ~OnDeviceTailModelExecutor();
 
   // Initializes the model executor.
   bool Init(const base::FilePath& model_filepath,
             const base::FilePath& vocab_filepath,
-            size_t state_size,
-            size_t num_layer,
-            size_t embedding_dimension);
+            const ModelMetadata& metadata);
 
   // Returns whether the executor is initialized.
   bool IsReady() const { return interpreter_ != nullptr; }
@@ -167,13 +169,12 @@ class OnDeviceTailModelExecutor {
   // Builds and maybe insert new beam nodes from the given token ID &
   // probability pair into the candidate queue and drop low probability node
   // from the queue if needed.
-  static void InsertBeamNodeToCandidateQueue(
-      const TokenIdAndProb& token_id_and_prob,
-      const RnnCellStates& states,
-      const BeamNode& current_beam,
-      float log_prob_threshold,
-      size_t max_num_suggestions,
-      CandidateQueue* queue);
+  void InsertBeamNodeToCandidateQueue(const TokenIdAndProb& token_id_and_prob,
+                                      const RnnCellStates& states,
+                                      const BeamNode& current_beam,
+                                      float log_prob_threshold,
+                                      size_t max_num_suggestions,
+                                      CandidateQueue* queue);
 
   // Gets the root beam node by feeding all unambiguous token IDs (except the
   // last token) into the model.

@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/style/cursor_list.h"
 #include "third_party/blink/renderer/core/style/data_ref.h"
 #include "third_party/blink/renderer/core/style/display_style.h"
+#include "third_party/blink/renderer/core/style/font_size_style.h"
 #include "third_party/blink/renderer/core/style/style_cached_data.h"
 #include "third_party/blink/renderer/core/style/style_highlight_data.h"
 #include "third_party/blink/renderer/core/style/transform_origin.h"
@@ -62,6 +63,7 @@
 #include "third_party/blink/renderer/platform/geometry/length_point.h"
 #include "third_party/blink/renderer/platform/geometry/length_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
@@ -816,6 +818,10 @@ class ComputedStyle : public ComputedStyleBase,
   const AtomicString& TextEmphasisMarkString() const;
   LineLogicalSide GetTextEmphasisLineLogicalSide() const;
 
+  CORE_EXPORT FontSizeStyle GetFontSizeStyle() const {
+    return FontSizeStyle(GetFont(), LineHeightInternal(), EffectiveZoom());
+  }
+
   // Font properties.
   CORE_EXPORT const FontDescription& GetFontDescription() const {
     return GetFont().GetFontDescription();
@@ -1332,14 +1338,13 @@ class ComputedStyle : public ComputedStyleBase,
     return PhysicalBorderStyleToLogical().Start();
   }
 
-  bool HasBorderFill() const {
-    return BorderImage().HasImage() && BorderImage().Fill();
-  }
   bool HasBorder() const {
     return BorderLeftWidth() || BorderRightWidth() || BorderTopWidth() ||
            BorderBottomWidth();
   }
-  bool HasBorderDecoration() const { return HasBorder() || HasBorderFill(); }
+  bool HasBorderDecoration() const {
+    return HasBorder() || BorderImage().HasImage();
+  }
   bool HasBorderRadius() const {
     if (!BorderTopLeftRadius().Width().IsZero()) {
       return true;
@@ -2045,12 +2050,14 @@ class ComputedStyle : public ComputedStyleBase,
     kExcludeTransformOperations
   };
   void ApplyTransform(gfx::Transform&,
+                      const LayoutBox* box,
                       const LayoutSize& border_box_data_size,
                       ApplyTransformOperations,
                       ApplyTransformOrigin,
                       ApplyMotionPath,
                       ApplyIndependentTransformProperties) const;
   void ApplyTransform(gfx::Transform&,
+                      const LayoutBox* box,
                       const gfx::RectF& bounding_box,
                       ApplyTransformOperations,
                       ApplyTransformOrigin,
@@ -2204,36 +2211,40 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Whitespace utility functions.
-  static bool Is(EWhiteSpace a, EWhiteSpace b) {
-    return static_cast<unsigned>(a) & static_cast<unsigned>(b);
-  }
-  static bool IsNot(EWhiteSpace a, EWhiteSpace b) { return !Is(a, b); }
-  static bool AutoWrap(EWhiteSpace ws) {
+  // Don't use these `EWhiteSpace` static functions directly, because the
+  // `white-space` property may become a shorthand in future.
+  // https://drafts.csswg.org/css-text-4/#white-space-property
+  static bool DeprecatedAutoWrap(EWhiteSpace ws) {
     // Nowrap and pre don't automatically wrap.
     return IsNot(ws, EWhiteSpace::kNowrap | EWhiteSpace::kPre);
   }
-
-  bool AutoWrap() const { return AutoWrap(WhiteSpace()); }
-
-  static bool PreserveNewline(EWhiteSpace ws) {
+  static bool DeprecatedPreserveNewline(EWhiteSpace ws) {
     // Normal and nowrap do not preserve newlines.
-    return ws != EWhiteSpace::kNormal && ws != EWhiteSpace::kNowrap;
+    return IsNot(ws, EWhiteSpace::kNormal | EWhiteSpace::kNowrap);
   }
-
-  bool PreserveNewline() const { return PreserveNewline(WhiteSpace()); }
-
-  static bool BorderStyleIsVisible(EBorderStyle style) {
-    return style != EBorderStyle::kNone && style != EBorderStyle::kHidden;
-  }
-
-  static bool CollapseWhiteSpace(EWhiteSpace ws) {
+  static bool DeprecatedCollapseWhiteSpace(EWhiteSpace ws) {
     // Pre and prewrap do not collapse whitespace.
     return IsNot(ws, EWhiteSpace::kPre | EWhiteSpace::kPreWrap |
                          EWhiteSpace::kBreakSpaces);
   }
 
-  bool CollapseWhiteSpace() const { return CollapseWhiteSpace(WhiteSpace()); }
+  bool ShouldWrapLine() const { return DeprecatedAutoWrap(WhiteSpace()); }
+  bool ShouldWrapLineBreakingSpaces() const {
+    // `ShouldWrapLine` should be `true` if `break-spaces`.
+    DCHECK(WhiteSpace() != EWhiteSpace::kBreakSpaces || ShouldWrapLine());
+    return WhiteSpace() == EWhiteSpace::kBreakSpaces;
+  }
+  bool ShouldWrapLineTrailingSpaces() const {
+    return IsNot(WhiteSpace(), EWhiteSpace::kNowrap | EWhiteSpace::kPre |
+                                   EWhiteSpace::kBreakSpaces);
+  }
 
+  bool PreserveNewline() const {
+    return DeprecatedPreserveNewline(WhiteSpace());
+  }
+  bool CollapseWhiteSpace() const {
+    return DeprecatedCollapseWhiteSpace(WhiteSpace());
+  }
   bool IsCollapsibleWhiteSpace(UChar c) const {
     switch (c) {
       case ' ':
@@ -2244,20 +2255,20 @@ class ComputedStyle : public ComputedStyleBase,
     }
     return false;
   }
+
   bool BreakOnlyAfterWhiteSpace() const {
     return Is(WhiteSpace(),
               EWhiteSpace::kPreWrap | EWhiteSpace::kBreakSpaces) ||
            GetLineBreak() == LineBreak::kAfterWhiteSpace;
   }
-
   bool NeedsTrailingSpace() const {
-    return BreakOnlyAfterWhiteSpace() && AutoWrap();
+    return BreakOnlyAfterWhiteSpace() && ShouldWrapLine();
   }
 
   bool BreakWords() const {
     return (WordBreak() == EWordBreak::kBreakWord ||
             OverflowWrap() != EOverflowWrap::kNormal) &&
-           IsNot(WhiteSpace(), EWhiteSpace::kPre | EWhiteSpace::kNowrap);
+           ShouldWrapLine();
   }
 
   // Text direction utility functions.
@@ -2266,6 +2277,9 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Border utility functions.
+  static bool BorderStyleIsVisible(EBorderStyle style) {
+    return style != EBorderStyle::kNone && style != EBorderStyle::kHidden;
+  }
   bool BorderObscuresBackground() const;
   void GetBorderEdgeInfo(
       BorderEdge edges[],
@@ -2485,6 +2499,12 @@ class ComputedStyle : public ComputedStyleBase,
            display == EDisplay::kTableCaption;
   }
 
+  // Whitespace utility functions.
+  static bool Is(EWhiteSpace a, EWhiteSpace b) {
+    return static_cast<unsigned>(a) & static_cast<unsigned>(b);
+  }
+  static bool IsNot(EWhiteSpace a, EWhiteSpace b) { return !Is(a, b); }
+
   bool InternalVisitedBorderLeftColorHasNotChanged(
       const ComputedStyle& other) const {
     return (InternalVisitedBorderLeftColor() ==
@@ -2523,8 +2543,14 @@ class ComputedStyle : public ComputedStyleBase,
 
   void ApplyMotionPathTransform(float origin_x,
                                 float origin_y,
+                                const LayoutBox* box,
                                 const gfx::RectF& bounding_box,
                                 gfx::Transform&) const;
+  PointAndTangent CalculatePointAndTangentOnRay(
+      const LayoutBox* box,
+      const gfx::RectF& bounding_box,
+      const gfx::PointF& anchor_point) const;
+  PointAndTangent CalculatePointAndTangentOnPath() const;
 
   bool ScrollAnchorDisablingPropertyChanged(const ComputedStyle& other,
                                             const StyleDifference&) const;
@@ -2741,7 +2767,8 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   friend class MatchedPropertiesCache;
 
   explicit ComputedStyleBuilder(const ComputedStyle& style) {
-    SetStyle(ComputedStyle::Clone(style));
+    style_ = ComputedStyle::Clone(style);
+    SetStyleBase(*style_);
   }
   ComputedStyleBuilder(const ComputedStyleBuilder& builder) = delete;
   ComputedStyleBuilder(ComputedStyleBuilder&&) = default;
@@ -3036,6 +3063,10 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   }
   FontOrientation ComputeFontOrientation() const;
   void UpdateFontOrientation();
+
+  FontSizeStyle GetFontSizeStyle() const {
+    return FontSizeStyle(GetFont(), LineHeightInternal(), EffectiveZoom());
+  }
 
   // letter-spacing
   void SetLetterSpacing(float letter_spacing) {
@@ -3413,13 +3444,6 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   ComputedStyleBuilder() = default;
 
   CORE_EXPORT void ClearVariableNamesCache();
-
-  // TODO(andruud): This should be part of the constructor, but
-  // StyleResolverState does not work that way.
-  void SetStyle(scoped_refptr<ComputedStyle> style) {
-    style_ = std::move(style);
-    SetStyleBase(*style_);
-  }
 
   scoped_refptr<ComputedStyle> style_;
 };

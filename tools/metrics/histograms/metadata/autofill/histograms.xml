@@ -711,6 +711,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Autofill.BetterAuth.CardUnmaskPreflightInitiated"
+    enum="Boolean" expires_after="2023-07-01">
+  <owner>vinnypersky@google.com</owner>
+  <owner>autofill-auth-team@google.com</owner>
+  <summary>
+    Logs the number of times that we initiate the card unmask preflight flow.
+    This will log both when the user is eligible for WebAuthn as well as when
+    the user is not eligible for WebAuthn, as it is logged before we check this
+    status.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.BetterAuth.CardUnmaskTypeDecision"
     enum="AutofillCreditCardUnmaskDecisionMetric" expires_after="2023-07-01">
   <owner>jsaul@google.com</owner>
@@ -2527,6 +2539,40 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Autofill.LogEvent.{LogEventTypes}" units="units"
+    expires_after="2023-12-31">
+  <owner>battre@chromium.org</owner>
+  <owner>chrome-autofill-alerts@google.com</owner>
+  <summary>
+    The number of log events of type {LogEventTypes} which have been recorded
+    until the FieldInfo metric is recorded into UKM at form submission or form
+    destruction time (whatever comes first).
+  </summary>
+  <token key="LogEventTypes">
+    <variant name="All" summary="total number of all the log events recorded"/>
+    <variant name="AskForValuesToFillEvent"
+        summary="total number of AskForValuesToFillFieldLogEvent events
+                 recorded"/>
+    <variant name="AutocompleteAttributeEvent"
+        summary="total number of AutocompleteAttributeFieldLogEvent events
+                 recorded"/>
+    <variant name="FillEvent"
+        summary="total number of FillFieldLogEvent events recorded"/>
+    <variant name="HeuristicPredictionEvent"
+        summary="total number of HeuristicPredictionFieldLogEvent events
+                 recorded"/>
+    <variant name="RationalizationEvent"
+        summary="total number of RationalizationFieldLogEvent events recorded"/>
+    <variant name="ServerPredictionEvent"
+        summary="total number of ServerPredictionFieldLogEvent events
+                 recorded"/>
+    <variant name="TriggerFillEvent"
+        summary="total number of TriggerFillFieldLogEvent events recorded"/>
+    <variant name="TypingEvent"
+        summary="total number of TypingFieldLogEvent events recorded"/>
+  </token>
+</histogram>
+
 <histogram name="Autofill.ManageCardsPrompt{AutofillManageCardsPrompt}"
     enum="AutofillManageCardsPrompt" expires_after="2023-06-01">
   <owner>jsaul@google.com</owner>
@@ -3422,7 +3468,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Query.BackoffDelay" units="ms"
-    expires_after="2023-04-16">
+    expires_after="2023-12-12">
   <owner>battre@chromium.org</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -3443,7 +3489,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Query.HttpResponseOrErrorCode"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-06-18">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-12-12">
   <owner>battre@chromium.org</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>
@@ -3452,7 +3498,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Query.Method" enum="AutofillQueryMethod"
-    expires_after="2023-02-12">
+    expires_after="2023-12-12">
   <owner>battre@chromium.org</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
   <summary>The HTTP method used to query the autofill server.</summary>
@@ -3582,7 +3628,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Sectioning.FieldsPerSection" units="Fields"
-    expires_after="2023-06-04">
+    expires_after="2023-08-06">
   <owner>fleimgruber@google.com</owner>
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>
@@ -3594,7 +3640,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Autofill.Sectioning.NumberOfSections" units="Sections"
-    expires_after="2023-06-04">
+    expires_after="2023-08-06">
   <owner>fleimgruber@google.com</owner>
   <owner>schwering@google.com</owner>
   <owner>chrome-autofill-alerts@google.com</owner>

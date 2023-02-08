@@ -63,8 +63,7 @@ IOTaskId IOTaskController::Add(std::unique_ptr<IOTask> task) {
   PutIOTask(task_id, std::move(task))
       ->Execute(base::BindRepeating(&IOTaskController::OnIOTaskProgress,
                                     weak_ptr_factory_.GetWeakPtr()),
-                base::BindPostTask(
-                    base::SequencedTaskRunner::GetCurrentDefault(),
+                base::BindPostTaskToCurrentDefault(
                     base::BindOnce(&IOTaskController::OnIOTaskComplete,
                                    weak_ptr_factory_.GetWeakPtr(), task_id)));
   return task_id;
@@ -93,6 +92,17 @@ void IOTaskController::Cancel(IOTaskId task_id) {
     RemoveIOTask(task_id);
   } else {
     LOG(WARNING) << "Failed to cancel task: " << task_id << " not found";
+  }
+}
+
+void IOTaskController::ProgressPausedTasks() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  for (auto it = tasks_.begin(); it != tasks_.end(); ++it) {
+    IOTask* task = it->second.get();
+    if (task->progress().IsPaused()) {
+      NotifyIOTaskObservers(task->progress());
+    }
   }
 }
 

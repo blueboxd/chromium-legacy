@@ -11,6 +11,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
+#include "content/public/test/content_browser_test_content_browser_client.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "content/public/test/test_utils.h"
@@ -63,7 +64,8 @@ class FakeSmartCardDelegate : public SmartCardDelegate {
   std::unordered_map<std::string, SmartCardReaderInfoPtr> reader_infos_;
 };
 
-class SmartCardTestContentBrowserClient : public ContentBrowserClient {
+class SmartCardTestContentBrowserClient
+    : public ContentBrowserTestContentBrowserClient {
  public:
   SmartCardTestContentBrowserClient();
   SmartCardTestContentBrowserClient(SmartCardTestContentBrowserClient&) =
@@ -78,8 +80,7 @@ class SmartCardTestContentBrowserClient : public ContentBrowserClient {
   SmartCardDelegate* GetSmartCardDelegate(
       content::BrowserContext* browser_context) override;
   bool ShouldUrlUseApplicationIsolationLevel(BrowserContext* browser_context,
-                                             const GURL& url,
-                                             bool origin_matches_flag) override;
+                                             const GURL& url) override;
   absl::optional<blink::ParsedPermissionsPolicy>
   GetPermissionsPolicyForIsolatedWebApp(
       content::BrowserContext* browser_context,
@@ -102,14 +103,14 @@ class SmartCardTest : public ContentBrowserTest {
   FakeSmartCardDelegate* CreateFakeSmartCardDelegate() {
     auto unique_delegate = std::make_unique<FakeSmartCardDelegate>();
     FakeSmartCardDelegate* delegate = unique_delegate.get();
-    test_client_.SetSmartCardDelegate(std::move(unique_delegate));
+    test_client_->SetSmartCardDelegate(std::move(unique_delegate));
     return delegate;
   }
 
   MockSmartCardDelegate* CreateMockSmartCardDelegate() {
     auto unique_delegate = std::make_unique<MockSmartCardDelegate>();
     MockSmartCardDelegate* delegate = unique_delegate.get();
-    test_client_.SetSmartCardDelegate(std::move(unique_delegate));
+    test_client_->SetSmartCardDelegate(std::move(unique_delegate));
     ON_CALL(*delegate, SupportsReaderAddedRemovedNotifications)
         .WillByDefault(Return(true));
     return delegate;
@@ -124,9 +125,7 @@ class SmartCardTest : public ContentBrowserTest {
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
 
-    scoped_setting_ =
-        std::make_unique<content::ScopedContentBrowserClientSetting>(
-            &test_client_);
+    test_client_ = std::make_unique<SmartCardTestContentBrowserClient>();
 
     mock_cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
 
@@ -154,8 +153,7 @@ class SmartCardTest : public ContentBrowserTest {
     ContentBrowserTest::TearDown();
   }
 
-  SmartCardTestContentBrowserClient test_client_;
-  std::unique_ptr<ScopedContentBrowserClientSetting> scoped_setting_;
+  std::unique_ptr<SmartCardTestContentBrowserClient> test_client_;
 
   // Need a mock CertVerifier for HTTPS connections to succeed with the test
   // server.
@@ -186,8 +184,7 @@ void SmartCardTestContentBrowserClient::SetSmartCardDelegate(
 
 bool SmartCardTestContentBrowserClient::ShouldUrlUseApplicationIsolationLevel(
     BrowserContext* browser_context,
-    const GURL& url,
-    bool origin_matches_flag) {
+    const GURL& url) {
   return true;
 }
 

@@ -783,6 +783,10 @@ class BrowserView : public BrowserWindow,
   void SetLoadingAnimationStateChangeClosureForTesting(
       base::OnceClosure closure);
 
+  WebAppFrameToolbarView* web_app_frame_toolbar_for_testing() {
+    return web_app_frame_toolbar();
+  }
+
  private:
   // Do not friend BrowserViewLayout. Use the BrowserViewLayoutDelegate
   // interface to keep these two classes decoupled and testable.
@@ -960,6 +964,7 @@ class BrowserView : public BrowserWindow,
   const WebAppFrameToolbarView* web_app_frame_toolbar() const;
 
   void PaintAsActiveChanged();
+  void FrameColorsChanged();
 
   // The BrowserFrame that hosts this view.
   raw_ptr<BrowserFrame, DanglingUntriaged> frame_ = nullptr;

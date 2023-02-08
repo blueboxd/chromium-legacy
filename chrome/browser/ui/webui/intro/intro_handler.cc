@@ -43,7 +43,9 @@ enum class PolicyStoreState {
   kTimeout = 2,
   // OnStoreError called.
   kStoreError = 3,
-  kMaxValue = kStoreError,
+  // Store is null for a managed device.
+  kStoreNull = 4,
+  kMaxValue = kStoreNull,
 };
 
 void RecordDisclaimerMetrics(PolicyStoreState state,
@@ -67,6 +69,17 @@ class PolicyStoreObserver : public policy::CloudPolicyStore::Observer {
 
     // Update the disclaimer directly if the policy store is already loaded.
     auto* policy_store = GetCloudPolicyStore();
+
+    // GetCloudPolicyStore will return nullptr for managed devices with
+    // non-branded builds because the machine level cloud policy manager will be
+    // null while the device is still managed. In that case, we show a generic
+    // disclaimer.
+    if (!policy_store) {
+      // The device is not enrolled in Chrome Browser Cloud Management
+      HandlePolicyStoreStatusChange(PolicyStoreState::kStoreNull);
+      return;
+    }
+
     if (policy_store->is_initialized()) {
       HandlePolicyStoreStatusChange(PolicyStoreState::kSuccessAlreadyLoaded);
       return;
@@ -111,8 +124,11 @@ class PolicyStoreObserver : public policy::CloudPolicyStore::Observer {
     std::string managed_device_disclaimer;
     if (state == PolicyStoreState::kSuccess ||
         state == PolicyStoreState::kSuccessAlreadyLoaded) {
-      absl::optional<std::string> manager = chrome::GetDeviceManagerIdentity();
-      DCHECK(manager.has_value());
+      // TODO(crbug.com/1409028): Remove `.value_or` when we modify
+      // `GetDeviceManagerIdentity()` to return an empty string instead of a
+      // nullopt when we know that the device is managed.
+      absl::optional<std::string> manager =
+          chrome::GetDeviceManagerIdentity().value_or(std::string());
       managed_device_disclaimer =
           manager->empty()
               ? l10n_util::GetStringUTF8(IDS_FRE_MANAGED_DESCRIPTION)

@@ -45,7 +45,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Renderer.BrowserLaunchToRunLoopStart" units="ms"
-    expires_after="2023-06-04">
+    expires_after="2023-08-06">
   <owner>sky@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -349,31 +349,6 @@ chromium-metrics-reviews@google.com.
     The time spent acquiring the primary font consumed in style recalc, in the
     main tread before FCP. On Windows, this includes IPC roundtrip to browser
     process and DirectWriteFontProxy and DirectWrite calls.
-  </summary>
-</histogram>
-
-<histogram name="Renderer.Font.Shaping.DomContentLoaded" units="ms"
-    expires_after="2023-07-30">
-  <owner>tkent@chromium.org</owner>
-  <owner>kojii@chromium.org</owner>
-  <owner>yosin@chromium.org</owner>
-  <owner>layout-dev@chromium.org</owner>
-  <summary>
-    The time spent shaping font before DOMContentLoaded event. This would be
-    helpful for evaluating performance of the &quot;deferred shaping&quot;
-    feature.
-  </summary>
-</histogram>
-
-<histogram name="Renderer.Font.Shaping.FCP" units="ms"
-    expires_after="2023-07-30">
-  <owner>tkent@chromium.org</owner>
-  <owner>kojii@chromium.org</owner>
-  <owner>yosin@chromium.org</owner>
-  <owner>layout-dev@chromium.org</owner>
-  <summary>
-    The time spent shaping font before FCP. This would be helpful for evaluating
-    performance of the &quot;deferred shaping&quot; feature.
   </summary>
 </histogram>
 

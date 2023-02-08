@@ -1497,6 +1497,7 @@ component("base") {
     "//base/allocator/partition_allocator:raw_ptr",
     "//base/third_party/double_conversion",
     "//base/third_party/dynamic_annotations",
+    "//build:blink_buildflags",
     "//build:branding_buildflags",
     "//build/config/compiler:compiler_buildflags",
     "//third_party/modp_b64",
@@ -1918,12 +1919,12 @@ component("base") {
     # by public //base headers, which requires they be on the include path.
     # TODO(https://crbug.com/841171): Move these back to |deps|.
     public_deps += [
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.component.runner",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.intl",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.io",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.process.lifecycle",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.component.runner:fuchsia.component.runner_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.intl:fuchsia.intl_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.io:fuchsia.io_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger:fuchsia.logger_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem:fuchsia.mem_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.process.lifecycle:fuchsia.process.lifecycle_hlcpp",
       "//third_party/fuchsia-sdk/sdk/pkg/async",
       "//third_party/fuchsia-sdk/sdk/pkg/fdio",
       "//third_party/fuchsia-sdk/sdk/pkg/fidl_cpp",
@@ -1935,10 +1936,10 @@ component("base") {
     ]
 
     deps += [
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.buildinfo",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.hwinfo",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.buildinfo:fuchsia.buildinfo_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.hwinfo:fuchsia.hwinfo_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media:fuchsia.media_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys:fuchsia.sys_hlcpp",
       "//third_party/fuchsia-sdk/sdk/pkg/async-default",
       "//third_party/fuchsia-sdk/sdk/pkg/async-loop-cpp",
       "//third_party/fuchsia-sdk/sdk/pkg/async-loop-default",
@@ -2185,24 +2186,25 @@ component("base") {
 
     configs += linux_configs
     all_dependent_configs += linux_configs
-
     sources += [
-      "nix/mime_util_xdg.cc",
-      "nix/mime_util_xdg.h",
-      "nix/xdg_util.cc",
-      "nix/xdg_util.h",
       "system/sys_info_linux.cc",
     ]
-
-    defines += [ "USE_SYMBOLIZE" ]
-
-    # These dependencies are not required on Android, and in the case
-    # of xdg_mime must be excluded due to licensing restrictions.
-    deps += [
-      "//base/third_party/symbolize",
-      "//base/third_party/xdg_mime",
-      "//base/third_party/xdg_user_dirs",
-    ]
+    if (!is_cronet_build) {
+      # These dependencies are not required on Android, and in the case
+      # of xdg_mime must be excluded due to licensing restrictions.
+      sources += [
+        "nix/mime_util_xdg.cc",
+        "nix/mime_util_xdg.h",
+        "nix/xdg_util.cc",
+        "nix/xdg_util.h",
+      ]
+      defines += [ "USE_SYMBOLIZE" ]
+      deps += [
+        "//base/third_party/symbolize",
+        "//base/third_party/xdg_mime",
+        "//base/third_party/xdg_user_dirs",
+      ]
+    }
   } else {
     if (!is_android) {
       sources -= [
@@ -3032,7 +3034,7 @@ if (is_fuchsia) {
       "//testing/gtest",
     ]
     public_deps = [
-      ":testfidl",
+      ":testfidl_hlcpp",
       "//third_party/fuchsia-sdk/sdk/pkg/fidl_cpp",
       "//third_party/fuchsia-sdk/sdk/pkg/zx",
     ]
@@ -3049,7 +3051,9 @@ if (is_fuchsia) {
       "//base/test:test_support",
       "//testing/gtest",
     ]
-    public_deps = [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger" ]
+    public_deps = [
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger:fuchsia.logger_hlcpp",
+    ]
   }
 }
 
@@ -3900,12 +3904,12 @@ test("base_unittests") {
       ":test_interface_impl",
       ":test_log_listener_safe",
       ":testfidl",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.buildinfo",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.hwinfo",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.intl",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.buildinfo:fuchsia.buildinfo_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.hwinfo:fuchsia.hwinfo_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.intl:fuchsia.intl_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger:fuchsia.logger_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem:fuchsia.mem_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys:fuchsia.sys_hlcpp",
       "//third_party/fuchsia-sdk/sdk/pkg/async",
       "//third_party/fuchsia-sdk/sdk/pkg/async-default",
       "//third_party/fuchsia-sdk/sdk/pkg/fdio",
@@ -4515,6 +4519,7 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/util/Feature.java",
       "test/android/javatests/src/org/chromium/base/test/util/Features.java",
       "test/android/javatests/src/org/chromium/base/test/util/FeaturesBase.java",
+      "test/android/javatests/src/org/chromium/base/test/util/HistogramWatcher.java",
       "test/android/javatests/src/org/chromium/base/test/util/InMemorySharedPreferences.java",
       "test/android/javatests/src/org/chromium/base/test/util/InMemorySharedPreferencesContext.java",
       "test/android/javatests/src/org/chromium/base/test/util/InstrumentationUtils.java",

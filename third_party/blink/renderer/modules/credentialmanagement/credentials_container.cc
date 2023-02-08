@@ -1396,7 +1396,7 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
       identity_provider_ptrs.push_back(std::move(identity_provider));
     }
 
-    DCHECK(options->identity()->hasPreferAutoSignIn());
+    DCHECK(options->identity()->hasAutoReauthn());
     std::unique_ptr<ScopedAbortState> scoped_abort_state = nullptr;
     if (auto* signal = options->getSignalOr(nullptr)) {
       if (signal->aborted()) {
@@ -1409,7 +1409,7 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
       scoped_abort_state = std::make_unique<ScopedAbortState>(signal, handle);
     }
 
-    bool prefer_auto_sign_in = options->identity()->preferAutoSignIn();
+    bool prefer_auto_sign_in = options->identity()->autoReauthn();
 
     mojom::blink::RpContext rp_context = mojom::blink::RpContext::kSignIn;
     if (RuntimeEnabledFeatures::FedCmRpContextEnabled() &&
@@ -1441,10 +1441,9 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
                         WrapPersistent(options)));
 
       // Start recording the duration from when RequestToken is called directly
-      // to when RequestToken would be called if invoked through a window onload
-      // event listener.
-      web_identity_requester_->StartWindowOnloadDelayTimer(
-          WrapPersistent(resolver));
+      // to when RequestToken would be called if invoked through
+      // web_identity_requester_.
+      web_identity_requester_->StartDelayTimer(WrapPersistent(resolver));
 
       return promise;
     }

@@ -69,6 +69,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, assign) bookmarks::BookmarkModel* bookmarkModel;
 @property(nonatomic, assign) Browser* browser;
 @property(nonatomic, assign) ChromeBrowserState* browserState;
+// Whether the folder name was edited.
+@property(nonatomic, assign) BOOL edited;
 @property(nonatomic, assign) const BookmarkNode* folder;
 // TODO(crbug.com/1402758): Move this to BookmarksFolderEditorCoordinator.
 // A reference to the presented folder chooser.
@@ -213,12 +215,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 }
 
-#pragma mark - Presentation controller integration
-
-- (BOOL)shouldBeDismissedOnTouchOutside {
-  return NO;
-}
-
 #pragma mark - Accessibility
 
 - (BOOL)accessibilityPerformEscape {
@@ -227,6 +223,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 #pragma mark - Actions
+
+// Whether the bookmarks folder editor can be dismissed.
+- (BOOL)canDismiss {
+  if (self.edited) {
+    return NO;
+  }
+  if (self.folderChooserCoordinator) {
+    return [self.folderChooserCoordinator canDismiss];
+  }
+  return YES;
+}
 
 - (void)dismiss {
   [self.view endEditing:YES];
@@ -287,27 +294,23 @@ typedef NS_ENUM(NSInteger, ItemType) {
   _folderChooserCoordinator = [[BookmarksFolderChooserCoordinator alloc]
       initWithNavigationController:self.navigationController
                            browser:_browser
-                    selectedFolder:self.parentFolder
                        hiddenNodes:hiddenNodes];
+  _folderChooserCoordinator.selectedFolder = self.parentFolder;
   _folderChooserCoordinator.delegate = self;
   [_folderChooserCoordinator start];
 }
 
 #pragma mark - BookmarksFolderChooserCoordinatorDelegate
 
-- (void)
-    bookmarksFolderChooserCoordinatorDidConfirm:
-        (BookmarksFolderChooserCoordinator*)coordinator
-                             withSelectedFolder:
-                                 (const bookmarks::BookmarkNode*)folder
-                                    editedNodes:
-                                        (const std::set<
-                                            const bookmarks::BookmarkNode*>&)
-                                            editedNodes {
+- (void)bookmarksFolderChooserCoordinatorDidConfirm:
+            (BookmarksFolderChooserCoordinator*)coordinator
+                                 withSelectedFolder:
+                                     (const bookmarks::BookmarkNode*)folder {
   DCHECK(_folderChooserCoordinator);
   DCHECK(folder);
 
   [_folderChooserCoordinator stop];
+  _folderChooserCoordinator.delegate = nil;
   _folderChooserCoordinator = nil;
 
   self.parentFolder = folder;
@@ -318,6 +321,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     (BookmarksFolderChooserCoordinator*)coordinator {
   DCHECK(_folderChooserCoordinator);
   [_folderChooserCoordinator stop];
+  _folderChooserCoordinator.delegate = nil;
   _folderChooserCoordinator = nil;
 }
 
@@ -377,7 +381,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - BookmarkTextFieldItemDelegate
 
 - (void)textDidChangeForItem:(BookmarkTextFieldItem*)item {
-  self.modalInPresentation = YES;
+  self.edited = YES;
   [self updateSaveButtonState];
 }
 
@@ -456,6 +460,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)presentationControllerDidDismiss:
     (UIPresentationController*)presentationController {
   [self dismiss];
+}
+
+- (BOOL)presentationControllerShouldDismiss:
+    (UIPresentationController*)presentationController {
+  return [self canDismiss];
 }
 
 #pragma mark - Private

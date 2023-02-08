@@ -215,9 +215,11 @@ void WaylandInputMethodContext::WillUpdateFocus(TextInputClient* old_client,
     past_clients_.try_emplace(old_client, base::AsWeakPtr(old_client));
 }
 
-void WaylandInputMethodContext::UpdateFocus(bool has_client,
-                                            TextInputType old_type,
-                                            TextInputType new_type) {
+void WaylandInputMethodContext::UpdateFocus(
+    bool has_client,
+    TextInputType old_type,
+    TextInputType new_type,
+    TextInputClient::FocusReason reason) {
   // This prevents unnecessarily hiding/showing the virtual keyboard.
   bool skip_vk_update =
       old_type != TEXT_INPUT_TYPE_NONE && new_type != TEXT_INPUT_TYPE_NONE;
@@ -225,17 +227,19 @@ void WaylandInputMethodContext::UpdateFocus(bool has_client,
   if (old_type != TEXT_INPUT_TYPE_NONE)
     Blur(skip_vk_update);
   if (new_type != TEXT_INPUT_TYPE_NONE)
-    Focus(skip_vk_update);
+    Focus(skip_vk_update, reason);
 }
 
-void WaylandInputMethodContext::Focus(bool skip_virtual_keyboard_update) {
+void WaylandInputMethodContext::Focus(bool skip_virtual_keyboard_update,
+                                      TextInputClient::FocusReason reason) {
   focused_ = true;
-  MaybeUpdateActivated(skip_virtual_keyboard_update);
+  MaybeUpdateActivated(skip_virtual_keyboard_update, reason);
 }
 
 void WaylandInputMethodContext::Blur(bool skip_virtual_keyboard_update) {
   focused_ = false;
-  MaybeUpdateActivated(skip_virtual_keyboard_update);
+  MaybeUpdateActivated(skip_virtual_keyboard_update,
+                       TextInputClient::FOCUS_REASON_NONE);
 }
 
 void WaylandInputMethodContext::SetCursorLocation(const gfx::Rect& rect) {
@@ -490,7 +494,6 @@ void WaylandInputMethodContext::OnCursorPosition(int32_t index,
     return;
   }
 
-  const gfx::Range new_selection_range(offsets[1], offsets[0]);
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Cursor position may be wrong on Lacros due to timing issue for some
   // scenario when surrounding text is longer than wayland message size
@@ -506,14 +509,15 @@ void WaylandInputMethodContext::OnCursorPosition(int32_t index,
   //
   // This timing issue will be fixed by sending whole surrounding text instead
   // of trimmed text.
-  if (selection == new_selection_range) {
+  if (selection == gfx::Range(offsets[0], offsets[1])) {
     pending_keep_selection_ = true;
   } else {
     NOTIMPLEMENTED_LOG_ONCE();
   }
 #endif
 
-  surrounding_text_tracker_.OnSetEditableSelectionRange(new_selection_range);
+  surrounding_text_tracker_.OnSetEditableSelectionRange(
+      gfx::Range(offsets[0], offsets[1]));
 }
 
 void WaylandInputMethodContext::OnDeleteSurroundingText(int32_t index,
@@ -734,11 +738,12 @@ void WaylandInputMethodContext::OnModifiersMap(
 }
 
 void WaylandInputMethodContext::OnKeyboardFocusedWindowChanged() {
-  MaybeUpdateActivated(false);
+  MaybeUpdateActivated(false, TextInputClient::FOCUS_REASON_OTHER);
 }
 
 void WaylandInputMethodContext::MaybeUpdateActivated(
-    bool skip_virtual_keyboard_update) {
+    bool skip_virtual_keyboard_update,
+    TextInputClient::FocusReason reason) {
   if (!text_input_)
     return;
 
@@ -757,7 +762,7 @@ void WaylandInputMethodContext::MaybeUpdateActivated(
 
   activated_ = activated;
   if (activated) {
-    text_input_->Activate(window);
+    text_input_->Activate(window, reason);
     if (!skip_virtual_keyboard_update)
       DisplayVirtualKeyboard();
   } else {

@@ -35,7 +35,7 @@ BASE_FEATURE(kAutofillAccountProfilesUnionView,
              "AutofillAccountProfilesUnionView",
              base::FEATURE_DISABLED_BY_DEFAULT);
 // Account profiles are not considered for regular updates on import, but if
-// this parameter is enabeld, they are considered for silent updates.
+// this parameter is enabled, they are considered for silent updates.
 const base::FeatureParam<bool> kAutofillEnableSilentUpdatesForAccountProfiles{
     &kAutofillAccountProfilesUnionView, "enable_silent_updates", true};
 
@@ -229,13 +229,7 @@ BASE_FEATURE(kAutofillEnableSupportForApartmentNumbers,
 // account-based storage when sync the transport is enabled.
 BASE_FEATURE(kAutofillEnableAccountWalletStorage,
              "AutofillEnableAccountWalletStorage",
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-             // Wallet transport is currently unavailable on ChromeOS.
-             base::FEATURE_DISABLED_BY_DEFAULT
-#else
-             base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables parsing for birthdate fields. Filling is not supported and parsing
 // is meant to prevent false positive credit card expiration dates.
@@ -318,12 +312,15 @@ BASE_FEATURE(kAutofillEnableSupportForPhoneNumberTrunkTypes,
              "AutofillEnableSupportForPhoneNumberTrunkTypes",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables autofill to function within a FencedFrame, and is disabled by
-// default.
+// Enables autofill to function within a FencedFrame, and is enabled by
+// default as part of FencedFramesAPIChanges blink experiment.
+// This flag can be used via Finch to disable Autofill in the
+// FencedFramesAPIChanges blink experiment without affecting the other
+// features included in the experiment.
 // TODO(crbug.com/1294378): Remove once launched.
 BASE_FEATURE(kAutofillEnableWithinFencedFrame,
              "AutofillEnableWithinFencedFrame",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether or not all datalist shall be extracted into FormFieldData.
 // This feature is enabled in both WebView and WebLayer where all datalists
@@ -447,7 +444,7 @@ BASE_FEATURE(kAutofillProbableFormSubmissionInBrowser,
 
 // If we observe a sequence of fields of (street address, house number), these
 // get rationalized to (street name, house number).
-// TODO(crbug.com/1326425): Remove once feature is lanuched.
+// TODO(crbug.com/1326425): Remove once feature is launched.
 BASE_FEATURE(kAutofillRationalizeStreetAddressAndHouseNumber,
              "AutofillRationalizeStreetAddressAndHouseNumber",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -456,6 +453,12 @@ BASE_FEATURE(kAutofillRationalizeStreetAddressAndHouseNumber,
 // TODO(crbug.com/1300548): Cleanup when launched.
 BASE_FEATURE(kAutofillRemoveInaccessibleProfileValuesOnStartup,
              "AutofillRemoveInaccessibleProfileValuesOnStartup",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Requires a profile to have non-empty full name to import it from a form.
+// TODO(crbug.com/1413205): Cleanup when launched.
+BASE_FEATURE(kAutofillRequireNameForProfileImport,
+             "AutofillRequireNameForProfileImport",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether or not overall prediction are retrieved from the cache.

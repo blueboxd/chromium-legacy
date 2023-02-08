@@ -184,10 +184,10 @@ class CONTENT_EXPORT InterestGroupAuction
     // there's a crash if this is dereferenced after move.
     std::unique_ptr<StorageInterestGroup> bidder;
 
-    // Set of render URLs that are k-anonymous for use as ad or ad component
-    // render URLs for this interest group.
+    // Set of render keys that are k-anonymous and correspond to ad or ad
+    // component render URLs for this interest group.
     // (Not set if we are not configured to care).
-    base::flat_map<GURL, bool> kanon_render_urls;
+    base::flat_map<std::string, bool> kanon_keys;
 
     // This starts off as the base priority of the interest group, but is
     // updated by sparse vector multiplications using first the priority vector
@@ -508,6 +508,10 @@ class CONTENT_EXPORT InterestGroupAuction
   // failed auction may result in keys that still need to be joined, for
   // instance if the reason the auction failed was that none of the bids were
   // k-anonymous.
+  //
+  // If CreateReporter() is invoked, the returned reporter will automatically
+  // join the k-anon sets if it's informed the winning ad has been navigated to,
+  // so there's no need for anything else to invoke this method.
   base::flat_set<std::string> GetKAnonKeysToJoin() const;
 
   // Returns the top bid of whichever auction (k-anon or not, depending on the

@@ -25,19 +25,6 @@ Status GetTokensExecutionWaiter::status() {
   return Get<1>();
 }
 
-const std::string& SignExecutionWaiter::signature() {
-  return Get<0>();
-}
-
-Status SignExecutionWaiter::status() {
-  return Get<1>();
-}
-
-base::OnceCallback<void(const std::string&, Status)>
-SignExecutionWaiter::GetCallback() {
-  return TestFuture::GetCallback<const std::string&, Status>();
-}
-
 const net::CertificateList& GetCertificatesExecutionWaiter::matches() {
   return *Get<0>();
 }
@@ -58,14 +45,6 @@ Status GetAttributeForKeyExecutionWaiter::status() {
 base::OnceCallback<void(const absl::optional<std::string>&, Status)>
 GetAttributeForKeyExecutionWaiter::GetCallback() {
   return TestFuture::GetCallback<const absl::optional<std::string>&, Status>();
-}
-
-const std::vector<std::string>& GetAllKeysExecutionWaiter::public_keys() {
-  return Get<0>();
-}
-
-Status GetAllKeysExecutionWaiter::status() {
-  return Get<1>();
 }
 
 absl::optional<bool> IsKeyOnTokenExecutionWaiter::on_slot() {

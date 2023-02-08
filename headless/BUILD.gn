@@ -386,8 +386,6 @@ component("headless_non_renderer") {
   if (use_aura) {
     sources += [
       "lib/browser/headless_browser_impl_aura.cc",
-      "lib/browser/headless_clipboard.cc",
-      "lib/browser/headless_clipboard.h",
       "lib/browser/headless_focus_client.cc",
       "lib/browser/headless_focus_client.h",
       "lib/browser/headless_screen.cc",
@@ -432,6 +430,7 @@ component("headless_non_renderer") {
     "//components/embedder_support",
     "//components/embedder_support:embedder_support",
     "//components/embedder_support/origin_trials",
+    "//components/headless/clipboard",
     "//components/keyed_service/content",
     "//components/keyed_service/content:content",
     "//components/origin_trials:browser",
@@ -464,9 +463,6 @@ component("headless_non_renderer") {
     "//third_party/inspector_protocol:crdtp",
     "//third_party/inspector_protocol:crdtp",
     "//ui/base",
-    "//ui/base",
-    "//ui/base/clipboard",
-    "//ui/compositor",
     "//ui/compositor",
     "//ui/display",
     "//ui/events/devices",

@@ -72,6 +72,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
+#include "services/device/public/mojom/fingerprint.mojom-shared.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -189,9 +190,11 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   audio::SoundsManager* manager = audio::SoundsManager::Get();
   manager->Initialize(static_cast<int>(Sound::kLock),
-                      bundle.GetRawDataResource(IDR_SOUND_LOCK_WAV));
+                      bundle.GetRawDataResource(IDR_SOUND_LOCK_WAV),
+                      media::AudioCodec::kPCM);
   manager->Initialize(static_cast<int>(Sound::kUnlock),
-                      bundle.GetRawDataResource(IDR_SOUND_UNLOCK_WAV));
+                      bundle.GetRawDataResource(IDR_SOUND_UNLOCK_WAV),
+                      media::AudioCodec::kPCM);
   content::GetDeviceService().BindFingerprint(
       fp_service_.BindNewPipeAndPassReceiver());
 
@@ -847,6 +850,22 @@ bool ScreenLocker::IsUserLoggedIn(const AccountId& account_id) const {
 void ScreenLocker::OnRestarted() {
   StartFingerprintAuthSession(
       user_manager::UserManager::Get()->GetPrimaryUser());
+}
+
+void ScreenLocker::OnStatusChanged(
+    device::mojom::BiometricsManagerStatus status) {
+  switch (status) {
+    case device::mojom::BiometricsManagerStatus::INITIALIZED:
+      StartFingerprintAuthSession(
+          user_manager::UserManager::Get()->GetPrimaryUser());
+      return;
+    case device::mojom::BiometricsManagerStatus::UNKNOWN:
+    default:
+      break;
+  }
+  LOG(ERROR) << "ScreenLocker StatusChanged to an unknown state: "
+             << static_cast<int>(status);
+  NOTREACHED();
 }
 
 void ScreenLocker::OnEnrollScanDone(device::mojom::ScanResult scan_result,

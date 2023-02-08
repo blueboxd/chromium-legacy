@@ -59,6 +59,17 @@ bool IsSupportedNotificationType(const nearby::fastpair::Device& device) {
              nearby::fastpair::NotificationType::FAST_PAIR_ONE;
 }
 
+bool IsSupportedInteractionType(const nearby::fastpair::Device& device) {
+  // We only allow-list interaction types that should trigger a pairing
+  // notification, since we currently only support pairing. Currently, we
+  // need to exclude AUTO_LAUNCH since that is used for Smart Setup (Quick
+  // Start).
+  return device.interaction_type() ==
+             nearby::fastpair::InteractionType::INTERACTION_TYPE_UNKNOWN ||
+         device.interaction_type() ==
+             nearby::fastpair::InteractionType::NOTIFICATION;
+}
+
 }  // namespace
 
 namespace ash {
@@ -210,6 +221,16 @@ void FastPairDiscoverableScannerImpl::OnDeviceMetadataRetrieved(
     return;
   }
 
+  // Ignore advertisements for unsupported interaction types, such as
+  // AUTO_LAUNCH which should trigger Smart Setup (Quick Start) instead of
+  // beginning Fast Pair.
+  if (!IsSupportedInteractionType(device_metadata->GetDetails())) {
+    QP_LOG(WARNING) << __func__
+                    << ": Unsupported interaction type for Fast Pair. "
+                       "Ignoring this advertisement";
+    return;
+  }
+
   auto device = base::MakeRefCounted<Device>(model_id, address,
                                              Protocol::kFastPairInitial);
 
@@ -235,16 +256,22 @@ void FastPairDiscoverableScannerImpl::NotifyDeviceFound(
   device::BluetoothDevice* ble_device =
       adapter_->GetDevice(device->ble_address());
 
+  // V1 Devices are expected to hit this case while Fast pairing, as
+  // pairing is handled by the BT Pairing Dialog, which starts a
+  // discovery session that briefly disables and enables Fast Pair
+  // scanning, causing the device to be found again. The second time
+  // the device is found, this statement is true and no second
+  // notification is shown.
   if (ble_device && ble_device->IsPaired()) {
-    QP_LOG(ERROR) << __func__
-                  << ": A discoverable advertisement "
-                     "was notified for a paired BLE device.";
+    QP_LOG(INFO) << __func__
+                 << ": A discoverable advertisement "
+                    "was found and ignored for a paired BLE device.";
     return;
   }
 
   // TODO(b/242100708): We currently have no way to tell if a device in pairing
   // mode is already paired to the Chromebook; the BLE device has no information
-  // on the pairing state of the Classic device.
+  // on the pairing state of the Classic device (except for V1 devices).
 
   QP_LOG(INFO) << __func__ << ": Running found callback";
   notified_devices_[device->ble_address()] = device;

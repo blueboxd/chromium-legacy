@@ -28,6 +28,16 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/webui/web_ui_util.h"
 
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(CustomizeChromeUI,
+                                      kChangeChromeThemeButtonElementId);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(CustomizeChromeUI,
+                                      kChangeChromeThemeClassicElementId);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(CustomizeChromeUI,
+                                      kChromeThemeBackElementId);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(CustomizeChromeUI,
+                                      kChromeThemeCollectionElementId);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(CustomizeChromeUI, kChromeThemeElementId);
+
 CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
     : ui::MojoBubbleWebUIController(web_ui),
       profile_(Profile::FromWebUI(web_ui)),
@@ -128,6 +138,15 @@ void CustomizeChromeUI::BindInterface(
                                                 profile_, web_contents_);
 }
 
+void CustomizeChromeUI::BindInterface(
+    mojo::PendingReceiver<help_bubble::mojom::HelpBubbleHandlerFactory>
+        pending_receiver) {
+  if (help_bubble_handler_factory_receiver_.is_bound()) {
+    help_bubble_handler_factory_receiver_.reset();
+  }
+  help_bubble_handler_factory_receiver_.Bind(std::move(pending_receiver));
+}
+
 void CustomizeChromeUI::CreatePageHandler(
     mojo::PendingRemote<side_panel::mojom::CustomizeChromePage> pending_page,
     mojo::PendingReceiver<side_panel::mojom::CustomizeChromePageHandler>
@@ -141,4 +160,17 @@ void CustomizeChromeUI::CreatePageHandler(
     customize_chrome_page_handler_->ScrollToSection(*section_);
     section_.reset();
   }
+}
+
+void CustomizeChromeUI::CreateHelpBubbleHandler(
+    mojo::PendingRemote<help_bubble::mojom::HelpBubbleClient> client,
+    mojo::PendingReceiver<help_bubble::mojom::HelpBubbleHandler> handler) {
+  help_bubble_handler_ = std::make_unique<user_education::HelpBubbleHandler>(
+      std::move(handler), std::move(client), this,
+      std::vector<ui::ElementIdentifier>{
+          CustomizeChromeUI::kChangeChromeThemeButtonElementId,
+          CustomizeChromeUI::kChangeChromeThemeClassicElementId,
+          CustomizeChromeUI::kChromeThemeCollectionElementId,
+          CustomizeChromeUI::kChromeThemeElementId,
+          CustomizeChromeUI::kChromeThemeBackElementId});
 }

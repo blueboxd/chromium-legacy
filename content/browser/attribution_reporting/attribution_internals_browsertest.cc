@@ -43,10 +43,12 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
+#include "content/public/test/content_browser_test_content_browser_client.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/base/net_errors.h"
+#include "net/base/schemeful_site.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -198,13 +200,14 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                        DisabledByEmbedder_MeasurementConsideredDisabled) {
-  MockAttributionReportingContentBrowserClient browser_client;
+  MockAttributionReportingContentBrowserClientBase<
+      ContentBrowserTestContentBrowserClient>
+      browser_client;
   EXPECT_CALL(browser_client,
               IsAttributionReportingOperationAllowed(
                   _, ContentBrowserClient::AttributionReportingOperation::kAny,
                   IsNull(), IsNull(), IsNull()))
       .WillRepeatedly(Return(false));
-  ScopedContentBrowserClientSetting setting(&browser_client);
 
   ASSERT_TRUE(NavigateToURL(shell(), GURL(kAttributionInternalsUrl)));
 
@@ -268,10 +271,9 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
               .SetSourceEventId(std::numeric_limits<uint64_t>::max())
               .SetAttributionLogic(StoredSource::AttributionLogic::kNever)
               .SetDebugKey(19)
-              .SetDestinationOrigins({
-                  *SuitableOrigin::Create(GURL("https://x.a.test")),
-                  *SuitableOrigin::Create(GURL("https://y.a.test")),
-                  *SuitableOrigin::Create(GURL("https://z.b.test")),
+              .SetDestinationSites({
+                  net::SchemefulSite::Deserialize("https://a.test"),
+                  net::SchemefulSite::Deserialize("https://b.test"),
               })
               .BuildStored(),
           SourceBuilder(now + base::Hours(1))
@@ -288,6 +290,9 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
           SourceBuilder(now + base::Hours(2))
               .SetActiveState(
                   StoredSource::ActiveState::kReachedEventLevelAttributionLimit)
+              .BuildStored(),
+          SourceBuilder(now + base::Hours(8))
+              .SetAttributionLogic(StoredSource::AttributionLogic::kFalsely)
               .BuildStored()}));
 
   // This shouldn't result in a row, as registration succeeded.
@@ -314,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
     const table = document.querySelector('#sourceTable')
         .shadowRoot.querySelector('tbody');
     const obs = new MutationObserver((_, obs) => {
-      if (table.children.length === 7 &&
+      if (table.children.length === 8 &&
           table.children[0].children[3]?.children[0]?.children.length === 2 &&
           table.children[0].children[3]?.children[0]?.children[0]?.innerText === 'https://a.test' &&
           table.children[0].children[3]?.children[0]?.children[1]?.innerText === 'https://b.test' &&
@@ -339,13 +344,14 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
           table.children[0].children[16]?.innerText === '' &&
           table.children[1].children[16]?.children[0]?.children[0]?.innerText === '14' &&
           table.children[1].children[16]?.children[0]?.children[1]?.innerText === '18' &&
-          table.children[0].children[1]?.innerText === 'Unattributable: noised' &&
+          table.children[0].children[1]?.innerText === 'Unattributable: noised with no reports' &&
           table.children[1].children[1]?.innerText === 'Attributable' &&
           table.children[2].children[1]?.innerText === 'Attributable: reached event-level attribution limit' &&
           table.children[3].children[1]?.innerText === 'Rejected: internal error' &&
           table.children[4].children[1]?.innerText === 'Rejected: insufficient source capacity' &&
           table.children[5].children[1]?.innerText === 'Rejected: insufficient unique destination capacity' &&
           table.children[6].children[1]?.innerText === 'Rejected: excessive reporting origins' &&
+          table.children[7].children[1]?.innerText === 'Unattributable: noised with fake reports' &&
           table.children[0].children[17]?.innerText === 'N/A' &&
           table.children[5].children[17]?.innerText === 'Disabled' &&
           table.children[6].children[17]?.innerText === 'Enabled') {

@@ -202,14 +202,9 @@ class WebIdBrowserTest : public ContentBrowserTest {
 
     test_browser_client_ = std::make_unique<WebIdTestContentBrowserClient>();
     SetTestIdentityRequestDialogController("not_real_account");
-    old_client_ = SetBrowserClientForTesting(test_browser_client_.get());
   }
 
-  void TearDown() override {
-    CHECK_EQ(SetBrowserClientForTesting(old_client_),
-             test_browser_client_.get());
-    ContentBrowserTest::TearDown();
-  }
+  void TearDown() override { ContentBrowserTest::TearDown(); }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     std::vector<base::test::FeatureRef> features;
@@ -275,7 +270,6 @@ class WebIdBrowserTest : public ContentBrowserTest {
   EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
   std::unique_ptr<IdpTestServer> idp_server_;
   std::unique_ptr<WebIdTestContentBrowserClient> test_browser_client_;
-  raw_ptr<ContentBrowserClient> old_client_ = nullptr;
 };
 
 class WebIdIdpSigninStatusBrowserTest : public WebIdBrowserTest {
@@ -284,6 +278,25 @@ class WebIdIdpSigninStatusBrowserTest : public WebIdBrowserTest {
     scoped_feature_list_.InitAndEnableFeatureWithParameters(
         features::kFedCm,
         {{features::kFedCmIdpSigninStatusFieldTrialParamName, "true"}});
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  }
+
+  ShellFederatedPermissionContext* sharing_context() {
+    BrowserContext* context = shell()->web_contents()->GetBrowserContext();
+    return static_cast<ShellFederatedPermissionContext*>(
+        context->GetFederatedIdentityPermissionContext());
+  }
+};
+
+class WebIdIdPRegistryBrowserTest : public WebIdBrowserTest {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    std::vector<base::test::FeatureRef> features;
+    features.push_back(net::features::kSplitCacheByNetworkIsolationKey);
+    features.push_back(features::kFedCm);
+    features.push_back(features::kFedCmIdPRegistration);
+    scoped_feature_list_.InitWithFeatures(features, {});
+
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
 
@@ -341,6 +354,75 @@ IN_PROC_BROWSER_TEST_F(WebIdBrowserTest, FailsOnHTTP) {
       "a JavaScript error: \"NetworkError: Error "
       "retrieving a token.\"\n";
   EXPECT_EQ(expected_error, EvalJs(shell(), script).error);
+}
+
+// Verify that an IdP can register itself.
+IN_PROC_BROWSER_TEST_F(WebIdIdPRegistryBrowserTest, RegisterIdP) {
+  GURL configURL = GURL(BaseIdpUrl());
+  idp_server()->SetConfigResponseDetails(BuildValidConfigDetails());
+
+  // We navigate to the IdP's configURL so that we can run
+  // the script below with the IdP's origin as the top level
+  // first party context.
+  EXPECT_TRUE(NavigateToURL(shell(), configURL));
+
+  std::string script = R"(
+        (async () => {
+          await IdentityProvider.register(')" +
+                       configURL.spec() + R"(');
+          // The permission was accepted if the promise resolves.
+          return true;
+        }) ()
+    )";
+
+  EXPECT_EQ(true, EvalJs(shell(), script));
+
+  EXPECT_EQ(std::vector<GURL>{configURL},
+            sharing_context()->GetRegisteredIdPs());
+}
+
+// Verify that the RP cannot register the IdP across origins.
+IN_PROC_BROWSER_TEST_F(WebIdIdPRegistryBrowserTest, RpCantRegisterIdP) {
+  std::string script = R"(
+        (async () => {
+          return await IdentityProvider.register(')" +
+                       BaseIdpUrl() + R"(');
+        }) ()
+    )";
+
+  // TODO(crbug.com/1406698): make this error message more
+  // developer friendly, since this was a call error rather
+  // than a user declining the permission error.
+  std::string expected_error =
+      "a JavaScript error: \"NotAllowedError: "
+      "User declined the permission to register the Identity Provider.\"\n";
+
+  EXPECT_EQ(expected_error, EvalJs(shell(), script).error);
+}
+
+// Verify that an IdP can unregister itself.
+IN_PROC_BROWSER_TEST_F(WebIdIdPRegistryBrowserTest, UnregisterIdP) {
+  GURL configURL = GURL(BaseIdpUrl());
+  idp_server()->SetConfigResponseDetails(BuildValidConfigDetails());
+
+  // We navigate to the IdP's configURL so that we can run
+  // the script below with the IdP's origin as the top level
+  // first party context.
+  EXPECT_TRUE(NavigateToURL(shell(), configURL));
+
+  std::string script = R"(
+        (async () => {
+          await IdentityProvider.register(')" +
+                       configURL.spec() + R"(');
+          await IdentityProvider.unregister(')" +
+                       configURL.spec() + R"(');
+          return true;
+        }) ()
+    )";
+
+  EXPECT_EQ(true, EvalJs(shell(), script));
+
+  EXPECT_TRUE(sharing_context()->GetRegisteredIdPs().empty());
 }
 
 // Verify that IDP sign-in headers work.

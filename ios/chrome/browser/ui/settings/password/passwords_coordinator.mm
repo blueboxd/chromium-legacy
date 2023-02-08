@@ -17,8 +17,10 @@
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/add_password_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/add_password_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator.h"
@@ -32,7 +34,10 @@
 #import "ios/chrome/browser/ui/settings/password/passwords_in_other_apps/passwords_in_other_apps_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_mediator.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_settings_commands.h"
+#import "ios/chrome/browser/ui/settings/utils/password_utils.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -42,6 +47,7 @@
     AddPasswordCoordinatorDelegate,
     PasswordDetailsCoordinatorDelegate,
     PasswordIssuesCoordinatorDelegate,
+    PasswordCheckupCoordinatorDelegate,
     PasswordsInOtherAppsCoordinatorDelegate,
     PasswordSettingsCoordinatorDelegate,
     PasswordsSettingsCommands,
@@ -62,13 +68,22 @@
     id<ApplicationCommands, BrowserCommands, BrowsingDataCommands>
         dispatcher;
 
-// Coordinator for password details.
+// Coordinator for Password Checkup.
+@property(nonatomic, strong)
+    PasswordCheckupCoordinator* passwordCheckupCoordinator;
+
+// Coordinator for password issues.
+// TODO(crbug.com/1406871): Remove when kIOSPasswordCheckup is enabled by
+// default.
 @property(nonatomic, strong)
     PasswordIssuesCoordinator* passwordIssuesCoordinator;
 
 // Coordinator for editing existing password details.
 @property(nonatomic, strong)
     PasswordDetailsCoordinator* passwordDetailsCoordinator;
+
+// The action sheet coordinator, if one is currently being shown.
+@property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
 
 // Coordinator for add password details.
 @property(nonatomic, strong) AddPasswordCoordinator* addPasswordCoordinator;
@@ -150,6 +165,10 @@
   self.passwordsViewController.delegate = nil;
   self.passwordsViewController = nil;
 
+  [self.passwordCheckupCoordinator stop];
+  self.passwordCheckupCoordinator.delegate = nil;
+  self.passwordCheckupCoordinator = nil;
+
   [self.passwordIssuesCoordinator stop];
   self.passwordIssuesCoordinator.delegate = nil;
   self.passwordIssuesCoordinator = nil;
@@ -170,6 +189,15 @@
 }
 
 #pragma mark - PasswordsSettingsCommands
+
+- (void)showPasswordCheckup {
+  DCHECK(!self.passwordCheckupCoordinator);
+  self.passwordCheckupCoordinator = [[PasswordCheckupCoordinator alloc]
+      initWithBaseNavigationController:self.baseNavigationController
+                               browser:self.browser];
+  self.passwordCheckupCoordinator.delegate = self;
+  [self.passwordCheckupCoordinator start];
+}
 
 - (void)showPasswordIssues {
   DCHECK(!self.passwordIssuesCoordinator);
@@ -229,6 +257,37 @@
   [self.passwordsInOtherAppsCoordinator start];
 }
 
+- (void)showPasswordDeleteDialogWithOrigins:(NSArray<NSString*>*)origins
+                                 completion:(void (^)(void))completion {
+  std::pair<NSString*, NSString*> titleAndMessage =
+      GetPasswordAlertTitleAndMessageForOrigins(origins);
+  NSString* title = titleAndMessage.first;
+  NSString* message = titleAndMessage.second;
+
+  self.actionSheetCoordinator = [[ActionSheetCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                         browser:self.browser
+                           title:title
+                         message:message
+                   barButtonItem:self.passwordsViewController.deleteButton];
+
+  NSString* deleteButtonString =
+      l10n_util::GetNSString(IDS_IOS_DELETE_ACTION_TITLE);
+
+  [self.actionSheetCoordinator addItemWithTitle:deleteButtonString
+                                         action:^{
+                                           completion();
+                                         }
+                                          style:UIAlertActionStyleDestructive];
+
+  [self.actionSheetCoordinator
+      addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CANCEL_PASSWORD_DELETION)
+                action:nil
+                 style:UIAlertActionStyleCancel];
+
+  [self.actionSheetCoordinator start];
+}
+
 #pragma mark - PasswordManagerViewControllerPresentationDelegate
 
 - (void)PasswordManagerViewControllerDismissed {
@@ -244,6 +303,8 @@
   [self.passwordSettingsCoordinator start];
 }
 
+// TODO(crbug.com/1406871): Remove when kIOSPasswordCheckup is enabled by
+// default.
 #pragma mark - PasswordIssuesCoordinatorDelegate
 
 - (void)passwordIssuesCoordinatorDidRemove:
@@ -258,6 +319,16 @@
     (const password_manager::CredentialUIEntry&)credential {
   [self.mediator deleteCredential:credential];
   return YES;
+}
+
+#pragma mark - PasswordCheckupCoordinatorDelegate
+
+- (void)passwordCheckupCoordinatorDidRemove:
+    (PasswordCheckupCoordinator*)coordinator {
+  DCHECK_EQ(self.passwordCheckupCoordinator, coordinator);
+  [self.passwordCheckupCoordinator stop];
+  self.passwordCheckupCoordinator.delegate = nil;
+  self.passwordCheckupCoordinator = nil;
 }
 
 #pragma mark PasswordDetailsCoordinatorDelegate

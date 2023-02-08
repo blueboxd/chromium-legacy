@@ -27,11 +27,13 @@
 class Browser;
 @class BookmarksCoordinator;
 @class BrowserContainerViewController;
+@protocol BrowserCoordinatorCommands;
 @class BubblePresenter;
 @class CommandDispatcher;
 @protocol CRWResponderInputView;
 @class DefaultBrowserPromoNonModalScheduler;
 @protocol DefaultPromoNonModalPresentationDelegate;
+@protocol FindInPageCommands;
 class FullscreenController;
 @protocol HelpCommands;
 @class KeyCommandsProvider;
@@ -50,7 +52,9 @@ class PrerenderService;
 @class TabStripLegacyCoordinator;
 @protocol TextZoomCommands;
 @class ToolbarAccessoryPresenter;
+@protocol ToolbarCommands;
 @protocol IncognitoReauthCommands;
+@protocol LoadQueryCommands;
 
 // TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
 typedef struct {
@@ -72,6 +76,10 @@ typedef struct {
   id<PopupMenuCommands> popupMenuCommandsHandler;
   id<SnackbarCommands> snackbarCommandsHandler;
   id<ApplicationCommands> applicationCommandsHandler;
+  id<BrowserCoordinatorCommands> browserCoordinatorCommandsHandler;
+  id<FindInPageCommands> findInPageCommandsHandler;
+  id<ToolbarCommands> toolbarCommandsHandler;
+  id<LoadQueryCommands> loadQueryCommandsHandler;
 } BrowserViewControllerDependencies;
 
 // The top-level view controller for the browser UI. Manages other controllers

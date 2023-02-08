@@ -15,7 +15,8 @@ import node
 
 _HERE_DIR = Path(__file__).parent.resolve()
 _SOURCE_MAP_PROCESSOR = (_HERE_DIR.parent.parent.parent /
-                         'tools' / 'code_coverage' / 'create_js_source_maps' /
+                         'tools' / 'code_coverage' /
+                         'js_source_maps' / 'create_js_source_maps' /
                          'create_js_source_maps.js').resolve()
 
 @unittest.skipIf(os.name == 'nt', 'Not intended to work on Windows')
@@ -308,9 +309,9 @@ subtract(5, 2);
       output_file = os.path.join(out_dir, output_file_name)
       node.RunNode([
         str(_SOURCE_MAP_PROCESSOR),
-        original_file,
-        input_file,
-        output_file,
+        "--originals={}".format(" ".join([original_file])),
+        "--inputs={}".format(" ".join([input_file])),
+        "--outputs={}".format(" ".join([output_file])),
         "--inline-sourcemaps",
         "--sourceRoot={}".format(self.sourceRoot),
       ])

@@ -181,7 +181,6 @@
 <translation id="1984417487208496350">無防護 (不建議)</translation>
 <translation id="1986685561493779662">這個名稱已有人使用</translation>
 <translation id="1995884366040846621">如要繼續，<ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> 會將你的姓名、電子郵件地址和個人資料相片提供給這個網站。查看這個網站的《<ph name="BEGIN_LINK1" />隱私權政策<ph name="END_LINK1" />》。</translation>
-<translation id="2000419248597011803">將網址列和搜尋框中的部分 Cookie 和搜尋字詞傳送給你的預設搜尋引擎</translation>
 <translation id="200114059308480249">要在使用 Google 搜尋時納入前後文嗎？</translation>
 <translation id="2009341475524975924">為評估廣告成效，網站間可分享特定類型的資料，例如在一天中向使用者放送廣告的時段。</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# 個檔案}other{# 個檔案}}</translation>
@@ -252,6 +251,7 @@
 <translation id="2426805022920575512">選擇其他帳戶</translation>
 <translation id="2433507940547922241">外觀</translation>
 <translation id="2435457462613246316">顯示密碼</translation>
+<translation id="2439153523196674349"><ph name="SITE_NAME" />預覽</translation>
 <translation id="2450083983707403292">要重新下載「<ph name="FILE_NAME" />」嗎？</translation>
 <translation id="2453860139492968684">結束</translation>
 <translation id="2459390580524506445">強化語音搜尋</translation>
@@ -390,6 +390,7 @@
 <translation id="3066573403916685335">下移</translation>
 <translation id="3070005020161560471">自動翻譯</translation>
 <translation id="3072980200212375806">「<ph name="APP_NAME" />」將在 Chrome 中開啟。選擇繼續即表示您同意《<ph name="BEGIN_LINK1" />Google 服務條款<ph name="END_LINK1" />》以及 <ph name="BEGIN_LINK2" />Google Chrome 和 Chrome OS 的《附加服務條款》<ph name="END_LINK2" />。您也必須遵守《<ph name="BEGIN_LINK3" />隱私權政策<ph name="END_LINK3" />》。</translation>
+<translation id="3083194063661536258">已登出。按鈕。開啟對話方塊即可登入並開啟同步功能。</translation>
 <translation id="3091010850649238832">顯示剪貼簿內容</translation>
 <translation id="3098745985164956033">系統會將某些圖片傳送到 Google，為你提供更完善的圖片說明</translation>
 <translation id="3104179992611025423">你的瀏覽器是由家長管理</translation>
@@ -924,6 +925,7 @@
 <translation id="6040143037577758943">關閉</translation>
 <translation id="604124094241169006">自動</translation>
 <translation id="6042308850641462728">更多</translation>
+<translation id="6049046116080614938">目前登入的帳戶是<ph name="USER_NAME" />。<ph name="USER_EMAIL" />。按鈕。開啟設定。</translation>
 <translation id="604996488070107836">發生不明錯誤，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="605721222689873409">年</translation>
 <translation id="6059830886158432458">請在這裡控管你的報導和活動</translation>
@@ -949,7 +951,7 @@
 <translation id="6193448654517602979">選取分頁</translation>
 <translation id="6196315980958524839">密碼會儲存至這部裝置上的 Google 密碼管理工具</translation>
 <translation id="6202812185118613467">重新登入即可開始同步</translation>
-<translation id="6205314730813004066">廣告隱私設定</translation>
+<translation id="6205314730813004066">廣告隱私權設定</translation>
 <translation id="6210748933810148297">不是 <ph name="EMAIL" /> 嗎？</translation>
 <translation id="6211386937064921208">正在預覽這個網頁</translation>
 <translation id="6221633008163990886">解鎖即可匯出你的密碼</translation>
@@ -1243,7 +1245,6 @@
 <translation id="7686086654630106285">進一步瞭解網站建議廣告</translation>
 <translation id="768618399695552958">系統會預先載入你要造訪的部分網頁。當你從 Google 網站連到這些網頁時，系統可能會透過 Google 伺服器預先載入網頁內容。</translation>
 <translation id="7698359219371678927">在「<ph name="APP_NAME" />」中建立電子郵件</translation>
-<translation id="7704317875155739195">自動完成搜尋字詞與網址</translation>
 <translation id="7707922173985738739">使用行動數據</translation>
 <translation id="7709094866268987903">你移除的興趣喜好會顯示在這裡</translation>
 <translation id="7709918231054955894">取得所有分頁</translation>
@@ -1298,6 +1299,7 @@
 <translation id="7968014550143838305">已加入閱讀清單</translation>
 <translation id="7971136598759319605">上次使用時間：1 天前</translation>
 <translation id="7975379999046275268">預覽網頁 <ph name="BEGIN_NEW" />新功能<ph name="END_NEW" /></translation>
+<translation id="7981085434646346979">目前登入的帳戶是<ph name="USER_NAME" />。按鈕。開啟設定。</translation>
 <translation id="7986497153528221272">如要查看密碼，請先在裝置上設定螢幕鎖定功能</translation>
 <translation id="7995059495660416932">目前沒有內容，請耐心等候</translation>
 <translation id="799576009106109668">系統會根據你目前造訪的網頁主動載入內容，幫助你加快瀏覽速度</translation>

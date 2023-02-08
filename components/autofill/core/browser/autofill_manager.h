@@ -30,7 +30,6 @@
 #include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/translate/core/browser/translate_driver.h"
-#include "components/version_info/channel.h"
 
 namespace gfx {
 class RectF;
@@ -110,10 +109,6 @@ class AutofillManager
 
   using EnableDownloadManager =
       base::StrongAlias<struct EnableDownloadManagerTag, bool>;
-
-  // Raw metadata uploading enabled iff this Chrome instance is on Canary or Dev
-  // channel.
-  static bool IsRawMetadataUploadingEnabled(version_info::Channel channel);
 
   // TODO(crbug.com/1151542): Move to anonymous namespace once
   // BrowserAutofillManager::OnLoadedServerPredictions() moves to
@@ -300,7 +295,8 @@ class AutofillManager
   virtual bool CanShowAutofillUi() const;
 
   // Forwards call to the same-named `AutofillDriver` function.
-  virtual void TriggerReparseInAllFrames();
+  virtual void TriggerReparseInAllFrames(
+      base::OnceCallback<void(bool success)> trigger_reparse_finished_callback);
 
   void AddObserver(Observer* observer) { observers_.AddObserver(observer); }
 
@@ -323,7 +319,7 @@ class AutofillManager
   const AutofillDriver* driver() const { return driver_; }
 
   AutofillDownloadManager* download_manager() {
-    return download_manager_.get();
+    return client()->GetDownloadManager();
   }
 
   // The return value shouldn't be cached, retrieve it as needed.
@@ -346,11 +342,6 @@ class AutofillManager
     OnServerRequestError(form_signature, request_type, http_error);
   }
 
-  void set_download_manager_for_test(
-      std::unique_ptr<AutofillDownloadManager> manager) {
-    download_manager_ = std::move(manager);
-  }
-
   std::map<FormGlobalId, std::unique_ptr<FormStructure>>*
   mutable_form_structures_for_test() {
     return mutable_form_structures();
@@ -361,10 +352,7 @@ class AutofillManager
   }
 
  protected:
-  AutofillManager(AutofillDriver* driver,
-                  AutofillClient* client,
-                  version_info::Channel channel,
-                  EnableDownloadManager enable_download_manager);
+  AutofillManager(AutofillDriver* driver, AutofillClient* client);
 
   LogManager* log_manager() { return log_manager_; }
 
@@ -511,9 +499,6 @@ class AutofillManager
   void OnLoadedServerPredictions(
       std::string response,
       const std::vector<FormSignature>& queried_form_signatures) override;
-  void OnServerRequestError(FormSignature form_signature,
-                            AutofillDownloadManager::RequestType request_type,
-                            int http_error) override;
 
   // Invoked when forms from OnFormsSeen() have been parsed to
   // |form_structures|.
@@ -540,10 +525,6 @@ class AutofillManager
 
   // Our copy of the form data.
   std::map<FormGlobalId, std::unique_ptr<FormStructure>> form_structures_;
-
-  // Handles queries and uploads to Autofill servers. Will be nullptr if
-  // the download manager functionality is disabled.
-  std::unique_ptr<AutofillDownloadManager> download_manager_;
 
   // Utility for logging URL keyed metrics.
   std::unique_ptr<AutofillMetrics::FormInteractionsUkmLogger>

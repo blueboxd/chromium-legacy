@@ -133,7 +133,6 @@ bool ShouldUseDesktopCaptureLacrosV2() {
          VideoCaptureDeviceProxyLacros::IsAvailable();
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-#endif  // BUILDFLAG(ENABLE_SCREEN_CAPTURE)
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -215,7 +214,7 @@ DesktopCaptureImplementation CreatePlatformDependentVideoCaptureDevice(
 #endif
   return kNoImplementation;
 }
-
+#endif  // BUILDFLAG(ENABLE_SCREEN_CAPTURE)
 }  // anonymous namespace
 
 InProcessVideoCaptureDeviceLauncher::InProcessVideoCaptureDeviceLauncher(

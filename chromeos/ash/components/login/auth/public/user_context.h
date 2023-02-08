@@ -45,8 +45,6 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH_PUBLIC) UserContext {
     AUTH_FLOW_GAIA_WITH_SAML,
     // Offline authentication against a cached key.
     AUTH_FLOW_OFFLINE,
-    // Offline authentication using and Easy unlock device (e.g. a phone).
-    AUTH_FLOW_EASY_UNLOCK,
     // Authentication against Active Directory server.
     AUTH_FLOW_ACTIVE_DIRECTORY,
   };
@@ -127,6 +125,12 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH_PUBLIC) UserContext {
   // old password several times, this method would not overwrite ReplacementKey
   // if it exists after previous attempts.
   void SaveKeyForReplacement();
+
+  // This method is used in password changed scenario when user can not remember
+  // their old password and decide to re-create home directory.
+  //
+  // This method would replace existing Key with saved ReplacementKey.
+  void ReuseReplacementKey();
 
   // Saves the user's plaintext password for possible authentication by system
   // services:

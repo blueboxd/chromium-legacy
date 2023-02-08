@@ -44,6 +44,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/net_errors.h"
+#include "net/base/schemeful_site.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -86,8 +87,10 @@ attribution_internals::mojom::WebUISourcePtr WebUISource(
 
   return attribution_internals::mojom::WebUISource::New(
       source.source_event_id(), source.source_origin(),
-      source.DestinationSites().extract(), source.reporting_origin(),
-      source.source_time().ToJsTime(), source.expiry_time().ToJsTime(),
+      std::vector<net::SchemefulSite>(source.destination_sites().begin(),
+                                      source.destination_sites().end()),
+      source.reporting_origin(), source.source_time().ToJsTime(),
+      source.expiry_time().ToJsTime(),
       source.event_report_window_time().ToJsTime(),
       source.aggregatable_report_window_time().ToJsTime(), source.source_type(),
       source.priority(), std::move(debug_key), dedup_keys,
@@ -112,9 +115,19 @@ void ForwardSourcesToWebUI(
 
   for (const StoredSource& source : active_sources) {
     Attributability attributability;
-    if (source.attribution_logic() == StoredSource::AttributionLogic::kNever) {
-      attributability = Attributability::kNoised;
-    } else {
+    switch (source.attribution_logic()) {
+      case StoredSource::AttributionLogic::kTruthfully:
+        attributability = Attributability::kAttributable;
+        break;
+      case StoredSource::AttributionLogic::kNever:
+        attributability = Attributability::kNoisedNever;
+        break;
+      case StoredSource::AttributionLogic::kFalsely:
+        attributability = Attributability::kNoisedFalsely;
+        break;
+    }
+
+    if (attributability == Attributability::kAttributable) {
       switch (source.active_state()) {
         case StoredSource::ActiveState::kActive:
           attributability = Attributability::kAttributable;
@@ -323,7 +336,6 @@ void AttributionInternalsHandlerImpl::OnSourceHandled(
   Attributability attributability;
   switch (result) {
     case StorableSource::Result::kSuccess:
-    // TODO(linnan): Consider displaying source noised in internals UI.
     case StorableSource::Result::kSuccessNoised:
       return;
     case StorableSource::Result::kInternalError:

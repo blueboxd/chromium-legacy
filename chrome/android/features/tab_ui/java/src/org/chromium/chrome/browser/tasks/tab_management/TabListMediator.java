@@ -46,7 +46,6 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingFeatures;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingUtilities;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
@@ -807,8 +806,9 @@ class TabListMediator {
         }
     }
 
-    public void initWithNative(Profile profile) {
-        mTabListFaviconProvider.initWithNative(profile);
+    public void initWithNative() {
+        mTabListFaviconProvider.initWithNative(
+                mTabModelSelector.getModel(/*isIncognito=*/false).getProfile());
         mTabModelSelector.getTabModelFilterProvider().addTabModelFilterObserver(mTabModelObserver);
 
         if (mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
@@ -1166,6 +1166,7 @@ class TabListMediator {
     /**
      * Hide the blue border for selected tab for the Tab-to-Grid resizing stage.
      * The selected border should re-appear in the final fading-in stage.
+     * TODO(https://crbug.com/1413213): Revist this it is very inefficient for multi-thumbnails.
      */
     void prepareTabSwitcherView() {
         if (!TabUiFeatureUtilities.isTabToGtsAnimationEnabled()
@@ -1373,8 +1374,7 @@ class TabListMediator {
         boolean forceUpdate = isSelected && !quickMode;
         boolean forceUpdateLastSelected =
                 mActionsOnAllRelatedTabs && index == mLastSelectedTabListModelIndex && !quickMode;
-        boolean forceUpdateColorForSelectableGroup = mUiType == UiType.SELECTABLE
-                && selectionStateChanged
+        boolean forceUpdateColorForSelectableGroup = selectionStateChanged
                 && PseudoTab.getRelatedTabs(mContext, pseudoTab, mTabModelSelector).size() > 1;
         if (mThumbnailProvider != null && mVisible
                 && (mModel.get(index).model.get(TabProperties.THUMBNAIL_FETCHER) == null
@@ -1401,9 +1401,9 @@ class TabListMediator {
      * @return The callback that hosts the logic for swipe and drag related actions.
      */
     ItemTouchHelper.SimpleCallback getItemTouchHelperCallback(final float swipeToDismissThreshold,
-            final float mergeThreshold, final float ungroupThreshold, final Profile profile) {
+            final float mergeThreshold, final float ungroupThreshold) {
         mTabGridItemTouchHelperCallback.setupCallback(
-                swipeToDismissThreshold, mergeThreshold, ungroupThreshold, profile);
+                swipeToDismissThreshold, mergeThreshold, ungroupThreshold);
         return mTabGridItemTouchHelperCallback;
     }
 

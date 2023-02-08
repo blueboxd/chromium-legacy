@@ -9,6 +9,9 @@
 
 namespace arc::input_overlay {
 
+// System version for AlphaV2.
+constexpr char kSystemVersionAlphaV2[] = "0.2";
+
 // The coordinates number, including Axis x and y.
 constexpr int kAxisSize = 2;
 
@@ -95,6 +98,8 @@ enum class TapLabelPosition {
   kBottomLeft = 2,
   // Bottom-right of touch point. Starts to use in Alpha.
   kBottomRight = 3,
+  // Undefined label position. Starts to use in AlphaV2.
+  kNone = 4,
 };
 
 }  // namespace arc::input_overlay

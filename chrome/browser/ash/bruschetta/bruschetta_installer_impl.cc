@@ -28,6 +28,7 @@
 #include "components/download/public/background_service/background_download_service.h"
 #include "components/download/public/background_service/clients.h"
 #include "components/download/public/background_service/download_params.h"
+#include "components/prefs/pref_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace bruschetta {
@@ -486,10 +487,12 @@ void BruschettaInstallerImpl::StartVm() {
 
   std::string user_hash =
       ash::ProfileHelper::GetUserIdHashFromProfile(profile_);
+  std::string vm_username = GetVmUsername(profile_);
   vm_tools::concierge::StartVmRequest request;
 
   request.set_name(kBruschettaVmName);
   request.set_owner_id(std::move(user_hash));
+  request.set_vm_username(vm_username);
   request.mutable_vm()->set_tools_dlc_id(kToolsDlc);
   request.set_start_termina(false);
   request.set_vtpm_proxy(launch_policy.vtpm_enabled);
@@ -538,6 +541,8 @@ void BruschettaInstallerImpl::OnStartVm(
 
   BruschettaService::GetForProfile(profile_)->RegisterVmLaunch(vm_name_,
                                                                launch_policy);
+  profile_->GetPrefs()->SetBoolean(bruschetta::prefs::kBruschettaInstalled,
+                                   true);
 
   LaunchTerminal();
 }

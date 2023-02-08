@@ -189,6 +189,7 @@ public abstract class ChromeFeatureList {
             "AutofillAllowNonHttpActivation";
     public static final String AUTOFILL_CREDIT_CARD_AUTHENTICATION =
             "AutofillCreditCardAuthentication";
+    public static final String AUTOFILL_ENABLE_CARD_ART_IMAGE = "AutofillEnableCardArtImage";
     public static final String AUTOFILL_ENABLE_CARD_PRODUCT_NAME = "AutofillEnableCardProductName";
     public static final String AUTOFILL_ENABLE_MANUAL_FALLBACK_FOR_VIRTUAL_CARDS =
             "AutofillEnableManualFallbackForVirtualCards";
@@ -430,6 +431,7 @@ public abstract class ChromeFeatureList {
     public static final String QUERY_TILES_ON_START = "QueryTilesOnStart";
     public static final String QUERY_TILES_SEGMENTATION = "QueryTilesSegmentation";
     public static final String QUICK_ACTION_SEARCH_WIDGET = "QuickActionSearchWidgetAndroid";
+    public static final String QUICK_DELETE_FOR_ANDROID = "QuickDeleteForAndroid";
     public static final String QUIET_NOTIFICATION_PROMPTS = "QuietNotificationPrompts";
     public static final String REACHED_CODE_PROFILER = "ReachedCodeProfiler";
     public static final String READER_MODE_IN_CCT = "ReaderModeInCCT";
@@ -497,6 +499,7 @@ public abstract class ChromeFeatureList {
     public static final String TAB_GROUPS_UI_IMPROVEMENTS_ANDROID =
             "TabGroupsUiImprovementsAndroid";
     public static final String TAB_SELECTION_EDITOR_V2 = "TabSelectionEditorV2";
+    public static final String TAB_STATE_V1_OPTIMIZATIONS = "TabStateV1Optimizations";
     public static final String TAB_STRIP_IMPROVEMENTS = "TabStripImprovements";
     public static final String TAB_STRIP_REDESIGN = "TabStripRedesign";
     public static final String TAB_TO_GTS_ANIMATION = "TabToGTSAnimation";
@@ -562,7 +565,7 @@ public abstract class ChromeFeatureList {
             new CachedFlag(BASELINE_GM3_SURFACE_COLORS, false);
     public static final CachedFlag sCctAutoTranslate = new CachedFlag(CCT_AUTO_TRANSLATE, true);
     public static final CachedFlag sCctBrandTransparency =
-            new CachedFlag(CCT_BRAND_TRANSPARENCY, false);
+            new CachedFlag(CCT_BRAND_TRANSPARENCY, true);
     public static final CachedFlag sCctFeatureUsage = new CachedFlag(CCT_FEATURE_USAGE, false);
     public static final CachedFlag sCctIncognito = new CachedFlag(CCT_INCOGNITO, true);
     public static final CachedFlag sCctIncognitoAvailableToThirdParty =

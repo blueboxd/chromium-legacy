@@ -54,12 +54,13 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
                                         bool visible) = 0;
     // Sets the properties for a service but does not add it to the Manager
     // or Profile. Returns the properties for the service as a dictionary Value.
-    virtual base::Value* SetServiceProperties(const std::string& service_path,
-                                              const std::string& guid,
-                                              const std::string& name,
-                                              const std::string& type,
-                                              const std::string& state,
-                                              bool visible) = 0;
+    virtual base::Value::Dict* SetServiceProperties(
+        const std::string& service_path,
+        const std::string& guid,
+        const std::string& name,
+        const std::string& type,
+        const std::string& state,
+        bool visible) = 0;
 
     // Removes a Service to the Manager and Service stubs.
     virtual void RemoveService(const std::string& service_path) = 0;
@@ -71,7 +72,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
 
     // Returns properties for |service_path| as a dictionary Value or null if no
     // Service matches.
-    virtual const base::Value* GetServiceProperties(
+    virtual const base::Value::Dict* GetServiceProperties(
         const std::string& service_path) const = 0;
 
     // If the service referenced by |service_path| is not visible (according to
@@ -93,7 +94,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
     // security and mode match. Returns the empty string if no similar service
     // is found.
     virtual std::string FindSimilarService(
-        const base::Value& template_service_properties) = 0;
+        const base::Value::Dict& template_service_properties) = 0;
 
     // Clears all Services from the Manager and Service stubs.
     virtual void ClearServices() = 0;
@@ -176,11 +177,10 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillServiceClient {
                            base::OnceClosure callback,
                            ErrorCallback error_callback) = 0;
 
-  // Calls the SetProperties DBus method with |properties| which must be a
-  // dictionary Value. Invokes |callback| on success or |error_callback| on
-  // failure.
+  // Calls the SetProperties DBus method with |properties|. Invokes |callback|
+  // on success or |error_callback| on failure.
   virtual void SetProperties(const dbus::ObjectPath& service_path,
-                             const base::Value& properties,
+                             const base::Value::Dict& properties,
                              base::OnceClosure callback,
                              ErrorCallback error_callback) = 0;
 

@@ -310,24 +310,28 @@ class KioskUpdateTest : public KioskBaseTest {
     TestAppInfo primary_app(kTestPrimaryKioskApp, "1.0.0",
                             std::string(kTestPrimaryKioskApp) + "-1.0.0.crx",
                             extensions::Manifest::TYPE_PLATFORM_APP);
+    SetupAppDetailInFakeCws(primary_app);
 
     std::vector<TestAppInfo> secondary_apps;
     TestAppInfo secondary_app_1(kTestSecondaryApp1, "1.0.0",
                                 std::string(kTestSecondaryApp1) + "-1.0.0.crx",
                                 extensions::Manifest::TYPE_PLATFORM_APP);
+    SetupAppDetailInFakeCws(secondary_app_1);
     secondary_apps.push_back(secondary_app_1);
     TestAppInfo secondary_app_2(kTestSecondaryApp2, "1.0.0",
                                 std::string(kTestSecondaryApp2) + "-1.0.0.crx",
                                 extensions::Manifest::TYPE_PLATFORM_APP);
+    SetupAppDetailInFakeCws(secondary_app_2);
     secondary_apps.push_back(secondary_app_2);
 
     LaunchKioskWithSecondaryApps(primary_app, secondary_apps);
   }
 
-  void LaunchTestKioskAppWithSeconadayExtension() {
+  void LaunchTestKioskAppWithSecondaryExtension() {
     TestAppInfo primary_app(kTestPrimaryKioskApp, "24.0.0",
                             std::string(kTestPrimaryKioskApp) + "-24.0.0.crx",
                             extensions::Manifest::TYPE_PLATFORM_APP);
+    SetupAppDetailInFakeCws(primary_app);
 
     std::vector<TestAppInfo> secondary_apps;
     TestAppInfo secondary_extension(
@@ -344,6 +348,7 @@ class KioskUpdateTest : public KioskBaseTest {
         kTestSharedModulePrimaryApp, "1.0.0",
         std::string(kTestSharedModulePrimaryApp) + "-1.0.0.crx",
         extensions::Manifest::TYPE_PLATFORM_APP);
+    SetupAppDetailInFakeCws(primary_app);
 
     std::vector<TestAppInfo> secondary_apps;
     TestAppInfo secondary_app(kTestSecondaryApp, "1.0.0",
@@ -366,6 +371,7 @@ class KioskUpdateTest : public KioskBaseTest {
         kTestSharedModulePrimaryApp, "2.0.0",
         std::string(kTestSharedModulePrimaryApp) + "-2.0.0.crx",
         extensions::Manifest::TYPE_PLATFORM_APP);
+    SetupAppDetailInFakeCws(primary_app);
 
     std::vector<TestAppInfo> secondary_apps;
     // Setting up FakeCWS for shared module is the same for shared module as
@@ -383,6 +389,13 @@ class KioskUpdateTest : public KioskBaseTest {
     return !!extensions::ExtensionSystem::Get(app_profile)
                  ->extension_service()
                  ->GetPendingExtensionUpdate(test_app_id());
+  }
+
+  void SetupAppDetailInFakeCws(const TestAppInfo& app) {
+    // In these tests we need to provide any app detail, not necessary correct
+    // one, just to prevent KioskAppData to remove the app.
+    fake_cws()->SetAppDetails(app.id, /*localized_name*/ "Test App",
+                              /*manifest_json*/ "");
   }
 
  private:
@@ -831,10 +844,13 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_UpdateMultiAppKioskRemoveOneApp) {
 // Update the primary app to version 2 which removes one of the secondary app
 // from its manifest.
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UpdateMultiAppKioskRemoveOneApp) {
-  set_test_app_id(kTestPrimaryKioskApp);
-  fake_cws()->SetUpdateCrx(kTestPrimaryKioskApp,
-                           std::string(kTestPrimaryKioskApp) + "-2.0.0.crx",
-                           "2.0.0");
+  TestAppInfo primary_app(kTestPrimaryKioskApp, "2.0.0",
+                          std::string(kTestPrimaryKioskApp) + "-2.0.0.crx",
+                          extensions::Manifest::TYPE_PLATFORM_APP);
+  set_test_app_id(primary_app.id);
+  fake_cws()->SetUpdateCrx(primary_app.id, primary_app.crx_filename,
+                           primary_app.version);
+  SetupAppDetailInFakeCws(primary_app);
   fake_cws()->SetNoUpdate(kTestSecondaryApp1);
   fake_cws()->SetNoUpdate(kTestSecondaryApp2);
 
@@ -855,15 +871,21 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_UpdateMultiAppKioskAddOneApp) {
 // Update the primary app to version 3 which adds a new secondary app in its
 // manifest.
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UpdateMultiAppKioskAddOneApp) {
-  set_test_app_id(kTestPrimaryKioskApp);
-  fake_cws()->SetUpdateCrx(kTestPrimaryKioskApp,
-                           std::string(kTestPrimaryKioskApp) + "-3.0.0.crx",
-                           "3.0.0");
+  TestAppInfo primary_app(kTestPrimaryKioskApp, "3.0.0",
+                          std::string(kTestPrimaryKioskApp) + "-3.0.0.crx",
+                          extensions::Manifest::TYPE_PLATFORM_APP);
+  set_test_app_id(primary_app.id);
+  fake_cws()->SetUpdateCrx(primary_app.id, primary_app.crx_filename,
+                           primary_app.version);
+  SetupAppDetailInFakeCws(primary_app);
   fake_cws()->SetNoUpdate(kTestSecondaryApp1);
   fake_cws()->SetNoUpdate(kTestSecondaryApp2);
-  fake_cws()->SetUpdateCrx(kTestSecondaryApp3,
-                           std::string(kTestSecondaryApp3) + "-1.0.0.crx",
-                           "1.0.0");
+  TestAppInfo secondary_app(kTestSecondaryApp3, "1.0.0",
+                            std::string(kTestSecondaryApp3) + "-1.0.0.crx",
+                            extensions::Manifest::TYPE_PLATFORM_APP);
+  fake_cws()->SetUpdateCrx(secondary_app.id, secondary_app.crx_filename,
+                           secondary_app.version);
+  SetupAppDetailInFakeCws(secondary_app);
 
   SimulateNetworkOnline();
   EXPECT_TRUE(LaunchApp(test_app_id()));
@@ -880,7 +902,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchKioskAppWithSecondaryExtension) {
   base::AddFeatureIdTagToTestResult(
       "screenplay-22a4b826-851a-4065-a32b-273a0e261bf3");
 
-  LaunchTestKioskAppWithSeconadayExtension();
+  LaunchTestKioskAppWithSecondaryExtension();
 }
 
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
@@ -949,6 +971,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
       kTestSharedModulePrimaryApp, "3.0.0",
       std::string(kTestSharedModulePrimaryApp) + "-3.0.0.crx",
       extensions::Manifest::TYPE_PLATFORM_APP);
+  SetupAppDetailInFakeCws(primary_app);
 
   std::vector<TestAppInfo> secondary_apps;
   // Setting up FakeCWS for shared module is the same for shared module as

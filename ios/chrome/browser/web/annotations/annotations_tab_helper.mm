@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/web/annotations/annotations_tab_helper.h"
 
 #import "base/metrics/histogram_functions.h"
+#import "base/metrics/user_metrics.h"
 #import "base/strings/string_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
@@ -104,6 +105,10 @@ void AnnotationsTabHelper::OnClick(web::WebState* web_state,
   if (!match) {
     return;
   }
+  auto* manager = web::AnnotationsTextManager::FromWebState(web_state_);
+  if (manager) {
+    manager->RemoveHighlight();
+  }
 
   if (match.resultType == NSTextCheckingTypePhoneNumber) {
     NSString* phone_number =
@@ -116,6 +121,8 @@ void AnnotationsTabHelper::OnClick(web::WebState* web_state,
                   options:@{}
         completionHandler:nil];
   } else if (web::annotations::IsNSTextCheckingResultEmail(match)) {
+    base::RecordAction(
+        base::UserMetricsAction("IOS.EmailExperience.OneTap.CreateEmail"));
     MailtoHandlerServiceFactory::GetForBrowserState(
         ChromeBrowserState::FromBrowserState(web_state->GetBrowserState()))
         ->HandleMailtoURL(match.URL);

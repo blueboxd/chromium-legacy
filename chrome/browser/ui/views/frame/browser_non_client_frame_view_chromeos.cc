@@ -215,7 +215,7 @@ gfx::Rect BrowserNonClientFrameViewChromeOS::GetBoundsForTabStripRegion(
 
 gfx::Rect BrowserNonClientFrameViewChromeOS::GetBoundsForWebAppFrameToolbar(
     const gfx::Size& toolbar_preferred_size) const {
-  if (!GetShowCaptionButtons() || AppIsBorderlessPwa()) {
+  if (!GetShowCaptionButtons()) {
     return gfx::Rect();
   }
   if (browser_view()->browser()->is_type_app_popup() &&
@@ -1145,6 +1145,11 @@ bool BrowserNonClientFrameViewChromeOS::IsFloated() const {
 
 bool BrowserNonClientFrameViewChromeOS::ShouldEnableImmersiveModeController()
     const {
+  // Do not support immersive mode in kiosk.
+  if (profiles::IsKioskSession()) {
+    return false;
+  }
+
   if (chromeos::TabletState::Get()->InTabletMode()) {
     // Tabbed browsers do not support immersive mode in tablet mode. We use the
     // web ui touchable tabstrip, which has its own sliding mechanism to view

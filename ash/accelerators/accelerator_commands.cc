@@ -25,6 +25,8 @@
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/media/media_controller_impl.h"
+#include "ash/public/cpp/ambient/ambient_client.h"
+#include "ash/public/cpp/app_types_util.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/projector/projector_controller.h"
@@ -484,7 +486,7 @@ bool CanShowStylusTools() {
 }
 
 bool CanStartAmbientMode() {
-  return features::IsAmbientModeEnabled();
+  return AmbientClient::Get() && AmbientClient::Get()->IsAmbientModeAllowed();
 }
 
 bool CanSwapPrimaryDisplay() {
@@ -500,15 +502,23 @@ bool CanToggleDictation() {
 }
 
 bool CanToggleFloatingWindow() {
-  if (!chromeos::wm::features::IsFloatWindowEnabled()) {
+  if (!chromeos::wm::features::IsWindowLayoutMenuEnabled()) {
     return false;
   }
   aura::Window* window = window_util::GetActiveWindow();
   return window && chromeos::wm::CanFloatWindow(window);
 }
 
+bool CanToggleGameDashboard() {
+  if (!features::IsGameDashboardEnabled()) {
+    return false;
+  }
+  aura::Window* window = window_util::GetActiveWindow();
+  return window && IsArcWindow(window);
+}
+
 bool CanToggleMultitaskMenu() {
-  if (!chromeos::wm::features::IsFloatWindowEnabled() ||
+  if (!chromeos::wm::features::IsWindowLayoutMenuEnabled() ||
       Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     return false;
   }
@@ -1241,7 +1251,7 @@ void ToggleDockedMagnifier() {
 }
 
 void ToggleFloating() {
-  DCHECK(chromeos::wm::features::IsFloatWindowEnabled());
+  DCHECK(chromeos::wm::features::IsWindowLayoutMenuEnabled());
   aura::Window* window = window_util::GetActiveWindow();
   DCHECK(window);
   DCHECK(chromeos::wm::CanFloatWindow(window));
@@ -1303,6 +1313,13 @@ void ToggleFullscreenMagnifier() {
   } else {
     SetFullscreenMagnifierEnabled(!current_enabled);
   }
+}
+
+void ToggleGameDashboard() {
+  DCHECK(features::IsGameDashboardEnabled());
+  aura::Window* window = window_util::GetActiveWindow();
+  DCHECK(window);
+  // TODO(phshah): Connect to the game dashboard controller.
 }
 
 void ToggleHighContrast() {
@@ -1456,7 +1473,7 @@ void ToggleMirrorMode() {
 }
 
 void ToggleMultitaskMenu() {
-  DCHECK(chromeos::wm::features::IsFloatWindowEnabled());
+  DCHECK(chromeos::wm::features::IsWindowLayoutMenuEnabled());
   aura::Window* window = window_util::GetActiveWindow();
   DCHECK(window);
   auto* frame_view = NonClientFrameViewAsh::Get(window);

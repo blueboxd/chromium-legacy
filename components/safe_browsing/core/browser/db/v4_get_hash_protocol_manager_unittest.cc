@@ -31,37 +31,6 @@ using base::Time;
 
 namespace safe_browsing {
 
-namespace {
-
-struct KeyValue {
-  std::string key;
-  std::string value;
-
-  explicit KeyValue(const std::string key, const std::string value)
-      : key(key), value(value) {}
-  KeyValue(const KeyValue& other) = default;
-  KeyValue& operator=(const KeyValue& other) = default;
-
- private:
-  KeyValue();
-};
-
-struct ResponseInfo {
-  FullHashStr full_hash;
-  ListIdentifier list_id;
-  std::vector<KeyValue> key_values;
-
-  explicit ResponseInfo(FullHashStr full_hash, ListIdentifier list_id)
-      : full_hash(full_hash), list_id(list_id) {}
-  ResponseInfo(const ResponseInfo& other) = default;
-  ResponseInfo& operator=(const ResponseInfo& other) = default;
-
- private:
-  ResponseInfo();
-};
-
-}  // namespace
-
 class V4GetHashProtocolManagerTest : public PlatformTest {
  public:
   void SetUp() override {
@@ -113,15 +82,15 @@ class V4GetHashProtocolManagerTest : public PlatformTest {
 
   static void SetupFetcherToReturnOKResponse(
       V4GetHashProtocolManager* pm,
-      const std::vector<ResponseInfo>& infos) {
+      const std::vector<TestV4HashResponseInfo>& infos) {
     SetupFetcherToReturnResponse(pm, net::OK, 200, GetV4HashResponse(infos));
   }
 
-  static std::vector<ResponseInfo> GetStockV4HashResponseInfos() {
-    ResponseInfo info(FullHashStr("Everything's shiny, Cap'n."),
-                      GetChromeUrlApiId());
+  static std::vector<TestV4HashResponseInfo> GetStockV4HashResponseInfos() {
+    TestV4HashResponseInfo info(FullHashStr("Everything's shiny, Cap'n."),
+                                GetChromeUrlApiId());
     info.key_values.emplace_back("permission", "NOTIFICATIONS");
-    std::vector<ResponseInfo> infos;
+    std::vector<TestV4HashResponseInfo> infos;
     infos.push_back(info);
     return infos;
   }
@@ -155,33 +124,6 @@ class V4GetHashProtocolManagerTest : public PlatformTest {
   void reset_callback_called() { callback_called_ = false; }
 
  private:
-  static std::string GetV4HashResponse(
-      std::vector<ResponseInfo> response_infos) {
-    FindFullHashesResponse res;
-    res.mutable_negative_cache_duration()->set_seconds(600);
-    for (const ResponseInfo& info : response_infos) {
-      ThreatMatch* m = res.add_matches();
-      m->set_platform_type(info.list_id.platform_type());
-      m->set_threat_entry_type(info.list_id.threat_entry_type());
-      m->set_threat_type(info.list_id.threat_type());
-      m->mutable_cache_duration()->set_seconds(300);
-      m->mutable_threat()->set_hash(info.full_hash);
-
-      for (const KeyValue& key_value : info.key_values) {
-        ThreatEntryMetadata::MetadataEntry* e =
-            m->mutable_threat_entry_metadata()->add_entries();
-        e->set_key(key_value.key);
-        e->set_value(key_value.value);
-      }
-    }
-
-    // Serialize.
-    std::string res_data;
-    res.SerializeToString(&res_data);
-
-    return res_data;
-  }
-
   bool callback_called_;
   base::SimpleTestClock clock_;
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -963,22 +905,22 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetFullHashesWithApisMergesMetadata) {
   // The following two random looking strings value are two of the full hashes
   // produced by UrlToFullHashes in v4_protocol_manager_util.h for the URL:
   // "https://www.example.com"
-  std::vector<ResponseInfo> infos;
+  std::vector<TestV4HashResponseInfo> infos;
   FullHashStr full_hash;
   base::Base64Decode("1ZzJ0/7NjPkg6t0DAS8L5Jf7jA48Pn7opQcP4UXYeXc=",
                      &full_hash);
-  ResponseInfo info(full_hash, GetChromeUrlApiId());
+  TestV4HashResponseInfo info(full_hash, GetChromeUrlApiId());
   info.key_values.emplace_back("permission", "NOTIFICATIONS");
   infos.push_back(info);
 
   base::Base64Decode("c9mG4AkGXxgsELy2pF2z1u2pSY-JMGVK8mU_ipOM2AE=",
                      &full_hash);
-  info = ResponseInfo(full_hash, GetChromeUrlApiId());
+  info = TestV4HashResponseInfo(full_hash, GetChromeUrlApiId());
   info.key_values.emplace_back("permission", "AUDIO_CAPTURE");
   infos.push_back(info);
 
   full_hash = FullHashStr("Everything's shiny, Cap'n.");
-  info = ResponseInfo(full_hash, GetChromeUrlApiId());
+  info = TestV4HashResponseInfo(full_hash, GetChromeUrlApiId());
   info.key_values.emplace_back("permission", "GEOLOCATION");
   infos.push_back(info);
   SetupFetcherToReturnOKResponse(pm.get(), infos);

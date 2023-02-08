@@ -91,6 +91,14 @@ BASE_FEATURE(kAutofillEnableOffersInClankKeyboardAccessory,
              "AutofillEnableOffersInClankKeyboardAccessory",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When enabled, client side filtering functionality will be triggered for
+// certain autofill use-cases, for example filtering displaying virtual card
+// suggestions on websites where the merchant has opted-out of virtual
+// cards.
+BASE_FEATURE(kAutofillEnablePageLoadMetadataIntegration,
+             "AutofillEnablePageLoadMetadataIntegration",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // When enabled, some extra metrics logging for Autofill Downstream will start.
 BASE_FEATURE(kAutofillEnableRemadeDownstreamMetrics,
              "AutofillEnableRemadeDownstreamMetrics",
@@ -183,12 +191,6 @@ BASE_FEATURE(kAutofillParseVcnCardOnFileStandaloneCvcFields,
 // payment settings page.
 BASE_FEATURE(kAutofillRemoveCardExpirationAndTypeTitles,
              "AutofillRemoveCardExpirationAndTypeTitles",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// When enabled, the Save Card infobar will be dismissed by a user initiated
-// navigation other than one caused by submitted form.
-BASE_FEATURE(kAutofillSaveCardDismissOnNavigation,
-             "AutofillSaveCardDismissOnNavigation",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, the Save Card infobar supports editing before submitting.

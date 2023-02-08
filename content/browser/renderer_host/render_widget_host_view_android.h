@@ -146,7 +146,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void FocusedNodeChanged(bool is_editable_node,
                           const gfx::Rect& node_bounds_in_screen) override;
   bool RequestStartStylusWriting() override;
-  void SetHoverActionStylusWritable(bool stylus_writable) override;
+  void NotifyHoverActionStylusWritable(bool stylus_writable) override;
   void OnEditElementFocusedForStylusWriting(
       const gfx::Rect& focused_edit_bounds,
       const gfx::Rect& caret_bounds) override;
@@ -457,7 +457,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
     // Reviews the states of `pending_screen_state_` to handle rotations,
     // fullscreen, and Picture-in-Picture mode.
-    bool HandleScreenStateChanges(const cc::DeadlinePolicy& deadline_policy);
+    bool HandleScreenStateChanges(const cc::DeadlinePolicy& deadline_policy,
+                                  bool force_fullscreen_sync = false);
 
     // Clears flags used to throttle SurfaceSync.
     void Unthrottle();

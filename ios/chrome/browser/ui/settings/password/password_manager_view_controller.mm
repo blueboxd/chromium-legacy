@@ -625,9 +625,45 @@ NSInteger kTrailingSymbolSize = 18;
   _tableIsInSearchMode = NO;
 }
 
+// Returns YES if the array of index path contains a saved password. This is to
+// determine if we need to show the user the alert dialog.
+- (BOOL)indexPathsContainsSavedPassword:(NSArray<NSIndexPath*>*)indexPaths {
+  for (NSIndexPath* indexPath : indexPaths) {
+    if ([self.tableViewModel itemTypeForIndexPath:indexPath] ==
+        ItemTypeSavedPassword) {
+      return YES;
+    }
+  }
+  return NO;
+}
+
 - (void)deleteItems:(NSArray<NSIndexPath*>*)indexPaths {
-  // Do not call super as this also deletes the section if it is empty.
-  [self deleteItemAtIndexPaths:indexPaths];
+  // Only show the user the alert dialog if the index path array contain at
+  // least one saved password.
+  if (IsPasswordGroupingEnabled() &&
+      [self indexPathsContainsSavedPassword:indexPaths]) {
+    // Show password delete dialog before deleting the passwords.
+    NSMutableArray<NSString*>* origins = [[NSMutableArray alloc] init];
+    for (NSIndexPath* indexPath : indexPaths) {
+      NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
+      if (itemType == ItemTypeSavedPassword) {
+        password_manager::AffiliatedGroup affiliatedGroup =
+            base::mac::ObjCCastStrict<PasswordFormContentItem>(
+                [self.tableViewModel itemAtIndexPath:indexPath])
+                .affiliatedGroup;
+        [origins addObject:base::SysUTF8ToNSString(
+                               affiliatedGroup.GetDisplayName())];
+      }
+    }
+    [self.handler
+        showPasswordDeleteDialogWithOrigins:origins
+                                 completion:^{
+                                   [self deleteItemAtIndexPaths:indexPaths];
+                                 }];
+  } else {
+    // Do not call super as this also deletes the section if it is empty.
+    [self deleteItemAtIndexPaths:indexPaths];
+  }
 }
 
 - (void)reloadData {
@@ -1101,7 +1137,8 @@ NSInteger kTrailingSymbolSize = 18;
   NSAttributedString* info = [self.delegate passwordCheckErrorInfo];
   // If no info returned by mediator handle this tap as tap on a cell.
   if (!info) {
-    [self showPasswordIssuesPage];
+    IsPasswordCheckupEnabled() ? [self showPasswordCheckupPage]
+                               : [self showPasswordIssuesPage];
     return;
   }
 
@@ -1769,10 +1806,12 @@ NSInteger kTrailingSymbolSize = 18;
               self.insecurePasswordsCount));
       if (UseSymbols()) {
         _passwordProblemsItem.trailingImage =
-            DefaultSymbolTemplateWithPointSize(kWarningFillSymbol,
+            DefaultSymbolTemplateWithPointSize(IsPasswordGroupingEnabled()
+                                                   ? kErrorCircleFillSymbol
+                                                   : kWarningFillSymbol,
                                                kTrailingSymbolSize);
-        _passwordProblemsItem.trailingImageTintColor =
-            [UIColor colorNamed:kRedColor];
+        _passwordProblemsItem.trailingImageTintColor = [UIColor
+            colorNamed:IsPasswordGroupingEnabled() ? kRed500Color : kRedColor];
       } else {
         _passwordProblemsItem.trailingImage =
             [UIImage imageNamed:@"round_settings_unsafe_state"];
@@ -1942,7 +1981,6 @@ NSInteger kTrailingSymbolSize = 18;
   }
 }
 
-// TODO(crbug.com/1358976): Fix batch delete logic with affiliated groups.
 - (void)deleteItemAtIndexPaths:(NSArray<NSIndexPath*>*)indexPaths {
   std::vector<password_manager::CredentialUIEntry> credentialsToDelete;
 
@@ -2037,8 +2075,19 @@ NSInteger kTrailingSymbolSize = 18;
   [self.delegate deleteCredentials:credentialsToDelete];
 }
 
+// Notifies the handler to show the Password Checkup homepage if the state of
+// the Password Check cell allows it.
+- (void)showPasswordCheckupPage {
+  if (![self IsPasswordCheckTappable]) {
+    return;
+  }
+  [self.handler showPasswordCheckup];
+}
+
 // Notifies the handler to show the password issues page if the state of the
 // Password Check cell allows it.
+// TODO(crbug.com/1406871): Remove when kIOSPasswordCheckup is enabled by
+// default.
 - (void)showPasswordIssuesPage {
   if (![self IsPasswordCheckTappable]) {
     return;
@@ -2205,6 +2254,10 @@ NSInteger kTrailingSymbolSize = 18;
   }
 }
 
+- (void)deleteItemAtIndexPathsForTesting:(NSArray<NSIndexPath*>*)indexPaths {
+  [self deleteItemAtIndexPaths:indexPaths];
+}
+
 #pragma mark - UITableViewDelegate
 
 - (void)tableView:(UITableView*)tableView
@@ -2225,7 +2278,8 @@ NSInteger kTrailingSymbolSize = 18;
       [self.handler showPasswordsInOtherAppsPromo];
       break;
     case ItemTypePasswordCheckStatus:
-      [self showPasswordIssuesPage];
+      IsPasswordCheckupEnabled() ? [self showPasswordCheckupPage]
+                                 : [self showPasswordIssuesPage];
       break;
     case ItemTypeSavedPassword: {
       DCHECK_EQ(SectionIdentifierSavedPasswords,

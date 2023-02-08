@@ -1353,24 +1353,16 @@ BASE_FEATURE(kUserActivityEventLogging,
 // makes Web App windows work more similarly to regular browser windows.
 BASE_FEATURE(kWebAppFrameToolbarInBrowserView,
              "WebAppFrameToolbarInBrowserView",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if !BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kWebAppManifestIconUpdating,
              "WebAppManifestIconUpdating",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(
-    kWebAppManifestImmediateUpdating,
-    "WebAppManifestImmediateUpdating",
-#if BUILDFLAG(IS_MAC)
-    // TODO(crbug.com/1344367): Enable on Mac. Currently disabled due to
-    // WebAppIntegration test failures likely due to app shim problems.
-    base::FEATURE_DISABLED_BY_DEFAULT
-#else
-    base::FEATURE_ENABLED_BY_DEFAULT
-#endif  // BUILDFLAG(IS_MAC)
-);
+BASE_FEATURE(kWebAppManifestImmediateUpdating,
+             "WebAppManifestImmediateUpdating",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 BASE_FEATURE(kWebAppManifestPolicyAppIdentityUpdate,

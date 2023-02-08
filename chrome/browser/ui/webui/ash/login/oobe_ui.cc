@@ -62,7 +62,6 @@
 #include "chrome/browser/ui/webui/ash/login/encryption_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/error_screen_handler.h"
-#include "chrome/browser/ui/webui/ash/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/family_link_notice_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/fingerprint_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_password_changed_screen_handler.h"
@@ -351,8 +350,6 @@ void OobeUI::ConfigureOobeDisplay() {
     }
   }
 
-  AddScreenHandler(std::make_unique<EulaScreenHandler>());
-
   AddScreenHandler(std::make_unique<NetworkScreenHandler>());
 
   AddScreenHandler(std::make_unique<EnableAdbSideloadingScreenHandler>());
@@ -377,8 +374,7 @@ void OobeUI::ConfigureOobeDisplay() {
       std::make_unique<ErrorScreen>(GetView<ErrorScreenHandler>()->AsWeakPtr());
   ErrorScreen* error_screen = error_screen_.get();
 
-  AddScreenHandler(std::make_unique<EnrollmentScreenHandler>(
-      network_state_informer_, error_screen));
+  AddScreenHandler(std::make_unique<EnrollmentScreenHandler>());
 
   AddScreenHandler(std::make_unique<LocaleSwitchScreenHandler>(core_handler_));
 

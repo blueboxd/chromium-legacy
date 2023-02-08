@@ -1013,13 +1013,22 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Ash.CalendarView.CloseEventList.AnimationSmoothness" units="%"
-    expires_after="2023-09-18">
+<histogram
+    name="Ash.CalendarView.CloseEventList.{CalendarChildView}.AnimationSmoothness"
+    units="%" expires_after="2023-09-18">
   <owner>newcomer@google.com</owner>
   <owner>jiamingc@google.com</owner>
   <owner>cros-status-area-eng@google.com</owner>
-  <owner>cros-status-area-eng@google.com</owner>
   <summary>Recorded when the close event list animation is finished.</summary>
+  <token key="CalendarChildView">
+    <variant name="CalendarSlidingSurface"
+        summary="calendar sliding surface container for event list and up
+                 next"/>
+    <variant name="EventListItem" summary="event list item"/>
+    <variant name="UpNextView"
+        summary="if up next view is showing, track animating from the event
+                 list view closing to the up next view showing"/>
+  </token>
 </histogram>
 
 <histogram name="Ash.CalendarView.ConstructionTime" units="ms"
@@ -1052,9 +1061,15 @@ chromium-metrics-reviews@google.com.
     {CalendarChildView}.
   </summary>
   <token key="CalendarChildView">
+    <variant name="CalendarSlidingSurface"
+        summary="calendar sliding surface container for event list and up
+                 next"/>
     <variant name="EventListView" summary="event list view"/>
     <variant name="LabelView" summary="label view"/>
     <variant name="MonthView" summary="month view"/>
+    <variant name="UpNextView"
+        summary="if up next view is showing, track animating from it to the
+                 event list view opening"/>
   </token>
 </histogram>
 
@@ -2070,6 +2085,41 @@ chromium-metrics-reviews@google.com.
   <owner>avynn@google.com</owner>
   <owner>janetmac@chromium.org</owner>
   <summary>Recorded when desk templates are deleted, is never false.</summary>
+</histogram>
+
+<histogram name="Ash.DeskTemplate.FloatingWorkspaceTabCount" units="tabs"
+    expires_after="2024-02-02">
+  <owner>ligeng@google.com</owner>
+  <owner>marcuskoehler@google.com</owner>
+  <summary>
+    Records the number of tabs in a Floating Workspace desk when it is saved.
+  </summary>
+</histogram>
+
+<histogram name="Ash.DeskTemplate.FloatingWorkspaceWindowAndTabCount"
+    units="windows and tabs" expires_after="2024-02-02">
+  <owner>ligeng@google.com</owner>
+  <owner>marcuskoehler@google.com</owner>
+  <summary>
+    Records the number of windows and tabs in a Floating Workspace desk when it
+    is saved.
+  </summary>
+</histogram>
+
+<histogram name="Ash.DeskTemplate.FloatingWorkspaceWindowCount" units="windows"
+    expires_after="2024-02-02">
+  <owner>ligeng@google.com</owner>
+  <owner>marcuskoehler@google.com</owner>
+  <summary>
+    Records the number of windows in a Floating Workspace desk when it is saved.
+  </summary>
+</histogram>
+
+<histogram name="Ash.DeskTemplate.LaunchFloatingWorkspace" enum="BooleanHit"
+    expires_after="2024-02-02">
+  <owner>ligeng@google.com</owner>
+  <owner>marcuskoehler@google.com</owner>
+  <summary>Emitted when a Floating Workspace desk is launched.</summary>
 </histogram>
 
 <histogram name="Ash.DeskTemplate.LaunchFromTemplate" enum="BooleanHit"
@@ -3271,7 +3321,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Notification.ClearAllStacked.AnimationSmoothness"
-    units="%" expires_after="2023-06-04">
+    units="%" expires_after="2023-08-06">
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
   <summary>
@@ -4374,9 +4424,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Search.DriveFileSuggestDataValidation.Status"
-    enum="DriveFileSuggestDataValidationStatus" expires_after="2023-02-12">
-  <owner>wrong@chromium.org</owner>
+    enum="DriveFileSuggestDataValidationStatus" expires_after="2023-08-12">
   <owner>andrewxu@chromium.org</owner>
+  <owner>wrong@chromium.org</owner>
   <summary>
     The outcome of drive file suggestion data validation. Recorded once per
     validation.
@@ -5557,6 +5607,20 @@ chromium-metrics-reviews@google.com.
     The custom wallpaper layout type. Recorded when the user sets a new custom
     wallpaper or changes the existing custom wallpaper's layout.
   </summary>
+</histogram>
+
+<histogram name="Ash.Wallpaper.GooglePhotos.Api.{Api}.RefreshCount"
+    units="count" expires_after="2024-01-27">
+  <owner>thuongphan@google.com</owner>
+  <owner>cowmoo@google.com</owner>
+  <owner>assistive-eng@google.com</owner>
+  <summary>
+    Records the refresh count for the request of the Google Photos API which
+    {Api} with a valid refresh token. The count increases each time a user
+    scrolls down to the end of the page to fetch more photos or albums from the
+    Google Photos API. Emitted only at the end of a session.
+  </summary>
+  <token key="Api" variants="GooglePhotosApi"/>
 </histogram>
 
 <histogram name="Ash.Wallpaper.GooglePhotos.Api.{Api}.ResponseTime.{Result}"

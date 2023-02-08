@@ -111,6 +111,7 @@ suite('CategoriesTest', () => {
     const event = await eventPromise;
     assertTrue(!!event);
     assertEquals(1, handler.getCallCount('chooseLocalCustomBackground'));
+    assertEquals(1, handler.getCallCount('setDefaultColor'));
   });
 
   test('clicking Chrome Web Store tile opens Chrome Web Store', async () => {
@@ -183,5 +184,19 @@ suite('CategoriesTest', () => {
     assertEquals(1, checkedCategories.length);
     assertEquals(
         checkedCategories[0]!.parentElement!.className, 'tile collection');
+
+    // Set a CWS theme.
+    theme.thirdPartyThemeInfo = {
+      id: '123',
+      name: 'test',
+    };
+    callbackRouterRemote.setTheme(theme);
+    await callbackRouterRemote.$.flushForTesting();
+    await waitAfterNextRender(categoriesElement);
+
+    // Check that no category is selected.
+    checkedCategories =
+        categoriesElement.shadowRoot!.querySelectorAll('[checked]');
+    assertEquals(0, checkedCategories.length);
   });
 });

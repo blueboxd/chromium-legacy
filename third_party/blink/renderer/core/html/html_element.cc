@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/dom/element_rare_data.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
+#include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/focus_params.h"
@@ -910,6 +911,11 @@ String HTMLElement::innerText() {
 
 void HTMLElement::setInnerText(const String& text) {
   // FIXME: This doesn't take whitespace collapsing into account at all.
+
+  // The usage of ASSERT_NO_EXCEPTION in this function is subject to mutation
+  // events being fired while removing elements. By delaying them to the end of
+  // the function, we can guarantee that no exceptions will be thrown.
+  EventQueueScope delay_mutation_events;
 
   if (!text.Contains('\n') && !text.Contains('\r')) {
     if (text.empty()) {
@@ -1811,7 +1817,7 @@ const HTMLElement* NearestInclusiveTargetPopoverForInvoker(const Node* node) {
 // first one to open is the "parent" and the second is the "child". Only
 // popover=auto popovers are considered.
 const HTMLElement* HTMLElement::FindTopmostPopoverAncestor(
-    const HTMLElement& new_popover) {
+    HTMLElement& new_popover) {
   DCHECK(new_popover.HasPopoverAttribute());
   auto& document = new_popover.GetDocument();
   DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
@@ -1945,10 +1951,17 @@ void HTMLElement::InvokePopover(Element* invoker) {
   ShowPopoverInternal(/*exception_state=*/nullptr);
 }
 
-Element* HTMLElement::anchorElement() const {
-  if (PopoverData* data = GetPopoverData())
-    return data->anchorElement();
-  return nullptr;
+Element* HTMLElement::anchorElement() {
+  Element* element = GetElementAttribute(html_names::kAnchorAttr);
+  DCHECK(!GetPopoverData() || element == GetPopoverData()->anchorElement());
+  return element;
+}
+
+void HTMLElement::setAnchorElement(Element* new_element) {
+  SetElementAttribute(html_names::kAnchorAttr, new_element);
+  if (GetPopoverData()) {
+    ResetPopoverAnchorObserver();
+  }
 }
 
 void HTMLElement::ResetPopoverAnchorObserver() {
@@ -1956,6 +1969,8 @@ void HTMLElement::ResetPopoverAnchorObserver() {
   DCHECK(HasPopoverAttribute());
   DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
       GetDocument().GetExecutionContext()));
+  // This attaches an idref observer on the target idref. If an element
+  // reference is set instead of an idref, the observer will be detached.
   const AtomicString& anchor_id = FastGetAttribute(html_names::kAnchorAttr);
   GetPopoverData()->setAnchorObserver(
       IsInTreeScope() && anchor_id
@@ -1967,11 +1982,11 @@ void HTMLElement::ResetPopoverAnchorObserver() {
 void HTMLElement::PopoverAnchorElementChanged() {
   DCHECK(GetPopoverData());
   DCHECK(HasPopoverAttribute());
-  const AtomicString& anchor_id = FastGetAttribute(html_names::kAnchorAttr);
-  Element* new_anchor = IsInTreeScope() && anchor_id
-                            ? GetTreeScope().getElementById(anchor_id)
-                            : nullptr;
-  Element* old_anchor = anchorElement();
+  Element* new_anchor = nullptr;
+  if (IsInTreeScope()) {
+    new_anchor = GetElementAttribute(html_names::kAnchorAttr);
+  }
+  Element* old_anchor = GetPopoverData()->anchorElement();
   if (new_anchor == old_anchor)
     return;
   if (old_anchor)

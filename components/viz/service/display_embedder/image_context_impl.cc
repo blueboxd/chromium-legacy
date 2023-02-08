@@ -182,14 +182,23 @@ void ImageContextImpl::BeginAccessIfNecessary(
     return;
   }
 
-  gfx::Size texture_size;
-  if (ShouldCheckTextureSize(texture_base, &texture_size) &&
-      texture_size != size()) {
-    DLOG(ERROR) << "Failed to fulfill the promise texture - texture "
-                   "size does not match TransferableResource size: "
-                << texture_size.ToString() << " vs " << size().ToString();
-    CreateFallbackImage(context_state);
-    return;
+  if (texture_base->GetType() == gpu::TextureBase::Type::kValidated) {
+    // Verify that the client-provided size matches the size of the GPU
+    // resource, using a fallback texture otherwise.
+    // NOTE: This verification is possible only for the validating decoder, as
+    // the size of the GL texture isn't tracked in the passthrough decoder.
+    auto* texture = gpu::gles2::Texture::CheckedCast(texture_base);
+    GLsizei width, height;
+    texture->GetLevelSize(texture_base->target(), 0 /* level */, &width,
+                          &height, nullptr /* depth */);
+    gfx::Size texture_size(width, height);
+    if (texture_size != size()) {
+      DLOG(ERROR) << "Failed to fulfill the promise texture - texture "
+                     "size does not match TransferableResource size: "
+                  << texture_size.ToString() << " vs " << size().ToString();
+      CreateFallbackImage(context_state);
+      return;
+    }
   }
 
   // Legacy mailboxes support only single planar formats.
@@ -312,19 +321,6 @@ bool ImageContextImpl::BeginAccessIfNecessaryForSharedImage(
         representation_scoped_read_access_->promise_image_texture(plane_index));
   }
 
-  return true;
-}
-
-bool ImageContextImpl::ShouldCheckTextureSize(gpu::TextureBase* texture_base,
-                                              gfx::Size* size) {
-  if (texture_base->GetType() != gpu::TextureBase::Type::kValidated)
-    return false;
-  auto* texture = gpu::gles2::Texture::CheckedCast(texture_base);
-
-  GLsizei temp_width, temp_height;
-  texture->GetLevelSize(texture_base->target(), 0 /* level */, &temp_width,
-                        &temp_height, nullptr /* depth */);
-  *size = gfx::Size(temp_width, temp_height);
   return true;
 }
 

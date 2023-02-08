@@ -24,6 +24,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/base/devtools_instrumentation.h"
+#include "cc/base/features.h"
 #include "cc/base/histograms.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/paint/display_item_list.h"
@@ -178,9 +179,7 @@ class RasterTaskImpl : public TileTask {
   TileResolution tile_resolution_;
   int layer_id_;
   uint64_t source_prepare_tiles_id_;
-  // TODO(crbug.com/1298696): views_unittests breaks with MTECheckedPtr
-  // enabled. Triage.
-  raw_ptr<void, DanglingUntriagedDegradeToNoOpWhenMTE> tile_tracing_id_;
+  raw_ptr<void, DanglingUntriaged> tile_tracing_id_;
   uint64_t new_content_id_;
   int source_frame_number_;
   std::unique_ptr<RasterBuffer> raster_buffer_;
@@ -749,9 +748,14 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
       // or drop the tile for scheduling and raster.
       tile->set_solid_color_analysis_performed(true);
       SkColor4f color = SkColors::kTransparent;
+
+      int max_ops_to_analyze = base::FeatureList::IsEnabled(
+                                   features::kMoreAggressiveSolidColorDetection)
+                                   ? 5
+                                   : RasterSource::kDefault;
       bool is_solid_color =
           prioritized_tile.raster_source()->PerformSolidColorAnalysis(
-              tile->enclosing_layer_rect(), &color);
+              tile->enclosing_layer_rect(), &color, max_ops_to_analyze);
       if (is_solid_color) {
         tile->draw_info().set_solid_color(color);
         client_->NotifyTileStateChanged(tile);

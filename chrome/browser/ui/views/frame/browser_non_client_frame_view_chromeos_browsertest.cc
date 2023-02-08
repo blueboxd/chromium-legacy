@@ -33,6 +33,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/test/views_test_utils.h"
 #include "ui/views/widget/widget.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -50,6 +51,7 @@
 #include "base/test/test_future.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ash/login/app_mode/test/web_kiosk_base_test.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_installation.h"
 #include "chrome/browser/command_updater.h"
@@ -93,6 +95,7 @@
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/ui/base/chromeos_ui_constants.h"
 #include "chromeos/ui/base/window_pin_type.h"
@@ -765,7 +768,7 @@ class WebAppNonClientFrameViewAshTest
     frame_header_ = static_cast<chromeos::DefaultFrameHeader*>(
         BrowserNonClientFrameViewChromeOSTestApi(frame_view).GetFrameHeader());
 
-    web_app_frame_toolbar_ = frame_view->web_app_frame_toolbar_for_testing();
+    web_app_frame_toolbar_ = browser_view_->web_app_frame_toolbar_for_testing();
     DCHECK(web_app_frame_toolbar_);
     DCHECK(web_app_frame_toolbar_->GetVisible());
 
@@ -865,8 +868,17 @@ IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
   EXPECT_TRUE(web_app_frame_toolbar_->GetVisible());
 
   StartOverview();
+  if (base::FeatureList::IsEnabled(
+          features::kWebAppFrameToolbarInBrowserView)) {
+    // This RunScheduledLayout call should be done unconditionally, but as it
+    // turns out this causes this test to fail when
+    // WebAppFrameToolbarInBrowserView is disabled, because in that case Layout
+    // incorrectly causes the toolbar to be made visible again.
+    views::test::RunScheduledLayout(browser_view_);
+  }
   EXPECT_FALSE(web_app_frame_toolbar_->GetVisible());
   EndOverview();
+  views::test::RunScheduledLayout(browser_view_);
   EXPECT_TRUE(web_app_frame_toolbar_->GetVisible());
 }
 
@@ -1117,9 +1129,8 @@ IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest, PopupHasNoToolbar) {
   Browser* popup_browser = BrowserList::GetInstance()->GetLastActive();
   BrowserView* browser_view =
       BrowserView::GetBrowserViewForBrowser(popup_browser);
-  BrowserNonClientFrameViewChromeOS* frame_view =
-      GetFrameViewChromeOS(browser_view);
-  EXPECT_FALSE(frame_view->web_app_frame_toolbar_for_testing());
+  EXPECT_FALSE(browser_view->web_app_frame_toolbar_for_testing() &&
+               browser_view->web_app_frame_toolbar_for_testing()->GetVisible());
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -1300,7 +1311,7 @@ class FloatBrowserNonClientFrameViewChromeOSTest
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_{
-      chromeos::wm::features::kFloatWindow};
+      chromeos::wm::features::kWindowLayoutMenu};
 };
 
 IN_PROC_BROWSER_TEST_P(FloatBrowserNonClientFrameViewChromeOSTest,
@@ -1550,6 +1561,45 @@ IN_PROC_BROWSER_TEST_P(TabSearchFrameCaptionButtonTest,
   EXPECT_EQ(browser_view->GetTabSearchBubbleHost()->button(),
             test.custom_button());
 }
+
+namespace {
+
+class KioskBrowserNonClientFrameViewChromeOSTest
+    : public TopChromeMdParamTest<ash::WebKioskBaseTest> {
+ public:
+  KioskBrowserNonClientFrameViewChromeOSTest() = default;
+  KioskBrowserNonClientFrameViewChromeOSTest(
+      const KioskBrowserNonClientFrameViewChromeOSTest&) = delete;
+  KioskBrowserNonClientFrameViewChromeOSTest& operator=(
+      const KioskBrowserNonClientFrameViewChromeOSTest&) = delete;
+  ~KioskBrowserNonClientFrameViewChromeOSTest() override = default;
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_P(KioskBrowserNonClientFrameViewChromeOSTest,
+                       ToggleTabletModeBrowserCaptionVisibilityTest) {
+  InitializeRegularOnlineKiosk();
+
+  EXPECT_EQ(BrowserList::GetInstance()->size(), 1u);
+  auto* browser_view =
+      BrowserView::GetBrowserViewForBrowser(BrowserList::GetInstance()->get(0));
+  auto* frame_view = GetFrameViewChromeOS(browser_view);
+  EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
+
+  auto* widget = browser_view->GetWidget();
+  auto* immersive_controller = chromeos::ImmersiveFullscreenController::Get(
+      views::Widget::GetWidgetForNativeView(widget->GetNativeWindow()));
+  EXPECT_FALSE(immersive_controller->IsEnabled());
+
+  // Enter tablet mode.
+  ASSERT_NO_FATAL_FAILURE(
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true));
+
+  EXPECT_FALSE(frame_view->caption_button_container()->GetVisible());
+  EXPECT_FALSE(immersive_controller->IsEnabled());
+}
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #define INSTANTIATE_TEST_SUITE(name) \
@@ -1558,9 +1608,11 @@ IN_PROC_BROWSER_TEST_P(TabSearchFrameCaptionButtonTest,
 INSTANTIATE_TEST_SUITE(BrowserNonClientFrameViewChromeOSTest);
 INSTANTIATE_TEST_SUITE(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip);
 INSTANTIATE_TEST_SUITE(BrowserNonClientFrameViewChromeOSTestWithWebUiTabStrip);
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 INSTANTIATE_TEST_SUITE(WebAppNonClientFrameViewAshTest);
 INSTANTIATE_TEST_SUITE(FloatBrowserNonClientFrameViewChromeOSTest);
 INSTANTIATE_TEST_SUITE(HomeLauncherBrowserNonClientFrameViewChromeOSTest);
 INSTANTIATE_TEST_SUITE(TabSearchFrameCaptionButtonTest);
+INSTANTIATE_TEST_SUITE(KioskBrowserNonClientFrameViewChromeOSTest);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

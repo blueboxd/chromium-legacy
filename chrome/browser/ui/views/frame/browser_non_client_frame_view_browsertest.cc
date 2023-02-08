@@ -19,6 +19,7 @@
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -221,7 +222,13 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
 IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
                        FullscreenForTabTitlebarHeight) {
   InstallAndLaunchBookmarkApp();
-  EXPECT_GT(GetAppFrameView()->GetTopInset(false), 0);
+  if (!base::FeatureList::IsEnabled(
+          features::kWebAppFrameToolbarInBrowserView)) {
+    // When WebAppFrameToolbarView lives in the BrowserView it is perfectly
+    // valid for the top insets to be 0 at all times. So only do this check when
+    // the feature is disabled.
+    EXPECT_GT(GetAppFrameView()->GetTopInset(false), 0);
+  }
 
   static_cast<content::WebContentsDelegate*>(app_browser_)
       ->EnterFullscreenModeForTab(web_contents_->GetPrimaryMainFrame(), {});
@@ -270,6 +277,19 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
       GetAppFrameView()->GetFrameColor(BrowserFrameActiveState::kUseCurrent),
       app_theme_color_);
 
+  views::View* const window_title_view =
+      GetAppFrameView()->GetViewByID(VIEW_ID_WINDOW_TITLE);
+  views::Label* const window_title =
+      window_title_view ? static_cast<views::Label*>(window_title_view)
+                        : nullptr;
+  // Check for window title color is guarded by WebAppFrameToolbarInBrowserView
+  // feature because in the old implementation the color is only updated when
+  // the title is painted.
+  if (window_title && base::FeatureList::IsEnabled(
+                          features::kWebAppFrameToolbarInBrowserView)) {
+    EXPECT_EQ(window_title->GetBackgroundColor(), app_theme_color_);
+  }
+
   {
     // Add two meta theme color elements. The first element's color should be
     // picked.
@@ -284,6 +304,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
     EXPECT_EQ(
         GetAppFrameView()->GetFrameColor(BrowserFrameActiveState::kUseCurrent),
         SK_ColorRED);
+    if (window_title && base::FeatureList::IsEnabled(
+                            features::kWebAppFrameToolbarInBrowserView)) {
+      EXPECT_EQ(window_title->GetBackgroundColor(), SK_ColorRED);
+    }
   }
   {
     // Change the color of the first element. The new color should be picked.
@@ -296,6 +320,10 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
     EXPECT_EQ(
         GetAppFrameView()->GetFrameColor(BrowserFrameActiveState::kUseCurrent),
         SK_ColorYELLOW);
+    if (window_title && base::FeatureList::IsEnabled(
+                            features::kWebAppFrameToolbarInBrowserView)) {
+      EXPECT_EQ(window_title->GetBackgroundColor(), SK_ColorYELLOW);
+    }
   }
   {
     // Set a non matching media query to the first element. The second element's

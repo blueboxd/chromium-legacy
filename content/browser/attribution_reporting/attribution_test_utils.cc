@@ -31,16 +31,17 @@
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_attestation.h"
 #include "components/attribution_reporting/trigger_registration.h"
+#include "content/browser/attribution_reporting/attribution_config.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/rate_limit_result.h"
-#include "content/public/browser/attribution_config.h"
 #include "content/public/browser/attribution_data_model.h"
 #include "content/public/browser/navigation_handle.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/net_errors.h"
+#include "net/base/schemeful_site.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -66,12 +67,6 @@ const char kDefaultReportOrigin[] = "https://report.test/";
 const int64_t kExpiryTime = 30;
 
 }  // namespace
-
-MockAttributionReportingContentBrowserClient::
-    MockAttributionReportingContentBrowserClient() = default;
-
-MockAttributionReportingContentBrowserClient::
-    ~MockAttributionReportingContentBrowserClient() = default;
 
 // static
 MockAttributionHost* MockAttributionHost::Override(WebContents* web_contents) {
@@ -478,8 +473,8 @@ SourceBuilder::SourceBuilder(base::Time time)
     : source_time_(time),
       expiry_(base::Milliseconds(kExpiryTime)),
       source_origin_(*SuitableOrigin::Deserialize(kDefaultSourceOrigin)),
-      destination_origins_(
-          {*SuitableOrigin::Deserialize(kDefaultDestinationOrigin)}),
+      destination_sites_(
+          {net::SchemefulSite::Deserialize(kDefaultDestinationOrigin)}),
       reporting_origin_(*SuitableOrigin::Deserialize(kDefaultReportOrigin)) {}
 
 SourceBuilder::~SourceBuilder() = default;
@@ -518,14 +513,14 @@ SourceBuilder& SourceBuilder::SetSourceOrigin(SuitableOrigin origin) {
   return *this;
 }
 
-SourceBuilder& SourceBuilder::SetDestinationOrigin(SuitableOrigin origin) {
-  return SetDestinationOrigins({std::move(origin)});
+SourceBuilder& SourceBuilder::SetDestinationOrigin(
+    const SuitableOrigin& origin) {
+  return SetDestinationSites({net::SchemefulSite(origin)});
 }
 
-SourceBuilder& SourceBuilder::SetDestinationOrigins(
-    base::flat_set<SuitableOrigin> origins) {
-  DCHECK(!origins.empty());
-  destination_origins_ = std::move(origins);
+SourceBuilder& SourceBuilder::SetDestinationSites(
+    base::flat_set<net::SchemefulSite> sites) {
+  destination_sites_ = std::move(sites);
   return *this;
 }
 
@@ -608,7 +603,7 @@ SourceBuilder& SourceBuilder::SetDebugReporting(bool debug_reporting) {
 
 CommonSourceInfo SourceBuilder::BuildCommonInfo() const {
   return CommonSourceInfo(
-      source_event_id_, source_origin_, destination_origins_, reporting_origin_,
+      source_event_id_, source_origin_, destination_sites_, reporting_origin_,
       source_time_,
       /*expiry_time=*/source_time_ + expiry_,
       /*event_report_window_time=*/
@@ -743,13 +738,15 @@ AttributionTrigger TriggerBuilder::Build(
     event_triggers.emplace_back(
         trigger_data_, priority_, dedup_key_,
         /*filters=*/
-        AttributionFiltersForSourceType(AttributionSourceType::kNavigation),
+        attribution_reporting::Filters::ForSourceTypeForTesting(
+            AttributionSourceType::kNavigation),
         /*not_filters=*/attribution_reporting::Filters());
 
     event_triggers.emplace_back(
         event_source_trigger_data_, priority_, dedup_key_,
         /*filters=*/
-        AttributionFiltersForSourceType(AttributionSourceType::kEvent),
+        attribution_reporting::Filters::ForSourceTypeForTesting(
+            AttributionSourceType::kEvent),
         /*not_filters=*/attribution_reporting::Filters());
   }
 
@@ -767,8 +764,10 @@ AttributionTrigger TriggerBuilder::Build(
       destination_origin_, attestation_, is_within_fenced_frame_);
 }
 
-AttributionInfoBuilder::AttributionInfoBuilder(StoredSource source)
-    : source_(std::move(source)) {}
+AttributionInfoBuilder::AttributionInfoBuilder(
+    StoredSource source,
+    attribution_reporting::SuitableOrigin context_origin)
+    : source_(std::move(source)), context_origin_(std::move(context_origin)) {}
 
 AttributionInfoBuilder::~AttributionInfoBuilder() = default;
 
@@ -784,7 +783,7 @@ AttributionInfoBuilder& AttributionInfoBuilder::SetDebugKey(
 }
 
 AttributionInfo AttributionInfoBuilder::Build() const {
-  return AttributionInfo(source_, time_, debug_key_);
+  return AttributionInfo(source_, time_, debug_key_, context_origin_);
 }
 
 ReportBuilder::ReportBuilder(AttributionInfo attribution_info)
@@ -880,7 +879,7 @@ bool operator==(const CommonSourceInfo& a, const CommonSourceInfo& b) {
   const auto tie = [](const CommonSourceInfo& source) {
     return std::make_tuple(
         source.source_event_id(), source.source_origin(),
-        source.destination_origin(), source.reporting_origin(),
+        source.destination_sites(), source.reporting_origin(),
         source.source_time(), source.expiry_time(),
         source.event_report_window_time(),
         source.aggregatable_report_window_time(), source.source_type(),
@@ -893,7 +892,8 @@ bool operator==(const CommonSourceInfo& a, const CommonSourceInfo& b) {
 bool operator==(const AttributionInfo& a, const AttributionInfo& b) {
   const auto tie = [](const AttributionInfo& attribution_info) {
     return std::make_tuple(attribution_info.source, attribution_info.time,
-                           attribution_info.debug_key);
+                           attribution_info.debug_key,
+                           attribution_info.context_origin);
   };
   return tie(a) == tie(b);
 }
@@ -1112,10 +1112,16 @@ std::ostream& operator<<(std::ostream& out,
 }
 
 std::ostream& operator<<(std::ostream& out, const CommonSourceInfo& source) {
-  return out << "{source_event_id=" << source.source_event_id()
-             << ",source_origin=" << source.source_origin()
-             << ",destination_origin=" << source.destination_origin()
-             << ",reporting_origin=" << source.reporting_origin()
+  out << "{source_event_id=" << source.source_event_id()
+      << ",source_origin=" << source.source_origin() << ",destination_sites={";
+
+  const char* separator = "";
+  for (const auto& site : source.destination_sites()) {
+    out << separator << site;
+    separator = ",";
+  }
+
+  return out << "},reporting_origin=" << source.reporting_origin()
              << ",source_time=" << source.source_time()
              << ",expiry_time=" << source.expiry_time()
              << ",event_report_window_time="
@@ -1137,7 +1143,7 @@ std::ostream& operator<<(std::ostream& out,
              << (attribution_info.debug_key
                      ? base::NumberToString(*attribution_info.debug_key)
                      : "null")
-             << "}";
+             << ",context_origin=" << attribution_info.context_origin << "}";
 }
 
 std::ostream& operator<<(std::ostream& out,
@@ -1225,12 +1231,11 @@ std::ostream& operator<<(
 }  // namespace
 
 std::ostream& operator<<(std::ostream& out, const AttributionReport& report) {
-  out << "{attribution_info=" << report.attribution_info()
-      << ",report_time=" << report.report_time()
-      << ",external_report_id=" << report.external_report_id()
-      << ",failed_send_attempts=" << report.failed_send_attempts()
-      << ",data=" << report.data() << "}";
-  return out;
+  return out << "{attribution_info=" << report.attribution_info()
+             << ",report_time=" << report.report_time()
+             << ",external_report_id=" << report.external_report_id()
+             << ",failed_send_attempts=" << report.failed_send_attempts()
+             << ",data=" << report.data() << "}";
 }
 
 std::ostream& operator<<(std::ostream& out,
@@ -1479,20 +1484,6 @@ DefaultAggregatableHistogramContributions(
     contributions.emplace_back(absl::MakeUint128(i, i), histogram_values[i]);
   }
   return contributions;
-}
-
-attribution_reporting::Filters AttributionFiltersForSourceType(
-    AttributionSourceType source_type) {
-  std::vector<std::string> values;
-  values.reserve(1);
-  values.push_back(AttributionSourceTypeToString(source_type));
-
-  attribution_reporting::FilterValues filter_values;
-  filter_values.reserve(1);
-  filter_values.emplace(attribution_reporting::FilterData::kSourceTypeFilterKey,
-                        std::move(values));
-
-  return *attribution_reporting::Filters::Create(std::move(filter_values));
 }
 
 }  // namespace content

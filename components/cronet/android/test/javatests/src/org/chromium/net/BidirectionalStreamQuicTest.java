@@ -11,8 +11,7 @@ import static org.junit.Assert.assertTrue;
 import static org.chromium.base.CollectionUtil.newHashSet;
 import static org.chromium.net.CronetTestRule.getContext;
 
-import android.support.test.runner.AndroidJUnit4;
-
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import org.json.JSONObject;
@@ -22,7 +21,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 import org.chromium.net.MetricsTestUtil.TestRequestFinishedListener;
 
@@ -73,7 +71,6 @@ public class BidirectionalStreamQuicTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     // Test that QUIC is negotiated.
     public void testSimpleGet() throws Exception {
@@ -95,7 +92,6 @@ public class BidirectionalStreamQuicTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testSimplePost() throws Exception {
         String path = "/simple.txt";
@@ -136,7 +132,6 @@ public class BidirectionalStreamQuicTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testSimplePostWithFlush() throws Exception {
         // TODO(xunjieli): Use ParameterizedTest instead of the loop.
@@ -169,7 +164,6 @@ public class BidirectionalStreamQuicTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testSimplePostWithFlushTwice() throws Exception {
         // TODO(xunjieli): Use ParameterizedTest instead of the loop.
@@ -205,7 +199,6 @@ public class BidirectionalStreamQuicTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testSimpleGetWithFlush() throws Exception {
         // TODO(xunjieli): Use ParameterizedTest instead of the loop.
@@ -249,7 +242,6 @@ public class BidirectionalStreamQuicTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testSimplePostWithFlushAfterOneWrite() throws Exception {
         // TODO(xunjieli): Use ParameterizedTest instead of the loop.
@@ -280,7 +272,6 @@ public class BidirectionalStreamQuicTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     // Tests that if the stream failed between the time when we issue a Write()
     // and when the Write() is executed in the native stack, there is no crash.
@@ -329,7 +320,6 @@ public class BidirectionalStreamQuicTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testStreamFailWithQuicDetailedErrorCode() throws Exception {
         String path = "/simple.txt";

@@ -121,11 +121,17 @@ void AshAcceleratorConfiguration::Initialize() {
         base::make_span(kEnableWithSameAppWindowCycleAcceleratorData,
                         kEnableWithSameAppWindowCycleAcceleratorDataLength));
   }
-  if (chromeos::wm::features::IsFloatWindowEnabled()) {
+  if (chromeos::wm::features::IsWindowLayoutMenuEnabled()) {
     AppendAcceleratorData(
         accelerators,
         base::make_span(kEnableWithFloatWindowAcceleratorData,
                         kEnableWithFloatWindowAcceleratorDataLength));
+  }
+  if (features::IsGameDashboardEnabled()) {
+    AppendAcceleratorData(
+        accelerators,
+        base::make_span(kToggleGameDashboardAcceleratorData,
+                        kToggleGameDashboardAcceleratorDataLength));
   }
 
   // Debug accelerators.

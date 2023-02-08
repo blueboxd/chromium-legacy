@@ -55,7 +55,7 @@ using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::TabGridEditButton;
 using chrome_test_util::TextFieldForCellWithLabelId;
 using chrome_test_util::TurnTableViewSwitchOn;
-using testing::ElementWithAccessibilityLabelSubtring;
+using testing::ElementWithAccessibilityLabelSubstring;
 
 namespace {
 
@@ -230,6 +230,17 @@ id<GREYMatcher> DeleteConfirmationButtonForGrouping() {
   return grey_allOf(ButtonWithAccessibilityLabel(
                         l10n_util::GetNSString(IDS_IOS_DELETE_ACTION_TITLE)),
                     grey_interactable(), nullptr);
+}
+
+// Matcher for the Delete button in Confirmation Alert for batch passwords
+// deletion when password grouping is enabled.
+id<GREYMatcher> BatchDeleteConfirmationButtonForGrouping() {
+  return grey_allOf(
+      grey_accessibilityID([NSString
+          stringWithFormat:@"%@%@",
+                           l10n_util::GetNSString(IDS_IOS_DELETE_ACTION_TITLE),
+                           @"AlertAction"]),
+      grey_interactable(), nullptr);
 }
 
 // Matcher for the Delete button in the list view, located at the bottom of the
@@ -510,14 +521,6 @@ id<GREYMatcher> EditDoneButton() {
   }
 
   if ([self isRunningTest:@selector
-            (testNoOndeviceEncryptionSetupWhenSignedOut)]) {
-    config.features_enabled.push_back(syncer::kSyncTrustedVaultPassphrasePromo);
-  }
-  if ([self isRunningTest:@selector(testNoOndeviceEncryptionWithoutFlag)]) {
-    config.features_disabled.push_back(
-        syncer::kSyncTrustedVaultPassphrasePromo);
-  }
-  if ([self isRunningTest:@selector
             (testAccountStorageSwitchHiddenIfSignedInAndFlagDisabled)]) {
     config.features_disabled.push_back(
         password_manager::features::kEnablePasswordsAccountStorage);
@@ -529,20 +532,6 @@ id<GREYMatcher> EditDoneButton() {
   }
 
   return config;
-}
-
-// Verifies that a signed out account has no option related to
-// on device encryption.
-- (void)testNoOndeviceEncryptionWithoutFlag {
-  OpenPasswordManager();
-
-  // Check that the menus related to on-device encryptions are not displayed.
-  [OptedInTrustedVaultLink() assertWithMatcher:grey_nil()];
-  [OptedInTrustedVaultText() assertWithMatcher:grey_nil()];
-  [OptInTrustedVaultLink() assertWithMatcher:grey_nil()];
-  [SetUpTrustedVaultLink() assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      performAction:grey_tap()];
 }
 
 // Check that a user which is not logged in any account do not get
@@ -1449,6 +1438,13 @@ id<GREYMatcher> EditDoneButton() {
   [[EarlGrey selectElementWithMatcher:DeleteButtonAtBottom()]
       performAction:grey_tap()];
 
+  if ([self groupingEnabled]) {
+    // Tap on the Delete button of the alert dialog.
+    [[EarlGrey
+        selectElementWithMatcher:BatchDeleteConfirmationButtonForGrouping()]
+        performAction:grey_tap()];
+  }
+
   // Verify that the deletion was propagated to the PasswordStore.
   GREYAssertEqual(0, [PasswordSettingsAppInterface passwordStoreResultsCount],
                   @"Stored password was not removed from PasswordStore.");
@@ -1620,6 +1616,13 @@ id<GREYMatcher> EditDoneButton() {
 
   [[EarlGrey selectElementWithMatcher:DeleteButtonAtBottom()]
       performAction:grey_tap()];
+
+  if ([self groupingEnabled]) {
+    // Tap on the Delete button of the alert dialog.
+    [[EarlGrey
+        selectElementWithMatcher:BatchDeleteConfirmationButtonForGrouping()]
+        performAction:grey_tap()];
+  }
 
   // Verify that the Add button is visible and enabled.
   [[EarlGrey selectElementWithMatcher:AddPasswordToolbarButton()]
@@ -2774,7 +2777,7 @@ id<GREYMatcher> EditDoneButton() {
           grey_allOf(
               grey_descendant(grey_accessibilityID(
                   kPasswordSettingsAccountStorageSwitchTableViewId)),
-              ElementWithAccessibilityLabelSubtring(fakeIdentity.userEmail),
+              ElementWithAccessibilityLabelSubstring(fakeIdentity.userEmail),
               nil)];
 
   [accountStorageSwitch performAction:TurnTableViewSwitchOn(NO)];

@@ -36,11 +36,10 @@ namespace {
 class MockAutofillDownloadManager : public AutofillDownloadManager {
  public:
   explicit MockAutofillDownloadManager(AutofillClient* client)
-      : AutofillDownloadManager(
-            client,
-            /*api_key=*/"",
-            AutofillDownloadManager::IsRawMetadataUploadingEnabled(false),
-            /*log_manager=*/nullptr) {}
+      : AutofillDownloadManager(client,
+                                /*api_key=*/"",
+                                /*is_raw_metadata_uploading_enabled=*/false,
+                                /*log_manager=*/nullptr) {}
 
   MockAutofillDownloadManager(const MockAutofillDownloadManager&) = delete;
   MockAutofillDownloadManager& operator=(const MockAutofillDownloadManager&) =
@@ -71,16 +70,16 @@ class MockAutofillDriver : public TestAutofillDriver {
 
   MOCK_METHOD(void, SetShouldSuppressKeyboard, (bool), ());
   MOCK_METHOD(bool, CanShowAutofillUi, (), (const));
-  MOCK_METHOD(void, TriggerReparseInAllFrames, (), ());
+  MOCK_METHOD(void,
+              TriggerReparseInAllFrames,
+              (base::OnceCallback<void(bool)>),
+              ());
 };
 
 class MockAutofillManager : public AutofillManager {
  public:
   MockAutofillManager(AutofillDriver* driver, AutofillClient* client)
-      : AutofillManager(driver,
-                        client,
-                        client->GetChannel(),
-                        EnableDownloadManager(false)) {}
+      : AutofillManager(driver, client) {}
 
   base::WeakPtr<AutofillManager> GetWeakPtr() override {
     return weak_ptr_factory_.GetWeakPtr();
@@ -293,6 +292,15 @@ class AutofillManagerTest : public testing::Test {
     driver_.reset();
   }
 
+  void SetUpObserverAndDownloadManager(bool successful_request) {
+    auto download_manager =
+        std::make_unique<MockAutofillDownloadManager>(&client_);
+    ON_CALL(*download_manager, StartQueryRequest)
+        .WillByDefault(Return(successful_request));
+    client_.set_download_manager(std::move(download_manager));
+    manager_->AddObserver(&observer_);
+  }
+
  protected:
   base::test::ScopedFeatureList scoped_feature_list_async_parse_form_;
   base::test::TaskEnvironment task_environment_;
@@ -323,7 +331,7 @@ class AutofillManagerTest_OnLoadedServerPredictionsObserver
         std::make_unique<MockAutofillDownloadManager>(&client_);
     ON_CALL(*download_manager, StartQueryRequest)
         .WillByDefault(Return(successful_request));
-    manager_->set_download_manager_for_test(std::move(download_manager));
+    client_.set_download_manager(std::move(download_manager));
     manager_->AddObserver(&observer_);
   }
 };
@@ -414,7 +422,7 @@ TEST_F(AutofillManagerTest, CanShowAutofillUi) {
 
 TEST_F(AutofillManagerTest, TriggerReparseInAllFrames) {
   EXPECT_CALL(*driver_, TriggerReparseInAllFrames);
-  manager_->TriggerReparseInAllFrames();
+  manager_->TriggerReparseInAllFrames(base::DoNothing());
 }
 
 TEST_F(

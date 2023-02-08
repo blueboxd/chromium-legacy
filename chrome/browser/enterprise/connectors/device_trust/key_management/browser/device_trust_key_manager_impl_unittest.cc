@@ -817,9 +817,8 @@ TEST_F(DeviceTrustKeyManagerImplTest, RotateKey_AtLoadKey_Success) {
       base::BindLambdaForTesting([&captured_result](KeyRotationResult result) {
         captured_result = result;
       });
-  base::RepeatingClosure start_rotate = base::BindPostTask(
-      base::SequencedTaskRunner::GetCurrentDefault(),
-      base::BindLambdaForTesting([&]() {
+  base::RepeatingClosure start_rotate =
+      base::BindPostTaskToCurrentDefault(base::BindLambdaForTesting([&]() {
         key_manager()->RotateKey(kFakeNonce, std::move(completion_callback));
       }));
 
@@ -877,9 +876,8 @@ TEST_F(DeviceTrustKeyManagerImplTest, RotateKey_AtLoadKey_Fails) {
       base::BindLambdaForTesting([&captured_result](KeyRotationResult result) {
         captured_result = result;
       });
-  base::RepeatingClosure start_rotate = base::BindPostTask(
-      base::SequencedTaskRunner::GetCurrentDefault(),
-      base::BindLambdaForTesting([&]() {
+  base::RepeatingClosure start_rotate =
+      base::BindPostTaskToCurrentDefault(base::BindLambdaForTesting([&]() {
         key_manager()->RotateKey(kFakeNonce, std::move(completion_callback));
       }));
 
@@ -925,14 +923,22 @@ struct PermanentFailureTestCase {
 // Tests that a key manager disables retries whenever it encounters a permanent
 // failure during key creation.
 TEST_F(DeviceTrustKeyManagerImplTest, CreateKey_PermanentFailures) {
-  const std::array<PermanentFailureTestCase, 2> test_cases = {
+  const std::array<PermanentFailureTestCase, 4> test_cases = {
       PermanentFailureTestCase{KeyRotationCommand::Status::FAILED_KEY_CONFLICT,
                                DTKeyRotationResult::kFailedKeyConflict,
                                PermanentFailure::kCreationUploadConflict},
       PermanentFailureTestCase{
+          KeyRotationCommand::Status::FAILED_OS_RESTRICTION,
+          DTKeyRotationResult::kFailedOSRestriction,
+          PermanentFailure::kOsRestriction},
+      PermanentFailureTestCase{
           KeyRotationCommand::Status::FAILED_INVALID_PERMISSIONS,
           DTKeyRotationResult::kFailedInvalidPermissions,
-          PermanentFailure::kInsufficientPermissions}};
+          PermanentFailure::kInsufficientPermissions},
+      PermanentFailureTestCase{
+          KeyRotationCommand::Status::FAILED_INVALID_INSTALLATION,
+          DTKeyRotationResult::kFailedInvalidInstallation,
+          PermanentFailure::kInvalidInstallation}};
 
   for (const auto& test_case : test_cases) {
     SetUpNoKey();

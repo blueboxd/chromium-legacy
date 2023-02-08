@@ -128,12 +128,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   std::string GetId() const override;
   std::string GetDisplayName() const override;
   ProtocolVersion SupportedProtocol() const override;
-  bool SupportsHMACSecretExtension() const override;
-  bool SupportsEnterpriseAttestation() const override;
-  bool SupportsCredBlobOfSize(size_t num_bytes) const override;
-  bool SupportsDevicePublicKey() const override;
   bool SupportsLargeBlobs() const override;
-  const absl::optional<AuthenticatorSupportedOptions>& Options() const override;
+  const AuthenticatorSupportedOptions& Options() const override;
   absl::optional<FidoTransportProtocol> AuthenticatorTransport() const override;
   base::WeakPtr<FidoAuthenticator> GetWeakPtr() override;
 
@@ -305,9 +301,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   size_t max_large_blob_fragment_length();
 
   const std::unique_ptr<FidoDevice> device_;
-  absl::optional<AuthenticatorSupportedOptions> options_;
+  AuthenticatorSupportedOptions options_;
   std::unique_ptr<FidoTask> task_;
   std::unique_ptr<GenericDeviceOperation> operation_;
+  bool initialized_ = false;
 
   // The highest advertised PINUVAuthProtocol version that the authenticator
   // supports. This is guaranteed to be non-null after authenticator

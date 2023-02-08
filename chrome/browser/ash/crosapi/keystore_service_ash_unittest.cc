@@ -292,10 +292,10 @@ TEST_F(KeystoreServiceAshTest, SignRsaSuccess) {
   // matter here.
   EXPECT_CALL(platform_keys_service_,
               SignRSAPKCS1Digest(absl::optional<TokenId>(TokenId::kUser),
-                                 GetDataStr(), GetPublicKeyStr(),
+                                 GetDataBin(), GetPublicKeyBin(),
                                  HashAlgorithm::HASH_ALGORITHM_SHA256,
                                  /*callback=*/_))
-      .WillOnce(RunOnceCallback<4>(GetDataStr(), Status::kSuccess));
+      .WillOnce(RunOnceCallback<4>(GetDataBin(), Status::kSuccess));
 
   CallbackObserver<mojom::KeystoreBinaryResultPtr> observer;
   keystore_service_.Sign(
@@ -312,10 +312,10 @@ TEST_F(KeystoreServiceAshTest, SignEcSuccess) {
   // matter here.
   EXPECT_CALL(
       platform_keys_service_,
-      SignECDSADigest(absl::optional<TokenId>(TokenId::kSystem), GetDataStr(),
-                      GetPublicKeyStr(), HashAlgorithm::HASH_ALGORITHM_SHA512,
+      SignECDSADigest(absl::optional<TokenId>(TokenId::kSystem), GetDataBin(),
+                      GetPublicKeyBin(), HashAlgorithm::HASH_ALGORITHM_SHA512,
                       /*callback=*/_))
-      .WillOnce(RunOnceCallback<4>(GetDataStr(), Status::kSuccess));
+      .WillOnce(RunOnceCallback<4>(GetDataBin(), Status::kSuccess));
 
   CallbackObserver<mojom::KeystoreBinaryResultPtr> observer;
   keystore_service_.Sign(
@@ -330,9 +330,9 @@ TEST_F(KeystoreServiceAshTest, SignEcSuccess) {
 TEST_F(KeystoreServiceAshTest, UsingkRsassaPkcs1V15NoneSignSuccess) {
   EXPECT_CALL(platform_keys_service_,
               SignRSAPKCS1Raw(absl::optional<TokenId>(TokenId::kSystem),
-                              GetDataStr(), GetPublicKeyStr(),
+                              GetDataBin(), GetPublicKeyBin(),
                               /*callback=*/_))
-      .WillOnce(RunOnceCallback<3>(GetDataStr(), Status::kSuccess));
+      .WillOnce(RunOnceCallback<3>(GetDataBin(), Status::kSuccess));
 
   mojom::KeystoreSigningScheme sign_scheme =
       mojom::KeystoreSigningScheme::kRsassaPkcs1V15None;
@@ -348,7 +348,8 @@ TEST_F(KeystoreServiceAshTest, UsingkRsassaPkcs1V15NoneSignSuccess) {
 
 TEST_F(KeystoreServiceAshTest, KeyNotAllowedSignFail) {
   EXPECT_CALL(platform_keys_service_, SignECDSADigest)
-      .WillOnce(RunOnceCallback<4>("", Status::kErrorKeyNotAllowedForSigning));
+      .WillOnce(RunOnceCallback<4>(std::vector<uint8_t>(),
+                                   Status::kErrorKeyNotAllowedForSigning));
 
   CallbackObserver<mojom::KeystoreBinaryResultPtr> observer;
   keystore_service_.Sign(
@@ -380,7 +381,7 @@ TEST_F(KeystoreServiceAshTest, UnknownSignSchemeSignFail) {
 
 TEST_F(KeystoreServiceAshTest, RemoveKeySuccess) {
   EXPECT_CALL(platform_keys_service_,
-              RemoveKey(TokenId::kSystem, GetPublicKeyStr(), /*callback=*/_))
+              RemoveKey(TokenId::kSystem, GetPublicKeyBin(), /*callback=*/_))
       .WillOnce(RunOnceCallback<2>(Status::kSuccess));
 
   StatusCallbackObserver observer;
@@ -393,7 +394,7 @@ TEST_F(KeystoreServiceAshTest, RemoveKeySuccess) {
 
 TEST_F(KeystoreServiceAshTest, RemoveKeyFail) {
   EXPECT_CALL(platform_keys_service_,
-              RemoveKey(TokenId::kSystem, GetPublicKeyStr(), /*callback=*/_))
+              RemoveKey(TokenId::kSystem, GetPublicKeyBin(), /*callback=*/_))
       .WillOnce(RunOnceCallback<2>(Status::kErrorKeyNotFound));
 
   StatusCallbackObserver observer;

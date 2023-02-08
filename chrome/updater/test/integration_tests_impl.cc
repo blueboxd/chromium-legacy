@@ -47,6 +47,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/external_constants_builder.h"
+#include "chrome/updater/external_constants_override.h"
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/registration_data.h"
@@ -305,7 +306,7 @@ void Install(UpdaterScope scope) {
 
 void PrintLog(UpdaterScope scope) {
   std::string contents;
-  absl::optional<base::FilePath> path = GetDataDirPath(scope);
+  absl::optional<base::FilePath> path = GetInstallDirectory(scope);
   EXPECT_TRUE(path);
   if (path &&
       base::ReadFileToString(path->AppendASCII("updater.log"), &contents)) {
@@ -371,24 +372,38 @@ void RunWakeActive(UpdaterScope scope, int expected_exit_code) {
   RunUpdaterWithSwitch(active_version, scope, kWakeSwitch, expected_exit_code);
 }
 
+// TODO(crbug.com/1396103): remove this `#if` once mojo interface changes are
+// done in separate CL.
+#if BUILDFLAG(IS_WIN)
+void Update(UpdaterScope scope,
+            const std::string& app_id,
+            const std::string& install_data_index,
+            bool do_update_check_only) {
+  scoped_refptr<UpdateService> update_service = CreateUpdateServiceProxy(scope);
+  base::RunLoop loop;
+  update_service->Update(
+      app_id, install_data_index, UpdateService::Priority::kForeground,
+      UpdateService::PolicySameVersionUpdate::kNotAllowed, do_update_check_only,
+      base::DoNothing(),
+      base::BindLambdaForTesting(
+          [&loop](UpdateService::Result result_unused) { loop.Quit(); }));
+  loop.Run();
+}
+#else   // BUILDFLAG(IS_WIN)
+
 void Update(UpdaterScope scope,
             const std::string& app_id,
             const std::string& install_data_index) {
   scoped_refptr<UpdateService> update_service = CreateUpdateServiceProxy(scope);
   base::RunLoop loop;
   update_service->Update(
-      app_id, install_data_index,
-  // TODO(crbug.com/1396103): mojo interface changes will be done in separate
-  // CL.
-#if BUILDFLAG(IS_WIN)
-      /*do_update_check_only=*/false,
-#endif  // BUILDFLAG(IS_WIN)
-      UpdateService::Priority::kForeground,
+      app_id, install_data_index, UpdateService::Priority::kForeground,
       UpdateService::PolicySameVersionUpdate::kNotAllowed, base::DoNothing(),
       base::BindLambdaForTesting(
           [&loop](UpdateService::Result result_unused) { loop.Quit(); }));
   loop.Run();
 }
+#endif  // BUILDFLAG(IS_WIN)
 
 void UpdateAll(UpdaterScope scope) {
   scoped_refptr<UpdateService> update_service = CreateUpdateServiceProxy(scope);
@@ -401,7 +416,7 @@ void UpdateAll(UpdaterScope scope) {
 }
 
 void DeleteUpdaterDirectory(UpdaterScope scope) {
-  absl::optional<base::FilePath> install_dir = GetBaseInstallDirectory(scope);
+  absl::optional<base::FilePath> install_dir = GetInstallDirectory(scope);
   ASSERT_TRUE(install_dir);
   ASSERT_TRUE(base::DeletePathRecursively(*install_dir));
 }
@@ -418,10 +433,11 @@ void SetupFakeUpdaterPrefs(UpdaterScope scope, const base::Version& version) {
 
 void SetupFakeUpdaterInstallFolder(UpdaterScope scope,
                                    const base::Version& version) {
-  const absl::optional<base::FilePath> folder_path =
-      GetFakeUpdaterInstallFolderPath(scope, version);
+  absl::optional<base::FilePath> folder_path =
+      GetVersionedInstallDirectory(scope, version);
   ASSERT_TRUE(folder_path);
-  ASSERT_TRUE(base::CreateDirectory(*folder_path));
+  ASSERT_TRUE(base::CreateDirectory(
+      folder_path->Append(GetExecutableRelativePath()).DirName()));
 }
 
 void SetupFakeUpdater(UpdaterScope scope, const base::Version& version) {
@@ -689,13 +705,13 @@ void CallServiceUpdate(UpdaterScope updater_scope,
 
   base::RunLoop loop;
   service_proxy->Update(
-      app_id, install_data_index,
-  // TODO(crbug.com/1396103): mojo interface changes will be done in separate
-  // CL.
+      app_id, install_data_index, UpdateService::Priority::kForeground,
+      policy_same_version_update,
+// TODO(crbug.com/1396103): remove this `#if` once mojo interface changes are
+// done in separate CL.
 #if BUILDFLAG(IS_WIN)
       /*do_update_check_only=*/false,
 #endif  // BUILDFLAG(IS_WIN)
-      UpdateService::Priority::kForeground, policy_same_version_update,
       base::BindLambdaForTesting([](const UpdateService::UpdateState&) {}),
       base::BindLambdaForTesting([&](UpdateService::Result result) {
         EXPECT_EQ(result, UpdateService::Result::kSuccess);

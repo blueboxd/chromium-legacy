@@ -212,7 +212,7 @@ scoped_refptr<StaticBitmapImage> FlipImageVertically(
 
   if (ShouldAvoidPremul(parsed_options)) {
     // Unpremul code path results in a GPU readback if |input| is texture
-    // backed since CopyImageData() uses  SkImage::readPixels() to extract the
+    // backed since CopyImageData() uses SkImage::readPixels() to extract the
     // pixels from SkImage.
     sk_sp<SkData> image_pixels = TryAllocateSkData(info.computeMinByteSize());
     if (!image_pixels)
@@ -225,13 +225,31 @@ scoped_refptr<StaticBitmapImage> FlipImageVertically(
         paint_image.readPixels(info, writable_pixels, image_row_bytes, 0, 0);
     DCHECK(read_successful);
 
-    for (int i = 0; i < info.height() / 2; i++) {
-      size_t top_first_element = i * image_row_bytes;
-      size_t top_last_element = (i + 1) * image_row_bytes;
-      size_t bottom_first_element = (info.height() - 1 - i) * image_row_bytes;
-      std::swap_ranges(&writable_pixels[top_first_element],
-                       &writable_pixels[top_last_element],
-                       &writable_pixels[bottom_first_element]);
+    // Since rotation is applied after flip, vertical flip becomes horizontal
+    // flips after rotation for oritation 5-8. So we swap pixels left to right
+    // to flip the image horizontally instead.
+    if (input->CurrentFrameOrientation().UsesWidthAsHeight()) {
+      for (int i = 0; i < info.height() - 1; i++) {
+        for (int j = 0; j < info.width() / 2; j++) {
+          size_t first_element = i * image_row_bytes + j * info.bytesPerPixel();
+          size_t last_element =
+              i * image_row_bytes + (j + 1) * info.bytesPerPixel();
+          size_t bottom_element =
+              (i + 1) * image_row_bytes - (j + 1) * info.bytesPerPixel();
+          std::swap_ranges(&writable_pixels[first_element],
+                           &writable_pixels[last_element],
+                           &writable_pixels[bottom_element]);
+        }
+      }
+    } else {
+      for (int i = 0; i < info.height() / 2; i++) {
+        size_t top_first_element = i * image_row_bytes;
+        size_t top_last_element = (i + 1) * image_row_bytes;
+        size_t bottom_first_element = (info.height() - 1 - i) * image_row_bytes;
+        std::swap_ranges(&writable_pixels[top_first_element],
+                         &writable_pixels[top_last_element],
+                         &writable_pixels[bottom_first_element]);
+      }
     }
     return StaticBitmapImage::Create(std::move(image_pixels), info,
                                      input->CurrentFrameOrientation());
@@ -250,8 +268,15 @@ scoped_refptr<StaticBitmapImage> FlipImageVertically(
     return nullptr;
 
   auto* canvas = resource_provider->Canvas();
-  canvas->scale(1, -1);
-  canvas->translate(0, -input->height());
+  // Since rotation is applied after flip, vertical flips becomes horizontal
+  // flips for oritation 5-8. So we flip the images horizontally instead.
+  if (input->CurrentFrameOrientation().UsesWidthAsHeight()) {
+    canvas->scale(-1, 1);
+    canvas->translate(-input->width(), 0);
+  } else {
+    canvas->scale(1, -1);
+    canvas->translate(0, -input->height());
+  }
   cc::PaintFlags paint;
   paint.setBlendMode(SkBlendMode::kSrc);
   canvas->drawImage(input->PaintImageForCurrentFrame(), 0, 0,
@@ -334,6 +359,58 @@ scoped_refptr<StaticBitmapImage> ApplyColorSpaceConversion(
   return image->ConvertToColorSpace(color_space, color_type);
 }
 
+scoped_refptr<StaticBitmapImage> BakeOrientation(
+    scoped_refptr<StaticBitmapImage> input,
+    ImageBitmap::ParsedOptions& options,
+    gfx::Rect src_rect) {
+  SkImageInfo info = GetSkImageInfo(input);
+  if (info.isEmpty()) {
+    return nullptr;
+  }
+
+  PaintImage paint_image = input->PaintImageForCurrentFrame();
+
+  // For the premul code path, rotate and resize the paint image directly.
+  if (ShouldAvoidPremul(options)) {
+    PaintImage new_paint_image = Image::ResizeAndOrientImage(
+        paint_image, input->CurrentFrameOrientation());
+    return StaticBitmapImage::Create(std::move(new_paint_image),
+                                     ImageOrientationEnum::kDefault);
+  }
+
+  bool use_accelerated =
+      paint_image.IsTextureBacked() && info.alphaType() == kPremul_SkAlphaType;
+  auto resource_provider = CreateProvider(
+      use_accelerated ? input->ContextProviderWrapper() : nullptr, info, input,
+      true /* fallback_to_software */);
+  if (!resource_provider) {
+    return nullptr;
+  }
+
+  auto* canvas = resource_provider->Canvas();
+
+  auto affineTransform = input->CurrentFrameOrientation().TransformFromDefault(
+      gfx::SizeF(src_rect.size()));
+  canvas->concat(AffineTransformToSkM44(affineTransform));
+
+  gfx::Rect dst_rect = src_rect;
+  // The destination rect will have its width and height already reversed
+  // for the orientation of the image, as it was needed for page layout, so
+  // we need to reverse it back here.
+  if (input->CurrentFrameOrientation().UsesWidthAsHeight()) {
+    dst_rect.set_size(gfx::TransposeSize(dst_rect.size()));
+  }
+
+  cc::PaintFlags paint;
+  paint.setBlendMode(SkBlendMode::kSrc);
+  canvas->drawImageRect(
+      std::move(paint_image), gfx::RectFToSkRect(gfx::RectF(src_rect)),
+      gfx::RectFToSkRect(gfx::RectF(dst_rect)), SkSamplingOptions(), &paint,
+      WebCoreClampingModeToSkiaRectConstraint(
+          Image::kDoNotClampImageToSourceRect));
+  return resource_provider->Snapshot(input->CurrentFrameOrientation());
+}
+
 scoped_refptr<StaticBitmapImage> MakeBlankImage(
     const ImageBitmap::ParsedOptions& parsed_options) {
   SkImageInfo info = SkImageInfo::Make(
@@ -412,6 +489,16 @@ static scoped_refptr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
     result = ApplyColorSpaceConversion(std::move(result), parsed_options);
     if (!result)
       return nullptr;
+  }
+
+  // apply the orientation from EXIF metadata if needed.
+  if (!parsed_options.orientation_from_image &&
+      result->CurrentFrameOrientation() !=
+          ImageOrientationEnum::kOriginTopLeft) {
+    result = BakeOrientation(std::move(result), parsed_options, intersect_rect);
+    if (!result) {
+      return nullptr;
+    }
   }
 
   // premultiply / unpremultiply if needed
@@ -672,6 +759,16 @@ ImageBitmap::ImageBitmap(ImageData* data,
     image_ = FlipImageVertically(std::move(image_), parsed_options);
   }
 
+  // apply the orientation from EXIF metadata if needed.
+  if (!parsed_options.orientation_from_image &&
+      image_->CurrentFrameOrientation() !=
+          ImageOrientationEnum::kOriginTopLeft) {
+    if (!image_) {
+      return;
+    }
+    image_ = BakeOrientation(std::move(image_), parsed_options, intersect_rect);
+  }
+
   // resize if up-scaling
   if (up_scaling)
     image_ = ScaleImage(std::move(image_), parsed_options);
@@ -906,6 +1003,20 @@ ScriptPromise ImageBitmap::CreateAsync(
     canvas->translate(0, draw_dst_rect.height());
     canvas->scale(1, -1);
   }
+
+  // apply the orientation from EXIF metadata if needed.
+  if (!parsed_options.orientation_from_image &&
+      input->CurrentFrameOrientation() !=
+          ImageOrientationEnum::kOriginTopLeft) {
+    auto affineTransform =
+        input->CurrentFrameOrientation().TransformFromDefault(
+            gfx::SizeF(draw_dst_rect.size()));
+    canvas->concat(AffineTransformToSkM44(affineTransform));
+    if (input->CurrentFrameOrientation().UsesWidthAsHeight()) {
+      draw_dst_rect.set_size(gfx::TransposeSize(draw_dst_rect.size()));
+    }
+  }
+
   SVGImageForContainer::Create(To<SVGImage>(input.get()),
                                gfx::SizeF(input_rect.size()), 1, NullURL(),
                                preferred_color_scheme)

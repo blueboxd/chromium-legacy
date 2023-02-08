@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/autofill/chrome_autofill_client_ios.h"
 
 #import <utility>
+#import <vector>
 
 #import "base/check.h"
 #import "base/functional/bind.h"
@@ -137,6 +138,15 @@ scoped_refptr<network::SharedURLLoaderFactory>
 ChromeAutofillClientIOS::GetURLLoaderFactory() {
   return base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
       web_state_->GetBrowserState()->GetURLLoaderFactory());
+}
+
+AutofillDownloadManager* ChromeAutofillClientIOS::GetDownloadManager() {
+  if (!download_manager_) {
+    // Lazy initialization to avoid virtual function calls in the constructor.
+    download_manager_ = std::make_unique<AutofillDownloadManager>(
+        this, GetChannel(), GetLogManager());
+  }
+  return download_manager_.get();
 }
 
 PersonalDataManager* ChromeAutofillClientIOS::GetPersonalDataManager() {
@@ -431,10 +441,9 @@ void ChromeAutofillClientIOS::UpdateAutofillPopupDataListValues(
   // No op. ios/web_view does not support display datalist.
 }
 
-base::span<const Suggestion> ChromeAutofillClientIOS::GetPopupSuggestions()
-    const {
+std::vector<Suggestion> ChromeAutofillClientIOS::GetPopupSuggestions() const {
   NOTIMPLEMENTED();
-  return base::span<const Suggestion>();
+  return {};
 }
 
 void ChromeAutofillClientIOS::PinPopupView() {

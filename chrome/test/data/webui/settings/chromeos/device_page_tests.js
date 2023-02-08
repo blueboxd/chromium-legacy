@@ -825,8 +825,26 @@ suite('SettingsDevicePage', function() {
       ],
     };
 
+    /** @type {!AudioSystemProperties} */
+    const muteByHardwareAudioSystemProperties = {
+      outputVolumePercent: 0,
+
+      /** @type {!MuteState} */
+      outputMuteState: crosAudioConfigMojomWebui.MuteState.kNotMuted,
+
+      /** @type {!Array<!AudioDevice>} */
+      outputDevices: [],
+
+      /** @type {!Array<!AudioDevice>} */
+      inputDevices: [
+        fakeCrosAudioConfig.fakeInternalMicActive,
+      ],
+
+      inputMuteState: crosAudioConfigMojomWebui.MuteState.kMutedExternally,
+    };
+
     /**
-     * Simuates clicking at a given point on cr-slider element.
+     * Simulates clicking at a given point on cr-slider element.
      * @param {string} crSliderSelector
      * @param {number} percent
      * @return {Promise}
@@ -835,13 +853,14 @@ suite('SettingsDevicePage', function() {
       /** @type {!CrSliderElement} */
       const crSlider = audioPage.shadowRoot.querySelector(crSliderSelector);
       assertTrue(isVisible(crSlider));
+      assertFalse(crSlider.disabled);
       const rect = crSlider.$.container.getBoundingClientRect();
       crSlider.dispatchEvent(new PointerEvent('pointerdown', {
         buttons: 1,
         pointerId: 1,
         clientX: rect.left + ((percent / 100) * rect.width),
       }));
-      return await flushTasks();
+      return flushTasks();
     }
 
     setup(async function() {
@@ -871,21 +890,22 @@ suite('SettingsDevicePage', function() {
           audioPage.shadowRoot.querySelector('#audioOutputSubsection')));
       assertTrue(
           isVisible(audioPage.shadowRoot.querySelector('#audioInputSection')));
-      const sectionHeader =
+      const inputSectionHeader =
           audioPage.shadowRoot.querySelector('#audioInputTitle');
-      assertTrue(isVisible(sectionHeader));
-      assertEquals('Input', sectionHeader.textContent.trim());
-      const deviceSubsectionHeader =
+      assertTrue(isVisible(inputSectionHeader));
+      assertEquals('Input', inputSectionHeader.textContent.trim());
+      const inputDeviceSubsectionHeader =
           audioPage.shadowRoot.querySelector('#audioInputDeviceLabel');
-      assertTrue(isVisible(deviceSubsectionHeader));
-      assertEquals('Device', deviceSubsectionHeader.textContent.trim());
-      const deviceSubsectionDropdown =
+      assertTrue(isVisible(inputDeviceSubsectionHeader));
+      assertEquals(
+          'Microphone', inputDeviceSubsectionHeader.textContent.trim());
+      const inputDeviceSubsectionDropdown =
           audioPage.shadowRoot.querySelector('#audioInputDeviceDropdown');
-      assertTrue(isVisible(deviceSubsectionDropdown));
+      assertTrue(isVisible(inputDeviceSubsectionDropdown));
       const inputGainSubsectionHeader =
           audioPage.shadowRoot.querySelector('#audioInputGainLabel');
       assertTrue(isVisible(inputGainSubsectionHeader), 'audioInputGainLabel');
-      assertEquals('Volume', inputGainSubsectionHeader.textContent.trim());
+      assertEquals('Gain', inputGainSubsectionHeader.textContent.trim());
       const inputVolumeButton =
           audioPage.shadowRoot.querySelector('#audioInputGainMuteButton');
       assertTrue(isVisible(inputVolumeButton), 'audioInputGainMuteButton');
@@ -1250,6 +1270,47 @@ suite('SettingsDevicePage', function() {
       assertFalse(
           isVisible(noiseCancellationSubsection),
       );
+    });
+
+    test('simulate input muted by hardware', async function() {
+      const muteSelector = '#audioInputGainMuteButton';
+      const inputMuteButton = audioPage.shadowRoot.querySelector(muteSelector);
+      const sliderSelector = '#audioInputGainVolumeSlider';
+      const inputSlider = audioPage.shadowRoot.querySelector(sliderSelector);
+      assertFalse(inputMuteButton.disabled);
+      assertFalse(inputSlider.disabled);
+      assertFalse(audioPage.getIsInputMutedForTest());
+
+      crosAudioConfig.setAudioSystemProperties(
+          muteByHardwareAudioSystemProperties);
+      await flushTasks();
+
+      assertTrue(inputMuteButton.disabled);
+      assertTrue(inputSlider.disabled);
+      assertTrue(audioPage.getIsInputMutedForTest());
+    });
+
+    test('simulate output mute-by-policy', async function() {
+      const enterpriseIconSelector = '#audioOutputMuteByPolicyIndicator';
+      assertFalse(isVisible(
+          audioPage.shadowRoot.querySelector(enterpriseIconSelector)));
+      const outputMuteButtonSelector = '#audioOutputMuteButton';
+      const outputMuteButton =
+          audioPage.shadowRoot.querySelector(outputMuteButtonSelector);
+      assertFalse(outputMuteButton.disabled);
+      const outputSliderSelector = '#outputVolumeSlider';
+      const outputSlider =
+          audioPage.shadowRoot.querySelector(outputSliderSelector);
+      assertFalse(outputSlider.disabled);
+
+      crosAudioConfig.setAudioSystemProperties(
+          mutedByPolicyFakeAudioSystemProperties);
+      await flushTasks();
+
+      assertTrue(isVisible(
+          audioPage.shadowRoot.querySelector(enterpriseIconSelector)));
+      assertTrue(outputMuteButton.disabled);
+      assertTrue(outputSlider.disabled);
     });
   });
 

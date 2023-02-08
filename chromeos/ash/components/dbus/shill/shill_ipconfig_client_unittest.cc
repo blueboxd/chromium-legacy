@@ -90,9 +90,9 @@ TEST_F(ShillIPConfigClientTest, GetProperties) {
   // Create response.
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
   dbus::MessageWriter writer(response.get());
-  dbus::MessageWriter array_writer(NULL);
+  dbus::MessageWriter array_writer(nullptr);
   writer.OpenArray("{sv}", &array_writer);
-  dbus::MessageWriter entry_writer(NULL);
+  dbus::MessageWriter entry_writer(nullptr);
   // Append address.
   array_writer.OpenDictEntry(&entry_writer);
   entry_writer.AppendString(shill::kAddressProperty);
@@ -106,16 +106,16 @@ TEST_F(ShillIPConfigClientTest, GetProperties) {
   writer.CloseContainer(&array_writer);
 
   // Create the expected value.
-  base::Value value(base::Value::Type::DICT);
-  value.SetKey(shill::kAddressProperty, base::Value(kAddress));
-  value.SetKey(shill::kMtuProperty, base::Value(kMtu));
+  base::Value::Dict value;
+  value.Set(shill::kAddressProperty, kAddress);
+  value.Set(shill::kMtuProperty, kMtu);
 
   // Set expectations.
   PrepareForMethodCall(shill::kGetPropertiesFunction,
                        base::BindRepeating(&ExpectNoArgument), response.get());
   // Call method.
   client_->GetProperties(dbus::ObjectPath(kExampleIPConfigPath),
-                         base::BindOnce(&ExpectValueResult, &value));
+                         base::BindOnce(&ExpectValueDictionaryResult, &value));
   // Run the message loop.
   base::RunLoop().RunUntilIdle();
 }

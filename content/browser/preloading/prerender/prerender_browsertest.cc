@@ -68,6 +68,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
+#include "content/public/test/content_browser_test_content_browser_client.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/mock_client_hints_controller_delegate.h"
 #include "content/public/test/mock_web_contents_observer.h"
@@ -80,13 +81,11 @@
 #include "content/public/test/theme_change_waiter.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
-#include "content/shell/browser/shell_content_browser_client.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/mock_commit_deferring_condition.h"
 #include "content/test/portal/portal_activated_observer.h"
 #include "content/test/portal/portal_created_observer.h"
 #include "content/test/render_document_feature.h"
-#include "content/test/test_content_browser_client.h"
 #include "content/test/test_mojo_binder_policy_applier_unittest.mojom.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -2241,9 +2240,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       PrerenderFinalStatus::kCrossSiteNavigation);
 }
 
-// TODO(crbug.com/1239281): Add test cases for prerendering triggered by the
-// browser process.
-
 // Regression test for https://crbug.com/1198051
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MainFrameFragmentNavigation) {
   const GURL kInitialUrl = GetUrl("/empty.html");
@@ -2761,7 +2757,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 }
 
 class MojoCapabilityControlTestContentBrowserClient
-    : public TestContentBrowserClient,
+    : public ContentBrowserTestContentBrowserClient,
       mojom::TestInterfaceForDefer,
       mojom::TestInterfaceForGrant,
       mojom::TestInterfaceForCancel,
@@ -2836,7 +2832,6 @@ class MojoCapabilityControlTestContentBrowserClient
 // during prerendering.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MojoCapabilityControl) {
   MojoCapabilityControlTestContentBrowserClient test_browser_client;
-  auto* old_browser_client = SetBrowserClientForTesting(&test_browser_client);
 
   const GURL kInitialUrl = GetUrl("/empty.html");
   const GURL kPrerenderingUrl = GetUrl("/page_with_iframe.html");
@@ -2900,8 +2895,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MojoCapabilityControl) {
   // Wait until the deferred interface is granted on all frames.
   run_loop.Run();
   EXPECT_EQ(test_browser_client.GetDeferReceiverSetSize(), frames.size());
-
-  SetBrowserClientForTesting(old_browser_client);
 }
 
 // Tests that mojo capability control will cancel prerendering if the main frame
@@ -2909,7 +2902,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MojoCapabilityControl) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        MojoCapabilityControl_CancelMainFrame) {
   MojoCapabilityControlTestContentBrowserClient test_browser_client;
-  auto* old_browser_client = SetBrowserClientForTesting(&test_browser_client);
 
   const GURL kInitialUrl = GetUrl("/empty.html");
   const GURL kPrerenderingUrl = GetUrl("/page_with_iframe.html");
@@ -2943,7 +2935,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       "Prerender.Experimental.PrerenderCancelledUnknownInterface."
       "SpeculationRule",
       InterfaceNameHasher(mojom::TestInterfaceForCancel::Name_), 1);
-  SetBrowserClientForTesting(old_browser_client);
 }
 
 // Tests that mojo capability control will cancel prerendering if child frames
@@ -2951,7 +2942,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        MojoCapabilityControl_CancelIframe) {
   MojoCapabilityControlTestContentBrowserClient test_browser_client;
-  auto* old_browser_client = SetBrowserClientForTesting(&test_browser_client);
 
   const GURL kInitialUrl = GetUrl("/empty.html");
   const GURL kPrerenderingUrl = GetUrl("/page_with_iframe.html");
@@ -2980,7 +2970,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   prerender_broker->GetInterface(remote.BindNewPipeAndPassReceiver());
   EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl));
 
-  SetBrowserClientForTesting(old_browser_client);
   ExpectFinalStatusForSpeculationRule(PrerenderFinalStatus::kMojoBinderPolicy);
   // `TestInterfaceForCancel` doesn't have a enum value because it is not used
   // in production, so histogram_tester_ should log
@@ -2999,7 +2988,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        MojoCapabilityControl_HandleUnexpected) {
   MojoCapabilityControlTestContentBrowserClient test_browser_client;
-  auto* old_browser_client = SetBrowserClientForTesting(&test_browser_client);
 
   const GURL kInitialUrl = GetUrl("/empty.html");
   const GURL kPrerenderingUrl = GetUrl("/empty.html?prerender1");
@@ -3046,14 +3034,11 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl));
   EXPECT_EQ(bad_message_error,
             "MBPA_BAD_INTERFACE: content.mojom.TestInterfaceForUnexpected");
-
-  SetBrowserClientForTesting(old_browser_client);
 }
 
 // Regression test for https://crbug.com/1268714.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MojoCapabilityControl_LoosenMode) {
   MojoCapabilityControlTestContentBrowserClient test_browser_client;
-  auto* old_browser_client = SetBrowserClientForTesting(&test_browser_client);
   IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
   GURL initial_url = GetUrl("/empty.html");
   GURL prerendering_url =
@@ -3124,7 +3109,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MojoCapabilityControl_LoosenMode) {
     prerender_broker->GetInterface(remote.BindNewPipeAndPassReceiver());
     remote.FlushForTesting();
   }
-  SetBrowserClientForTesting(old_browser_client);
 }
 
 // Test that a PrerenderHost triggered by speculation rules is canceled when
@@ -6562,22 +6546,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, AbandonIfRendererProcessCrashes) {
     RenderProcessHost* process =
         GetPrerenderedMainFrameHost(host_id)->GetProcess();
     ScopedAllowRendererCrashes allow_renderer_crashes(process);
-#if BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_X86_FAMILY)
-    // On x86 and x86_64 Android, base::ImmediateCrash() macro used in
-    // ChildProcessHostImpl::CrashHungProcess() called from ForceCrash()
-    // does not seem to work as expected. (See https://crbug.com/1211655)
-    // We have no other ForceCrash() call sites on other than Linux and CrOS.
-    // In this test, we call Shutdown(content::RESULT_CODE_HUNG) instead as
-    // HungRenderDialogView does so on other platforms than Linux and CrOS.
-    process->Shutdown(RESULT_CODE_HUNG);
-#else
-    // On Android, ForceCrash results in TERMINATION_STATUS_NORMAL_TERMINATION.
-    // On other platforms, it does in TERMINATION_STATUS_PROCESS_CRASHED.
     process->ForceCrash();
-#endif
     host_observer.WaitForDestroyed();
   }
-
   ExpectFinalStatusForSpeculationRule(
 #if BUILDFLAG(IS_ANDROID)
       PrerenderFinalStatus::kRendererProcessKilled);
@@ -9346,8 +9317,7 @@ void CheckExpectedCrossOriginMetrics(
     const base::HistogramTester& histogram_tester,
     PrerenderCrossOriginRedirectionMismatch mismatch_type,
     absl::optional<PrerenderCrossOriginRedirectionProtocolChange>
-        protocol_change,
-    absl::optional<PrerenderCrossOriginRedirectionDomain> domain_change) {
+        protocol_change) {
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
       "EmbedderSuffixForTest",
@@ -9361,12 +9331,6 @@ void CheckExpectedCrossOriginMetrics(
         "Prerender.Experimental.CrossOriginRedirectionProtocolChange.Embedder_"
         "EmbedderSuffixForTest",
         protocol_change.value(), 1);
-  }
-  if (domain_change.has_value()) {
-    histogram_tester.ExpectUniqueSample(
-        "Prerender.Experimental.CrossOriginRedirectionDomain.Embedder_"
-        "EmbedderSuffixForTest",
-        domain_change.value(), 1);
   }
 }
 
@@ -9394,7 +9358,7 @@ IN_PROC_BROWSER_TEST_F(
   CheckExpectedCrossOriginMetrics(
       histogram_tester,
       PrerenderCrossOriginRedirectionMismatch::kSchemeHostPortMismatch,
-      /*protocol_change=*/absl::nullopt, /*domain_change=*/absl::nullopt);
+      /*protocol_change=*/absl::nullopt);
 }
 
 // Tests a prerendering navigaton goes with HTTP protocol, and being redirected
@@ -9422,8 +9386,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   CheckExpectedCrossOriginMetrics(
       histogram_tester,
       PrerenderCrossOriginRedirectionMismatch::kSchemePortMismatch,
-      PrerenderCrossOriginRedirectionProtocolChange::kHttpProtocolUpgrade,
-      /*domain_change=*/absl::nullopt);
+      PrerenderCrossOriginRedirectionProtocolChange::kHttpProtocolUpgrade);
 }
 
 // Similar to
@@ -9457,8 +9420,7 @@ IN_PROC_BROWSER_TEST_F(
   CheckExpectedCrossOriginMetrics(
       histogram_tester,
       PrerenderCrossOriginRedirectionMismatch::kSchemePortMismatch,
-      PrerenderCrossOriginRedirectionProtocolChange::kHttpProtocolDowngrade,
-      /*domain_change=*/absl::nullopt);
+      PrerenderCrossOriginRedirectionProtocolChange::kHttpProtocolDowngrade);
 }
 
 // Tests that embedder triggered prerender can be redirected to the subdomain
@@ -9520,8 +9482,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       PrerenderFinalStatus::kActivated, 1);
 }
 
-// Tests PrerenderCrossOriginRedirectionMismatch.kHostMismatch and
-// PrerenderCrossOriginRedirectionDomain.kCrossDomain are recorded
+// Tests PrerenderCrossOriginRedirectionMismatch.kHostMismatch is recorded
 // when the prerendering navigation is redirected to a different domain.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        EmbedderTrigger_CrossOriginRedirection_DifferentDomain) {
@@ -9534,8 +9495,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
       *web_contents_impl(), kPrerenderingUrl, kRedirectedUrl);
   CheckExpectedCrossOriginMetrics(
       histogram_tester, PrerenderCrossOriginRedirectionMismatch::kHostMismatch,
-      /*protocol_change=*/absl::nullopt,
-      PrerenderCrossOriginRedirectionDomain::kCrossDomain);
+      /*protocol_change=*/absl::nullopt);
 }
 
 // Tests that prerender works with accessibility.

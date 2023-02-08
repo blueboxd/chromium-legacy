@@ -106,7 +106,8 @@ const std::string& GetUniversalApiContractVersion() {
       [] {
         int major_version = 0;
         int minor_version = 0;
-        if (base::win::GetVersion() <= base::win::Version::WIN10_RS4) {
+        if (base::win::OSInfo::Kernel32Version() <=
+            base::win::Version::WIN10_RS4) {
           major_version = GetPreRS5UniversalApiContractVersion();
         } else {
           base::win::RegKey version_key(
@@ -592,7 +593,7 @@ blink::UserAgentMetadata GetUserAgentMetadata(const PrefService* pref_service) {
   metadata.architecture = content::GetCpuArchitecture();
   metadata.model = content::BuildModelInfo();
   metadata.mobile = false;
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   metadata.mobile = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUseMobileUserAgent);
 #endif

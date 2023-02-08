@@ -368,6 +368,10 @@ public class TabListMediatorUnitTest {
                 .when(mTabContentManager)
                 .getTabThumbnailWithCallback(anyInt(), any(), any(), anyBoolean(), anyBoolean());
         doReturn(mTabModel).when(mTabModelSelector).getCurrentModel();
+        // Incognito is unused. Mock the same profile for simplified test.
+        doReturn(mTabModel).when(mTabModelSelector).getModel(false);
+        doReturn(mTabModel).when(mTabModelSelector).getModel(true);
+        doReturn(mProfile).when(mTabModel).getProfile();
         doReturn(tabModelList).when(mTabModelSelector).getModels();
 
         doReturn(mTabModelFilterProvider).when(mTabModelSelector).getTabModelFilterProvider();
@@ -435,7 +439,7 @@ public class TabListMediatorUnitTest {
 
         // TabModelObserver is registered when native is ready.
         assertThat(mTabModelObserverCaptor.getAllValues().isEmpty(), equalTo(true));
-        mMediator.initWithNative(mProfile);
+        mMediator.initWithNative();
         assertThat(mTabModelObserverCaptor.getAllValues().isEmpty(), equalTo(false));
 
         doAnswer(invocation -> {
@@ -1159,7 +1163,7 @@ public class TabListMediatorUnitTest {
                 getTabThumbnailCallback(), mTitleProvider, mTabListFaviconProvider, true, null,
                 mGridCardOnClickListenerProvider, null, null, getClass().getSimpleName(),
                 UiType.CLOSABLE, null);
-        mMediator.initWithNative(mProfile);
+        mMediator.initWithNative();
         // mTabModelObserverCaptor captures on every initWithNative calls. There is one
         // initWithNative call in the setup already.
         verify(mTabModelFilterProvider, times(2))
@@ -1201,6 +1205,7 @@ public class TabListMediatorUnitTest {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER, TabListMode.GRID);
 
         // Assume that moveTab in TabModel is finished. Selected tab in the group becomes mTab1.
+        doReturn(true).when(mTabModelSelector).isTabStateInitialized();
         doReturn(mTab1).when(mTabModel).getTabAt(POSITION2);
         doReturn(mTab2).when(mTabModel).getTabAt(POSITION1);
         doReturn(mTab1).when(mTabGroupModelFilter).getTabAt(POSITION1);
@@ -1317,6 +1322,7 @@ public class TabListMediatorUnitTest {
         assertThat(mModel.get(0).model.get(TabProperties.TITLE), equalTo(TAB1_TITLE));
 
         // Assume that TabGroupModelFilter is already updated.
+        doReturn(true).when(mTabModelSelector).isTabStateInitialized();
         doReturn(mTab1).when(mTabGroupModelFilter).getTabAt(POSITION1);
         doReturn(mTab2).when(mTabGroupModelFilter).getTabAt(POSITION2);
         doReturn(2).when(mTabGroupModelFilter).getCount();
@@ -2222,6 +2228,7 @@ public class TabListMediatorUnitTest {
         TabImpl tab3 = prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL);
         tabs.add(tab3);
         int position3 = 2;
+        doReturn(true).when(mTabModelSelector).isTabStateInitialized();
         doReturn(tab3).when(mTabModel).getTabAt(position3);
         doReturn(position3).when(mTabModel).indexOf(tab3);
         doReturn(3).when(mTabModel).getCount();
@@ -3057,7 +3064,7 @@ public class TabListMediatorUnitTest {
                 getTabThumbnailCallback(), mTitleProvider, mTabListFaviconProvider, true, null,
                 null, null, null, getClass().getSimpleName(), TabProperties.UiType.CLOSABLE, null);
         mMediator.registerOrientationListener(mGridLayoutManager);
-        mMediator.initWithNative(mProfile);
+        mMediator.initWithNative();
         initAndAssertAllProperties();
 
         PropertyModel model = mock(PropertyModel.class);
@@ -3074,7 +3081,7 @@ public class TabListMediatorUnitTest {
                 getTabThumbnailCallback(), mTitleProvider, mTabListFaviconProvider, true, null,
                 null, null, null, getClass().getSimpleName(), TabProperties.UiType.CLOSABLE, null);
         mMediator.registerOrientationListener(mGridLayoutManager);
-        mMediator.initWithNative(mProfile);
+        mMediator.initWithNative();
         initWithThreeTabs();
 
         PropertyModel model = mock(PropertyModel.class);
@@ -3395,7 +3402,7 @@ public class TabListMediatorUnitTest {
                 null, null, null, getClass().getSimpleName(), TabProperties.UiType.SELECTABLE,
                 null);
         mMediator.registerOrientationListener(mGridLayoutManager);
-        mMediator.initWithNative(mProfile);
+        mMediator.initWithNative();
         initAndAssertAllProperties();
         when(mSelectionDelegate.isItemSelected(TAB1_ID)).thenReturn(false);
         Tab tab3 = prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL);
@@ -3430,7 +3437,7 @@ public class TabListMediatorUnitTest {
                 null, null, null, getClass().getSimpleName(), TabProperties.UiType.SELECTABLE,
                 null);
         mMediator.registerOrientationListener(mGridLayoutManager);
-        mMediator.initWithNative(mProfile);
+        mMediator.initWithNative();
         initAndAssertAllProperties();
         Tab tab3 = prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL);
         when(mSelectionDelegate.isItemSelected(TAB1_ID)).thenReturn(false);
@@ -3465,7 +3472,7 @@ public class TabListMediatorUnitTest {
                 null, null, null, getClass().getSimpleName(), TabProperties.UiType.SELECTABLE,
                 null);
         mMediator.registerOrientationListener(mGridLayoutManager);
-        mMediator.initWithNative(mProfile);
+        mMediator.initWithNative();
         initAndAssertAllProperties();
         Tab tab3 = prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL);
         Tab tab4 = prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL);
@@ -3628,8 +3635,7 @@ public class TabListMediatorUnitTest {
     }
 
     private TabGridItemTouchHelperCallback getItemTouchHelperCallback() {
-        return (TabGridItemTouchHelperCallback) mMediator.getItemTouchHelperCallback(
-                0f, 0f, 0f, mProfile);
+        return (TabGridItemTouchHelperCallback) mMediator.getItemTouchHelperCallback(0f, 0f, 0f);
     }
 
     private void setUpForTabGroupOperation(@TabListMediatorType int type, @TabListMode int mode) {
@@ -3664,7 +3670,7 @@ public class TabListMediatorUnitTest {
 
         // TabGroupModelFilterObserver is registered when native is ready.
         assertThat(mTabGroupModelFilterObserverCaptor.getAllValues().isEmpty(), equalTo(true));
-        mMediator.initWithNative(mProfile);
+        mMediator.initWithNative();
         assertThat(mTabGroupModelFilterObserverCaptor.getAllValues().isEmpty(), equalTo(false));
 
         // There are two TabModelObserver and two TabGroupModelFilter.Observer added when

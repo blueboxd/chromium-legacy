@@ -601,7 +601,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BiometricAuth.AuthRequester"
-    enum="BiometricAuthRequester" expires_after="M112">
+    enum="BiometricAuthRequester" expires_after="M118">
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -1700,7 +1700,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.IncognitoReauth.PromoActionType"
+<histogram name="Android.IncognitoReauth.PromoAcceptedOrDismissed"
     enum="IncognitoReauthPromoActionType" expires_after="M115">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
@@ -2568,9 +2568,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.SuggestionsListScrolled.{PageClass}"
-    enum="Boolean" expires_after="2023-01-31">
+    enum="Boolean" expires_after="2024-02-01">
   <owner>ender@chromium.org</owner>
-  <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <summary>
     For every interaction with the Omnibox, this metric records whether the user
@@ -2795,7 +2794,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.OmniboxFocusReason" enum="OmniboxFocusReason"
-    expires_after="2023-06-04">
+    expires_after="2023-08-06">
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>amaralp@chromium.org</owner>
@@ -4292,6 +4291,16 @@ chromium-metrics-reviews@google.com.
     Result is enum that represent three flags: did we called invalidate this
     frame, did renderer submitted compositor frame and whether DrawParams from
     Android HWUI changed. This is logged once per WebView draw functor call.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.Gfx.SaveHWUIStateDuration" units="ms"
+    expires_after="2023-12-01">
+  <owner>blundell@chromium.org</owner>
+  <owner>vasilyt@chromium.org</owner>
+  <summary>
+    Tracks the amount of time that it took for WebView to save HWUI state.
+    Recorded once per saving of HWUI state.
   </summary>
 </histogram>
 

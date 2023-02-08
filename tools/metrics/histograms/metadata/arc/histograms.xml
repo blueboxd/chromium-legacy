@@ -1117,7 +1117,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.EngagementTime.ArcTotal" units="ms"
-    expires_after="2023-06-04">
+    expires_after="2023-08-06">
   <owner>mduggan@google.com</owner>
   <owner>yhanada@google.com</owner>
   <owner>arc-framework@google.com</owner>
@@ -1154,7 +1154,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.EngagementTime.Total" units="ms"
-    expires_after="2023-06-04">
+    expires_after="2023-08-06">
   <owner>mduggan@google.com</owner>
   <owner>yhanada@google.com</owner>
   <owner>arc-framework@google.com</owner>
@@ -1357,6 +1357,17 @@ chromium-metrics-reviews@google.com.
     Records the Action reposition operation types, including touchscreen drag,
     mouse drag and keyboard arrow keys, when users move action views to adjust
     touch points. Records the events when users release touch, mouse or key.
+  </summary>
+</histogram>
+
+<histogram name="Arc.InputOverlay.ButtonGroupRepositionOperationType"
+    enum="ArcInputOverlayRepositionOperationType" expires_after="2023-06-13">
+  <owner>cuicuiruan@google.com</owner>
+  <owner>arc-gaming@google.com</owner>
+  <summary>
+    Records the button group reposition operation types, including touchscreen
+    drag, mouse drag and keyboard arrow keys, when users move the button group.
+    Records the events when users release touch, mouse or key.
   </summary>
 </histogram>
 

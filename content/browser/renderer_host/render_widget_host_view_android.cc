@@ -372,8 +372,11 @@ void RenderWidgetHostViewAndroid::ScreenStateChangeHandler::
 }
 
 bool RenderWidgetHostViewAndroid::ScreenStateChangeHandler::
-    HandleScreenStateChanges(const cc::DeadlinePolicy& deadline_policy) {
-  bool sync_needed = false;
+    HandleScreenStateChanges(const cc::DeadlinePolicy& deadline_policy,
+                             bool force_fullscreen_sync) {
+  bool sync_needed =
+      force_fullscreen_sync && pending_screen_state_.is_fullscreen !=
+                                   current_screen_state_.is_fullscreen;
   bool start_rotation = false;
   bool end_rotation = false;
   bool exiting_pip = false;
@@ -557,7 +560,8 @@ bool RenderWidgetHostViewAndroid::ScreenStateChangeHandler::
 
 void RenderWidgetHostViewAndroid::ScreenStateChangeHandler::Unthrottle() {
   pending_screen_state_.any_non_rotation_size_changed = true;
-  HandleScreenStateChanges(cc::DeadlinePolicy::UseDefaultDeadline());
+  HandleScreenStateChanges(cc::DeadlinePolicy::UseDefaultDeadline(),
+                           true /* force_fullscreen_sync */);
 }
 
 RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
@@ -1492,9 +1496,9 @@ bool RenderWidgetHostViewAndroid::RequestStartStylusWriting() {
          ime_adapter_android_->RequestStartStylusWriting();
 }
 
-void RenderWidgetHostViewAndroid::SetHoverActionStylusWritable(
+void RenderWidgetHostViewAndroid::NotifyHoverActionStylusWritable(
     bool stylus_writable) {
-  view_.SetHoverActionStylusWritable(stylus_writable);
+  view_.NotifyHoverActionStylusWritable(stylus_writable);
 }
 
 void RenderWidgetHostViewAndroid::OnEditElementFocusedForStylusWriting(

@@ -9,8 +9,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 
-namespace ash {
-namespace features {
+namespace ash::features {
 
 // All features in alphabetical order. The features should be documented
 // alongside the definition of their values in the .cc file. If a feature is
@@ -25,32 +24,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kAllowRepeatedUpdates);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kAllowScrollSettings);
 COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kAlwaysReinstallSystemWebApps);
-COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kAmbientModeFeature);
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::FeatureParam<bool> kAmbientModeCapturedOnPixelAlbumEnabled;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::FeatureParam<bool> kAmbientModeCapturedOnPixelPhotosEnabled;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::FeatureParam<bool>
-    kAmbientModeCulturalInstitutePhotosEnabled;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::FeatureParam<bool> kAmbientModeDefaultFeedEnabled;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::FeatureParam<bool> kAmbientModeEarthAndSpaceAlbumEnabled;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::FeatureParam<bool> kAmbientModeFeaturedPhotoAlbumEnabled;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::FeatureParam<bool> kAmbientModeFeaturedPhotosEnabled;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::FeatureParam<bool> kAmbientModeFineArtAlbumEnabled;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::FeatureParam<bool> kAmbientModeGeoPhotosEnabled;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::FeatureParam<bool> kAmbientModePersonalPhotosEnabled;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::FeatureParam<bool> kAmbientModeRssPhotosEnabled;
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const base::FeatureParam<bool> kAmbientModeStreetArtAlbumEnabled;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kAmbientModeDevUseProdFeature);
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -280,6 +253,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kFederatedTimezoneCodePhh);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kFilesAppExperimental);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kFilesConflictDialog);
+COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kFilesDriveShortcuts);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kFilesInlineSyncStatus);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kFilesSearchV2);
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -373,7 +347,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kInternalServerSideSpeechRecognition);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kIppClientInfo);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kJelly);
-COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kJellyroll);
 COMPONENT_EXPORT(ASH_CONSTANTS) BASE_DECLARE_FEATURE(kKioskEnableImeButton);
 COMPONENT_EXPORT(ASH_CONSTANTS)
 BASE_DECLARE_FEATURE(kAutoEnrollmentKioskInOobe);
@@ -634,7 +607,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAdaptiveChargingForTestingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAdjustSplitViewForVKEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAllowAmbientEQEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeDevUseProdEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModePhotoPreviewEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsAmbientModeThrottleAnimationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsApnRevampEnabled();
@@ -721,6 +693,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFullscreenAfterUnlockAllowed();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsFullscreenAlertBubbleEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsGaiaReauthEndpointEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsGalleryAppPdfEditNotificationEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsGameDashboardEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsGifRecordingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool AreGlanceablesEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsHibernateEnabled();
@@ -742,7 +715,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsInternalServerSideSpeechRecognitionEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsIppClientInfoEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsJellyEnabled();
-COMPONENT_EXPORT(ASH_CONSTANTS) bool IsJellyrollEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsKeyboardBacklightToggleEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsLanguagePacksEnabled();
@@ -900,7 +872,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool ShouldUseV2DeviceSync();
 COMPONENT_EXPORT(ASH_CONSTANTS) void SetWebUITabStripEnabled(bool enabled);
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsWebUITabStripEnabled();
 
-}  // namespace features
-}  // namespace ash
+}  // namespace ash::features
 
 #endif  // ASH_CONSTANTS_ASH_FEATURES_H_

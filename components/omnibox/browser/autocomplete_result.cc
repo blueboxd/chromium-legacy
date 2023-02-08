@@ -383,11 +383,19 @@ void AutocompleteResult::SortAndCull(
 
     PSections sections;
     if (is_zero_suggest) {
-      sections.push_back(std::make_unique<DesktopZpsSection>());
+      sections.push_back(
+          std::make_unique<DesktopZpsSection>(suggestion_groups_map_));
+      if (page_classification == OmniboxEventProto::NTP_REALBOX &&
+          base::FeatureList::IsEnabled(omnibox::kKeepSecondaryZeroSuggest)) {
+        // Allow secondary zero-prefix suggestions in the NTP realbox, if any.
+        sections.push_back(std::make_unique<DesktopSecondaryZpsSection>(
+            suggestion_groups_map_));
+      }
     } else {
-      sections.push_back(std::make_unique<DesktopNonZpsSection>());
+      sections.push_back(
+          std::make_unique<DesktopNonZpsSection>(suggestion_groups_map_));
     }
-    matches_ = Section::GroupMatches(std::move(sections), std::move(matches_));
+    matches_ = Section::GroupMatches(std::move(sections), matches_);
 
   } else {
     // Limit history cluster suggestions to 1. This has to be done before

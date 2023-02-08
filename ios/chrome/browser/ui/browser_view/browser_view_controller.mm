@@ -53,8 +53,8 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/ui/commands/help_commands.h"
-#import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
@@ -387,6 +387,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @property(nonatomic, strong)
     ToolbarAccessoryPresenter* toolbarAccessoryPresenter;
 
+// Command handler for load query commands
+@property(nonatomic, weak) id<LoadQueryCommands> loadQueryCommandsHandler;
+
 // Command handler for text zoom commands
 @property(nonatomic, weak) id<TextZoomCommands> textZoomHandler;
 
@@ -404,6 +407,16 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 // Command handler for application commands
 @property(nonatomic, weak) id<ApplicationCommands> applicationCommandsHandler;
+
+// Command handler for browser coordinator commands
+@property(nonatomic, weak) id<BrowserCoordinatorCommands>
+    browserCoordinatorCommandsHandler;
+
+// Command handler for find in page commands
+@property(nonatomic, weak) id<FindInPageCommands> findInPageCommandsHandler;
+
+// Command handler for toolbar commands
+@property(nonatomic, weak) id<ToolbarCommands> toolbarCommandsHandler;
 
 // The FullscreenController.
 @property(nonatomic, assign) FullscreenController* fullscreenController;
@@ -496,6 +509,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     self.popupMenuCommandsHandler = dependencies.popupMenuCommandsHandler;
     self.snackbarCommandsHandler = dependencies.snackbarCommandsHandler;
     self.applicationCommandsHandler = dependencies.applicationCommandsHandler;
+    self.browserCoordinatorCommandsHandler =
+        dependencies.browserCoordinatorCommandsHandler;
+    self.findInPageCommandsHandler = dependencies.findInPageCommandsHandler;
+    self.toolbarCommandsHandler = dependencies.toolbarCommandsHandler;
+    self.loadQueryCommandsHandler = dependencies.loadQueryCommandsHandler;
+
     dependencies.lensCoordinator.delegate = self;
 
     _inNewTabAnimation = NO;
@@ -527,13 +546,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 #pragma mark - Public Properties
-
-- (id<BrowserCoordinatorCommands, FindInPageCommands, ToolbarCommands>)
-    dispatcher {
-  return static_cast<
-      id<BrowserCoordinatorCommands, FindInPageCommands, ToolbarCommands>>(
-      self.commandDispatcher);
-}
 
 - (UIView*)contentArea {
   return self.browserContainerViewController.view;
@@ -851,7 +863,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Keyboard shouldn't overlay the ecoutez window, so dismiss find in page and
   // dismiss the keyboard.
-  [self.dispatcher closeFindInPage];
+  [self.findInPageCommandsHandler closeFindInPage];
   [self.textZoomHandler closeTextZoom];
   [[self viewForWebState:self.currentWebState] endEditing:NO];
 
@@ -914,7 +926,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   web::WebState* webState = self.currentWebState;
 
   if (webState) {
-    [self.dispatcher closeFindInPage];
+    [self.findInPageCommandsHandler closeFindInPage];
     [self.textZoomHandler closeTextZoom];
   }
 
@@ -1269,7 +1281,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // updateToobar];
   if (ShouldShowCompactToolbar(previousTraitCollection) !=
       ShouldShowCompactToolbar(self)) {
-    [self.dispatcher hideFindUI];
+    [self.findInPageCommandsHandler hideFindUI];
     [self.textZoomHandler hideTextZoomUI];
   }
 
@@ -1557,10 +1569,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   [self updateBroadcastState];
   if (_voiceSearchController) {
-    // TODO(crbug.com/1329089): Inject LoadQueryCommands as a handler and pass
-    // into the voice search controller.
-    _voiceSearchController.dispatcher =
-        HandlerForProtocol(self.commandDispatcher, LoadQueryCommands);
+    _voiceSearchController.dispatcher = self.loadQueryCommandsHandler;
   }
 
   // TODO(crbug.com/1329097): Move tab strip setup to BrowserCoordinator.
@@ -1908,7 +1917,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     // TODO(crbug.com/1329087): -updateToolbar will move out of the BVC; make
     // sure this comment remains accurate. Hide findbar.  `updateToolbar` will
     // restore the findbar later.
-    [self.dispatcher hideFindUI];
+    [self.findInPageCommandsHandler hideFindUI];
     [self.textZoomHandler hideTextZoomUI];
 
     // Make new content visible, resizing it first as the orientation may
@@ -2074,7 +2083,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return nil;
   NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
   if (NTPHelper && NTPHelper->IsActive()) {
-    return self.ntpCoordinator.visible ? self.ntpCoordinator.viewController.view
+    return self.ntpCoordinator.started ? self.ntpCoordinator.viewController.view
                                        : nil;
   }
   DCHECK(self.browser->GetWebStateList()->GetIndexOfWebState(webState) !=
@@ -2184,8 +2193,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   _voiceSearchController =
       ios::provider::CreateVoiceSearchController(self.browser);
   if (self.primaryToolbarCoordinator) {
-    _voiceSearchController.dispatcher =
-        HandlerForProtocol(self.commandDispatcher, LoadQueryCommands);
+    _voiceSearchController.dispatcher = self.loadQueryCommandsHandler;
   }
 }
 
@@ -2200,7 +2208,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self addURLToReadingList:urlWithTitle.URL withTitle:urlWithTitle.title];
   }
 
-  [self.dispatcher triggerToolsMenuButtonAnimation];
+  [self.toolbarCommandsHandler triggerToolsMenuButtonAnimation];
 
   TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
 
@@ -2742,7 +2750,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       break;
     case OverscrollAction::CLOSE_TAB:
       base::RecordAction(base::UserMetricsAction("MobilePullGestureCloseTab"));
-      [self.dispatcher closeCurrentTab];
+      [self.browserCoordinatorCommandsHandler closeCurrentTab];
       break;
     case OverscrollAction::REFRESH:
       base::RecordAction(base::UserMetricsAction("MobilePullGestureReload"));
@@ -3104,7 +3112,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Dismiss the soft keyboard (if open).
   [[self viewForWebState:self.currentWebState] endEditing:NO];
   // Dismiss Find in Page focus.
-  [self.dispatcher defocusFindInPage];
+  [self.findInPageCommandsHandler defocusFindInPage];
 
   // Allow the non-modal promo scheduler to close the promo.
   [self.nonModalPromoScheduler logPopupMenuEntered];
@@ -3126,6 +3134,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
                      reason:(ActiveWebStateChangeReason)reason {
+  if (reason == ActiveWebStateChangeReason::Inserted) {
+    [self didInsertActiveWebState:newWebState];
+  }
+
   if (oldWebState) {
     // TODO(crbug.com/1272514): Move webstate lifecycle updates to a browser
     // agent.
@@ -3184,6 +3196,19 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   DCHECK(webState);
 
   DCHECK_EQ(self.browser->GetWebStateList(), webStateList);
+  // If activating, action will be taken when the didChangeActiveWebState
+  // call is received.
+  if (!activating) {
+    [self initiateNewTabAnimationForWebState:webState willOpenInBackground:YES];
+  }
+}
+
+#pragma mark - WebStateListObserver helpers (new tab animations)
+
+// Called when a WebState is inserted and made active, in order to start the
+// new tab animation.
+- (void)didInsertActiveWebState:(web::WebState*)webState {
+  DCHECK(webState);
 
   // Don't initiate Tab animation while session restoration is in progress
   // (see crbug.com/763964).
@@ -3204,6 +3229,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // be different from default, so we reset it.
   NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
   if (NTPHelper && NTPHelper->IsActive()) {
+    // TODO(crbug.com/1411808): The NTP should be started by the mediator or
+    // coordinator layer.
+    [self.ntpCoordinator start];
     FeedType defaultFeedType = NTPHelper->DefaultFeedType();
     if (self.ntpCoordinator.selectedFeed != defaultFeedType) {
       [self.ntpCoordinator selectFeedType:defaultFeedType];
@@ -3211,14 +3239,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 
   BOOL inBackground =
-      !activating ||
-      NewTabPageTabHelper::FromWebState(webState)->ShouldShowStartSurface() ||
-      !animated;
+      (NTPHelper && NTPHelper->ShouldShowStartSurface()) || !animated;
   [self initiateNewTabAnimationForWebState:webState
                       willOpenInBackground:inBackground];
 }
-
-#pragma mark - WebStateListObserver helpers (new tab animations)
 
 - (void)initiateNewTabAnimationForWebState:(web::WebState*)webState
                       willOpenInBackground:(BOOL)background {
@@ -3297,6 +3321,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Create the new page image, and load with the new tab snapshot except if
   // it is the NTP.
   UIView* newPage = [self viewForWebState:webState];
+  DCHECK(newPage);
   GURL tabURL = webState->GetVisibleURL();
   // Toolbar snapshot is only used for the UIRefresh animation.
   UIView* toolbarSnapshot;
@@ -3508,7 +3533,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   } else {
     // Hide UI accessories such as find bar and first visit overlays
     // for welcome page.
-    [self.dispatcher hideFindUI];
+    [self.findInPageCommandsHandler hideFindUI];
     [self.textZoomHandler hideTextZoomUI];
   }
 }

@@ -1926,8 +1926,6 @@ interface Document : Node
     getter onpointerover
     getter onpointerrawupdate
     getter onpointerup
-    getter onpopoverhide
-    getter onpopovershow
     getter onprerenderingchange
     getter onprogress
     getter onratechange
@@ -2143,8 +2141,6 @@ interface Document : Node
     setter onpointerover
     setter onpointerrawupdate
     setter onpointerup
-    setter onpopoverhide
-    setter onpopovershow
     setter onprerenderingchange
     setter onprogress
     setter onratechange
@@ -3277,6 +3273,7 @@ interface HTMLDocument : Document
 interface HTMLElement : Element
     attribute @@toStringTag
     getter accessKey
+    getter anchorElement
     getter attributeStyleMap
     getter autocapitalize
     getter autofocus
@@ -3369,8 +3366,6 @@ interface HTMLElement : Element
     getter onpointerover
     getter onpointerrawupdate
     getter onpointerup
-    getter onpopoverhide
-    getter onpopovershow
     getter onprogress
     getter onratechange
     getter onreset
@@ -3421,6 +3416,7 @@ interface HTMLElement : Element
     method showPopover
     method togglePopover
     setter accessKey
+    setter anchorElement
     setter autocapitalize
     setter autofocus
     setter contentEditable
@@ -3505,8 +3501,6 @@ interface HTMLElement : Element
     setter onpointerover
     setter onpointerrawupdate
     setter onpointerup
-    setter onpopoverhide
-    setter onpopovershow
     setter onprogress
     setter onratechange
     setter onreset
@@ -4894,6 +4888,8 @@ interface IdentityProvider
     static method getUserInfo
     static method login
     static method logout
+    static method register
+    static method unregister
     attribute @@toStringTag
     method constructor
 interface IdleDeadline
@@ -5354,8 +5350,6 @@ interface MathMLElement : Element
     getter onpointerover
     getter onpointerrawupdate
     getter onpointerup
-    getter onpopoverhide
-    getter onpopovershow
     getter onprogress
     getter onratechange
     getter onreset
@@ -5467,8 +5461,6 @@ interface MathMLElement : Element
     setter onpointerover
     setter onpointerrawupdate
     setter onpointerup
-    setter onpopoverhide
-    setter onpopovershow
     setter onprogress
     setter onratechange
     setter onreset
@@ -7617,8 +7609,6 @@ interface SVGElement : Element
     getter onpointerover
     getter onpointerrawupdate
     getter onpointerup
-    getter onpopoverhide
-    getter onpopovershow
     getter onprogress
     getter onratechange
     getter onreset
@@ -7732,8 +7722,6 @@ interface SVGElement : Element
     setter onpointerover
     setter onpointerrawupdate
     setter onpointerup
-    setter onpopoverhide
-    setter onpopovershow
     setter onprogress
     setter onratechange
     setter onreset
@@ -12011,8 +11999,6 @@ namespace console
     getter onpointerover
     getter onpointerrawupdate
     getter onpointerup
-    getter onpopoverhide
-    getter onpopovershow
     getter onpopstate
     getter onprogress
     getter onratechange
@@ -12234,8 +12220,6 @@ namespace console
     setter onpointerover
     setter onpointerrawupdate
     setter onpointerup
-    setter onpopoverhide
-    setter onpopovershow
     setter onpopstate
     setter onprogress
     setter onratechange

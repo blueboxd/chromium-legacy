@@ -278,14 +278,16 @@ CtapGetAssertionRequest SpecializeRequestForAuthenticator(
     const FidoAuthenticator& authenticator) {
   CtapGetAssertionRequest specialized_request(request);
 
-  if (authenticator.Options() && authenticator.Options()->always_uv) {
+  if (authenticator.Options().always_uv) {
     specialized_request.user_verification =
         UserVerificationRequirement::kRequired;
   }
-  if (request.get_cred_blob && !authenticator.SupportsCredBlobOfSize(0)) {
+  if (request.get_cred_blob &&
+      !authenticator.Options().max_cred_blob_length.has_value()) {
     specialized_request.get_cred_blob = false;
   }
-  if (request.device_public_key && !authenticator.SupportsDevicePublicKey()) {
+  if (request.device_public_key &&
+      !authenticator.Options().supports_device_public_key) {
     specialized_request.device_public_key.reset();
   }
   return specialized_request;
@@ -297,7 +299,7 @@ CtapGetAssertionOptions SpecializeOptionsForAuthenticator(
   CtapGetAssertionOptions specialized_options(options);
 
   if (!options.prf_inputs.empty() &&
-      !authenticator.SupportsHMACSecretExtension()) {
+      !authenticator.Options().supports_hmac_secret) {
     specialized_options.prf_inputs.clear();
   }
 

@@ -32,9 +32,11 @@
 namespace {
 
 bool CanServePrefetchRequest(
-    const scoped_refptr<net::HttpResponseHeaders> headers) {
-  if (!headers)
+    const scoped_refptr<net::HttpResponseHeaders> headers,
+    const mojo::ScopedDataPipeConsumerHandle& body) {
+  if (!headers || !body) {
     return false;
+  }
 
   // Any 200 response can be served.
   if (headers->response_code() >= net::HTTP_OK &&
@@ -196,11 +198,11 @@ void StreamingSearchPrefetchURLLoader::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr head,
     mojo::ScopedDataPipeConsumerHandle body,
     absl::optional<mojo_base::BigBuffer> cached_metadata) {
-  bool can_be_served = CanServePrefetchRequest(head->headers);
+  bool can_be_served = CanServePrefetchRequest(head->headers, body);
 
   if (is_activated_) {
     std::string histogram_name =
-        "Omnibox.SearchPrefetch.ReceivedServableResponse.";
+        "Omnibox.SearchPrefetch.ReceivedServableResponse2.";
     histogram_name.append(is_in_fallback_ ? "Fallback." : "Initial.");
     histogram_name.append(
         (navigation_prefetch_ ? "NavigationPrefetch" : "SuggestionPrefetch"));
@@ -226,8 +228,14 @@ void StreamingSearchPrefetchURLLoader::OnReceiveResponse(
   // If there is an error, either cancel the request or fallback depending on
   // whether we still have a parent pointer.
   if (!can_be_served) {
-    if ((navigation_prefetch_ || SearchPrefetchBlockBeforeHeadersIsEnabled()) &&
-        !streaming_prefetch_request_) {
+    if (!streaming_prefetch_request_) {
+      // That `streaming_prefetch_request_` is nullptr means this loader is
+      // serving to network stack. And we can serve a loader that has not
+      // received response yet to the network stack iff the loader was created
+      // by a navigation prefetch or we are experimenting with
+      // kSearchPrefetchBlockBeforeHeaders enabled.
+      DCHECK(navigation_prefetch_ ||
+             SearchPrefetchBlockBeforeHeadersIsEnabled());
       Fallback();
       return;
     }
@@ -253,9 +261,6 @@ void StreamingSearchPrefetchURLLoader::OnReceiveResponse(
                           : resource_response_->content_length;
   if (estimated_length_ > 0)
     body_content_.reserve(estimated_length_);
-
-  if (!body)
-    return;
 
   serving_from_data_ = true;
 

@@ -208,7 +208,7 @@ class CellularESimInstallerTest : public testing::Test {
     absl::optional<dbus::ObjectPath> service_path_out;
     base::RunLoop run_loop;
     cellular_esim_installer_->ConfigureESimService(
-        new_shill_properties, euicc_path, profile_path,
+        new_shill_properties.GetDict(), euicc_path, profile_path,
         base::BindLambdaForTesting(
             [&](absl::optional<dbus::ObjectPath> service_path) {
               service_path_out = service_path;
@@ -222,13 +222,13 @@ class CellularESimInstallerTest : public testing::Test {
     EXPECT_EQ(HermesResponseStatus::kSuccess, std::get<0>(actual_result_tuple));
     EXPECT_NE(std::get<1>(actual_result_tuple), absl::nullopt);
     EXPECT_NE(std::get<2>(actual_result_tuple), absl::nullopt);
-    const base::Value* properties =
+    const base::Value::Dict* properties =
         ShillServiceClient::Get()->GetTestInterface()->GetServiceProperties(
             *std::get<2>(actual_result_tuple));
     ASSERT_TRUE(properties);
-    const std::string* type = properties->FindStringKey(shill::kTypeProperty);
+    const std::string* type = properties->FindString(shill::kTypeProperty);
     EXPECT_EQ(shill::kTypeCellular, *type);
-    const std::string* iccid = properties->FindStringKey(shill::kIccidProperty);
+    const std::string* iccid = properties->FindString(shill::kIccidProperty);
     EXPECT_NE(std::string(), *iccid);
   }
 
@@ -534,18 +534,17 @@ TEST_F(CellularESimInstallerTest, ConfigureESimService) {
 
   HermesProfileClient::Properties* profile_properties =
       HermesProfileClient::Get()->GetProperties(profile_path);
-  const base::Value* service_properties =
+  const base::Value::Dict* service_properties =
       ShillServiceClient::Get()->GetTestInterface()->GetServiceProperties(
           service_path->value());
   ASSERT_TRUE(service_properties);
   const std::string* type =
-      service_properties->FindStringKey(shill::kTypeProperty);
+      service_properties->FindString(shill::kTypeProperty);
   EXPECT_EQ(shill::kTypeCellular, *type);
   const std::string* iccid =
-      service_properties->FindStringKey(shill::kIccidProperty);
+      service_properties->FindString(shill::kIccidProperty);
   EXPECT_EQ(profile_properties->iccid().value(), *iccid);
-  const std::string* eid =
-      service_properties->FindStringKey(shill::kEidProperty);
+  const std::string* eid = service_properties->FindString(shill::kEidProperty);
   EXPECT_EQ(kTestEid, *eid);
 }
 

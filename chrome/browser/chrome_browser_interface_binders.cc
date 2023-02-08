@@ -42,6 +42,8 @@
 #include "chrome/browser/ui/webui/omnibox/omnibox.mojom.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
 #include "chrome/browser/ui/webui/segmentation_internals/segmentation_internals_ui.h"
+#include "chrome/browser/ui/webui/suggest_internals/suggest_internals.mojom.h"
+#include "chrome/browser/ui/webui/suggest_internals/suggest_internals_ui.h"
 #include "chrome/browser/ui/webui/usb_internals/usb_internals.mojom.h"
 #include "chrome/browser/ui/webui/usb_internals/usb_internals_ui.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
@@ -151,8 +153,6 @@
 #include "chrome/browser/ui/webui/downloads/downloads_ui.h"
 #include "chrome/browser/ui/webui/feed/feed.mojom.h"
 #include "chrome/browser/ui/webui/feed/feed_ui.h"
-#include "chrome/browser/ui/webui/image_editor/image_editor.mojom.h"
-#include "chrome/browser/ui/webui/image_editor/image_editor_untrusted_ui.h"
 #include "chrome/browser/ui/webui/web_app_internals/web_app_internals.mojom.h"
 #include "chrome/browser/ui/webui/web_app_internals/web_app_internals_ui.h"
 #include "components/omnibox/browser/omnibox.mojom.h"
@@ -1000,6 +1000,9 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<omnibox::mojom::PageHandler,
                                          NewTabPageUI, OmniboxPopupUI>(map);
 
+  RegisterWebUIControllerInterfaceBinder<suggest_internals::mojom::PageHandler,
+                                         SuggestInternalsUI>(map);
+
   RegisterWebUIControllerInterfaceBinder<
       customize_themes::mojom::CustomizeThemesHandlerFactory, NewTabPageUI
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1010,7 +1013,8 @@ void PopulateChromeWebUIFrameBinders(
 
   RegisterWebUIControllerInterfaceBinder<
       help_bubble::mojom::HelpBubbleHandlerFactory, InternalsUI,
-      settings::SettingsUI, ReadingListUI>(map);
+      settings::SettingsUI, ReadingListUI, NewTabPageUI, CustomizeChromeUI>(
+      map);
 
 #if !defined(OFFICIAL_BUILD)
   RegisterWebUIControllerInterfaceBinder<foo::mojom::FooHandler, NewTabPageUI>(
@@ -1222,6 +1226,10 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       ash::eche_app::mojom::DisplayStreamHandler, ash::eche_app::EcheAppUI>(
       map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      ash::eche_app::mojom::StreamOrientationObserver,
+      ash::eche_app::EcheAppUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       ash::media_app_ui::mojom::PageHandlerFactory, ash::MediaAppUI>(map);
@@ -1450,11 +1458,6 @@ void PopulateChromeWebUIFrameInterfaceBrokers(
   registry.ForWebUI<ash::SampleSystemWebAppUntrustedUI>()
       .Add<ash::mojom::sample_swa::UntrustedPageInterfacesFactory>();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OFFICIAL_BUILD)
-
-#if !BUILDFLAG(IS_ANDROID)
-  registry.ForWebUI<image_editor::ImageEditorUntrustedUI>()
-      .Add<image_editor::mojom::ImageEditorHandler>();
-#endif  // !BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(ENABLE_FEED_V2)
   registry.ForWebUI<feed::FeedUI>()

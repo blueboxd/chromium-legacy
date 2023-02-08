@@ -221,7 +221,7 @@ crbug.com/891953 [ android ] WebglExtension_OVR_multiview2 [ Failure ]
 # ========================
 
 # Failing new updated tests
-crbug.com/1131224 conformance2/rendering/framebuffer-mismatched-attachment-targets.html [ Failure ]
+crbug.com/1131224 [ angle-d3d11 desktop no-asan oop-c passthrough release win10 ] conformance2/rendering/framebuffer-mismatched-attachment-targets.html [ Failure ]
 crbug.com/1108086 [ no-passthrough ] conformance2/renderbuffers/framebuffer-object-attachment.html [ Failure ]
 crbug.com/angleproject/4807 [ win angle-d3d11 passthrough ] conformance2/glsl3/switch-case.html [ Failure ]
 # Failing at least on Pixel 4, both validating and passthrough
@@ -264,8 +264,8 @@ crbug.com/angleproject/7109 [ win angle-d3d11 ] conformance2/renderbuffers/inval
 crbug.com/angleproject/1465 [ win angle-d3d11 ] conformance2/glsl3/tricky-loop-conditions.html [ Failure ]
 
 # win10 / angle-d3d11 / passthrough command decoder failures.
-crbug.com/1378372 [ win10 angle-d3d11 passthrough ] conformance/glsl/bugs/complex-glsl-does-not-crash.html [ Failure ]
-crbug.com/1378372 [ win10 angle-d3d11 passthrough ] conformance/glsl/misc/shader-uniform-packing-restrictions.html [ Failure ]
+crbug.com/1378372 [ angle-d3d11 nvidia-0x2184 passthrough target-cpu-32 win10 ] conformance/glsl/bugs/complex-glsl-does-not-crash.html [ Failure ]
+crbug.com/1378372 [ angle-d3d11 nvidia-0x2184 passthrough target-cpu-32 win10 ] conformance/glsl/misc/shader-uniform-packing-restrictions.html [ Failure ]
 
 ## Win / Intel ##
 
@@ -359,6 +359,9 @@ crbug.com/1316389 [ mac passthrough angle-metal intel ] deqp/functional/gles3/tr
 crbug.com/1316389 [ mac passthrough angle-metal intel ] deqp/functional/gles3/transformfeedback/point_size.html [ Failure ]
 crbug.com/1316389 [ mac passthrough angle-metal intel ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
 crbug.com/1316389 [ mac passthrough angle-metal intel ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
+crbug.com/angleproject/8003 [ mac passthrough angle-metal intel ] deqp/functional/gles3/uniformbuffers/multi_basic_types.html [ RetryOnFailure ]
+crbug.com/angleproject/8003 [ mac passthrough angle-metal intel ] deqp/functional/gles3/uniformbuffers/single_nested_struct.html [ RetryOnFailure ]
+crbug.com/angleproject/8003 [ mac passthrough angle-metal intel ] deqp/functional/gles3/uniformbuffers/single_nested_struct_array.html [ RetryOnFailure ]
 
 ## Metal M1 ##
 
@@ -616,7 +619,6 @@ crbug.com/1403824 [ android android-pixel-2 no-passthrough ] deqp/functional/gle
 crbug.com/1289303 [ android-pixel-4 android-r angle-disabled no-passthrough ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
 
 crbug.com/1175232 [ android android-pixel-4 angle-opengles passthrough ] conformance2/reading/read-pixels-from-fbo-test.html [ Failure ]
-crbug.com/1239079 [ android-pixel-4 android-r no-passthrough ] conformance2/transform_feedback/too-small-buffers.html [ Failure ]
 crbug.com/angleproject/3684 [ android angle-opengles ] conformance2/renderbuffers/multisample-with-full-sample-counts.html [ Failure ]
 crbug.com/angleproject/3685 [ android-pie android-pixel-2 angle-opengles ] conformance2/transform_feedback/simultaneous_binding.html [ Failure ]
 crbug.com/angleproject/3686 [ android angle-opengles ] deqp/functional/gles3/multisample/fbo_4_samples.html [ Failure ]

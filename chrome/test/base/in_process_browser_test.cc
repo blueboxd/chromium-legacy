@@ -17,6 +17,7 @@
 #include "base/location.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
+#include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -247,6 +249,10 @@ class IdentityExtraSetUp : public ChromeBrowserMainExtraParts {
 };
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
+void EnsureBrowserContextKeyedServiceFactoriesForTestingBuilt() {
+  NotificationDisplayServiceTester::EnsureFactoryBuilt();
+}
+
 }  // namespace
 
 // static
@@ -353,6 +359,15 @@ void InProcessBrowserTest::SetUp() {
   SetUpCommandLine(command_line);
   // Add command line arguments that are used by all InProcessBrowserTests.
   SetUpDefaultCommandLine(command_line);
+
+  // PoissonAllocationSampler's TLS slots need to be set up before
+  // MainThreadStackSamplingProfiler, which can allocate TLS slots of its own.
+  // On some platforms pthreads can malloc internally to access higher-numbered
+  // TLS slots, which can cause reentry in the heap profiler. (See the comment
+  // on ReentryGuard::InitTLSSlot().)
+  // TODO(https://crbug.com/1411454): Clean up other paths that call this Init()
+  // function, which are now redundant.
+  base::PoissonAllocationSampler::Init();
 
   // Initialize sampling profiler in browser tests. This mimics the behavior
   // in standalone Chrome, where this is done in chrome/app/chrome_main.cc,
@@ -463,6 +478,8 @@ void InProcessBrowserTest::SetUp() {
   // profile on browser start, which is unexpected by mosts tests. Tests which
   // expect this can allow the prompt as desired.
   PrivacySandboxService::SetPromptDisabledForTests(true);
+
+  EnsureBrowserContextKeyedServiceFactoriesForTestingBuilt();
 
   BrowserTestBase::SetUp();
 }

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/fast_checkout/fast_checkout_capabilities_fetcher.h"
 #include "chrome/browser/fast_checkout/fast_checkout_capabilities_fetcher_factory.h"
+#include "chrome/browser/fast_checkout/fast_checkout_client_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/commerce/core/heuristics/commerce_heuristics_provider.h"
@@ -13,6 +14,13 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+
+namespace {
+bool IsCartOrCheckoutUrl(const GURL& url) {
+  return commerce_heuristics::IsVisitCheckout(url) ||
+         commerce_heuristics::IsVisitCart(url);
+}
+}  // namespace
 
 FastCheckoutTabHelper::FastCheckoutTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
@@ -29,11 +37,22 @@ void FastCheckoutTabHelper::DidStartNavigation(
 
   // Shopping sites should be http or https - save heuristics if this URL
   // does not satisfy that.
-  if (!navigation_handle->GetURL().SchemeIsHTTPOrHTTPS()) {
+  const GURL& url = navigation_handle->GetURL();
+  if (!url.SchemeIsHTTPOrHTTPS()) {
     return;
   }
 
-  if (commerce_heuristics::IsVisitCheckout(navigation_handle->GetURL())) {
+  FetchCapabilities(url);
+  if (FastCheckoutClient* fast_checkout_client =
+          FastCheckoutClientImpl::FromWebContents(web_contents())) {
+    fast_checkout_client->OnNavigation(url, IsCartOrCheckoutUrl(url));
+  }
+}
+
+void FastCheckoutTabHelper::FetchCapabilities(const GURL& url) {
+  // Check for both checkout and cart URLs because some websites use cart URLs
+  // throughout their whole checkout funnel.
+  if (IsCartOrCheckoutUrl(url)) {
     PrefService* pref_service =
         Profile::FromBrowserContext(web_contents()->GetBrowserContext())
             ->GetPrefs();
@@ -53,7 +72,6 @@ void FastCheckoutTabHelper::DidStartNavigation(
     }
 
     fetcher->FetchCapabilities();
-    return;
   }
 }
 

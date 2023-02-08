@@ -10,9 +10,10 @@ import {Origin} from 'chrome://resources/mojo/url/mojom/origin.mojom-webui.js';
 
 import {FailedSourceRegistration, Handler, HandlerInterface, ObserverInterface, ObserverReceiver, ReportID, WebUIDebugReport, WebUIReport, WebUISource, WebUISource_Attributability, WebUISource_DebugReporting, WebUITrigger, WebUITrigger_Status} from './attribution_internals.mojom-webui.js';
 import {AttributionInternalsTableElement} from './attribution_internals_table.js';
-import {ReportType, SourceType} from './attribution_reporting.mojom-webui.js';
+import {ReportType} from './attribution_reporting.mojom-webui.js';
 import {TriggerAttestation} from './registration.mojom-webui.js';
 import {SourceRegistrationError} from './source_registration_error.mojom-webui.js';
+import {SourceType} from './source_type.mojom-webui.js';
 import {Column, TableModel} from './table_model.js';
 
 // If kAttributionAggregatableBudgetPerSource changes, update this value
@@ -973,8 +974,10 @@ function attributabilityToText(attributability: WebUISource_Attributability):
   switch (attributability) {
     case WebUISource_Attributability.kAttributable:
       return 'Attributable';
-    case WebUISource_Attributability.kNoised:
-      return 'Unattributable: noised';
+    case WebUISource_Attributability.kNoisedNever:
+      return 'Unattributable: noised with no reports';
+    case WebUISource_Attributability.kNoisedFalsely:
+      return 'Unattributable: noised with fake reports';
     case WebUISource_Attributability.kReachedEventLevelAttributionLimit:
       return 'Attributable: reached event-level attribution limit';
     case WebUISource_Attributability.kInternalError:

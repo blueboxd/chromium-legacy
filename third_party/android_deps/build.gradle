@@ -42,7 +42,7 @@ dependencies {
     // Replacement for com.android.support:design
     compile 'com.google.android.material:material:1.7.0-alpha02'
 
-    compile 'com.google.android.play:core:1.10.0'
+    compile 'com.google.android.play:feature-delivery:2.0.1'
 
     // Architecture components
     String archComponentsVersion = '1.1.1'
@@ -182,7 +182,7 @@ dependencies {
     // Version 1.2 is needed by espresso-web, but we'll newer 1.2.1.
     androidTestCompile 'org.ccil.cowan.tagsoup:tagsoup:1.2.1'
 
-    androidTestCompile "org.mockito:mockito-core:4.7.0"
+    androidTestCompile "org.mockito:mockito-core:5.1.1"
     // Depended on by downstream guava_java rewrite.
     androidTestCompile "org.checkerframework:checker-qual:3.25.0"
 

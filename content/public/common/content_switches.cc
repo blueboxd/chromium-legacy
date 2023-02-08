@@ -355,6 +355,15 @@ const char kDisableOriginTrialControlledBlinkFeatures[] =
 const char kEnableGpuMemoryBufferVideoFrames[] =
     "enable-gpu-memory-buffer-video-frames";
 
+// Enables Isolated Web Apps (IWAs) in a renderer process. There are two ways
+// to enable the IWAs: by feature flag and by enterprise policy. If IWAs are
+// enabled by any of the mentioned above ways then this flag is passed to
+// the renderer process. This flag should not be used from command line.
+// To enable IWAs from command line one should use kIsolatedWebApps feature
+// flag.
+const char kEnableIsolatedWebAppsInRenderer[] =
+    "enable-isolated-web-apps-in-renderer";
+
 // Force logging to be enabled.  Logging is disabled by default in release
 // builds.
 const char kEnableLogging[]                 = "enable-logging";
@@ -496,11 +505,6 @@ const char kInProcessGPU[]                  = "in-process-gpu";
 // Overrides the timeout, in seconds, that a child process waits for a
 // connection from the browser before killing itself.
 const char kIPCConnectionTimeout[]          = "ipc-connection-timeout";
-
-// Enable Isolated App restrictions for a set of origins, specified as a
-// comma-separated list. For example:
-//   --isolated-app-origins=https://www.foo.com,https://www.bar.com
-const char kIsolatedAppOrigins[] = "isolated-app-origins";
 
 // Require dedicated processes for a set of origins, specified as a
 // comma-separated list. For example:

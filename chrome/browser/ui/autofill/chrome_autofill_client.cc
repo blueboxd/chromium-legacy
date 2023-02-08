@@ -160,6 +160,15 @@ ChromeAutofillClient::GetURLLoaderFactory() {
       ->GetURLLoaderFactoryForBrowserProcess();
 }
 
+AutofillDownloadManager* ChromeAutofillClient::GetDownloadManager() {
+  if (!download_manager_) {
+    // Lazy initialization to avoid virtual function calls in the constructor.
+    download_manager_ = std::make_unique<AutofillDownloadManager>(
+        this, GetChannel(), GetLogManager());
+  }
+  return download_manager_.get();
+}
+
 PersonalDataManager* ChromeAutofillClient::GetPersonalDataManager() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
@@ -725,8 +734,10 @@ bool ChromeAutofillClient::TryToShowFastCheckout(
 
 void ChromeAutofillClient::HideFastCheckout(bool allow_further_runs) {
 #if BUILDFLAG(IS_ANDROID)
-  FastCheckoutClient::GetOrCreateForWebContents(web_contents())
-      ->Stop(/*allow_further_runs=*/allow_further_runs);
+  if (IsShowingFastCheckoutUI()) {
+    FastCheckoutClient::GetOrCreateForWebContents(web_contents())
+        ->Stop(/*allow_further_runs=*/allow_further_runs);
+  }
 #endif
 }
 
@@ -816,10 +827,9 @@ void ChromeAutofillClient::UpdateAutofillPopupDataListValues(
     popup_controller_->UpdateDataListValues(values, labels);
 }
 
-base::span<const Suggestion> ChromeAutofillClient::GetPopupSuggestions() const {
-  if (!popup_controller_.get())
-    return base::span<const Suggestion>();
-  return popup_controller_->GetUnelidedSuggestions();
+std::vector<Suggestion> ChromeAutofillClient::GetPopupSuggestions() const {
+  return popup_controller_ ? popup_controller_->GetSuggestions()
+                           : std::vector<Suggestion>();
 }
 
 void ChromeAutofillClient::PinPopupView() {
@@ -1087,7 +1097,8 @@ void ChromeAutofillClient::OnWebContentsFocused(
 }
 
 #if !BUILDFLAG(IS_ANDROID)
-void ChromeAutofillClient::OnZoomControllerDestroyed() {
+void ChromeAutofillClient::OnZoomControllerDestroyed(
+    zoom::ZoomController* source) {
   zoom_observation_.Reset();
 }
 

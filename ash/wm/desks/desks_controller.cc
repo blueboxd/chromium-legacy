@@ -1214,7 +1214,7 @@ bool DesksController::OnSingleInstanceAppLaunchingFromSavedDesk(
   aura::Window* existing_app_instance_window = nullptr;
   Desk* src_desk = nullptr;
   for (auto& desk : desks()) {
-    for (aura::Window* window : desk->windows()) {
+    for (aura::Window* window : desk->GetAllAssociatedWindows()) {
       const std::string* const app_id_ptr = window->GetProperty(kAppIDKey);
       if (app_id_ptr && *app_id_ptr == app_id) {
         existing_app_instance_window = window;
@@ -1261,6 +1261,15 @@ bool DesksController::OnSingleInstanceAppLaunchingFromSavedDesk(
       src_desk->MoveWindowToDesk(existing_app_instance_window, target_desk,
                                  existing_app_instance_window->GetRootWindow(),
                                  /*unminimize=*/false);
+      // If the floated window is the single instance window, we need to let
+      // float controller handle move window to desk, as floated window
+      // doesn't belong to desk container.
+      if (WindowState::Get(existing_app_instance_window)->IsFloated()) {
+        Shell::Get()->float_controller()->OnMovingFloatedWindowToDesk(
+            existing_app_instance_window, src_desk, target_desk,
+            existing_app_instance_window->GetRootWindow());
+      }
+
       MaybeUpdateShelfItems(
           /*windows_on_inactive_desk=*/{},
           /*windows_on_active_desk=*/{existing_app_instance_window});
@@ -1947,7 +1956,7 @@ void DesksController::FinalizeDeskRemoval(RemovedDeskData* removed_desk_data) {
     // reuse that container. Since floated window doesn't belong to desk
     // container, handle it separately.
     aura::Window* floated_window = nullptr;
-    if (chromeos::wm::features::IsFloatWindowEnabled()) {
+    if (chromeos::wm::features::IsWindowLayoutMenuEnabled()) {
       floated_window =
           Shell::Get()->float_controller()->FindFloatedWindowOfDesk(
               removed_desk);
@@ -2161,7 +2170,7 @@ const Desk* DesksController::FindDeskOfWindow(aura::Window* window) const {
 
   // Floating windows are stored in float container, their relationship with
   // desks can be found in `FloatedWindowInfo`.
-  if (chromeos::wm::features::IsFloatWindowEnabled() &&
+  if (chromeos::wm::features::IsWindowLayoutMenuEnabled() &&
       WindowState::Get(window)->IsFloated()) {
     return Shell::Get()->float_controller()->FindDeskOfFloatedWindow(window);
   }

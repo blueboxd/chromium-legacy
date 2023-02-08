@@ -458,7 +458,7 @@ void CertProvisioningWorkerStatic::OnStartCsrDone(
     const std::string& invalidation_topic,
     const std::string& va_challenge,
     enterprise_management::HashingAlgorithm hashing_algorithm,
-    const std::string& data_to_sign) {
+    std::vector<uint8_t> data_to_sign) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!ProcessResponseErrors(DeviceManagementServerRequestType::kStartCsr,
@@ -478,7 +478,7 @@ void CertProvisioningWorkerStatic::OnStartCsrDone(
     return;
   }
 
-  csr_ = data_to_sign;
+  csr_ = BytesToStr(data_to_sign);
   invalidation_topic_ = invalidation_topic;
   va_challenge_ = va_challenge;
   UpdateState(FROM_HERE,
@@ -600,14 +600,14 @@ void CertProvisioningWorkerStatic::SignCsr() {
   if (hashing_algorithm_ ==
       chromeos::platform_keys::HashAlgorithm::HASH_ALGORITHM_NONE) {
     platform_keys_service_->SignRSAPKCS1Raw(
-        GetPlatformKeysTokenId(cert_scope_), csr_, BytesToStr(public_key_),
+        GetPlatformKeysTokenId(cert_scope_), StrToBytes(csr_), public_key_,
         base::BindRepeating(&CertProvisioningWorkerStatic::OnSignCsrDone,
                             weak_factory_.GetWeakPtr(),
                             base::TimeTicks::Now()));
     return;
   }
   platform_keys_service_->SignRSAPKCS1Digest(
-      GetPlatformKeysTokenId(cert_scope_), csr_, BytesToStr(public_key_),
+      GetPlatformKeysTokenId(cert_scope_), StrToBytes(csr_), public_key_,
       hashing_algorithm_.value(),
       base::BindRepeating(&CertProvisioningWorkerStatic::OnSignCsrDone,
                           weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
@@ -615,7 +615,7 @@ void CertProvisioningWorkerStatic::SignCsr() {
 
 void CertProvisioningWorkerStatic::OnSignCsrDone(
     base::TimeTicks start_time,
-    const std::string& signature,
+    std::vector<uint8_t> signature,
     chromeos::platform_keys::Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -630,7 +630,7 @@ void CertProvisioningWorkerStatic::OnSignCsrDone(
     return;
   }
 
-  signature_ = signature;
+  signature_ = BytesToStr(signature);
   UpdateState(FROM_HERE, CertProvisioningWorkerState::kSignCsrFinished);
   DoStep();
 }
@@ -878,7 +878,7 @@ void CertProvisioningWorkerStatic::CleanUpAndRunCallback() {
   // Keep conditions mutually exclusive.
   if (!public_key_.empty() && (prev_state_idx >= key_registered_idx)) {
     platform_keys_service_->RemoveKey(
-        GetPlatformKeysTokenId(cert_scope_), BytesToStr(public_key_),
+        GetPlatformKeysTokenId(cert_scope_), public_key_,
         base::BindOnce(&CertProvisioningWorkerStatic::OnRemoveKeyDone,
                        weak_factory_.GetWeakPtr()));
     return;

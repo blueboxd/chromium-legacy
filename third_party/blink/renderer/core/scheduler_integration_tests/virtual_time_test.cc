@@ -42,6 +42,7 @@ class VirtualTimeTest : public SimTest {
     return WebView().Scheduler()->GetVirtualTimeController();
   }
   void SetUp() override {
+    ThreadState::Current()->CollectAllGarbageForTesting();
     SimTest::SetUp();
     GetVirtualTimeController()->EnableVirtualTime(base::Time());
   }
@@ -50,7 +51,7 @@ class VirtualTimeTest : public SimTest {
     ScriptExecutionCallbackHelper callback_helper;
     WebScriptSource source(script_source);
     WebView().MainFrame()->ToWebLocalFrame()->RequestExecuteScript(
-        DOMWrapperWorld::kMainWorldId, base::make_span(&source, 1),
+        DOMWrapperWorld::kMainWorldId, base::make_span(&source, 1u),
         mojom::blink::UserActivationOption::kDoNotActivate,
         mojom::blink::EvaluationTiming::kSynchronous,
         mojom::blink::LoadEventBlockingOption::kDoNotBlock,

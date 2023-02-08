@@ -11,10 +11,9 @@
 
 namespace ui {
 
-NSString* const kUTTypeChromiumInitiatedDrag =
-    @"org.chromium.chromium-initiated-drag";
+NSString* const kChromeDragDummyPboardType = @"org.chromium.drag-dummy-type";
 
-NSString* const kUTTypeChromiumImageAndHTML = @"org.chromium.image-html";
+NSString* const kChromeDragImageHTMLPboardType = @"org.chromium.image-html";
 
 BOOL PopulateURLAndTitleFromPasteboard(GURL* url,
                                        std::u16string* title,

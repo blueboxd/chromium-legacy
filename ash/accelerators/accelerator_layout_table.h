@@ -7,13 +7,68 @@
 
 #include <cstdint>
 #include <functional>
+#include <map>
+#include <string>
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/mojom/accelerator_info.mojom.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "base/containers/fixed_flat_map.h"
+#include "base/no_destructor.h"
+#include "base/strings/string_piece_forward.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 
 namespace ash {
+
+// non-ash accelerator action Id. Contains browser action ids and ambient action
+// ids.
+enum NonConfigurableActions {
+  // Browser action ids:
+  kBrowserCloseTab,
+  kBrowserCloseWindow,
+  kBrowserSelectLastTab,
+  kBrowserOpenFile,
+  kBrowserNewIncognitoWindow,
+  kBrowserNewTab,
+  kBrowserNewWindow,
+  kBrowserRestoreTab,
+  kBrowserTabSearch,
+  kBrowserClearBrowsingData,
+  kBrowserCloseFindOrStop,
+  kBrowserFocusBookmarks,
+  kBrowserBack,
+  kBrowserForward,
+  kBrowserFind,
+  kBrowserFindNext,
+  kBrowserFindPrevious,
+  kBrowserHome,
+  kBrowserShowDownloads,
+  kBrowserShowHistory,
+  kBrowserFocusSearch,
+  kBrowserFocusMenuBar,
+  kBrowserPrint,
+  kBrowserReload,
+  kBrowserReloadBypassingCache,
+  kBrowserZoomNormal,
+  kBrowserBookmarkAllTabs,
+  kBrowserSavePage,
+  kBrowserBookmarkThisTab,
+  kBrowserShowAppMenu,
+  kBrowserShowBookmarkManager,
+  kBrowserDevToolsConsole,
+  kBrowserDebToolsInspect,
+  kBrowserDevTools,
+  kBrowserShowBookmarkBar,
+  kBrowserViewSource,
+  kBrowserZoomPlus,
+  kBrowserZoomMinus,
+  kBrowserFocusLocation,
+  kBrowserFocusToolbar,
+  kBrowserFocusInactivePopupForAccessibility,
+  kBrowserSelectTabByIndex,
+};
 
 // Contains details for UI styling of an accelerator.
 struct ASH_EXPORT AcceleratorLayoutDetails {
@@ -38,6 +93,132 @@ struct ASH_EXPORT AcceleratorLayoutDetails {
   // The source of which the accelerator is from.
   mojom::AcceleratorSource source;
 };
+
+// A map between browser action id and accelerator description ID.
+ASH_EXPORT constexpr auto kBrowserActionToStringIdMap = base::MakeFixedFlatMap<
+    NonConfigurableActions,
+    int>({
+    {NonConfigurableActions::kBrowserCloseTab,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_CLOSE_TAB},
+    {NonConfigurableActions::kBrowserCloseWindow,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_CLOSE_WINDOW},
+    {NonConfigurableActions::kBrowserSelectLastTab,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_SELECT_LAST_TAB},
+    {NonConfigurableActions::kBrowserOpenFile,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_OPEN_FILE},
+    {NonConfigurableActions::kBrowserNewIncognitoWindow,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_NEW_INCOGNITO_WINDOW},
+    {NonConfigurableActions::kBrowserNewTab,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_NEW_TAB},
+    {NonConfigurableActions::kBrowserNewWindow,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_NEW_WINDOW},
+    {NonConfigurableActions::kBrowserRestoreTab,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_RESTORE_TAB},
+    {NonConfigurableActions::kBrowserTabSearch,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_TAB_SEARCH},
+    {NonConfigurableActions::kBrowserClearBrowsingData,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_CLEAR_BROWSING_DATA},
+    {NonConfigurableActions::kBrowserCloseFindOrStop,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_CLOSE_FIND_OR_STOP},
+    {NonConfigurableActions::kBrowserFocusBookmarks,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_FOCUS_BOOKMARKS},
+    {NonConfigurableActions::kBrowserBack,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_BACK},
+    {NonConfigurableActions::kBrowserForward,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_FORWARD},
+    {NonConfigurableActions::kBrowserFind,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_FIND},
+    {NonConfigurableActions::kBrowserFindNext,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_FIND_NEXT},
+    {NonConfigurableActions::kBrowserFindPrevious,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_FIND_PREVIOUS},
+    {NonConfigurableActions::kBrowserHome,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_HOME},
+    {NonConfigurableActions::kBrowserShowDownloads,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_SHOW_DOWNLOADS},
+    {NonConfigurableActions::kBrowserShowHistory,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_SHOW_HISTORY},
+    {NonConfigurableActions::kBrowserFocusSearch,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_FOCUS_SEARCH},
+    {NonConfigurableActions::kBrowserFocusMenuBar,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_FOCUS_MENU_BAR},
+    {NonConfigurableActions::kBrowserPrint,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_PRINT},
+    {NonConfigurableActions::kBrowserReload,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_RELOAD},
+    {NonConfigurableActions::kBrowserReloadBypassingCache,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_RELOAD_BYPASSING_CACHE},
+    {NonConfigurableActions::kBrowserZoomNormal,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_ZOOM_NORMAL},
+    {NonConfigurableActions::kBrowserBookmarkAllTabs,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_BOOKMARK_ALL_TABS},
+    {NonConfigurableActions::kBrowserSavePage,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_SAVE_PAGE},
+    {NonConfigurableActions::kBrowserBookmarkThisTab,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_BOOKMARK_THIS_TAB},
+    {NonConfigurableActions::kBrowserShowAppMenu,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_SHOW_APP_MENU},
+    {NonConfigurableActions::kBrowserShowBookmarkManager,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_SHOW_BOOKMARK_MANAGER},
+    {NonConfigurableActions::kBrowserDevToolsConsole,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_DEV_TOOLS_CONSOLE},
+    {NonConfigurableActions::kBrowserDebToolsInspect,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_DEV_TOOLS_INSPECT},
+    {NonConfigurableActions::kBrowserDevTools,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_DEV_TOOLS},
+    {NonConfigurableActions::kBrowserShowBookmarkBar,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_SHOW_BOOKMARK_BAR},
+    {NonConfigurableActions::kBrowserViewSource,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_VIEW_SOURCE},
+    {NonConfigurableActions::kBrowserZoomPlus,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_ZOOM_PLUS},
+    {NonConfigurableActions::kBrowserZoomMinus,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_ZOOM_MINUS},
+    {NonConfigurableActions::kBrowserFocusLocation,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_FOCUS_LOCATION},
+    {NonConfigurableActions::kBrowserFocusToolbar,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_FOCUS_TOOLBAR},
+    {NonConfigurableActions::kBrowserFocusInactivePopupForAccessibility,
+     IDS_BROWSER_ACCELERATOR_DESCRIPTION_FOCUS_INACTIVE_POPUP_FOR_ACCESSIBILITY},
+});
+
+// Represents a replacement for part of a non-configurable accelerator.
+// Contains the text to display as well as its type (Modifier, Key, Plain Text)
+// which is needed to determine how to display the text in the shortcut
+// customization app.
+class ASH_EXPORT TextAcceleratorPart : public mojom::TextAcceleratorPart {
+ public:
+  explicit TextAcceleratorPart(ui::EventFlags modifier);
+  explicit TextAcceleratorPart(ui::KeyboardCode key_code);
+  TextAcceleratorPart(const TextAcceleratorPart&);
+  TextAcceleratorPart& operator=(const TextAcceleratorPart&);
+  ~TextAcceleratorPart();
+};
+
+// Contains info related to an ambient accelerator. The |message_id| and list
+// of |text_accelerator_parts| are used by AcceleratorConfigurationProvider to
+// construct arbitrary text with styled keys and modifiers interspersed.
+struct ASH_EXPORT AcceleratorTextDetails {
+  AcceleratorTextDetails(int message_id,
+                         std::vector<TextAcceleratorPart> parts);
+  AcceleratorTextDetails(const AcceleratorTextDetails&);
+  ~AcceleratorTextDetails();
+  int message_id;
+  std::vector<TextAcceleratorPart> text_accelerator_parts;
+};
+
+using NonConfigurableActionsTextDetailsMap =
+    std::map<NonConfigurableActions, AcceleratorTextDetails>;
+
+// A map between ambient action id and accelerator description ID.
+// Adding a new ambient accelerator must add a new entry to this map.
+ASH_EXPORT constexpr auto kAmbientActionToStringIdMap =
+    base::MakeFixedFlatMap<NonConfigurableActions, int>({
+        {NonConfigurableActions::kBrowserSelectTabByIndex,
+         IDS_TEXT_ACCELERATOR_DESCRIPTION_GO_TO_TAB_IN_RANGE},
+    });
+
+const ASH_EXPORT NonConfigurableActionsTextDetailsMap& GetTextDetailsMap();
 
 // A fixed array of accelerator layouts used for categorization and styling of
 // accelerator actions. The ordering of the array is important and is used
@@ -121,6 +302,11 @@ ASH_EXPORT constexpr AcceleratorLayoutDetails kAcceleratorLayouts[] = {
      mojom::AcceleratorSubcategory::kGeneral,
      /*locked=*/true, mojom::AcceleratorLayoutStyle::kDefault,
      mojom::AcceleratorSource::kAsh},
+    {NonConfigurableActions::kBrowserSelectTabByIndex,
+     mojom::AcceleratorCategory::kTabsAndWindows,
+     mojom::AcceleratorSubcategory::kGeneral,
+     /*locked=*/true, mojom::AcceleratorLayoutStyle::kText,
+     mojom::AcceleratorSource::kAmbient},
 
     // Page and Web Browser.
     {FOCUS_PREVIOUS_PANE, mojom::AcceleratorCategory::kPageAndWebBrowser,

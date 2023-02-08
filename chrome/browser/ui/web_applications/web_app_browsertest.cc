@@ -5,9 +5,11 @@
 #include <codecvt>
 #include <string>
 
+#include "base/barrier_callback.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
+#include "base/functional/callback.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -1227,17 +1229,35 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, WindowsOffsetForMultiWindowPWA) {
 
 class WebAppBrowserTest_ExternalPrefMigration
     : public WebAppBrowserTest,
-      public testing::WithParamInterface<bool> {
+      public testing::WithParamInterface<test::ExternalPrefMigrationTestCases> {
  public:
   WebAppBrowserTest_ExternalPrefMigration() {
-    bool enable_migration = GetParam();
-    if (enable_migration) {
-      scoped_feature_list_.InitWithFeatures(
-          {features::kUseWebAppDBInsteadOfExternalPrefs}, {});
-    } else {
-      scoped_feature_list_.InitWithFeatures(
-          {}, {features::kUseWebAppDBInsteadOfExternalPrefs});
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
+
+    switch (GetParam()) {
+      case test::ExternalPrefMigrationTestCases::kDisableMigrationReadPref:
+        disabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
+        disabled_features.push_back(
+            features::kUseWebAppDBInsteadOfExternalPrefs);
+        break;
+      case test::ExternalPrefMigrationTestCases::kDisableMigrationReadDB:
+        disabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
+        enabled_features.push_back(
+            features::kUseWebAppDBInsteadOfExternalPrefs);
+        break;
+      case test::ExternalPrefMigrationTestCases::kEnableMigrationReadPref:
+        enabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
+        disabled_features.push_back(
+            features::kUseWebAppDBInsteadOfExternalPrefs);
+        break;
+      case test::ExternalPrefMigrationTestCases::kEnableMigrationReadDB:
+        enabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
+        enabled_features.push_back(
+            features::kUseWebAppDBInsteadOfExternalPrefs);
+        break;
     }
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
  private:
@@ -1584,9 +1604,28 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, ReparentLastBrowserTab) {
   EXPECT_EQ(browser()->tab_strip_model()->count(), 1);
 }
 
-using WebAppBrowserTest_UpdateShortcuts = WebAppBrowserTest;
+class WebAppBrowserTestUpdateShortcutResult
+    : public WebAppBrowserTest,
+      public ::testing::WithParamInterface<OsIntegrationSubManagersState> {
+ public:
+  WebAppBrowserTestUpdateShortcutResult() {
+    if (GetParam() == OsIntegrationSubManagersState::kEnabled) {
+      scoped_feature_list_.InitWithFeaturesAndParameters(
+          {{features::kOsIntegrationSubManagers, {{"stage", "write_config"}}}},
+          /*disabled_features=*/{});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {}, {features::kOsIntegrationSubManagers});
+    }
+  }
 
-IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_UpdateShortcuts, UpdateShortcut) {
+  ~WebAppBrowserTestUpdateShortcutResult() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(WebAppBrowserTestUpdateShortcutResult, UpdateShortcut) {
 #if BUILDFLAG(IS_MAC)
   base::AutoReset<bool> scope_shortcut_app_update(
       &g_app_shims_allow_update_and_launch_in_tests, true);
@@ -1621,8 +1660,26 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_UpdateShortcuts, UpdateShortcut) {
 
   base::HistogramTester tester;
   base::test::TestFuture<Result> result;
+
+  auto synchronize_barrier = base::BarrierCallback<Result>(
+      /*num_callbacks=*/2,
+      base::BindOnce(
+          [&](base::OnceCallback<void(Result)> result_callback,
+              std::vector<Result> final_results) {
+            DCHECK_EQ(2u, final_results.size());
+            Result final_result = Result::kOk;
+            if (final_results[0] == Result::kError ||
+                final_results[1] == Result::kError) {
+              final_result = Result::kError;
+            }
+            std::move(result_callback).Run(final_result);
+          },
+          result.GetCallback()));
+
   provider->os_integration_manager().UpdateShortcuts(
-      app_id, "Manifest test app", result.GetCallback());
+      app_id, "Manifest test app", synchronize_barrier);
+  provider->os_integration_manager().Synchronize(
+      app_id, base::BindOnce(synchronize_barrier, Result::kOk));
   ASSERT_TRUE(result.Wait());
   EXPECT_THAT(result.Get(), testing::Eq(Result::kOk));
 
@@ -1644,6 +1701,13 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_UpdateShortcuts, UpdateShortcut) {
   EXPECT_NE(shortcut_info, nullptr);
   EXPECT_EQ(shortcut_info->title, u"test_app_2");
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    WebAppBrowserTestUpdateShortcutResult,
+    ::testing::Values(OsIntegrationSubManagersState::kEnabled,
+                      OsIntegrationSubManagersState::kDisabled),
+    test::GetOsIntegrationSubManagersTestName);
 
 // Tests that reparenting a display: browser app tab results in a minimal-ui
 // app window.
@@ -2446,8 +2510,14 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(WebAppSettingsState::kFileHandlingDisabled,
                       WebAppSettingsState::kFileHandlingEnabled));
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         WebAppBrowserTest_ExternalPrefMigration,
-                         ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    WebAppBrowserTest_ExternalPrefMigration,
+    ::testing::Values(
+        test::ExternalPrefMigrationTestCases::kDisableMigrationReadPref,
+        test::ExternalPrefMigrationTestCases::kDisableMigrationReadDB,
+        test::ExternalPrefMigrationTestCases::kEnableMigrationReadPref,
+        test::ExternalPrefMigrationTestCases::kEnableMigrationReadDB),
+    test::GetExternalPrefMigrationTestName);
 
 }  // namespace web_app

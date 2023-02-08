@@ -875,15 +875,23 @@ TEST_F(ShortcutsProviderTest, HistoryClusterSuggestions) {
   const auto matches = provider_->matches();
 
   // Expect 3 (i.e. `provider_max_matches_`) non-cluster matches, and all
-  // cluster matches.
+  // cluster matches. Expect only the non-cluster matches to be allowed to be
+  // default.
   ASSERT_EQ(matches.size(), 7u);
   EXPECT_EQ(matches[0].type, AutocompleteMatchType::HISTORY_URL);
+  EXPECT_EQ(matches[0].allowed_to_be_default_match, true);
   EXPECT_EQ(matches[1].type, AutocompleteMatchType::HISTORY_URL);
+  EXPECT_EQ(matches[1].allowed_to_be_default_match, true);
   EXPECT_EQ(matches[2].type, AutocompleteMatchType::HISTORY_URL);
+  EXPECT_EQ(matches[2].allowed_to_be_default_match, true);
   EXPECT_EQ(matches[3].type, AutocompleteMatchType::HISTORY_CLUSTER);
+  EXPECT_EQ(matches[3].allowed_to_be_default_match, false);
   EXPECT_EQ(matches[4].type, AutocompleteMatchType::HISTORY_CLUSTER);
+  EXPECT_EQ(matches[4].allowed_to_be_default_match, false);
   EXPECT_EQ(matches[5].type, AutocompleteMatchType::HISTORY_CLUSTER);
+  EXPECT_EQ(matches[5].allowed_to_be_default_match, false);
   EXPECT_EQ(matches[6].type, AutocompleteMatchType::HISTORY_CLUSTER);
+  EXPECT_EQ(matches[6].allowed_to_be_default_match, false);
 
   // Expect only non-cluster matches to have capped decrementing scores.
   EXPECT_EQ(matches[1].relevance, matches[0].relevance - 1);
@@ -893,25 +901,23 @@ TEST_F(ShortcutsProviderTest, HistoryClusterSuggestions) {
   EXPECT_EQ(matches[5].relevance, matches[0].relevance);
   EXPECT_EQ(matches[6].relevance, matches[0].relevance);
 
-  // Expect cluster matches to have grouping.
+  // Expect cluster matches to not have grouping.
   EXPECT_EQ(matches[0].suggestion_group_id, absl::nullopt);
   EXPECT_EQ(matches[1].suggestion_group_id, absl::nullopt);
   EXPECT_EQ(matches[2].suggestion_group_id, absl::nullopt);
-  EXPECT_EQ(matches[3].suggestion_group_id, omnibox::GROUP_HISTORY_CLUSTER);
-  EXPECT_EQ(matches[4].suggestion_group_id, omnibox::GROUP_HISTORY_CLUSTER);
-  EXPECT_EQ(matches[5].suggestion_group_id, omnibox::GROUP_HISTORY_CLUSTER);
-  EXPECT_EQ(matches[6].suggestion_group_id, omnibox::GROUP_HISTORY_CLUSTER);
+  EXPECT_EQ(matches[3].suggestion_group_id, absl::nullopt);
+  EXPECT_EQ(matches[4].suggestion_group_id, absl::nullopt);
+  EXPECT_EQ(matches[5].suggestion_group_id, absl::nullopt);
+  EXPECT_EQ(matches[6].suggestion_group_id, absl::nullopt);
 
-  // With `omnibox_history_cluster_provider_free_ranking`, should not have
-  // groups.
-  config.omnibox_history_cluster_provider_free_ranking = true;
+  // With `omnibox_history_cluster_provider_allow_default`, should be allowed
+  // default.
+  config.omnibox_history_cluster_provider_allow_default = true;
   history_clusters::SetConfigForTesting(config);
   provider_->Start(input, false);
-  const auto matches_with_free_ranking = provider_->matches();
-  ASSERT_EQ(matches.size(), matches_with_free_ranking.size());
-  for (size_t i = 0; i < matches.size(); ++i) {
-    EXPECT_EQ(matches[i].contents, matches_with_free_ranking[i].contents);
-    EXPECT_EQ(matches_with_free_ranking[i].suggestion_group_id, absl::nullopt);
-  }
+  const auto matches_with_allow_default = provider_->matches();
+  ASSERT_EQ(matches.size(), matches.size());
+  for (const auto& m : matches_with_allow_default)
+    EXPECT_TRUE(m.allowed_to_be_default_match);
 }
 #endif  // !BUILDFLAG(IS_IOS)

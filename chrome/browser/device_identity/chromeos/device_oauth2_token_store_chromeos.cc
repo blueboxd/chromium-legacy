@@ -40,7 +40,7 @@ void DeviceOAuth2TokenStoreChromeOS::RegisterPrefs(
 void DeviceOAuth2TokenStoreChromeOS::Init(InitCallback callback) {
   state_ = State::INITIALIZING;
   // Pull in the system salt.
-  SystemSaltGetter::Get()->GetSystemSalt(
+  ash::SystemSaltGetter::Get()->GetSystemSalt(
       base::BindOnce(&DeviceOAuth2TokenStoreChromeOS::DidGetSystemSalt,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -81,15 +81,15 @@ void DeviceOAuth2TokenStoreChromeOS::PrepareTrustedAccountId(
   switch (CrosSettings::Get()->PrepareTrustedValues(
       base::BindOnce(&DeviceOAuth2TokenStoreChromeOS::PrepareTrustedAccountId,
                      weak_ptr_factory_.GetWeakPtr(), callback))) {
-    case CrosSettingsProvider::TRUSTED:
+    case ash::CrosSettingsProvider::TRUSTED:
       // All good, let the service compare account ids.
       callback.Run(true);
       return;
-    case CrosSettingsProvider::TEMPORARILY_UNTRUSTED:
+    case ash::CrosSettingsProvider::TEMPORARILY_UNTRUSTED:
       // The callback passed to PrepareTrustedValues above will trigger a
       // re-check eventually.
       return;
-    case CrosSettingsProvider::PERMANENTLY_UNTRUSTED:
+    case ash::CrosSettingsProvider::PERMANENTLY_UNTRUSTED:
       // There's no trusted account id, which is equivalent to no token present.
       LOG(WARNING) << "Device settings permanently untrusted.";
       callback.Run(false);

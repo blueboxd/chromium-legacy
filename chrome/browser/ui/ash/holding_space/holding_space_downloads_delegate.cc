@@ -29,6 +29,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/chromeos/styles/cros_styles.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
+#include "ui/color/color_id.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -92,11 +94,11 @@ bool IsComplete(const crosapi::mojom::DownloadItem* mojo_download_item) {
 // in-progress downloads integration.
 bool IsEligibleForInProgressIntegration(
     const crosapi::mojom::DownloadItem* mojo_download_item) {
-  // The `has_is_mixed_content` field was the last field to be implemented in
+  // The `has_is_insecure` field was the last field to be implemented in
   // Lacros. Its presence indicates that other required metadata and APIs (e.g.
   // pause, resume, cancel, etc.) are also implemented and is therefore used to
   // gate eligibility.
-  return mojo_download_item->has_is_mixed_content;
+  return mojo_download_item->has_is_insecure;
 }
 
 // Returns whether the specified `mojo_download_item` is in progress.
@@ -181,7 +183,7 @@ class HoldingSpaceDownloadsDelegate::InProgressDownload {
       msg_id = IDS_ASH_HOLDING_SPACE_IN_PROGRESS_DOWNLOAD_A11Y_NAME_SCANNING;
     } else if (IsDangerous() && !MightBeMalicious()) {
       msg_id = IDS_ASH_HOLDING_SPACE_IN_PROGRESS_DOWNLOAD_A11Y_NAME_CONFIRM;
-    } else if (IsDangerous() || IsMixedContent()) {
+    } else if (IsDangerous() || IsInsecure()) {
       msg_id = IDS_ASH_HOLDING_SPACE_IN_PROGRESS_DOWNLOAD_A11Y_NAME_DANGEROUS;
     } else if (IsPaused()) {
       msg_id = IDS_ASH_HOLDING_SPACE_IN_PROGRESS_DOWNLOAD_A11Y_NAME_PAUSED;
@@ -212,7 +214,7 @@ class HoldingSpaceDownloadsDelegate::InProgressDownload {
   // Returns the current progress of the underlying download.
   // NOTE:
   //   * Progress is indeterminate if the download is being scanned.
-  //   * Progress is hidden if the download is dangerous or mixed content.
+  //   * Progress is hidden if the download is dangerous or insecure.
   HoldingSpaceProgress GetProgress() const {
     if (IsComplete(mojo_download_item_.get()))
       return HoldingSpaceProgress();
@@ -222,7 +224,7 @@ class HoldingSpaceDownloadsDelegate::InProgressDownload {
     }
     return HoldingSpaceProgress(GetReceivedBytes(), GetTotalBytes(),
                                 /*complete=*/false,
-                                /*hidden=*/IsDangerous() || IsMixedContent());
+                                /*hidden=*/IsDangerous() || IsInsecure());
   }
 
   // Returns the target file path associated with the underlying download.
@@ -246,8 +248,8 @@ class HoldingSpaceDownloadsDelegate::InProgressDownload {
   // Returns whether the underlying download is dangerous.
   bool IsDangerous() const { return mojo_download_item_->is_dangerous; }
 
-  // Returns whether the underlying download is mixed content.
-  bool IsMixedContent() const { return mojo_download_item_->is_mixed_content; }
+  // Returns whether the underlying download is insecure.
+  bool IsInsecure() const { return mojo_download_item_->is_insecure; }
 
   // Returns whether the underlying download is paused.
   bool IsPaused() const { return mojo_download_item_->is_paused; }
@@ -276,7 +278,7 @@ class HoldingSpaceDownloadsDelegate::InProgressDownload {
   // Returns a resolver which creates a `gfx::ImageSkia` placeholder
   // corresponding to the file type of the associated *target* file path, rather
   // than the *backing* file path, when a thumbnail cannot be generated. Note
-  // that if the download is dangerous or is mixed content, a placeholder
+  // that if the download is dangerous or is insecure, a placeholder
   // indicating error will be returned.
   HoldingSpaceImage::PlaceholderImageSkiaResolver
   GetPlaceholderImageSkiaResolver() const {
@@ -285,9 +287,8 @@ class HoldingSpaceDownloadsDelegate::InProgressDownload {
            const base::FilePath& file_path, const gfx::Size& size,
            const absl::optional<bool>& dark_background,
            const absl::optional<bool>& is_folder) {
-          if (in_progress_download &&
-              (in_progress_download->IsDangerous() ||
-               in_progress_download->IsMixedContent())) {
+          if (in_progress_download && (in_progress_download->IsDangerous() ||
+                                       in_progress_download->IsInsecure())) {
             return CreateErrorPlaceholderImageSkia(
                 size, /*color_name=*/in_progress_download->IsDangerous() &&
                               !in_progress_download->MightBeMalicious()
@@ -339,9 +340,9 @@ class HoldingSpaceDownloadsDelegate::InProgressDownload {
           IDS_ASH_HOLDING_SPACE_IN_PROGRESS_DOWNLOAD_CONFIRM);
     }
 
-    // In-progress download items which are dangerous or mixed content have a
-    // special secondary text treatment.
-    if (IsDangerous() || IsMixedContent()) {
+    // In-progress download items which are dangerous or insecure have a special
+    // secondary text treatment.
+    if (IsDangerous() || IsInsecure()) {
       return l10n_util::GetStringUTF16(
           IDS_ASH_HOLDING_SPACE_IN_PROGRESS_DOWNLOAD_DANGEROUS_FILE);
     }
@@ -387,7 +388,7 @@ class HoldingSpaceDownloadsDelegate::InProgressDownload {
 
   // Returns the color for the secondary text to display for the underlying
   // download.
-  absl::optional<cros_styles::ColorName> GetSecondaryTextColor() const {
+  absl::optional<ui::ColorId> GetSecondaryTextColorId() const {
     // Only in-progress download items have secondary text.
     if (!IsInProgress(mojo_download_item_.get()))
       return absl::nullopt;
@@ -395,18 +396,18 @@ class HoldingSpaceDownloadsDelegate::InProgressDownload {
     // In-progress download items which are being scanned have a special
     // secondary text treatment.
     if (IsScanning(mojo_download_item_.get()))
-      return cros_styles::ColorName::kTextColorProminent;
+      return cros_tokens::kTextColorProminent;
 
     // In-progress download items which are dangerous but not malicious can be
     // kept or discarded by the user via notification. This being the case, such
     // items have a special secondary text treatment.
     if (IsDangerous() && !MightBeMalicious())
-      return cros_styles::ColorName::kTextColorWarning;
+      return cros_tokens::kTextColorWarning;
 
-    // In-progress download items which are dangerous or mixed content have a
-    // special secondary text treatment.
-    if (IsDangerous() || IsMixedContent())
-      return cros_styles::ColorName::kTextColorAlert;
+    // In-progress download items which are dangerous or insecure have a special
+    // secondary text treatment.
+    if (IsDangerous() || IsInsecure())
+      return cros_tokens::kTextColorAlert;
 
     return absl::nullopt;
   }
@@ -419,8 +420,7 @@ class HoldingSpaceDownloadsDelegate::InProgressDownload {
       crosapi::mojom::DownloadItemPtr mojo_download_item) {
     const bool was_dangerous_but_not_malicious =
         IsDangerous() && !MightBeMalicious();
-    const bool was_dangerous_or_mixed_content =
-        IsDangerous() || IsMixedContent();
+    const bool was_dangerous_or_insecure = IsDangerous() || IsInsecure();
 
     mojo_download_item_ = std::move(mojo_download_item);
 
@@ -431,15 +431,14 @@ class HoldingSpaceDownloadsDelegate::InProgressDownload {
 
     const bool is_dangerous_but_not_malicious =
         IsDangerous() && !MightBeMalicious();
-    const bool is_dangerous_or_mixed_content =
-        IsDangerous() || IsMixedContent();
+    const bool is_dangerous_or_insecure = IsDangerous() || IsInsecure();
 
     // Explicitly invalidate the image of the associated holding space item if
     // the download is transitioning to/from a state which required an error
     // placeholder image.
     const bool invalidate_image =
         was_dangerous_but_not_malicious != is_dangerous_but_not_malicious ||
-        was_dangerous_or_mixed_content != is_dangerous_or_mixed_content;
+        was_dangerous_or_insecure != is_dangerous_or_insecure;
 
     switch (mojo_download_item_->state) {
       case crosapi::mojom::DownloadState::kInProgress:
@@ -864,7 +863,7 @@ void HoldingSpaceDownloadsDelegate::CreateOrUpdateHoldingSpaceItem(
   std::vector<HoldingSpaceItem::InProgressCommand> in_progress_commands;
   if (!in_progress_download->GetProgress().IsComplete()) {
     if (!(in_progress_download->IsDangerous() ||
-          in_progress_download->IsMixedContent())) {
+          in_progress_download->IsInsecure())) {
       in_progress_commands.push_back(
           in_progress_download->IsPaused()
               ? HoldingSpaceItem::InProgressCommand(
@@ -896,7 +895,7 @@ void HoldingSpaceDownloadsDelegate::CreateOrUpdateHoldingSpaceItem(
       .SetInvalidateImage(invalidate_image)
       .SetText(in_progress_download->GetText())
       .SetSecondaryText(in_progress_download->GetSecondaryText())
-      .SetSecondaryTextColor(in_progress_download->GetSecondaryTextColor())
+      .SetSecondaryTextColorId(in_progress_download->GetSecondaryTextColorId())
       .SetProgress(in_progress_download->GetProgress());
 }
 

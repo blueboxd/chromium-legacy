@@ -125,6 +125,7 @@ Aðeins einstaklingar sem eru með aðgangsorðið þitt geta lesið dulkóðuð
 <translation id="1870148520156231997">Sýna aðgangsorð</translation>
 <translation id="1872096359983322073">Ljós</translation>
 <translation id="1891796056033961979">Vistuð bókamerki, aðgangsorð, stillingar og fleira má finna á þessum skjá.</translation>
+<translation id="1894023287452300670">Vakta verð hér</translation>
 <translation id="1911619930368729126">Hlaða inn á Google Drive</translation>
 <translation id="1923342640370224680">Undanfarin klukkustund</translation>
 <translation id="1930989359703290198">Fyrirtækið þitt leyfir þér eingöngu að skrá þig inn með tilteknum reikningum. Bannaðir reikningar eru faldir. <ph name="BEGIN_LINK" />Nánar<ph name="END_LINK" /></translation>
@@ -147,7 +148,9 @@ Aðeins einstaklingar sem eru með aðgangsorðið þitt geta lesið dulkóðuð
 <translation id="2074131957428911366">Þú getur alltaf valið hvað á að samstilla í <ph name="BEGIN_LINK" />stillingunum<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Afturkalla</translation>
 <translation id="2080769225927880590">Skráðu þig inn með gildum reikningi</translation>
+<translation id="2090878303988764231">Skráðu þig inn til að stjórna efninu sem þú sérð</translation>
 <translation id="2103075008456228677">Opna history.google.com</translation>
+<translation id="21133533946938348">Festa flipa</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> atriði færð</translation>
 <translation id="2122754583996902531">Vafranum þínum er stjórnað. <ph name="BEGIN_LINK" />Nánar<ph name="END_LINK" /></translation>
 <translation id="212623074644302906">Biðja um að bæta við leslista</translation>
@@ -189,6 +192,7 @@ Vefsvæði geta ekki notað fótsporin þín til að sjá vafranotkun þína á 
 <translation id="2421044535038393232">Halda áfram að breyta</translation>
 <translation id="2434405374328098816">Þú hefur þegar vistað aðgangsorð fyrir „<ph name="USERNAME" />“ á <ph name="WEBSITE" />.</translation>
 <translation id="2435457462613246316">Sýna aðgangsorð</translation>
+<translation id="2451654228769116489">Festa flipa</translation>
 <translation id="2461070143328828326">Stillingar fyrir aðgangsorð</translation>
 <translation id="2469960372084740698">Viltu slökkva á öruggri vefnotkun?</translation>
 <translation id="2473876017985765807">Þú hefur þegar vistað aðgangsorð fyrir <ph name="WEBSITE" /></translation>
@@ -286,6 +290,7 @@ Skoðaðu leiðbeiningar leitarvélarinnar um að eyða leitarferlinum ef það 
 <translation id="3130863904455712965">Ferill og fleira</translation>
 <translation id="3131206671572504478">Útiloka öll</translation>
 <translation id="313283613037595347">Búa til nýjan huliðsflipa.</translation>
+<translation id="3146109040683991651">Nota Chrome sem sjálfgefinn vafra</translation>
 <translation id="3153862085237805241">Vista kort</translation>
 <translation id="3157387275655328056">Bæta við leslista</translation>
 <translation id="3157684681743766797">Merkja allt…</translation>
@@ -673,6 +678,7 @@ Einnig þarf að vera kveikt á Handoff í hlutanum General í Settings og tæki
 <translation id="6059830886158432458">Stjórnaðu sögunum þínum og virkni hér</translation>
 <translation id="6064824697233747382">Fyrirtækið þitt krefst þess að þú slökkvir á samstillingu.</translation>
 <translation id="6066301408025741299">Ýttu til að hætta við.</translation>
+<translation id="6071409777669089905">Losa flipa</translation>
 <translation id="60829778314739003">Samþykkja og halda áfram</translation>
 <translation id="6084848228346514841">Velja flipa</translation>
 <translation id="6103540626693881831">Dulkóðun í tækinu</translation>
@@ -973,6 +979,7 @@ Vefsvæði geta notað fótspor til að sjá vafranotkun þína á mismunandi ve
 <translation id="8197543752516192074">Þýða síðu</translation>
 <translation id="8205564605687841303">Hætta við</translation>
 <translation id="8206354486702514201">Stjórnandi valdi þessa stillingu.</translation>
+<translation id="821809831108207540">Til að sérsníða Chrome og strauminn „Tillögur“ skaltu skrá þig inn og kveikja á samstillingu.</translation>
 <translation id="8225985093977202398">Myndir/skrár í skyndiminni</translation>
 <translation id="8237382152611443140">Opnaðu stillingar sjálfvirkrar útfyllingar aðgangsorða</translation>
 <translation id="8261506727792406068">Eyða</translation>
@@ -1100,6 +1107,7 @@ Vefsvæði geta notað fótspor til að sjá vafranotkun þína á mismunandi ve
 <translation id="9219154867334666734">Leita í flipum…</translation>
 <translation id="9223358826628549784">Hrunskýrsla send.</translation>
 <translation id="941747855997058526">Veldu aðgangsorð…</translation>
+<translation id="948048872540558976">Búa til nýjan flipa</translation>
 <translation id="952704832371081537">Hætta við</translation>
 <translation id="953008885340860025">Chrome er útskráður</translation>
 <translation id="959066944189734975">Þú fylgir <ph name="CHANNEL_NAME" /></translation>

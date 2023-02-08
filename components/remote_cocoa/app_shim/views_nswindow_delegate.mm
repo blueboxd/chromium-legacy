@@ -223,8 +223,12 @@
   return newFrame;
 }
 
+- (void)windowDidChangeScreen:(NSNotification*)notification {
+  _parent->OnScreenOrBackingPropertiesChanged();
+}
+
 - (void)windowDidChangeBackingProperties:(NSNotification*)notification {
-  _parent->OnBackingPropertiesChanged();
+  _parent->OnScreenOrBackingPropertiesChanged();
 }
 
 - (void)windowWillEnterFullScreen:(NSNotification*)notification {

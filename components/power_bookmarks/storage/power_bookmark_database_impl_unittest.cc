@@ -278,6 +278,74 @@ TEST_F(PowerBookmarkDatabaseImplTest, ShouldNotUpdatePowerIfNotExist) {
   EXPECT_EQ(0u, stored_powers.size());
 }
 
+TEST_F(PowerBookmarkDatabaseImplTest, UpdatePowerShouldMergePower) {
+  std::unique_ptr<PowerBookmarkDatabaseImpl> pbdb =
+      std::make_unique<PowerBookmarkDatabaseImpl>(db_dir());
+  EXPECT_TRUE(pbdb->Init());
+
+  auto power = MakePower(GURL("https://google.com"),
+                         sync_pb::PowerBookmarkSpecifics::POWER_TYPE_MOCK);
+  base::Time now = base::Time::Now();
+  power->set_time_modified(now);
+  auto power2 = power->Clone();
+  power2->set_time_modified(now - base::Seconds(1));
+
+  EXPECT_TRUE(pbdb->CreatePower(std::move(power)));
+  EXPECT_TRUE(pbdb->UpdatePower(std::move(power2)));
+
+  std::vector<std::unique_ptr<Power>> stored_powers =
+      pbdb->GetPowersForURL(GURL("https://google.com"),
+                            sync_pb::PowerBookmarkSpecifics::POWER_TYPE_MOCK);
+  EXPECT_EQ(1u, stored_powers.size());
+
+  // Make sure time modified does not change after a merge.
+  EXPECT_EQ(now, stored_powers[0]->time_modified());
+}
+
+TEST_F(PowerBookmarkDatabaseImplTest, UpdateNotesWithMerge) {
+  std::unique_ptr<PowerBookmarkDatabaseImpl> pbdb =
+      std::make_unique<PowerBookmarkDatabaseImpl>(db_dir());
+  EXPECT_TRUE(pbdb->Init());
+
+  auto power = MakePower(GURL("https://google.com"),
+                         sync_pb::PowerBookmarkSpecifics::POWER_TYPE_NOTE);
+  power->power_entity()->mutable_note_entity()->set_plain_text("now");
+
+  base::Time now = base::Time::Now();
+  power->set_time_modified(now);
+  auto power_updated_before = power->Clone();
+  power_updated_before->set_time_modified(now - base::Seconds(1));
+  power_updated_before->power_entity()->mutable_note_entity()->set_plain_text(
+      "before");
+
+  auto power_updated_after = power->Clone();
+  auto after_time_modified = now + base::Seconds(1);
+  power_updated_after->set_time_modified(after_time_modified);
+  power_updated_after->power_entity()->mutable_note_entity()->set_plain_text(
+      "after");
+
+  // Merge a note with an older one. Text will not change.
+  EXPECT_TRUE(pbdb->CreatePower(std::move(power)));
+  EXPECT_TRUE(pbdb->UpdatePower(std::move(power_updated_before)));
+  std::vector<std::unique_ptr<Power>> stored_powers =
+      pbdb->GetPowersForURL(GURL("https://google.com"),
+                            sync_pb::PowerBookmarkSpecifics::POWER_TYPE_NOTE);
+  EXPECT_EQ(1u, stored_powers.size());
+  EXPECT_EQ(now, stored_powers[0]->time_modified());
+  EXPECT_EQ("now",
+            stored_powers[0]->power_entity()->note_entity().plain_text());
+
+  // Merge a note with a newer one. Text will change.
+  EXPECT_TRUE(pbdb->UpdatePower(std::move(power_updated_after)));
+  stored_powers =
+      pbdb->GetPowersForURL(GURL("https://google.com"),
+                            sync_pb::PowerBookmarkSpecifics::POWER_TYPE_NOTE);
+  EXPECT_EQ(1u, stored_powers.size());
+  EXPECT_EQ(after_time_modified, stored_powers[0]->time_modified());
+  EXPECT_EQ("after",
+            stored_powers[0]->power_entity()->note_entity().plain_text());
+}
+
 TEST_F(PowerBookmarkDatabaseImplTest, CreatePowerIfNotExist) {
   std::unique_ptr<PowerBookmarkDatabaseImpl> pbdb =
       std::make_unique<PowerBookmarkDatabaseImpl>(db_dir());
@@ -593,6 +661,66 @@ TEST_F(PowerBookmarkDatabaseImplTest, DeletePowersForURLUnspecifiedType) {
       pbdb->GetPowersForURL(GURL("https://google.com"),
                             sync_pb::PowerBookmarkSpecifics::POWER_TYPE_MOCK);
   EXPECT_EQ(0u, stored_powers.size());
+}
+
+TEST_F(PowerBookmarkDatabaseImplTest, GetAllPowers) {
+  std::unique_ptr<PowerBookmarkDatabaseImpl> pbdb =
+      std::make_unique<PowerBookmarkDatabaseImpl>(db_dir());
+  EXPECT_TRUE(pbdb->Init());
+
+  EXPECT_TRUE(pbdb->CreatePower(
+      MakePower(GURL("https://google.com"),
+                sync_pb::PowerBookmarkSpecifics::POWER_TYPE_MOCK)));
+
+  EXPECT_TRUE(pbdb->CreatePower(
+      MakePower(GURL("https://bing.com"),
+                sync_pb::PowerBookmarkSpecifics::POWER_TYPE_MOCK)));
+
+  std::vector<std::unique_ptr<Power>> stored_powers = pbdb->GetAllPowers();
+  EXPECT_EQ(2u, stored_powers.size());
+}
+
+TEST_F(PowerBookmarkDatabaseImplTest, GetPowersForGUIDs) {
+  std::unique_ptr<PowerBookmarkDatabaseImpl> pbdb =
+      std::make_unique<PowerBookmarkDatabaseImpl>(db_dir());
+  EXPECT_TRUE(pbdb->Init());
+
+  auto power1 = MakePower(GURL("https://google.com"),
+                          sync_pb::PowerBookmarkSpecifics::POWER_TYPE_MOCK);
+  auto power2 = MakePower(GURL("https://google.com"),
+                          sync_pb::PowerBookmarkSpecifics::POWER_TYPE_MOCK);
+  auto power3 = MakePower(GURL("https://bing.com"),
+                          sync_pb::PowerBookmarkSpecifics::POWER_TYPE_MOCK);
+  auto guid1 = power1->guid().AsLowercaseString();
+  auto guid2 = power2->guid().AsLowercaseString();
+
+  EXPECT_TRUE(pbdb->CreatePower(std::move(power1)));
+  EXPECT_TRUE(pbdb->CreatePower(std::move(power2)));
+  EXPECT_TRUE(pbdb->CreatePower(std::move(power3)));
+
+  std::vector<std::unique_ptr<Power>> stored_powers =
+      pbdb->GetPowersForGUIDs({guid1, guid2});
+  EXPECT_EQ(2u, stored_powers.size());
+  EXPECT_EQ(GURL("https://google.com"), stored_powers[0]->url());
+  EXPECT_EQ(GURL("https://google.com"), stored_powers[1]->url());
+}
+
+TEST_F(PowerBookmarkDatabaseImplTest, GetPowerForGUID) {
+  std::unique_ptr<PowerBookmarkDatabaseImpl> pbdb =
+      std::make_unique<PowerBookmarkDatabaseImpl>(db_dir());
+  EXPECT_TRUE(pbdb->Init());
+
+  auto power1 = MakePower(GURL("https://google.com"),
+                          sync_pb::PowerBookmarkSpecifics::POWER_TYPE_MOCK);
+  auto power2 = MakePower(GURL("https://bing.com"),
+                          sync_pb::PowerBookmarkSpecifics::POWER_TYPE_MOCK);
+  auto guid1 = power1->guid().AsLowercaseString();
+
+  EXPECT_TRUE(pbdb->CreatePower(std::move(power1)));
+  EXPECT_TRUE(pbdb->CreatePower(std::move(power2)));
+
+  std::unique_ptr<Power> stored_power = pbdb->GetPowerForGUID(guid1);
+  EXPECT_EQ(GURL("https://google.com"), stored_power->url());
 }
 
 }  // namespace power_bookmarks

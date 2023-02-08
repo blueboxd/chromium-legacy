@@ -384,9 +384,10 @@ const char kFedCmAutoSigninFieldTrialParamName[] = "AutoSignin";
 // is enabled.
 const char kFedCmIdpSignoutFieldTrialParamName[] = "IdpSignout";
 
-// Field trial boolean parameter which indicates that FedCM API is enabled in
-// cross-origin iframes.
-const char kFedCmIframeSupportFieldTrialParamName[] = "IframeSupport";
+// Enables usage of the FedCM API with iframe support.
+BASE_FEATURE(kFedCmIframeSupport,
+             "FedCmIframeSupport",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM API with metrics endpoint at the same time.
 BASE_FEATURE(kFedCmMetricsEndpoint,
@@ -397,6 +398,11 @@ BASE_FEATURE(kFedCmMetricsEndpoint,
 // time.
 BASE_FEATURE(kFedCmMultipleIdentityProviders,
              "FedCmMultipleIdentityProviders",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables usage of the FedCM API with the User Info API at the same time.
+BASE_FEATURE(kFedCmUserInfo,
+             "FedCmUserInfo",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Field trial boolean parameter which indicates whether IdpSigninStatus API is
@@ -701,6 +707,11 @@ BASE_FEATURE(kNavigationNetworkResponseQueue,
              "NavigationNetworkResponseQueue",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Preconnects socket at the construction of NavigationRequest.
+BASE_FEATURE(kNavigationRequestPreconnect,
+             "NavigationRequestPreconnect",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // If the network service is enabled, runs it in process.
 BASE_FEATURE(kNetworkServiceInProcess,
              "NetworkServiceInProcess2",
@@ -919,6 +930,16 @@ BASE_FEATURE(kSkipEarlyCommitPendingForCrashedFrame,
 BASE_FEATURE(kServiceWorkerBypassFetchHandler,
              "ServiceWorkerBypassFetchHandler",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<ServiceWorkerBypassFetchHandlerStrategy>::Option
+    service_worker_bypass_fetch_handler_strategy_options[] = {
+        {ServiceWorkerBypassFetchHandlerStrategy::kFeatureOptIn, "optin"},
+        {ServiceWorkerBypassFetchHandlerStrategy::kAllowList, "allowlist"}};
+const base::FeatureParam<ServiceWorkerBypassFetchHandlerStrategy>
+    kServiceWorkerBypassFetchHandlerStrategy{
+        &kServiceWorkerBypassFetchHandler, "strategy",
+        ServiceWorkerBypassFetchHandlerStrategy::kFeatureOptIn,
+        &service_worker_bypass_fetch_handler_strategy_options};
 
 const base::FeatureParam<ServiceWorkerBypassFetchHandlerTarget>::Option
     service_worker_bypass_fetch_handler_target_options[] = {{
@@ -1259,6 +1280,12 @@ BASE_FEATURE(kWebAssemblyDynamicTiering,
              "WebAssemblyDynamicTiering",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enable support for the WebAssembly Garbage Collection proposal:
+// https://github.com/WebAssembly/gc.
+BASE_FEATURE(kWebAssemblyGarbageCollection,
+             "WebAssemblyGarbageCollection",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enable WebAssembly lazy compilation (JIT on first call).
 BASE_FEATURE(kWebAssemblyLazyCompilation,
              "WebAssemblyLazyCompilation",
@@ -1290,6 +1317,12 @@ BASE_FEATURE(kWebAssemblyTrapHandler,
 // Controls whether WebAuthn conditional UI requests are supported.
 BASE_FEATURE(kWebAuthConditionalUI,
              "WebAuthenticationConditionalUI",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Controls whether WebAuthn get requests for discoverable credentials use the
+// Touch To Fill bottom sheet on Android.
+BASE_FEATURE(kWebAuthnTouchToFillCredentialSelection,
+             "WebAuthnTouchToFillCredentialSelection",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the Web Bluetooth API is enabled:
@@ -1344,11 +1377,6 @@ BASE_FEATURE(kWebRtcUseGpuMemoryBufferVideoFrames,
 // Enables code caching for scripts used on WebUI pages.
 BASE_FEATURE(kWebUICodeCache,
              "WebUICodeCache",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables report-only Trusted Types experiment on WebUIs
-BASE_FEATURE(kWebUIReportOnlyTrustedTypes,
-             "WebUIReportOnlyTrustedTypes",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether the WebUSB API is enabled:

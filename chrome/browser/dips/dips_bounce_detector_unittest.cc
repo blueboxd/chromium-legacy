@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/dips/dips_bounce_detector.h"
+
 #include <tuple>
 
 #include "base/functional/bind.h"
@@ -13,21 +14,28 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "base/types/pass_key.h"
-#include "chrome/browser/dips/cookie_access_filter.h"
+#include "chrome/browser/dips/dips_service.h"
 #include "chrome/browser/dips/dips_utils.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/site_engagement/site_engagement.mojom-shared.h"
 
 using base::Bucket;
 using base::PassKey;
-using blink::mojom::EngagementLevel;
 using testing::ElementsAre;
 using testing::Eq;
 using testing::Gt;
 using testing::Pair;
+
+// Encodes data about a bounce (the url, time of bounce, and
+// whether it's stateful) for use when testing that the bounce is
+// recorded by the DIPSBounceDetector.
+using BounceTuple = std::tuple<GURL, base::Time, bool>;
+// Encodes data about an event recorded by DIPS event (the url, time of
+// bounce, and type of event) for use when testing that the event is recorded
+// by the DIPSBounceDetector.
+using EventTuple = std::tuple<GURL, base::Time, DIPSRecordedEvent>;
 
 enum class UserGestureStatus { kNoUserGesture, kWithUserGesture };
 constexpr auto kNoUserGesture = UserGestureStatus::kNoUserGesture;
@@ -59,27 +67,28 @@ class FakeNavigation;
 class TestBounceDetectorDelegate : public DIPSBounceDetectorDelegate {
  public:
   // DIPSBounceDetectorDelegate overrides:
-  DIPSCookieMode GetCookieMode() const override {
-    return DIPSCookieMode::kStandard;
-  }
   const GURL& GetLastCommittedURL() const override { return committed_url_; }
   ukm::SourceId GetPageUkmSourceId() const override { return source_id_; }
-  EngagementLevel GetEngagementLevel(const GURL& url) const override {
-    auto iter = level_by_site.find(GetSiteForDIPS(url));
-    if (iter == level_by_site.end()) {
-      return EngagementLevel::NONE;
+
+  void HandleRedirectChain(std::vector<DIPSRedirectInfoPtr> redirects,
+                           DIPSRedirectChainInfoPtr chain) override {
+    chain->cookie_mode = DIPSCookieMode::kStandard;
+    for (auto& redirect : redirects) {
+      redirect->has_interaction = GetSiteHasInteraction(redirect->url);
+      DCHECK(redirect->access_type != CookieAccessType::kUnknown);
+      AppendRedirect(&redirects_, *redirect, *chain);
+
+      DIPSService::HandleRedirectForTesting(
+          *redirect, *chain,
+          base::BindRepeating(&TestBounceDetectorDelegate::RecordBounce,
+                              base::Unretained(this)));
     }
-    return iter->second;
   }
 
   void RecordEvent(DIPSRecordedEvent event,
                    const GURL& url,
                    const base::Time& time) override {
-    if (event == DIPSRecordedEvent::kStatefulBounce ||
-        event == DIPSRecordedEvent::kStatelessBounce) {
-      recorded_bounces_.insert(std::make_tuple(
-          url, time, event == DIPSRecordedEvent::kStatefulBounce));
-    }
+    recorded_events_.insert(std::make_tuple(url, time, event));
   }
 
   // Get the (committed) URL that the SourceId was generated for.
@@ -87,9 +96,12 @@ class TestBounceDetectorDelegate : public DIPSBounceDetectorDelegate {
     return url_by_source_id_[source_id];
   }
 
-  // Override the default level (MEDIUM) returned by GetEngagementLevel().
-  void SetSiteEngagementLevel(const GURL& url, EngagementLevel level) {
-    level_by_site[GetSiteForDIPS(url)] = level;
+  bool GetSiteHasInteraction(const GURL& url) {
+    return site_has_interaction_[GetSiteForDIPS(url)];
+  }
+
+  void SetSiteHasInteraction(const GURL& url) {
+    site_has_interaction_[GetSiteForDIPS(url)] = true;
   }
 
   void SetCommittedURL(PassKey<FakeNavigation>, const GURL& url) {
@@ -98,16 +110,24 @@ class TestBounceDetectorDelegate : public DIPSBounceDetectorDelegate {
     url_by_source_id_[source_id_] = FormatURL(url);
   }
 
-  std::set<std::tuple<GURL, base::Time, bool>> GetRecordedBounces() {
-    return recorded_bounces_;
-  }
+  std::set<BounceTuple> GetRecordedBounces() const { return recorded_bounces_; }
+
+  std::set<EventTuple> GetRecordedEvents() const { return recorded_events_; }
+
+  const std::vector<std::string>& redirects() const { return redirects_; }
 
  private:
+  void RecordBounce(const GURL& url, base::Time time, bool stateful) {
+    recorded_bounces_.insert(std::make_tuple(url, time, stateful));
+  }
+
   GURL committed_url_;
   ukm::SourceId source_id_;
   std::map<ukm::SourceId, std::string> url_by_source_id_;
-  std::map<std::string, EngagementLevel> level_by_site;
-  std::set<std::tuple<GURL, base::Time, bool>> recorded_bounces_;
+  std::map<std::string, bool> site_has_interaction_;
+  std::vector<std::string> redirects_;
+  std::set<BounceTuple> recorded_bounces_;
+  std::set<EventTuple> recorded_events_;
 };
 
 // If you wait this long, even a navigation without user gesture is not
@@ -172,28 +192,6 @@ class FakeNavigation : public DIPSNavigationHandle {
 
 class DIPSBounceDetectorTest : public ::testing::Test {
  protected:
-  // Encodes data about a bounce (the url, time of bounce, and
-  // whether it's stateful) for use when testing that the bounce is
-  // recorded by the DIPSBounceDetector.
-  using RecordedBounce = std::tuple<GURL, base::Time, bool>;
-
-  void RecordBouncesAndAppendRedirects(std::vector<std::string>* redirects,
-                                       const DIPSRedirectInfo& redirect,
-                                       const DIPSRedirectChainInfo& chain) {
-    DCHECK(redirect.access_type != CookieAccessType::kUnknown);
-    delegate_.RecordEvent(redirect.access_type > CookieAccessType::kRead
-                              ? DIPSRecordedEvent::kStatefulBounce
-                              : DIPSRecordedEvent::kStatelessBounce,
-                          redirect.url, test_clock_.Now());
-    AppendRedirect(redirects, redirect, chain);
-  }
-
-  void StartAppendingRedirectsTo(std::vector<std::string>* redirects) {
-    detector_.SetRedirectHandlerForTesting(base::BindRepeating(
-        &DIPSBounceDetectorTest::RecordBouncesAndAppendRedirects,
-        base::Unretained(this), redirects));
-  }
-
   FakeNavigation StartNavigation(const std::string& url,
                                  UserGestureStatus status) {
     return FakeNavigation(&detector_, &delegate_, GURL(url),
@@ -207,6 +205,8 @@ class DIPSBounceDetectorTest : public ::testing::Test {
   void AccessClientCookie(CookieOperation op) {
     detector_.OnClientCookiesAccessed(delegate_.GetLastCommittedURL(), op);
   }
+
+  void ActivatePage() { detector_.OnUserActivation(); }
 
   void EndRedirectChain() {
     // Committing a new navigation that began with a user gesture will terminate
@@ -223,21 +223,35 @@ class DIPSBounceDetectorTest : public ::testing::Test {
     return delegate_.URLForSourceId(source_id);
   }
 
-  void SetSiteEngagementLevel(const std::string& url, EngagementLevel level) {
-    return delegate_.SetSiteEngagementLevel(GURL(url), level);
+  void SetSiteHasInteraction(const std::string& url) {
+    return delegate_.SetSiteHasInteraction(GURL(url));
   }
 
-  std::set<std::tuple<GURL, base::Time, bool>> GetRecordedBounces() {
+  std::set<BounceTuple> GetRecordedBounces() const {
     return delegate_.GetRecordedBounces();
   }
 
-  RecordedBounce MakeRecordedBounce(const std::string& url,
-                                    const base::Time& time,
-                                    bool stateful) {
+  BounceTuple MakeBounceTuple(const std::string& url,
+                              const base::Time& time,
+                              bool stateful) {
     return std::make_tuple(GURL(url), time, stateful);
   }
 
+  std::set<EventTuple> GetRecordedEvents() const {
+    return delegate_.GetRecordedEvents();
+  }
+
+  EventTuple MakeEventTuple(const std::string& url,
+                            const base::Time& time,
+                            DIPSRecordedEvent event) {
+    return std::make_tuple(GURL(url), time, event);
+  }
+
   base::Time GetCurrentTime() { return test_clock_.Now(); }
+
+  const std::vector<std::string>& redirects() const {
+    return delegate_.redirects();
+  }
 
  private:
   TestBounceDetectorDelegate delegate_;
@@ -247,9 +261,6 @@ class DIPSBounceDetectorTest : public ::testing::Test {
 };
 
 TEST_F(DIPSBounceDetectorTest, DetectStatefulRedirect_Server) {
-  std::vector<std::string> redirects;
-  StartAppendingRedirectsTo(&redirects);
-
   NavigateTo("http://a.test", kWithUserGesture);
   StartNavigation("http://b.test", kWithUserGesture)
       .AccessCookie(CookieOperation::kRead)
@@ -263,7 +274,7 @@ TEST_F(DIPSBounceDetectorTest, DetectStatefulRedirect_Server) {
 
   EndRedirectChain();
 
-  EXPECT_THAT(redirects,
+  EXPECT_THAT(redirects(),
               testing::ElementsAre(
                   ("[1/3] a.test/ -> b.test/ (Read) -> e.test/"),
                   ("[2/3] a.test/ -> c.test/ (Write) -> e.test/"),
@@ -271,35 +282,29 @@ TEST_F(DIPSBounceDetectorTest, DetectStatefulRedirect_Server) {
 
   EXPECT_THAT(GetRecordedBounces(),
               testing::UnorderedElementsAre(
-                  MakeRecordedBounce("http://b.test", GetCurrentTime(),
-                                     /*stateful=*/false),
-                  MakeRecordedBounce("http://c.test", GetCurrentTime(),
-                                     /*stateful=*/true),
-                  MakeRecordedBounce("http://d.test", GetCurrentTime(),
-                                     /*stateful=*/true)));
+                  MakeBounceTuple("http://b.test", GetCurrentTime(),
+                                  /*stateful=*/false),
+                  MakeBounceTuple("http://c.test", GetCurrentTime(),
+                                  /*stateful=*/true),
+                  MakeBounceTuple("http://d.test", GetCurrentTime(),
+                                  /*stateful=*/true)));
 }
 
 TEST_F(DIPSBounceDetectorTest, DetectStatefulRedirect_Client) {
-  std::vector<std::string> redirects;
-  StartAppendingRedirectsTo(&redirects);
-
   NavigateTo("http://a.test", kWithUserGesture);
   NavigateTo("http://b.test", kWithUserGesture);
   AdvanceDIPSTime(base::TimeDelta(base::Seconds(1)));
   NavigateTo("http://c.test", kNoUserGesture);
   EndRedirectChain();
 
-  EXPECT_THAT(redirects, testing::ElementsAre(
-                             ("[1/1] a.test/ -> b.test/ (None) -> c.test/")));
+  EXPECT_THAT(redirects(), testing::ElementsAre(
+                               ("[1/1] a.test/ -> b.test/ (None) -> c.test/")));
   EXPECT_THAT(GetRecordedBounces(),
-              testing::UnorderedElementsAre(MakeRecordedBounce(
+              testing::UnorderedElementsAre(MakeBounceTuple(
                   "http://b.test", GetCurrentTime(), /*stateful=*/false)));
 }
 
 TEST_F(DIPSBounceDetectorTest, DetectStatefulRedirect_Client_MergeCookies) {
-  std::vector<std::string> redirects;
-  StartAppendingRedirectsTo(&redirects);
-
   NavigateTo("http://a.test", kWithUserGesture);
   // Server cookie read:
   StartNavigation("http://b.test", kWithUserGesture)
@@ -311,33 +316,27 @@ TEST_F(DIPSBounceDetectorTest, DetectStatefulRedirect_Client_MergeCookies) {
   EndRedirectChain();
 
   // Redirect cookie access is reported as ReadWrite.
-  EXPECT_THAT(redirects,
+  EXPECT_THAT(redirects(),
               testing::ElementsAre(
                   ("[1/1] a.test/ -> b.test/ (ReadWrite) -> c.test/")));
   EXPECT_THAT(GetRecordedBounces(),
-              testing::UnorderedElementsAre(MakeRecordedBounce(
+              testing::UnorderedElementsAre(MakeBounceTuple(
                   "http://b.test", GetCurrentTime(), /*stateful=*/true)));
 }
 
 TEST_F(DIPSBounceDetectorTest,
        DetectStatefulRedirect_Client_LongDelayNotRedirect) {
-  std::vector<std::string> redirects;
-  StartAppendingRedirectsTo(&redirects);
-
   NavigateTo("http://a.test", kWithUserGesture);
   NavigateTo("http://b.test", kWithUserGesture);
   AdvanceDIPSTime(kTooLongForRedirect);
   NavigateTo("http://c.test", kNoUserGesture);
   EndRedirectChain();
 
-  EXPECT_THAT(redirects, testing::IsEmpty());
+  EXPECT_THAT(redirects(), testing::IsEmpty());
   EXPECT_THAT(GetRecordedBounces(), testing::IsEmpty());
 }
 
 TEST_F(DIPSBounceDetectorTest, DetectStatefulRedirect_ServerClientServer) {
-  std::vector<std::string> redirects;
-  StartAppendingRedirectsTo(&redirects);
-
   NavigateTo("http://a.test", kWithUserGesture);
   StartNavigation("http://b.test", kWithUserGesture)
       .RedirectTo("http://c.test")
@@ -347,24 +346,21 @@ TEST_F(DIPSBounceDetectorTest, DetectStatefulRedirect_ServerClientServer) {
       .Finish(true);
   EndRedirectChain();
 
-  EXPECT_THAT(redirects, testing::ElementsAre(
-                             ("[1/3] a.test/ -> b.test/ (None) -> e.test/"),
-                             ("[2/3] a.test/ -> c.test/ (None) -> e.test/"),
-                             ("[3/3] a.test/ -> d.test/ (None) -> e.test/")));
+  EXPECT_THAT(redirects(), testing::ElementsAre(
+                               ("[1/3] a.test/ -> b.test/ (None) -> e.test/"),
+                               ("[2/3] a.test/ -> c.test/ (None) -> e.test/"),
+                               ("[3/3] a.test/ -> d.test/ (None) -> e.test/")));
   EXPECT_THAT(GetRecordedBounces(),
               testing::UnorderedElementsAre(
-                  MakeRecordedBounce("http://b.test", GetCurrentTime(),
-                                     /*stateful=*/false),
-                  MakeRecordedBounce("http://c.test", GetCurrentTime(),
-                                     /*stateful=*/false),
-                  MakeRecordedBounce("http://d.test", GetCurrentTime(),
-                                     /*stateful=*/false)));
+                  MakeBounceTuple("http://b.test", GetCurrentTime(),
+                                  /*stateful=*/false),
+                  MakeBounceTuple("http://c.test", GetCurrentTime(),
+                                  /*stateful=*/false),
+                  MakeBounceTuple("http://d.test", GetCurrentTime(),
+                                  /*stateful=*/false)));
 }
 
 TEST_F(DIPSBounceDetectorTest, DetectStatefulRedirect_Server_Uncommitted) {
-  std::vector<std::string> redirects;
-  StartAppendingRedirectsTo(&redirects);
-
   NavigateTo("http://a.test", kWithUserGesture);
   StartNavigation("http://b.test", kWithUserGesture)
       .RedirectTo("http://c.test")
@@ -377,24 +373,21 @@ TEST_F(DIPSBounceDetectorTest, DetectStatefulRedirect_Server_Uncommitted) {
       .Finish(true);
   EndRedirectChain();
 
-  EXPECT_THAT(redirects, testing::ElementsAre(
-                             ("[1/2] a.test/ -> b.test/ (None) -> d.test/"),
-                             ("[2/2] a.test/ -> c.test/ (None) -> d.test/"),
-                             ("[1/1] a.test/ -> e.test/ (None) -> f.test/")));
+  EXPECT_THAT(redirects(), testing::ElementsAre(
+                               ("[1/2] a.test/ -> b.test/ (None) -> d.test/"),
+                               ("[2/2] a.test/ -> c.test/ (None) -> d.test/"),
+                               ("[1/1] a.test/ -> e.test/ (None) -> f.test/")));
   EXPECT_THAT(GetRecordedBounces(),
               testing::UnorderedElementsAre(
-                  MakeRecordedBounce("http://b.test", GetCurrentTime(),
-                                     /*stateful=*/false),
-                  MakeRecordedBounce("http://c.test", GetCurrentTime(),
-                                     /*stateful=*/false),
-                  MakeRecordedBounce("http://e.test", GetCurrentTime(),
-                                     /*stateful=*/false)));
+                  MakeBounceTuple("http://b.test", GetCurrentTime(),
+                                  /*stateful=*/false),
+                  MakeBounceTuple("http://c.test", GetCurrentTime(),
+                                  /*stateful=*/false),
+                  MakeBounceTuple("http://e.test", GetCurrentTime(),
+                                  /*stateful=*/false)));
 }
 
 TEST_F(DIPSBounceDetectorTest, DetectStatefulRedirect_Client_Uncommitted) {
-  std::vector<std::string> redirects;
-  StartAppendingRedirectsTo(&redirects);
-
   NavigateTo("http://a.test", kWithUserGesture);
   NavigateTo("http://b.test", kWithUserGesture);
   StartNavigation("http://c.test", kNoUserGesture)
@@ -407,19 +400,67 @@ TEST_F(DIPSBounceDetectorTest, DetectStatefulRedirect_Client_Uncommitted) {
       .Finish(true);
   EndRedirectChain();
 
-  EXPECT_THAT(redirects, testing::ElementsAre(
-                             ("[1/2] a.test/ -> b.test/ (None) -> d.test/"),
-                             ("[2/2] a.test/ -> c.test/ (None) -> d.test/"),
-                             ("[1/2] a.test/ -> b.test/ (None) -> f.test/"),
-                             ("[2/2] a.test/ -> e.test/ (None) -> f.test/")));
+  EXPECT_THAT(redirects(), testing::ElementsAre(
+                               ("[1/2] a.test/ -> b.test/ (None) -> d.test/"),
+                               ("[2/2] a.test/ -> c.test/ (None) -> d.test/"),
+                               ("[1/2] a.test/ -> b.test/ (None) -> f.test/"),
+                               ("[2/2] a.test/ -> e.test/ (None) -> f.test/")));
   EXPECT_THAT(GetRecordedBounces(),
               testing::UnorderedElementsAre(
-                  MakeRecordedBounce("http://b.test", GetCurrentTime(),
-                                     /*stateful=*/false),
-                  MakeRecordedBounce("http://c.test", GetCurrentTime(),
-                                     /*stateful=*/false),
-                  MakeRecordedBounce("http://e.test", GetCurrentTime(),
-                                     /*stateful=*/false)));
+                  MakeBounceTuple("http://b.test", GetCurrentTime(),
+                                  /*stateful=*/false),
+                  MakeBounceTuple("http://c.test", GetCurrentTime(),
+                                  /*stateful=*/false),
+                  MakeBounceTuple("http://e.test", GetCurrentTime(),
+                                  /*stateful=*/false)));
+}
+
+TEST_F(DIPSBounceDetectorTest, InteractionRecording_Throttled) {
+  base::Time first_time = GetCurrentTime();
+  NavigateTo("http://a.test", kNoUserGesture);
+  ActivatePage();
+
+  AdvanceDIPSTime(DIPSBounceDetector::kInteractionUpdateInterval / 2);
+  ActivatePage();
+
+  AdvanceDIPSTime(DIPSBounceDetector::kInteractionUpdateInterval / 2);
+  base::Time last_time = GetCurrentTime();
+  ActivatePage();
+
+  // Verify only the first and last interactions were recorded. The second
+  // interaction happened less than |kInteractionUpdateInterval| after the
+  // first, so it should be ignored.
+  EXPECT_THAT(GetRecordedEvents(), testing::SizeIs(2));
+  EXPECT_THAT(GetRecordedEvents(),
+              testing::UnorderedElementsAre(
+                  MakeEventTuple("http://a.test", first_time,
+                                 /*event=*/DIPSRecordedEvent::kInteraction),
+                  MakeEventTuple("http://a.test", last_time,
+                                 /*event=*/DIPSRecordedEvent::kInteraction)));
+}
+
+TEST_F(DIPSBounceDetectorTest, InteractionRecording_NotThrottled_AfterRefresh) {
+  base::Time first_time = GetCurrentTime();
+  NavigateTo("http://a.test", kNoUserGesture);
+  ActivatePage();
+
+  AdvanceDIPSTime(DIPSBounceDetector::kInteractionUpdateInterval / 4);
+  NavigateTo("http://a.test", kWithUserGesture);
+
+  AdvanceDIPSTime(DIPSBounceDetector::kInteractionUpdateInterval / 4);
+  base::Time last_time = GetCurrentTime();
+  ActivatePage();
+
+  // Verify the first and last interactions were both recorded. Despite the last
+  // interaction happening less than |kInteractionUpdateInterval| after the
+  // first, it happened after the page was refreshed, so it should be recorded.
+  EXPECT_THAT(GetRecordedEvents(), testing::SizeIs(2));
+  EXPECT_THAT(GetRecordedEvents(),
+              testing::UnorderedElementsAre(
+                  MakeEventTuple("http://a.test", first_time,
+                                 /*event=*/DIPSRecordedEvent::kInteraction),
+                  MakeEventTuple("http://a.test", last_time,
+                                 /*event=*/DIPSRecordedEvent::kInteraction)));
 }
 
 const std::vector<std::string>& GetAllRedirectMetrics() {
@@ -441,7 +482,7 @@ const std::vector<std::string>& GetAllRedirectMetrics() {
 TEST_F(DIPSBounceDetectorTest, Histograms_UMA) {
   base::HistogramTester histograms;
 
-  SetSiteEngagementLevel("http://b.test", EngagementLevel::LOW);
+  SetSiteHasInteraction("http://b.test");
 
   NavigateTo("http://a.test", kWithUserGesture);
   NavigateTo("http://b.test", kWithUserGesture);
@@ -483,8 +524,7 @@ TEST_F(DIPSBounceDetectorTest, Histograms_UKM) {
   base::test::SingleThreadTaskEnvironment task_environment;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
 
-  SetSiteEngagementLevel("http://b.test", EngagementLevel::MEDIUM);
-  SetSiteEngagementLevel("http://c.test", EngagementLevel::LOW);
+  SetSiteHasInteraction("http://c.test");
 
   NavigateTo("http://a.test", kWithUserGesture);
   NavigateTo("http://b.test", kWithUserGesture);
@@ -512,7 +552,7 @@ TEST_F(DIPSBounceDetectorTest, Histograms_UKM) {
                   Pair("RedirectAndInitialSiteSame", false),
                   Pair("RedirectChainIndex", 0), Pair("RedirectChainLength", 2),
                   Pair("RedirectType", (int)DIPSRedirectType::kClient),
-                  Pair("SiteEngagementLevel", (int)EngagementLevel::MEDIUM)));
+                  Pair("SiteEngagementLevel", 0)));
 
   EXPECT_THAT(URLForRedirectSourceId(&ukm_recorder, ukm_entries[1].source_id),
               Eq("c.test/"));
@@ -526,5 +566,5 @@ TEST_F(DIPSBounceDetectorTest, Histograms_UKM) {
                   Pair("RedirectAndInitialSiteSame", false),
                   Pair("RedirectChainIndex", 1), Pair("RedirectChainLength", 2),
                   Pair("RedirectType", (int)DIPSRedirectType::kServer),
-                  Pair("SiteEngagementLevel", (int)EngagementLevel::LOW)));
+                  Pair("SiteEngagementLevel", 1)));
 }

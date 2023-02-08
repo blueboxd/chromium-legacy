@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // clang-format off
-import {assertInstanceof} from 'chrome://resources/js/assert.js';
+import {assertInstanceof} from 'chrome://resources/ash/common/assert.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/ash/common/event_target.js';
 import {EventTracker} from 'chrome://resources/ash/common/event_tracker.js';
 import {dispatchPropertyChange} from 'chrome://resources/ash/common/cr_deprecated.js';
@@ -189,8 +189,9 @@ import {positionPopupAtPoint} from './position_util.js';
             e.stopPropagation();
             e.preventDefault();
 
-            // If the menu is visible we let it handle all the keyboard events.
-          } else if (this.menu) {
+            // If the menu is visible we let it handle all the keyboard events
+            // unless Ctrl is held down.
+          } else if (this.menu && !e.ctrlKey) {
             this.menu.handleKeyDown(e);
             e.preventDefault();
             e.stopPropagation();

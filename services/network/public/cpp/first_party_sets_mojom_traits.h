@@ -11,6 +11,7 @@
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/base/schemeful_site.h"
 #include "net/first_party_sets/first_party_set_entry.h"
+#include "net/first_party_sets/first_party_set_entry_override.h"
 #include "net/first_party_sets/first_party_set_metadata.h"
 #include "net/first_party_sets/first_party_sets_cache_filter.h"
 #include "net/first_party_sets/first_party_sets_context_config.h"
@@ -118,17 +119,17 @@ struct COMPONENT_EXPORT(FIRST_PARTY_SETS_MOJOM_TRAITS)
 
   static const base::flat_map<net::SchemefulSite, net::FirstPartySetEntry>&
   sets(const net::GlobalFirstPartySets& sets) {
-    return sets.entries();
+    return sets.entries_;
   }
 
   static const base::flat_map<net::SchemefulSite, net::SchemefulSite>& aliases(
       const net::GlobalFirstPartySets& sets) {
-    return sets.aliases();
+    return sets.aliases_;
   }
 
   static const net::FirstPartySetsContextConfig& manual_config(
       const net::GlobalFirstPartySets& sets) {
-    return sets.manual_config();
+    return sets.manual_config_;
   }
 
   static bool Read(network::mojom::GlobalFirstPartySetsDataView sets,
@@ -137,12 +138,25 @@ struct COMPONENT_EXPORT(FIRST_PARTY_SETS_MOJOM_TRAITS)
 
 template <>
 struct COMPONENT_EXPORT(FIRST_PARTY_SETS_MOJOM_TRAITS)
+    StructTraits<network::mojom::FirstPartySetEntryOverrideDataView,
+                 net::FirstPartySetEntryOverride> {
+  static const absl::optional<net::FirstPartySetEntry>& entry(
+      const net::FirstPartySetEntryOverride& override) {
+    return override.entry_;
+  }
+
+  static bool Read(network::mojom::FirstPartySetEntryOverrideDataView override,
+                   net::FirstPartySetEntryOverride* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(FIRST_PARTY_SETS_MOJOM_TRAITS)
     StructTraits<network::mojom::FirstPartySetsContextConfigDataView,
                  net::FirstPartySetsContextConfig> {
   static const base::flat_map<net::SchemefulSite,
-                              absl::optional<net::FirstPartySetEntry>>&
+                              net::FirstPartySetEntryOverride>&
   customizations(const net::FirstPartySetsContextConfig& config) {
-    return config.customizations();
+    return config.customizations_;
   }
 
   static bool Read(network::mojom::FirstPartySetsContextConfigDataView config,
@@ -155,12 +169,12 @@ struct COMPONENT_EXPORT(FIRST_PARTY_SETS_MOJOM_TRAITS)
                  net::FirstPartySetsCacheFilter> {
   static const base::flat_map<net::SchemefulSite, int64_t>& filter(
       const net::FirstPartySetsCacheFilter& cache_filter) {
-    return cache_filter.filter();
+    return cache_filter.filter_;
   }
 
   static int64_t browser_run_id(
       const net::FirstPartySetsCacheFilter& cache_filter) {
-    return cache_filter.browser_run_id();
+    return cache_filter.browser_run_id_;
   }
 
   static bool Read(

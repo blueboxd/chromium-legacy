@@ -243,6 +243,7 @@
 <translation id="5975083100439434680">Σμίκρυνση</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Έλεγχος της πρόσβασης αυτού του ιστοτόπου στη συσκευή σας</translation>
+<translation id="6018815681665454784">Διαγραφή και επαναφορά;</translation>
 <translation id="6040143037577758943">Κλείσιμο</translation>
 <translation id="6042308850641462728">Περισσότερα</translation>
 <translation id="6064125863973209585">Ολοκληρωμένες λήψεις</translation>
@@ -322,6 +323,7 @@
 <translation id="7658239707568436148">Ακύρωση</translation>
 <translation id="7667547420449112975">Ο Θαυμάσιος Μάγος του Οζ</translation>
 <translation id="7690549345586282764">Εμφάνιση εστίασης</translation>
+<translation id="7695658402549134106">Προτίμηση ιστοτόπου για το <ph name="SITE_NAME" /></translation>
 <translation id="7719367874908701697">Εστίαση σελίδας</translation>
 <translation id="7781829728241885113">Χθες</translation>
 <translation id="7791543448312431591">Προσθήκη</translation>
@@ -348,6 +350,7 @@
 <translation id="813082847718468539">Προβολή πληροφοριών τοποθεσίας</translation>
 <translation id="8131740175452115882">Επιβεβαίωση</translation>
 <translation id="8154912474061769055">Ορισμένες λειτουργίες πολλών ιστοτόπων μπορεί να μην είναι διαθέσιμες.</translation>
+<translation id="8168435359814927499">Περιεχόμενο</translation>
 <translation id="8197286292360124385">H άδεια <ph name="PERMISSION_1" /> επιτράπηκε.</translation>
 <translation id="8200772114523450471">Συνέχιση</translation>
 <translation id="8206354486702514201">Η ρύθμιση αυτή επιβάλλεται από τον διαχειριστή σας.</translation>

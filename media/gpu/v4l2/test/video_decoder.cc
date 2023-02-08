@@ -10,6 +10,25 @@
 #include "base/logging.h"
 #include "media/gpu/v4l2/test/av1_pix_fmt.h"
 
+namespace {
+// Returns |src| in a packed buffer.
+std::vector<char> CopyAndRemovePadding(const char* src,
+                                       size_t stride,
+                                       gfx::Size size) {
+  DCHECK_GE(stride, static_cast<size_t>(size.width()));
+  LOG_ASSERT(src);
+
+  std::vector<char> dst;
+  dst.reserve(size.GetArea());
+
+  const auto kSrcLimit = src + stride * size.height();
+  for (; src < kSrcLimit; src += stride)
+    dst.insert(dst.end(), src, src + size.width());
+
+  return dst;
+}
+
+}  // namespace
 namespace media {
 namespace v4l2_test {
 
@@ -20,9 +39,7 @@ void UnpackUVPlane(std::vector<char>& dest_u,
                    std::vector<char>& dest_v,
                    std::vector<char>& src_uv,
                    gfx::Size size) {
-  dest_u.reserve(size.GetArea() / 4);
-  dest_v.reserve(size.GetArea() / 4);
-  for (int i = 0; i < size.GetArea() / 4; i++) {
+  for (int i = 0; i < size.GetArea(); i++) {
     dest_u.push_back(src_uv[2 * i]);
     dest_v.push_back(src_uv[2 * i + 1]);
   }
@@ -33,10 +50,10 @@ void UnpackUVPlane(std::vector<char>& dest_u,
 // 4:2:0 subsampled, but UV are interlaced). This function converts a single
 // MM21 plane into its equivalent NV12 plane.
 void DetilePlane(std::vector<char>& dest,
-                 gfx::Size dest_size,
+                 const gfx::Size& dest_size,
                  char* src,
-                 gfx::Size src_size,
-                 gfx::Size tile_size) {
+                 const gfx::Size& src_size,
+                 const gfx::Size& tile_size) {
   // Tile size in bytes.
   const int tile_len = tile_size.GetArea();
   // |width| rounded down to the nearest multiple of |tile_width|.
@@ -149,11 +166,15 @@ void VideoDecoder::Initialize() {
   if (!v4l2_ioctl_->SetFmt(CAPTURE_queue_))
     LOG(FATAL) << "SetFmt for CAPTURE queue failed.";
 
-  if (!v4l2_ioctl_->ReqBufs(OUTPUT_queue_))
-    LOG(FATAL) << "ReqBufs for OUTPUT queue failed.";
+  // If there is a dynamic resolution change, the Initialization sequence will
+  // be performed again, minus the allocation of OUTPUT queue buffers.
+  if (!IsResolutionChanged()) {
+    if (!v4l2_ioctl_->ReqBufs(OUTPUT_queue_))
+      LOG(FATAL) << "ReqBufs for OUTPUT queue failed.";
 
-  if (!v4l2_ioctl_->QueryAndMmapQueueBuffers(OUTPUT_queue_))
-    LOG(FATAL) << "QueryAndMmapQueueBuffers for OUTPUT queue failed";
+    if (!v4l2_ioctl_->QueryAndMmapQueueBuffers(OUTPUT_queue_))
+      LOG(FATAL) << "QueryAndMmapQueueBuffers for OUTPUT queue failed";
+  }
 
   if (!v4l2_ioctl_->ReqBufs(CAPTURE_queue_))
     LOG(FATAL) << "ReqBufs for CAPTURE queue failed.";
@@ -179,14 +200,97 @@ void VideoDecoder::Initialize() {
     LOG(FATAL) << "StreamOn for CAPTURE queue failed.";
 }
 
+// Follows the dynamic resolution change sequence described in
+// https://www.kernel.org/doc/html/latest/userspace-api/media/v4l/dev-stateless-decoder.html#dynamic-resolution-change
+VideoDecoder::Result VideoDecoder::HandleDynamicResolutionChange(
+    const gfx::Size& new_resolution) {
+  // Call VIDIOC_STREAMOFF() on both the OUTPUT and CAPTURE queues.
+  if (!v4l2_ioctl_->StreamOff(OUTPUT_queue_->type()))
+    LOG(FATAL) << "StreamOff for OUTPUT queue failed.";
+
+  if (!v4l2_ioctl_->StreamOff(CAPTURE_queue_->type()))
+    LOG(FATAL) << "StreamOff for CAPTURE queue failed.";
+
+  // Free all CAPTURE buffers from the driver side by calling VIDIOC_REQBUFS()
+  // on the CAPTURE queue with a buffer count of zero.
+  if (!v4l2_ioctl_->ReqBufsWithCount(CAPTURE_queue_, 0))
+    LOG(FATAL) << "Failed to free all buffers for CAPTURE queue";
+
+  // Free queued CAPTURE buffer indexes that are tracked by the client side.
+  CAPTURE_queue_->DequeueAllBufferIndexes();
+
+  // Set the new resolution on OUTPUT queue. The driver will then pick up
+  // the new resolution to be set on the coded size for CAPTURE queue.
+  OUTPUT_queue_->set_display_size(new_resolution);
+  OUTPUT_queue_->set_coded_size(new_resolution);
+
+  if (!v4l2_ioctl_->ReqBufsWithCount(CAPTURE_queue_,
+                                     number_of_buffers_in_capture_queue_)) {
+    LOG(FATAL) << "ReqBufs for CAPTURE queue failed.";
+  }
+  CAPTURE_queue_->set_display_size(new_resolution);
+
+  // Perform the initialization sequence again
+  Initialize();
+  is_resolution_changed_ = false;
+
+  return VideoDecoder::kOk;
+}
+
+// Unpacks NV12 to I420 and optionally trims padding from source.
+// This expects a contiguous NV12 buffer, as specified by
+// V4L2_PIX_FMT_NV12.
+void VideoDecoder::ConvertNV12ToYUV(std::vector<char>& dest_y,
+                                    std::vector<char>& dest_u,
+                                    std::vector<char>& dest_v,
+                                    const gfx::Size& dest_size,
+                                    const char* src,
+                                    const gfx::Size& src_size) {
+  CHECK(dest_size.width() <= src_size.width());
+  CHECK(dest_size.height() <= src_size.height());
+
+  // Copy Y plane
+  dest_y.reserve(dest_size.GetArea());
+  for (int i = 0; i < dest_size.height(); i++) {
+    dest_y.insert(dest_y.end(), src, src + dest_size.width());
+    src += src_size.width();
+  }
+
+  // Move to start of UV plane
+  if (dest_size.height() < src_size.height())
+    src += src_size.width() * (src_size.height() - dest_size.height());
+
+  // Pad size for U/V plane to handle odd dimensions
+  gfx::Size dest_aligned_size(base::bits::AlignUp(dest_size.width(), 2),
+                              base::bits::AlignUp(dest_size.height(), 2));
+  const int uv_height = dest_aligned_size.height() / 2;
+  const int uv_width = dest_aligned_size.width() / 2;
+
+  // Unpack UV plane
+  dest_u.reserve(dest_aligned_size.GetArea() / 4);
+  dest_v.reserve(dest_aligned_size.GetArea() / 4);
+
+  for (int i = 0; i < uv_height; i++) {
+    for (int j = 0; j < uv_width; j++) {
+      dest_u.push_back(src[0]);
+      dest_v.push_back(src[1]);
+      src += 2;
+    }
+
+    // Skip any trailing pixels on the line in the source image
+    // Skip is based on non-sub-sampled dimensions
+    if (dest_aligned_size.width() < src_size.width())
+      src += src_size.width() - dest_aligned_size.width();
+  }
+}
+
 void VideoDecoder::ConvertMM21ToYUV(std::vector<char>& dest_y,
                                     std::vector<char>& dest_u,
                                     std::vector<char>& dest_v,
-                                    gfx::Size dest_size,
+                                    const gfx::Size& dest_size,
                                     char* src_y,
                                     char* src_uv,
-                                    gfx::Size src_size) {
-  // Detile MM21's luma plane.
+                                    const gfx::Size& src_size) {
   constexpr int kMM21TileWidth = 16;
   constexpr int kMM21TileHeight = 32;
 
@@ -194,19 +298,50 @@ void VideoDecoder::ConvertMM21ToYUV(std::vector<char>& dest_y,
       << "Source buffer width (" << src_size.width()
       << ") must be a multiple of " << kMM21TileWidth;
   constexpr gfx::Size kYTileSize(kMM21TileWidth, kMM21TileHeight);
-  dest_y.reserve(dest_size.GetArea());
-  DetilePlane(dest_y, dest_size, src_y, src_size, kYTileSize);
-
-  // Detile MM21's chroma plane in a temporary |detiled_uv|.
-  std::vector<char> detiled_uv;
-  const gfx::Size dest_uv_size(dest_size.width(), dest_size.height() / 2);
-  const gfx::Size src_uv_size(src_size.width(), src_size.height() / 2);
   constexpr gfx::Size kUVTileSize(kMM21TileWidth, kMM21TileHeight / 2);
-  detiled_uv.reserve(dest_size.GetArea() / 2);
-  DetilePlane(detiled_uv, dest_uv_size, src_uv, src_uv_size, kUVTileSize);
+
+  // Detile and pad MM21's luma plane in a temporary |src_y_padded|.
+  std::vector<char> src_y_padded;
+  src_y_padded.reserve(src_size.GetArea());
+  DetilePlane(src_y_padded, src_size, src_y, src_size, kYTileSize);
+  dest_y =
+      CopyAndRemovePadding(src_y_padded.data(), src_size.width(), dest_size);
+
+  // Detile and pad MM21's chroma plane in a temporary |src_uv_padded|.
+  const gfx::Size src_uv_size(base::bits::AlignUp(src_size.width(), 2),
+                              base::bits::AlignUp(src_size.height(), 2) / 2);
+  std::vector<char> src_uv_padded;
+  src_uv_padded.reserve(src_uv_size.GetArea());
+  DetilePlane(src_uv_padded, src_uv_size, src_uv, src_uv_size, kUVTileSize);
+
+  // Round up plane dimensions for odd resolution bitstreams.
+  const size_t u_plane_padded_width =
+      base::bits::AlignUp(src_size.width(), 2) / 2;
+  const size_t v_plane_padded_width =
+      base::bits::AlignUp(src_size.width(), 2) / 2;
+  const size_t u_plane_padded_height =
+      base::bits::AlignUp(src_size.height(), 2) / 2;
+  const gfx::Size u_plane_padded_size(u_plane_padded_width,
+                                      u_plane_padded_height);
+
+  std::vector<char> src_u_padded;
+  std::vector<char> src_v_padded;
+  src_u_padded.reserve(src_uv_size.GetArea() / 2);
+  src_v_padded.reserve(src_uv_size.GetArea() / 2);
 
   // Unpack NV12's UV plane into separate U and V planes.
-  UnpackUVPlane(dest_u, dest_v, detiled_uv, dest_size);
+  UnpackUVPlane(src_u_padded, src_v_padded, src_uv_padded, u_plane_padded_size);
+
+  const gfx::Size src_u_padded_size(
+      base::bits::AlignUp(dest_size.width(), 2) / 2,
+      base::bits::AlignUp(dest_size.height(), 2) / 2);
+  const gfx::Size src_v_padded_size(
+      base::bits::AlignUp(dest_size.width(), 2) / 2,
+      base::bits::AlignUp(dest_size.height(), 2) / 2);
+  dest_u = CopyAndRemovePadding(src_u_padded.data(), u_plane_padded_width,
+                                src_u_padded_size);
+  dest_v = CopyAndRemovePadding(src_v_padded.data(), v_plane_padded_width,
+                                src_v_padded_size);
 }
 
 }  // namespace v4l2_test

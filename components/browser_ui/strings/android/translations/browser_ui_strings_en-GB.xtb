@@ -243,6 +243,7 @@
 <translation id="5975083100439434680">Zoom out</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Control this site's access to your device</translation>
+<translation id="6018815681665454784">Clear and reset?</translation>
 <translation id="6040143037577758943">Close</translation>
 <translation id="6042308850641462728">More</translation>
 <translation id="6064125863973209585">Completed downloads</translation>
@@ -322,6 +323,7 @@
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7667547420449112975">The Wonderful Wizard of Oz</translation>
 <translation id="7690549345586282764">Show zoom</translation>
+<translation id="7695658402549134106">Site preference for <ph name="SITE_NAME" /></translation>
 <translation id="7719367874908701697">Page zoom</translation>
 <translation id="7781829728241885113">Yesterday</translation>
 <translation id="7791543448312431591">Add</translation>
@@ -348,6 +350,7 @@
 <translation id="813082847718468539">View site information</translation>
 <translation id="8131740175452115882">Confirm</translation>
 <translation id="8154912474061769055">Features on many sites may not work</translation>
+<translation id="8168435359814927499">Content</translation>
 <translation id="8197286292360124385"><ph name="PERMISSION_1" /> allowed</translation>
 <translation id="8200772114523450471">Resume</translation>
 <translation id="8206354486702514201">This setting is enforced by your administrator.</translation>

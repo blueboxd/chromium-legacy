@@ -256,6 +256,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="1553358976309200471">Atualizar o Chrome</translation>
 <translation id="1555130319947370107">Azul</translation>
 <translation id="1559447966090556585">Pretende receber notificações?</translation>
+<translation id="1559486004335285648">Preencha automaticamente as informações de pagamento</translation>
 <translation id="1559528461873125649">Esse ficheiro ou diretório não existe</translation>
 <translation id="1559572115229829303">&lt;p&gt;Não é possível estabelecer uma ligação privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, porque a data e a hora (<ph name="DATE_AND_TIME" />) do seu dispositivo estão incorretas.&lt;/p&gt;
 
@@ -363,6 +364,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1807528111851433570">Folha inicial</translation>
 <translation id="181000283860817563">Monitorize os preços em vários sites</translation>
+<translation id="1810391395243432441">Proteja as palavras-passe com o bloqueio de ecrã</translation>
 <translation id="1812527064848182527">paisagem</translation>
 <translation id="1813414402673211292">Limpar dados de navegação</translation>
 <translation id="182139138257690338">transferências automáticas</translation>
@@ -382,6 +384,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="1871208020102129563">O proxy está definido para utilizar servidores proxy fixos e não um URL de script .pac.</translation>
 <translation id="1871284979644508959">Campo obrigatório</translation>
 <translation id="1873899211667975540">Música rock</translation>
+<translation id="1874224422119691492">Pode alterar se usa o bloqueio de ecrã para preencher palavras-passe nas <ph name="SETTINGS" /></translation>
 <translation id="1875025161375567525">Tabuleiro de fotos</translation>
 <translation id="1875512691959384712">Google Forms</translation>
 <translation id="187918866476621466">Abrir páginas iniciais</translation>
@@ -413,7 +416,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="1958218078413065209">A sua pontuação mais alta é <ph name="SCORE" />.</translation>
 <translation id="1959001866257244765">Ajude a melhorar a segurança na Web para todos ao enviar <ph name="BEGIN_WHITEPAPER_LINK" />os URLs de algumas páginas que visita, informações limitadas do sistema e algum conteúdo das páginas<ph name="END_WHITEPAPER_LINK" /> para a Google. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Política de Privacidade<ph name="END_PRIVACY_PAGE_LINK" /></translation>
 <translation id="1962204205936693436">Marcadores de <ph name="DOMAIN" /></translation>
-<translation id="1971033026002113380">Proteja palavras-passe com o TouchID</translation>
 <translation id="1973335181906896915">Erro de serialização</translation>
 <translation id="1974060860693918893">Avançadas</translation>
 <translation id="1975457531113383421">Tabuleiro de entrada</translation>
@@ -745,10 +747,10 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="2876949457278336305"><ph name="MANAGE_SECURITY_SETTINGS_FOCUSED_FRIENDLY_MATCH_TEXT" />, prima Tab e, em seguida, Enter para gerir a Navegação segura e muito mais nas Definições do Chrome</translation>
 <translation id="2878197950673342043">Dobra cruzada</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2879694782644540289">usar o bloqueio de ecrã para preencher palavras-passe</translation>
 <translation id="2881276955470682203">Pretende guardar o cartão?</translation>
 <translation id="2882949212241984732">Dobra simétrica dupla</translation>
 <translation id="2893773853358652045">Quarto rolo</translation>
-<translation id="289834758818479772">Se partilhar este dispositivo com outras pessoas, pode ativar o TouchID para validar a sua identidade sempre que usar uma palavra-passe guardada</translation>
 <translation id="2900528713135656174">Criar evento</translation>
 <translation id="2903493209154104877">Moradas</translation>
 <translation id="290376772003165898">A página não está em <ph name="LANGUAGE" />?</translation>
@@ -1003,6 +1005,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="3532844647053365774"><ph name="HOST" /> pretende utilizar o seu microfone.</translation>
 <translation id="3533328374079021623">Caixa de correio 5</translation>
 <translation id="3537165859691846083">Letter Plus</translation>
+<translation id="3542628208405253498">Imagem do cartão</translation>
 <translation id="3542768452570884558">Abrir link numa nova janela</translation>
 <translation id="3547746132308051926">20 x 24 pol.</translation>
 <translation id="3550112004925580947">Indústria hoteleira</translation>
@@ -1066,7 +1069,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="3678529606614285348">Abrir a página numa nova janela de navegação anónima (Ctrl-Shift-N)</translation>
 <translation id="3681007416295224113">Informações do certificado</translation>
 <translation id="3693327506115126094">Escolha como irá validar a sua identidade</translation>
-<translation id="3699374065820972102">O TouchID está ativado para preencher palavras-passe</translation>
 <translation id="3701427423622901115">Reposição confirmada.</translation>
 <translation id="3704162925118123524">A rede que está a utilizar pode exigir que visite a respetivapágina de início de sessão.</translation>
 <translation id="3705189812819839667"><ph name="RESULT_OWNER" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -1094,6 +1096,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="3745099705178523657">Depois de confirmar, os detalhes do cartão da sua Conta Google são partilhados com este site.</translation>
 <translation id="3748148204939282805">Os atacantes em <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> podem levá-lo a tomar medidas perigosas, como instalar software ou revelar as suas informações pessoais (por exemplo, palavras-passe, números de telefone ou cartões de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3748912308089554501">Indústria da aviação</translation>
+<translation id="3752543821772132562">Ignorada porque a política <ph name="POLICY_NAME" /> não está definida.</translation>
 <translation id="3754210790023674521">Sair de ecrã no ecrã</translation>
 <translation id="3759461132968374835">Não tem comunicado falhas recentemente. As falhas que tenham ocorrido enquanto a criação de relatórios de falha esteve desativada não surgem aqui.</translation>
 <translation id="3760561303380396507">Pretende utilizar o Windows Hello em vez do CVC?</translation>
@@ -1181,7 +1184,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="401170183602135785">Envelope C6</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Documento PDF com {COUNT} página}other{Documento PDF com {COUNT} páginas}}</translation>
 <translation id="4023431997072828269">Uma vez que este formulário está a ser enviado através de uma ligação insegura, as suas informações vão ficar visíveis para outras pessoas.</translation>
-<translation id="4024923292610332139">desativar o Touch ID para preencher palavras-passe</translation>
 <translation id="4025913568718019429">Botão Gerir definições de privacidade do Google, prima Enter para visitar as definições de privacidade da sua Conta Google</translation>
 <translation id="4030383055268325496">&amp;Anular adição</translation>
 <translation id="4031179711345676612">Microfone permitido</translation>
@@ -1401,6 +1403,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="4541810033354695636">realidade aumentada</translation>
 <translation id="4542971377163063093">Tabuleiro 6</translation>
 <translation id="455113658016510503">A9</translation>
+<translation id="4556069465387849460">Está a usar o bloqueio de ecrã para preencher palavras-passe</translation>
 <translation id="4558551763791394412">Experimente desativar as extensões.</translation>
 <translation id="4566017918361049074">Ar livre</translation>
 <translation id="4567686777917670400">O administrador pode alterar a configuração do navegador remotamente. A atividade neste dispositivo também pode ser gerida fora do Chromium. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
@@ -1543,7 +1546,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="4900217275619098670">Nono rolo</translation>
 <translation id="4901778704868714008">Guardar…</translation>
 <translation id="4905659621780993806">O seu administrador vai reiniciar o dispositivo à(s) <ph name="TIME" /> de <ph name="DATE" />. Guarde os itens abertos antes de o dispositivo ser reiniciado.</translation>
-<translation id="4911007278801291296">Pode ativar ou desativar o TouchID em <ph name="SETTINGS" /></translation>
 <translation id="4913987521957242411">Perfurar na parte superior esquerda</translation>
 <translation id="4918221908152712722">Instale a aplicação <ph name="APP_NAME" /> (não é necessária qualquer transferência).</translation>
 <translation id="4923459931733593730">Pagamento</translation>
@@ -1757,7 +1759,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="5426179911063097041"><ph name="SITE" /> pretende enviar-lhe notificações.</translation>
 <translation id="5428105026674456456">Espanhol</translation>
 <translation id="5430298929874300616">Remover marcador</translation>
-<translation id="5434423669266814150">ativar o TouchID para preencher palavras-passe</translation>
 <translation id="5443468954631487277">Ordem inversa, com orientação para cima</translation>
 <translation id="5447765697759493033">Este site não será traduzido.</translation>
 <translation id="5452270690849572955">Não é possível encontrar esta página de <ph name="HOST_NAME" /></translation>
@@ -2401,7 +2402,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="714064300541049402">Turno X da imagem 2 lateral</translation>
 <translation id="7143682719845053166">PRC 32K</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> e mais <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
-<translation id="7153618581592392745">Lilás</translation>
+<translation id="7153618581592392745">Lavanda</translation>
 <translation id="7156870133441232244">É necessário atualizar o servidor para a versão TLS 1.2 ou posterior.</translation>
 <translation id="7163295244162773898">{0,plural, =1{Copiar o ficheiro confidencial?}other{Copiar os ficheiros confidenciais?}}</translation>
 <translation id="717330890047184534">ID Gaia:</translation>
@@ -2722,6 +2723,7 @@ Detalhes adicionais:
 <translation id="7942349550061667556">Vermelho</translation>
 <translation id="7943397946612013052">Transferência bloqueada</translation>
 <translation id="7943893128817522649">Pode solicitar a transferência automática de vários ficheiros</translation>
+<translation id="7946724693008564269">Idioma detetado</translation>
 <translation id="7947285636476623132">Verifique o ano de validade e tente novamente</translation>
 <translation id="7947813448670013867"><ph name="SEE_CHROME_TIPS_FOCUSED_FRIENDLY_MATCH_TEXT" />, prima Tab e, em seguida, Enter para saber mais acerca das funcionalidades do Chrome</translation>
 <translation id="7950027195171824198">Faça a gestão das suas preferências de cookies nas Definições do Chrome.</translation>
@@ -2894,6 +2896,7 @@ Detalhes adicionais:
 <translation id="8355270400102541638">Contexto local da falha de sistema:</translation>
 <translation id="8363502534493474904">Desativar o modo de avião</translation>
 <translation id="8364627913115013041">Não definida.</translation>
+<translation id="836616551641291797">Saiba como o navegador é gerido</translation>
 <translation id="8368001212524806591">Monitorizar preço</translation>
 <translation id="8368027906805972958">Dispositivo desconhecido ou não suportado (<ph name="DEVICE_ID" />)</translation>
 <translation id="8368476060205742148">Serviços do Google Play</translation>
@@ -2906,6 +2909,7 @@ Detalhes adicionais:
 <translation id="8396522675989118466">Este é o código de <ph name="NUMBER_OF_DIGITS" /> dígitos na parte <ph name="SIDE_OF_CARD" /></translation>
 <translation id="8398790343843005537">Localizar o seu telemóvel</translation>
 <translation id="8405579342203358118">Faça a gestão das informações que sincroniza nas Definições do Chrome.</translation>
+<translation id="8406071103346257942">parar de usar o seu bloqueio de ecrã para preencher palavras-passe</translation>
 <translation id="8409413588194360210">controladores de pagamento</translation>
 <translation id="8412145213513410671">Falhas (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Tem de introduzir a mesma frase de acesso duas vezes.</translation>
@@ -3175,6 +3179,7 @@ Detalhes adicionais:
 <translation id="9128016270925453879">As políticas foram carregadas.</translation>
 <translation id="9128870381267983090">Ligar à rede</translation>
 <translation id="9131119348384879525">Capturar conteúdo confidencial?</translation>
+<translation id="9133985615769429248">Se partilhar este dispositivo com outras pessoas, pode usar o bloqueio de ecrã para validar a sua identidade sempre que usar uma palavra-passe guardada</translation>
 <translation id="9136861683332321024">Veículos de luxo</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9138037198177304356">Acesso às notificações permitido</translation>

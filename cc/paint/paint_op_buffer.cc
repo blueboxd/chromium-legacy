@@ -28,11 +28,13 @@ PlaybackParams::PlaybackParams(ImageProvider* image_provider)
 PlaybackParams::PlaybackParams(ImageProvider* image_provider,
                                const SkM44& original_ctm,
                                CustomDataRasterCallback custom_callback,
-                               DidDrawOpCallback did_draw_op_callback)
+                               DidDrawOpCallback did_draw_op_callback,
+                               ConvertOpCallback convert_op_callback)
     : image_provider(image_provider),
       original_ctm(original_ctm),
       custom_callback(custom_callback),
-      did_draw_op_callback(did_draw_op_callback) {}
+      did_draw_op_callback(std::move(did_draw_op_callback)),
+      convert_op_callback(std::move(convert_op_callback)) {}
 
 PlaybackParams::~PlaybackParams() = default;
 
@@ -91,8 +93,7 @@ PaintOpBuffer::PaintOpBuffer()
       has_draw_text_ops_(false),
       has_save_layer_ops_(false),
       has_save_layer_alpha_ops_(false),
-      has_effects_preventing_lcd_text_for_save_layer_alpha_(false),
-      are_ops_destroyed_(false) {}
+      has_effects_preventing_lcd_text_for_save_layer_alpha_(false) {}
 
 PaintOpBuffer::PaintOpBuffer(PaintOpBuffer&& other) {
   *this = std::move(other);
@@ -119,7 +120,6 @@ PaintOpBuffer& PaintOpBuffer::operator=(PaintOpBuffer&& other) {
   has_save_layer_alpha_ops_ = other.has_save_layer_alpha_ops_;
   has_effects_preventing_lcd_text_for_save_layer_alpha_ =
       other.has_effects_preventing_lcd_text_for_save_layer_alpha_;
-  are_ops_destroyed_ = other.are_ops_destroyed_;
 
   // Make sure the other pob can destruct safely or is ready for reuse.
   other.reserved_ = 0;
@@ -128,9 +128,11 @@ PaintOpBuffer& PaintOpBuffer::operator=(PaintOpBuffer&& other) {
 }
 
 void PaintOpBuffer::DestroyOps() {
-  if (!are_ops_destroyed_) {
-    for (PaintOp& op : Iterator(this)) {
-      op.DestroyThis();
+  if (data_) {
+    for (size_t offset = 0; offset < used_;) {
+      auto* op = reinterpret_cast<PaintOp*>(data_.get() + offset);
+      offset += op->skip;
+      op->DestroyThis();
     }
   }
 }
@@ -155,7 +157,6 @@ void PaintOpBuffer::ResetRetainingBuffer() {
   has_save_layer_ops_ = false;
   has_save_layer_alpha_ops_ = false;
   has_effects_preventing_lcd_text_for_save_layer_alpha_ = false;
-  are_ops_destroyed_ = false;
 }
 
 void PaintOpBuffer::Playback(SkCanvas* canvas) const {
@@ -207,13 +208,18 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
   // the translation should be preserved instead of clobbering the top level
   // transform.  This could probably be done more efficiently.
   PlaybackParams new_params(params.image_provider, canvas->getLocalToDevice(),
-                            params.custom_callback,
-                            params.did_draw_op_callback);
+                            params.custom_callback, params.did_draw_op_callback,
+                            params.convert_op_callback);
   new_params.save_layer_alpha_should_preserve_lcd_text =
       save_layer_alpha_should_preserve_lcd_text;
   new_params.is_analyzing = params.is_analyzing;
   for (PlaybackFoldingIterator iter(this, offsets); iter; ++iter) {
-    const PaintOp& op = *iter;
+    const PaintOp* op = iter.get();
+    if (params.convert_op_callback) {
+      op = params.convert_op_callback.Run(*op);
+      if (!op)
+        continue;
+    }
 
     // This is an optimization to replicate the behaviour in SkCanvas
     // which rejects ops that draw outside the current clip. In the
@@ -221,13 +227,13 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
     // using an ImageProvider for pre-decoding images, we can save
     // performing an expensive decode that will never be rasterized.
     const bool skip_op = new_params.image_provider &&
-                         PaintOp::OpHasDiscardableImages(op) &&
-                         PaintOp::QuickRejectDraw(op, canvas);
+                         PaintOp::OpHasDiscardableImages(*op) &&
+                         PaintOp::QuickRejectDraw(*op, canvas);
     if (skip_op)
       continue;
 
-    if (op.IsPaintOpWithFlags()) {
-      const auto& flags_op = static_cast<const PaintOpWithFlags&>(op);
+    if (op->IsPaintOpWithFlags()) {
+      const auto& flags_op = static_cast<const PaintOpWithFlags&>(*op);
       auto* context = canvas->recordingContext();
       const ScopedRasterFlags scoped_flags(
           &flags_op.flags, new_params.image_provider, canvas->getTotalMatrix(),
@@ -236,7 +242,7 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
         flags_op.RasterWithFlags(canvas, raster_flags, new_params);
     } else {
       DCHECK_EQ(iter.alpha(), 255);
-      op.Raster(canvas, new_params);
+      op->Raster(canvas, new_params);
     }
 
     if (!new_params.did_draw_op_callback.is_null())
@@ -427,13 +433,21 @@ void PaintOpBuffer::UpdateSaveLayerBounds(size_t offset, const SkRect& bounds) {
 const PaintOp* PaintOpBuffer::GetOpAtForTesting(size_t index,
                                                 PaintOpType type) const {
   size_t i = 0;
-  for (const auto& op : Iterator(this)) {
+  for (const auto& op : *this) {
     if (i == index) {
       return op.GetType() == type ? &op : nullptr;
     }
     i++;
   }
   return nullptr;
+}
+
+PaintOpBuffer::Iterator PaintOpBuffer::begin() const {
+  return Iterator(this);
+}
+
+PaintOpBuffer::Iterator PaintOpBuffer::end() const {
+  return Iterator(this).end();
 }
 
 }  // namespace cc

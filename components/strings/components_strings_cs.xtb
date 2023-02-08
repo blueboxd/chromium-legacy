@@ -256,6 +256,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="1553358976309200471">Aktualizovat Chrome</translation>
 <translation id="1555130319947370107">Modrá</translation>
 <translation id="1559447966090556585">Zobrazovat oznámení?</translation>
+<translation id="1559486004335285648">Automaticky vyplnit platební údaje</translation>
 <translation id="1559528461873125649">Daný soubor nebo adresář neexistuje.</translation>
 <translation id="1559572115229829303">&lt;p&gt;Soukromé připojení k doméně <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nelze navázat, protože máte v zařízení nastaveno chybné datum a čas (<ph name="DATE_AND_TIME" />).&lt;/p&gt;
 
@@ -363,6 +364,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="1807246157184219062">Světlé</translation>
 <translation id="1807528111851433570">Počáteční list</translation>
 <translation id="181000283860817563">Sledovat ceny na různých webech</translation>
+<translation id="1810391395243432441">Ochrana hesel pomocí zámku obrazovky</translation>
 <translation id="1812527064848182527">na šířku</translation>
 <translation id="1813414402673211292">Vymazat údaje o prohlížení</translation>
 <translation id="182139138257690338">automatické stahování</translation>
@@ -382,6 +384,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="1871208020102129563">Proxy je nastaveno na používání pevně daných serverů proxy, nikoliv adresy URL skriptu PAC.</translation>
 <translation id="1871284979644508959">Povinné pole</translation>
 <translation id="1873899211667975540">Rocková hudba</translation>
+<translation id="1874224422119691492">V <ph name="SETTINGS" /> můžete změnit, zda k vyplňování hesel chcete používat zámek obrazovky</translation>
 <translation id="1875025161375567525">Foto přihrádka</translation>
 <translation id="1875512691959384712">Formuláře Google</translation>
 <translation id="187918866476621466">Otevřít počáteční stránky</translation>
@@ -413,7 +416,6 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="1958218078413065209">Vaše nejvyšší skóre je <ph name="SCORE" />.</translation>
 <translation id="1959001866257244765">Pomozte se zlepšováním bezpečnosti na webu tím, že do Googlu budete odesílat <ph name="BEGIN_WHITEPAPER_LINK" />adresy URL některých navštívených stránek, omezené informace o systému a část obsahu stránek<ph name="END_WHITEPAPER_LINK" />. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Zásady ochrany soukromí<ph name="END_PRIVACY_PAGE_LINK" /></translation>
 <translation id="1962204205936693436">Záložky domény <ph name="DOMAIN" /></translation>
-<translation id="1971033026002113380">Ochrana hesel pomocí TouchID</translation>
 <translation id="1973335181906896915">Chyba serializace</translation>
 <translation id="1974060860693918893">Rozšířená nastavení</translation>
 <translation id="1975457531113383421">Vstupní zásobník</translation>
@@ -745,10 +747,10 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="2876949457278336305"><ph name="MANAGE_SECURITY_SETTINGS_FOCUSED_FRIENDLY_MATCH_TEXT" />, stisknutím tabulátoru a poté klávesy Enter můžete spravovat Bezpečné prohlížení a další funkce v nastavení Chromu</translation>
 <translation id="2878197950673342043">Plakátové přeložení</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2879694782644540289">používat k vyplňování hesel zámek obrazovky</translation>
 <translation id="2881276955470682203">Uložit kartu?</translation>
 <translation id="2882949212241984732">Dvojité otevírací přeložení</translation>
 <translation id="2893773853358652045">Čtvrtá role</translation>
-<translation id="289834758818479772">Pokud zařízení sdílíte s dalšími lidmi, můžete zapnout Touch ID, aby se při každém použití uloženého hesla ověřovalo, zda akci provádíte vy</translation>
 <translation id="2900528713135656174">Vytvořit událost</translation>
 <translation id="2903493209154104877">Adresy</translation>
 <translation id="290376772003165898">Stránka není v jazyce <ph name="LANGUAGE" />?</translation>
@@ -1000,6 +1002,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="3532844647053365774">Stránka <ph name="HOST" /> chce použít váš mikrofon</translation>
 <translation id="3533328374079021623">Schránka 5</translation>
 <translation id="3537165859691846083">Letter Plus</translation>
+<translation id="3542628208405253498">Obrázek karty</translation>
 <translation id="3542768452570884558">Otevřít odkaz v novém okně</translation>
 <translation id="3547746132308051926">20 × 24″</translation>
 <translation id="3550112004925580947">Pohostinství</translation>
@@ -1062,7 +1065,6 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="3678529606614285348">Otevřete stránku v novém anonymním okně (Ctrl-Shift-N)</translation>
 <translation id="3681007416295224113">Informace o certifikátu</translation>
 <translation id="3693327506115126094">Vyberte způsob ověření totožnosti</translation>
-<translation id="3699374065820972102">Pro vyplňování hesel je zapnutá funkce TouchID</translation>
 <translation id="3701427423622901115">Resetování bylo potvrzeno.</translation>
 <translation id="3704162925118123524">Síť, kterou používáte, může vyžadovat, abyste navštívili její stránku přihlášení.</translation>
 <translation id="3705189812819839667"><ph name="RESULT_OWNER" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -1090,6 +1092,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="3745099705178523657">Po potvrzení budou údaje o kartě z vašeho účtu Google poskytnuty tomuto webu.</translation>
 <translation id="3748148204939282805">Útočníci na webu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> vás mohou podvodem přimět k nebezpečnému chování, jako je instalace softwaru nebo vyzrazení osobních údajů (například hesel, telefonních čísel nebo platebních karet). <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3748912308089554501">Letecký průmysl</translation>
+<translation id="3752543821772132562">Ignorováno, protože není nastavena zásada <ph name="POLICY_NAME" />.</translation>
 <translation id="3754210790023674521">Ukončit režim obrazu v obraze</translation>
 <translation id="3759461132968374835">Nemáte žádná nedávno hlášená selhání. Selhání, ke kterým došlo, když byla služba hlášení o selháních vypnutá, se zde nezobrazují.</translation>
 <translation id="3760561303380396507">Použít Windows Hello namísto CVC?</translation>
@@ -1177,7 +1180,6 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="401170183602135785">Obálka C6</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Dokument PDF obsahující {COUNT} stránku}few{Dokument PDF obsahující {COUNT} stránky}many{Dokument PDF obsahující {COUNT} stránky}other{Dokument PDF obsahující {COUNT} stránek}}</translation>
 <translation id="4023431997072828269">Vaše informace budou viditelné ostatním, protože je tento formulář odesílán prostřednictvím nezabezpečeného připojení.</translation>
-<translation id="4024923292610332139">vypnout TouchID pro vyplňování hesel</translation>
 <translation id="4025913568718019429">Tlačítko správy nastavení soukromí na Googlu. Stisknutím klávesy Enter přejdete do nastavení soukromí účtu Google</translation>
 <translation id="4030383055268325496">&amp;Vrátit přidání zpět</translation>
 <translation id="4031179711345676612">Mikrofon je povolen</translation>
@@ -1397,6 +1399,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="4541810033354695636">rozšířená realita</translation>
 <translation id="4542971377163063093">Přihrádka 6</translation>
 <translation id="455113658016510503">A9</translation>
+<translation id="4556069465387849460">K vyplňování hesel používáte zámek obrazovky</translation>
 <translation id="4558551763791394412">Zkuste zakázat rozšíření.</translation>
 <translation id="4566017918361049074">Příroda</translation>
 <translation id="4567686777917670400">Administrátor může nastavení prohlížeče vzdáleně změnit. Aktivita na tomto zařízení může být spravována také mimo Chromium. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
@@ -1539,7 +1542,6 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="4900217275619098670">Devátá role</translation>
 <translation id="4901778704868714008">Uložit...</translation>
 <translation id="4905659621780993806">V <ph name="TIME" /> dne <ph name="DATE" /> administrátor zařízení automaticky restartuje. Před restartováním zařízení uložte všechny otevřené položky.</translation>
-<translation id="4911007278801291296">Funkci TouchID můžete zapnout nebo vypnout v <ph name="SETTINGS" /></translation>
 <translation id="4913987521957242411">Děrování vlevo nahoře</translation>
 <translation id="4918221908152712722">Nainstalujte si aplikaci <ph name="APP_NAME" /> (není potřeba nic stahovat)</translation>
 <translation id="4923459931733593730">Platba</translation>
@@ -1721,6 +1723,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="5334013548165032829">Podrobné systémové protokoly</translation>
 <translation id="5334145288572353250">Uložit adresu?</translation>
 <translation id="5335920952954443287">Tlukoucí srdce</translation>
+<translation id="5337569431717511221">Tlačítko nastavení Chromu jako výchozího prohlížeče: Stisknutím klávesy Enter nastavíte Chrome jako výchozí prohlížeč v nastavení systému</translation>
 <translation id="5340250774223869109">Aplikace je blokována</translation>
 <translation id="534295439873310000">Zařízení NFC</translation>
 <translation id="5344579389779391559">Tato stránka se vám může pokusit naúčtovat poplatky</translation>
@@ -1752,7 +1755,6 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="5426179911063097041"><ph name="SITE" /> vám chce zasílat oznámení</translation>
 <translation id="5428105026674456456">španělština</translation>
 <translation id="5430298929874300616">Odstranit záložku</translation>
-<translation id="5434423669266814150">zapnout TouchID pro vyplňování hesel</translation>
 <translation id="5443468954631487277">Obrácené pořadí lícem nahoru</translation>
 <translation id="5447765697759493033">Tento web nebude přeložen</translation>
 <translation id="5452270690849572955">Tuto stránku na webu <ph name="HOST_NAME" /> nelze najít</translation>
@@ -2415,6 +2417,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7199278868241956094">Oficio</translation>
 <translation id="7201591969684833065">Administrátor má přístup k následujícím údajům:</translation>
 <translation id="7202217080450895452"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, stisknutím klávesy Tab a poté Enter otevřete novou anonymní kartu, abyste mohli prohlížet v soukromí</translation>
+<translation id="7203375778433816396">Nastavit Chrome jako výchozí prohlížeč</translation>
 <translation id="7210863904660874423">Web <ph name="HOST_NAME" /> nevyhovuje bezpečnostním standardům.</translation>
 <translation id="7210993021468939304">Aktivita systému Linux v rámci kontejneru, může instalovat a spouštět aplikace Linux v kontejneru</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /> o tomto problému.</translation>
@@ -2561,6 +2564,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7537536606612762813">Povinná</translation>
 <translation id="7542403920425041731">Po ověření budou údaje o kartě sdíleny s tímto webem.</translation>
 <translation id="7542995811387359312">Automatické vyplňování údajů platební karty je deaktivováno, protože tento formulář nepoužívá zabezpečené připojení.</translation>
+<translation id="7546409722674205727">Spouštění aplikace <ph name="APP_NAME" /></translation>
 <translation id="7548892272833184391">Oprava chyb připojení</translation>
 <translation id="7549584377607005141">Tato stránka potřebuje ke správnému zobrazení data, která jste zadali dříve. Tyto údaje můžete odeslat znovu, ale zopakujete tím všechny akce, které tato stránka již předtím provedla.</translation>
 <translation id="7550637293666041147">Vaše uživatelské jméno na zařízení a v Chromu</translation>
@@ -2714,6 +2718,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7942349550061667556">Červená</translation>
 <translation id="7943397946612013052">Stažení je blokováno</translation>
 <translation id="7943893128817522649">Může žádat o automatické stažení několika souborů</translation>
+<translation id="7946724693008564269">Zjištěný jazyk</translation>
 <translation id="7947285636476623132">Zkontrolujte rok vypršení platnosti a zkuste to znovu.</translation>
 <translation id="7947813448670013867"><ph name="SEE_CHROME_TIPS_FOCUSED_FRIENDLY_MATCH_TEXT" />, stisknutím klávesy Tab a poté Enter zobrazíte informace o funkcích Chromu</translation>
 <translation id="7950027195171824198">Spravujte nastavení souborů cookie v nastavení Chromu</translation>
@@ -2746,6 +2751,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8009843239480947060">10 × 11″</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{Tato karta a její fakturační adresa se uloží. Budete ji moci používat, když budete přihlášeni k účtu <ph name="USER_EMAIL" />.}few{Tyto karty a jejich fakturační adresy se uloží. Budete je moci používat, když budete přihlášeni k účtu <ph name="USER_EMAIL" />.}many{Tyto karty a jejich fakturační adresy se uloží. Budete je moci používat, když budete přihlášeni k účtu <ph name="USER_EMAIL" />.}other{Tyto karty a jejich fakturační adresy se uloží. Budete je moci používat, když budete přihlášeni k účtu <ph name="USER_EMAIL" />.}}</translation>
 <translation id="8019861005170389898"><ph name="TRADITIONAL_TEXT" /> (<ph name="ADDITIONAL_TEXT" />)</translation>
+<translation id="8023231537967344568"><ph name="SET_CHROME_AS_DEFAULT_BROWSER_FOCUSED_FRIENDLY_MATCH_TEXT" />, stisknutím tabulátoru a poté klávesy Enter nastavíte Chrome jako výchozí prohlížeč</translation>
 <translation id="8025119109950072390">Útočníci na tomto webu vás mohou podvodem přimět k nebezpečnému chování, jako je instalace softwaru nebo vyzrazení osobních údajů (například hesel, telefonních čísel nebo platebních karet).</translation>
 <translation id="8026334261755873520">Vymazat údaje o prohlížení</translation>
 <translation id="8027077570865220386">Přihrádka 15</translation>
@@ -2885,6 +2891,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8355270400102541638">Místní kontext selhání:</translation>
 <translation id="8363502534493474904">Vypnout režim Letadlo</translation>
 <translation id="8364627913115013041">Nenastaveno.</translation>
+<translation id="836616551641291797">Další informace o tom, jak je váš prohlížeč spravován</translation>
 <translation id="8368001212524806591">Sledovat cenu</translation>
 <translation id="8368027906805972958">Neznámé nebo nepodporované zařízení (<ph name="DEVICE_ID" />)</translation>
 <translation id="8368476060205742148">Služby Google Play</translation>
@@ -2897,6 +2904,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="8396522675989118466">Jedná se o <ph name="NUMBER_OF_DIGITS" />místný kód na: <ph name="SIDE_OF_CARD" /></translation>
 <translation id="8398790343843005537">Najděte svůj telefon</translation>
 <translation id="8405579342203358118">Spravujte v nastavení Chromu, jaké informace synchronizujete</translation>
+<translation id="8406071103346257942">přestat používat k vyplňování hesel zámek obrazovky</translation>
 <translation id="8409413588194360210">obslužné nástroje pro platby</translation>
 <translation id="8412145213513410671">Selhání (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Stejnou heslovou frázi musíte zadat dvakrát.</translation>
@@ -3166,6 +3174,7 @@ Další podrobnosti:
 <translation id="9128016270925453879">Zásady jsou načteny</translation>
 <translation id="9128870381267983090">Připojit k síti</translation>
 <translation id="9131119348384879525">Pořídit záznam s důvěryhodným obsahem?</translation>
+<translation id="9133985615769429248">Pokud toto zařízení sdílíte s dalšími lidmi, můžete při každém použití uloženého hesla nechat ověřit svou totožnost pomocí zámku obrazovky</translation>
 <translation id="9136861683332321024">Luxusní vozy</translation>
 <translation id="9137013805542155359">Zobrazit originál</translation>
 <translation id="9138037198177304356">Oznámení jsou povolena</translation>

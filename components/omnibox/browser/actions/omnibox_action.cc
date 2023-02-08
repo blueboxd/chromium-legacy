@@ -66,8 +66,10 @@ OmniboxAction::ExecutionContext::~ExecutionContext() = default;
 
 // =============================================================================
 
-OmniboxAction::OmniboxAction(LabelStrings strings, GURL url)
-    : strings_(strings), url_(url) {}
+OmniboxAction::OmniboxAction(LabelStrings strings,
+                             GURL url,
+                             bool takes_over_match)
+    : strings_(strings), url_(url), takes_over_match_(takes_over_match) {}
 
 OmniboxAction::~OmniboxAction() = default;
 
@@ -84,6 +86,10 @@ bool OmniboxAction::IsReadyToTrigger(
     const AutocompleteInput& input,
     const AutocompleteProviderClient& client) const {
   return true;
+}
+
+bool OmniboxAction::TakesOverMatch() const {
+  return takes_over_match_;
 }
 
 #if defined(SUPPORT_PEDALS_VECTOR_ICONS)

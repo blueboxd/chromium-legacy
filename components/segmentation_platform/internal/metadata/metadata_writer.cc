@@ -128,4 +128,60 @@ void MetadataWriter::SetDefaultSegmentationMetadataConfig(
                                 /*result_time_to_live=*/1);
 }
 
+void MetadataWriter::AddOutputConfigForBinaryClassifier(
+    float threshold,
+    const std::string& positive_label,
+    const std::string& negative_label) {
+  proto::Predictor_BinaryClassifier* binary_classifier =
+      metadata_->mutable_output_config()
+          ->mutable_predictor()
+          ->mutable_binary_classifier();
+
+  binary_classifier->set_threshold(threshold);
+  binary_classifier->set_positive_label(positive_label);
+  binary_classifier->set_negative_label(negative_label);
+}
+
+void MetadataWriter::AddOutputConfigForMultiClassClassifier(
+    const std::vector<std::string>& class_labels,
+    int top_k_outputs,
+    absl::optional<float> threshold) {
+  proto::Predictor_MultiClassClassifier* multi_class_classifier =
+      metadata_->mutable_output_config()
+          ->mutable_predictor()
+          ->mutable_multi_class_classifier();
+
+  multi_class_classifier->set_top_k_outputs(top_k_outputs);
+  multi_class_classifier->mutable_class_labels()->Assign(class_labels.begin(),
+                                                         class_labels.end());
+  if (threshold.has_value()) {
+    multi_class_classifier->set_threshold(threshold.value());
+  }
+}
+
+void MetadataWriter::AddOutputConfigForBinnedClassifier(
+    const std::vector<std::pair<float, std::string>>& bins,
+    std::string underflow_label) {
+  proto::Predictor_BinnedClassifier* binned_classifier =
+      metadata_->mutable_output_config()
+          ->mutable_predictor()
+          ->mutable_binned_classifier();
+
+  binned_classifier->set_underflow_label(underflow_label);
+  for (const std::pair<float, std::string>& bin : bins) {
+    proto::Predictor::BinnedClassifier::Bin* current_bin =
+        binned_classifier->add_bins();
+    current_bin->set_min_range(bin.first);
+    current_bin->set_label(bin.second);
+  }
+}
+
+void MetadataWriter::AddDelayTrigger(uint64_t delay_sec) {
+  auto* config =
+      metadata_->mutable_training_outputs()->mutable_trigger_config();
+  auto* trigger = config->add_observation_trigger();
+  trigger->set_delay_sec(delay_sec);
+  config->set_decision_type(proto::TrainingOutputs::TriggerConfig::ONDEMAND);
+}
+
 }  // namespace segmentation_platform

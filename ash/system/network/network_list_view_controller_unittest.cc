@@ -363,10 +363,15 @@ class NetworkListViewControllerTest : public AshTestBase,
             kConnectionWarningLabel);
   }
 
-  views::ImageView* GetConnectionWarningIcon() {
+  views::ImageView* GetConnectionWarningSystemIcon() {
     return FindViewById<views::ImageView*>(
         NetworkListViewControllerImpl::NetworkListViewControllerViewChildId::
-            kConnectionWarningIcon);
+            kConnectionWarningSystemIcon);
+  }
+  views::ImageView* GetConnectionWarningManagedIcon() {
+    return FindViewById<views::ImageView*>(
+        NetworkListViewControllerImpl::NetworkListViewControllerViewChildId::
+            kConnectionWarningManagedIcon);
   }
 
   views::View* GetViewInNetworkList(std::string id) {
@@ -597,6 +602,17 @@ class NetworkListViewControllerTest : public AshTestBase,
       ConnectionStateType connection_state) {
     return cros_network_config_test_helper_->CreateStandaloneNetworkProperties(
         id, type, connection_state, kSignalStrength);
+  }
+
+  bool GetNetworkListItemIsEnabled(NetworkType type, size_t index) {
+    EXPECT_STREQ(network_list()->children().at(index)->GetClassName(),
+                 kNetworkListNetworkItemView);
+
+    NetworkListNetworkItemView* network =
+        static_cast<NetworkListNetworkItemView*>(
+            network_list()->children().at(index));
+
+    return network->GetEnabled();
   }
 
   void SetBluetoothAdapterState(BluetoothSystemState system_state) {
@@ -1234,7 +1250,7 @@ TEST_P(NetworkListViewControllerTest, ConnectionWarningSystemIconVpn) {
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_MONITORED_WARNING),
       GetConnectionLabelView()->GetText());
   EXPECT_EQ(network_list()->children().at(0), GetConnectionWarning());
-  views::ImageView* icon = GetConnectionWarningIcon();
+  views::ImageView* icon = GetConnectionWarningSystemIcon();
   ASSERT_THAT(icon, NotNull());
   EXPECT_TRUE(IsSystemIcon(icon));
 
@@ -1261,7 +1277,7 @@ TEST_P(NetworkListViewControllerTest, ConnectionWarningManagedIconVpn) {
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_MONITORED_WARNING),
       GetConnectionLabelView()->GetText());
   EXPECT_EQ(network_list()->children().at(0), GetConnectionWarning());
-  views::ImageView* icon = GetConnectionWarningIcon();
+  views::ImageView* icon = GetConnectionWarningManagedIcon();
   ASSERT_THAT(icon, NotNull());
   EXPECT_TRUE(IsManagedIcon(icon));
 
@@ -1278,7 +1294,13 @@ TEST_P(NetworkListViewControllerTest, ConnectionWarningSystemIconProxy) {
       GetManagedNetworkPropertiesWithProxy(/*is_managed*/ false));
   AddWifiDevice();
 
-  views::ImageView* icon = GetConnectionWarningIcon();
+  ASSERT_THAT(GetConnectionWarning(), NotNull());
+  ASSERT_THAT(GetConnectionLabelView(), NotNull());
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_MONITORED_WARNING),
+      GetConnectionLabelView()->GetText());
+
+  views::ImageView* icon = GetConnectionWarningSystemIcon();
   ASSERT_THAT(icon, NotNull());
   EXPECT_TRUE(IsSystemIcon(icon));
 }
@@ -1291,9 +1313,62 @@ TEST_P(NetworkListViewControllerTest, ConnectionWarningManagedIconProxy) {
       /*is_managed=*/true));
   AddWifiDevice();
 
-  views::ImageView* icon = GetConnectionWarningIcon();
+  ASSERT_THAT(GetConnectionWarning(), NotNull());
+  ASSERT_THAT(GetConnectionLabelView(), NotNull());
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_MANAGED_WARNING),
+      GetConnectionLabelView()->GetText());
+
+  views::ImageView* icon = GetConnectionWarningManagedIcon();
   ASSERT_THAT(icon, NotNull());
   EXPECT_TRUE(IsManagedIcon(icon));
+}
+
+// Disconnect and re-connect a network that shows a warning.
+// Regression test for b/263803248.
+TEST_P(NetworkListViewControllerTest, ConnectionWarningDisconnectReconnect) {
+  EXPECT_THAT(GetConnectionWarning(), IsNull());
+
+  SetDefaultNetworkForTesting(GetDefaultNetworkWithProxy(kWifiName));
+  SetManagedNetworkPropertiesForTesting(GetManagedNetworkPropertiesWithProxy(
+      /*is_managed=*/true));
+  AddWifiDevice();
+
+  ASSERT_THAT(GetConnectionWarning(), NotNull());
+  ASSERT_THAT(GetConnectionLabelView(), NotNull());
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_MANAGED_WARNING),
+      GetConnectionLabelView()->GetText());
+
+  {
+    views::ImageView* icon = GetConnectionWarningManagedIcon();
+    ASSERT_THAT(icon, NotNull());
+    EXPECT_TRUE(IsManagedIcon(icon));
+  }
+
+  // Disconnect the network and check that no warning is shown.
+  SetDefaultNetworkForTesting(nullptr);
+  SetManagedNetworkPropertiesForTesting(nullptr);
+  network_state_helper()->ClearDevices();
+  EXPECT_THAT(GetConnectionWarning(), IsNull());
+
+  // Reconnect the network. This should not crash (regression test for
+  // b/263803248). Afterwards, the warning should be shown again.
+  SetDefaultNetworkForTesting(GetDefaultNetworkWithProxy(kWifiName));
+  SetManagedNetworkPropertiesForTesting(GetManagedNetworkPropertiesWithProxy(
+      /*is_managed=*/true));
+  AddWifiDevice();
+
+  ASSERT_THAT(GetConnectionWarning(), NotNull());
+  ASSERT_THAT(GetConnectionLabelView(), NotNull());
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_MANAGED_WARNING),
+      GetConnectionLabelView()->GetText());
+  {
+    views::ImageView* icon = GetConnectionWarningManagedIcon();
+    ASSERT_THAT(icon, NotNull());
+    EXPECT_TRUE(IsManagedIcon(icon));
+  }
 }
 
 TEST_P(NetworkListViewControllerTest,
@@ -1306,8 +1381,13 @@ TEST_P(NetworkListViewControllerTest,
   SetDefaultNetworkForTesting(std::move(default_network));
 
   AddWifiDevice();
+  ASSERT_THAT(GetConnectionWarning(), NotNull());
+  ASSERT_THAT(GetConnectionLabelView(), NotNull());
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_MANAGED_WARNING),
+      GetConnectionLabelView()->GetText());
 
-  views::ImageView* icon = GetConnectionWarningIcon();
+  views::ImageView* icon = GetConnectionWarningManagedIcon();
   ASSERT_THAT(icon, NotNull());
   EXPECT_TRUE(IsManagedIcon(icon));
 }
@@ -1371,6 +1451,32 @@ TEST_P(NetworkListViewControllerTest, NetworkScanning) {
   EXPECT_EQ(initial_scan_count + 2u, GetScanCount());
   EXPECT_EQ(initial_wifi_count + 1u, GetWifiScanCount());
   EXPECT_EQ(initial_tether_count + 1u, GetTetherScanCount());
+}
+
+TEST_P(NetworkListViewControllerTest, NetworkItemIsEnabled) {
+  AddEuicc();
+  SetupCellular();
+  ASSERT_THAT(GetMobileSubHeader(), NotNull());
+
+  std::vector<NetworkStatePropertiesPtr> networks;
+
+  NetworkStatePropertiesPtr cellular_network =
+      CreateStandaloneNetworkProperties(kCellularName, NetworkType::kCellular,
+                                        ConnectionStateType::kConnected);
+  cellular_network->prohibited_by_policy = false;
+  networks.push_back(std::move(cellular_network));
+  UpdateNetworkList(networks);
+
+  CheckNetworkListItem(NetworkType::kCellular, /*index=*/1u, kCellularName);
+  EXPECT_TRUE(GetNetworkListItemIsEnabled(NetworkType::kCellular, 1u));
+
+  networks.front()->prohibited_by_policy = true;
+  UpdateNetworkList(networks);
+  EXPECT_FALSE(GetNetworkListItemIsEnabled(NetworkType::kCellular, 1u));
+
+  networks.front()->prohibited_by_policy = false;
+  UpdateNetworkList(networks);
+  EXPECT_TRUE(GetNetworkListItemIsEnabled(NetworkType::kCellular, 1u));
 }
 
 }  // namespace ash

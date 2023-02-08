@@ -103,11 +103,6 @@ void SetRuntimeFeatureDefaultsForPlatform(
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
-  WebRuntimeFeatures::EnablePictureInPictureAPI(
-      base::FeatureList::IsEnabled(media::kPictureInPictureAPI));
-#endif
-
-#if BUILDFLAG(IS_ANDROID)
   if (base::android::BuildInfo::GetInstance()->sdk_int() >=
       base::android::SDK_VERSION_P) {
     // Display Cutout is limited to Android P+.
@@ -218,8 +213,11 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableDocumentPolicy, features::kDocumentPolicy},
     {wf::EnableDocumentPolicyNegotiation, features::kDocumentPolicyNegotiation},
     {wf::EnableFedCm, features::kFedCm, kSetOnlyIfOverridden},
+    {wf::EnableFedCmIframeSupport, features::kFedCmIframeSupport,
+     kSetOnlyIfOverridden},
     {wf::EnableFedCmMultipleIdentityProviders,
      features::kFedCmMultipleIdentityProviders, kDefault},
+    {wf::EnableFedCmUserInfo, features::kFedCmUserInfo, kDefault},
     {wf::EnableFencedFrames, features::kPrivacySandboxAdsAPIsOverride,
      kSetOnlyIfOverridden},
     {wf::EnableSharedStorageAPI, features::kPrivacySandboxAdsAPIsOverride,
@@ -297,6 +295,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableGetDisplayMediaSet, features::kGetDisplayMediaSet},
     {wf::EnableGetDisplayMediaSetAutoSelectAllScreens,
      features::kGetDisplayMediaSetAutoSelectAllScreens},
+    {wf::EnableServiceWorkerBypassFetchHandler,
+     features::kServiceWorkerBypassFetchHandler},
   };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(
@@ -313,6 +313,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            kSetOnlyIfOverridden},
           {"AndroidDownloadableFontsMatching",
            features::kAndroidDownloadableFontsMatching},
+          {"FirstPartySets", features::kFirstPartySets},
           {"Fledge", blink::features::kFledge, kSetOnlyIfOverridden},
           {"Fledge", features::kPrivacySandboxAdsAPIsOverride,
            kSetOnlyIfOverridden},
@@ -320,7 +321,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"LegacyWindowsDWriteFontFallback",
            features::kLegacyWindowsDWriteFontFallback},
           {"OriginIsolationHeader", features::kOriginIsolationHeader},
-          {"FirstPartySets", features::kFirstPartySets},
+          {"PartitionedCookies", net::features::kPartitionedCookies},
           {"ReduceAcceptLanguage", network::features::kReduceAcceptLanguage},
           {"StorageAccessAPI", net::features::kStorageAccessAPI},
           {"TopicsAPI", features::kPrivacySandboxAdsAPIsOverride,
@@ -536,11 +537,6 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
             features::kFedCm, features::kFedCmIdpSignoutFieldTrialParamName,
             false)) {
       WebRuntimeFeatures::EnableFedCmIdpSignout(true);
-    }
-    if (base::GetFieldTrialParamByFeatureAsBool(
-            features::kFedCm, features::kFedCmIframeSupportFieldTrialParamName,
-            false)) {
-      WebRuntimeFeatures::EnableFedCmIframeSupport(true);
     }
     if (base::GetFieldTrialParamByFeatureAsBool(
             features::kFedCm,

@@ -56,8 +56,8 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/icon_standardizer.h"
+#include "chrome/browser/ash/app_list/md_icon_normalizer.h"
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
-#include "chrome/browser/ui/app_list/md_icon_normalizer.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "components/services/app_service/public/cpp/icon_loader.h"
@@ -87,14 +87,14 @@ class WebAppIconFactoryTest : public ChromeRenderViewHostTestHarness {
     ASSERT_TRUE(web_app_provider_);
 
     base::RunLoop run_loop;
-    web_app_provider_->sync_bridge().Init(run_loop.QuitClosure());
+    web_app_provider_->sync_bridge_unsafe().Init(run_loop.QuitClosure());
     run_loop.Run();
 
     icon_manager_ = static_cast<web_app::WebAppIconManager*>(
         &(web_app_provider_->icon_manager()));
     ASSERT_TRUE(icon_manager_);
 
-    sync_bridge_ = &web_app_provider_->sync_bridge();
+    sync_bridge_ = &web_app_provider_->sync_bridge_unsafe();
   }
 
   void RegisterApp(std::unique_ptr<web_app::WebApp> web_app) {
@@ -279,10 +279,9 @@ class WebAppIconFactoryTest : public ChromeRenderViewHostTestHarness {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   apps::IconValuePtr GetWebAppCompressedIconData(
       const std::string& app_id,
-      IconType icon_type,
       ui::ResourceScaleFactor scale_factor) {
     base::test::TestFuture<apps::IconValuePtr> result;
-    apps::GetWebAppCompressedIconData(profile(), app_id, icon_type, kSizeInDip,
+    apps::GetWebAppCompressedIconData(profile(), app_id, kSizeInDip,
                                       scale_factor, result.GetCallback());
     return result.Take();
   }
@@ -790,14 +789,14 @@ TEST_F(WebAppIconFactoryTest, GetNonMaskableCompressedIconData) {
   // Verify getting the compressed icon data for the compressed icon with icon
   // effects.
   auto icon1 =
-      GetWebAppCompressedIconData(app_id, apps::IconType::kCompressed,
-                                  ui::ResourceScaleFactor::k100Percent);
+      GetWebAppCompressedIconData(app_id, ui::ResourceScaleFactor::k100Percent);
   auto icon2 =
-      GetWebAppCompressedIconData(app_id, apps::IconType::kCompressed,
-                                  ui::ResourceScaleFactor::k200Percent);
+      GetWebAppCompressedIconData(app_id, ui::ResourceScaleFactor::k200Percent);
 
   VerifyCompressedIcon(src_data1, *icon1);
+  ASSERT_FALSE(icon1->is_maskable_icon);
   VerifyCompressedIcon(src_data2, *icon2);
+  ASSERT_FALSE(icon2->is_maskable_icon);
 }
 
 TEST_F(WebAppIconFactoryTest,
@@ -832,34 +831,14 @@ TEST_F(WebAppIconFactoryTest,
   // Verify getting the compressed icon data for the compressed icon with icon
   // effects.
   auto icon1 =
-      GetWebAppCompressedIconData(app_id, apps::IconType::kCompressed,
-                                  ui::ResourceScaleFactor::k100Percent);
+      GetWebAppCompressedIconData(app_id, ui::ResourceScaleFactor::k100Percent);
   auto icon2 =
-      GetWebAppCompressedIconData(app_id, apps::IconType::kCompressed,
-                                  ui::ResourceScaleFactor::k200Percent);
+      GetWebAppCompressedIconData(app_id, ui::ResourceScaleFactor::k200Percent);
 
   VerifyCompressedIcon(src_data1, *icon1);
+  ASSERT_FALSE(icon1->is_maskable_icon);
   VerifyCompressedIcon(src_data2, *icon2);
-
-  // Verify getting the compressed icon data for the uncompressed icon.
-  auto icon3 =
-      GetWebAppCompressedIconData(app_id, apps::IconType::kUncompressed,
-                                  ui::ResourceScaleFactor::k100Percent);
-  auto icon4 =
-      GetWebAppCompressedIconData(app_id, apps::IconType::kUncompressed,
-                                  ui::ResourceScaleFactor::k200Percent);
-
-  VerifyCompressedIcon(src_data1, *icon3);
-  VerifyCompressedIcon(src_data2, *icon4);
-
-  // Verify getting the compressed icon data for the standard icon.
-  auto icon5 = GetWebAppCompressedIconData(
-      app_id, apps::IconType::kStandard, ui::ResourceScaleFactor::k100Percent);
-  auto icon6 = GetWebAppCompressedIconData(
-      app_id, apps::IconType::kStandard, ui::ResourceScaleFactor::k200Percent);
-
-  VerifyCompressedIcon(src_data1, *icon5);
-  VerifyCompressedIcon(src_data2, *icon6);
+  ASSERT_FALSE(icon2->is_maskable_icon);
 }
 
 TEST_F(WebAppIconFactoryTest, GetNonMaskableNonEffectCompressedIcon) {
@@ -891,14 +870,14 @@ TEST_F(WebAppIconFactoryTest, GetNonMaskableNonEffectCompressedIcon) {
                                scale_to_size_in_px, scale2, src_data2);
 
   auto icon1 =
-      GetWebAppCompressedIconData(app_id, apps::IconType::kCompressed,
-                                  ui::ResourceScaleFactor::k100Percent);
+      GetWebAppCompressedIconData(app_id, ui::ResourceScaleFactor::k100Percent);
   auto icon2 =
-      GetWebAppCompressedIconData(app_id, apps::IconType::kCompressed,
-                                  ui::ResourceScaleFactor::k200Percent);
+      GetWebAppCompressedIconData(app_id, ui::ResourceScaleFactor::k200Percent);
 
   VerifyCompressedIcon(src_data1, *icon1);
+  ASSERT_FALSE(icon1->is_maskable_icon);
   VerifyCompressedIcon(src_data2, *icon2);
+  ASSERT_FALSE(icon2->is_maskable_icon);
 }
 
 TEST_F(WebAppIconFactoryTest,
@@ -932,34 +911,14 @@ TEST_F(WebAppIconFactoryTest,
 
   // Verify getting the compressed icon data for the compressed icon.
   auto icon1 =
-      GetWebAppCompressedIconData(app_id, apps::IconType::kCompressed,
-                                  ui::ResourceScaleFactor::k100Percent);
+      GetWebAppCompressedIconData(app_id, ui::ResourceScaleFactor::k100Percent);
   auto icon2 =
-      GetWebAppCompressedIconData(app_id, apps::IconType::kCompressed,
-                                  ui::ResourceScaleFactor::k200Percent);
+      GetWebAppCompressedIconData(app_id, ui::ResourceScaleFactor::k200Percent);
 
   VerifyCompressedIcon(src_data1, *icon1);
+  ASSERT_FALSE(icon1->is_maskable_icon);
   VerifyCompressedIcon(src_data2, *icon2);
-
-  // Verify getting the compressed icon data for the uncompressed icon.
-  auto icon3 =
-      GetWebAppCompressedIconData(app_id, apps::IconType::kUncompressed,
-                                  ui::ResourceScaleFactor::k100Percent);
-  auto icon4 =
-      GetWebAppCompressedIconData(app_id, apps::IconType::kUncompressed,
-                                  ui::ResourceScaleFactor::k200Percent);
-
-  VerifyCompressedIcon(src_data1, *icon3);
-  VerifyCompressedIcon(src_data2, *icon4);
-
-  // Verify getting the compressed icon data for the standard icon.
-  auto icon5 = GetWebAppCompressedIconData(
-      app_id, apps::IconType::kStandard, ui::ResourceScaleFactor::k100Percent);
-  auto icon6 = GetWebAppCompressedIconData(
-      app_id, apps::IconType::kStandard, ui::ResourceScaleFactor::k200Percent);
-
-  VerifyCompressedIcon(src_data1, *icon5);
-  VerifyCompressedIcon(src_data2, *icon6);
+  ASSERT_FALSE(icon2->is_maskable_icon);
 }
 
 TEST_F(WebAppIconFactoryTest, GetMaskableCompressedIcon) {
@@ -995,34 +954,14 @@ TEST_F(WebAppIconFactoryTest, GetMaskableCompressedIcon) {
 
   // Verify getting the compressed icon data for the compressed icon.
   auto icon1 =
-      GetWebAppCompressedIconData(app_id, apps::IconType::kCompressed,
-                                  ui::ResourceScaleFactor::k100Percent);
+      GetWebAppCompressedIconData(app_id, ui::ResourceScaleFactor::k100Percent);
   auto icon2 =
-      GetWebAppCompressedIconData(app_id, apps::IconType::kCompressed,
-                                  ui::ResourceScaleFactor::k200Percent);
+      GetWebAppCompressedIconData(app_id, ui::ResourceScaleFactor::k200Percent);
 
   VerifyCompressedIcon(src_data1, *icon1);
+  ASSERT_TRUE(icon1->is_maskable_icon);
   VerifyCompressedIcon(src_data2, *icon2);
-
-  // Verify getting the compressed icon data for the uncompressed icon.
-  auto icon3 =
-      GetWebAppCompressedIconData(app_id, apps::IconType::kUncompressed,
-                                  ui::ResourceScaleFactor::k100Percent);
-  auto icon4 =
-      GetWebAppCompressedIconData(app_id, apps::IconType::kUncompressed,
-                                  ui::ResourceScaleFactor::k200Percent);
-
-  VerifyCompressedIcon(src_data1, *icon3);
-  VerifyCompressedIcon(src_data2, *icon4);
-
-  // Verify getting the compressed icon data for the standard icon.
-  auto icon5 = GetWebAppCompressedIconData(
-      app_id, apps::IconType::kStandard, ui::ResourceScaleFactor::k100Percent);
-  auto icon6 = GetWebAppCompressedIconData(
-      app_id, apps::IconType::kStandard, ui::ResourceScaleFactor::k200Percent);
-
-  VerifyCompressedIcon(src_data1, *icon5);
-  VerifyCompressedIcon(src_data2, *icon6);
+  ASSERT_TRUE(icon1->is_maskable_icon);
 }
 
 class AppServiceWebAppIconTest : public WebAppIconFactoryTest {
@@ -1395,10 +1334,12 @@ TEST_F(AppServiceWebAppIconTest, GetMaskableStandardIcon) {
 
   // Verify the icon reading and writing function in AppService for the
   // kStandard icon.
+  // Set the icon effects kCrOsStandardIcon. AppIconReader should convert the
+  // icon effects to kCrOsStandardBackground and kCrOsStandardMask for the
+  // maskable icon.
   IconKey icon_key;
-  icon_key.icon_effects = apps::IconEffects::kRoundCorners |
-                          apps::IconEffects::kCrOsStandardBackground |
-                          apps::IconEffects::kCrOsStandardMask;
+  icon_key.icon_effects =
+      apps::IconEffects::kRoundCorners | apps::IconEffects::kCrOsStandardIcon;
   auto ret = MultipleLoadIconFromIconKey(app_id, icon_key, IconType::kStandard);
 
   ASSERT_EQ(2U, ret.size());

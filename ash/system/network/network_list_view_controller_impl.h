@@ -29,6 +29,7 @@
 
 namespace views {
 class ImageView;
+class Label;
 }
 
 namespace ash {
@@ -77,7 +78,8 @@ class ASH_EXPORT NetworkListViewControllerImpl
     kWifiSeparator = 16,
     kWifiSectionHeader = 17,
     kWifiStatusMessage = 18,
-    kConnectionWarningIcon = 19
+    kConnectionWarningSystemIcon = 19,
+    kConnectionWarningManagedIcon = 20
   };
 
   // Map of network guids and their corresponding list item views.
@@ -158,6 +160,9 @@ class ASH_EXPORT NetworkListViewControllerImpl
   // secure DNS template URIs contain identifiers.
   void ShowConnectionWarning(bool show_managed_icon);
 
+  // Hides a connection warning, if visible.
+  void HideConnectionWarning();
+
   // Determines whether a scan for WiFi and Tether networks should be requested
   // and updates the scanning bar accordingly.
   void UpdateScanningBarAndTimer();
@@ -218,6 +223,8 @@ class ASH_EXPORT NetworkListViewControllerImpl
   // is monitored by the admin, via policy, it displays the managed icon,
   // otherwise the system icon.
   views::ImageView* connection_warning_icon_ = nullptr;
+  // Owned by `connection_warning_`.
+  views::Label* connection_warning_label_ = nullptr;
 
   NetworkListWifiHeaderView* wifi_header_view_ = nullptr;
   views::Separator* wifi_separator_view_ = nullptr;

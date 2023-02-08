@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +20,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
-import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
 import java.util.concurrent.TimeoutException;
@@ -30,14 +30,14 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class PaymentRequestShowPromiseEmptyListsTest implements MainActivityStartCallback {
+public class PaymentRequestShowPromiseEmptyListsTest {
     @Rule
     public PaymentRequestTestRule mRule =
-            new PaymentRequestTestRule("show_promise/resolve_with_empty_lists.html", this);
+            new PaymentRequestTestRule("show_promise/resolve_with_empty_lists.html");
 
-    @Override
-    public void onMainActivityStarted() throws TimeoutException {
-        new AutofillTestHelper().setProfile(new AutofillProfile("", "https://example.com", true,
+    @Before
+    public void setUp() throws TimeoutException {
+        new AutofillTestHelper().setProfile(new AutofillProfile("", "https://example.test", true,
                 "" /* honorific prefix */, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles",
                 "", "90291", "", "US", "650-253-0000", "", "en-US"));
     }
@@ -46,8 +46,9 @@ public class PaymentRequestShowPromiseEmptyListsTest implements MainActivityStar
     @MediumTest
     @Feature({"Payments"})
     public void testResolveWithEmptyLists() throws TimeoutException {
-        mRule.addPaymentAppFactory("basic-card", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
-        mRule.triggerUIAndWait(mRule.getReadyForInput());
+        mRule.addPaymentAppFactory(
+                "https://example.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+        mRule.triggerUIAndWait("buy", mRule.getReadyForInput());
 
         Assert.assertEquals("USD $1.00", mRule.getOrderSummaryTotal());
 

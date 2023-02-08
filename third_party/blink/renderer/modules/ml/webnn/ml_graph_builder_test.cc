@@ -69,17 +69,37 @@ NotShared<DOMArrayBufferView> CreateDOMArrayBufferView(
   NotShared<DOMArrayBufferView> buffer_view;
   switch (type) {
     case V8MLOperandType::Enum::kFloat32: {
-      auto* float32_array = blink::DOMFloat32Array::Create(size);
-      buffer_view = NotShared<DOMArrayBufferView>(float32_array);
+      buffer_view =
+          NotShared<DOMArrayBufferView>(blink::DOMFloat32Array::Create(size));
+      break;
+    }
+    case V8MLOperandType::Enum::kFloat16: {
+      // Using Uint16Array for float16 is a workaround of WebNN spec issue:
+      // https://github.com/webmachinelearning/webnn/issues/127
+      buffer_view =
+          NotShared<DOMArrayBufferView>(blink::DOMUint16Array::Create(size));
       break;
     }
     case V8MLOperandType::Enum::kInt32: {
-      auto* int32_array = blink::DOMInt32Array::Create(size);
-      buffer_view = NotShared<DOMArrayBufferView>(int32_array);
+      buffer_view =
+          NotShared<DOMArrayBufferView>(blink::DOMInt32Array::Create(size));
       break;
     }
-    default:
-      NOTREACHED();
+    case V8MLOperandType::Enum::kUint32: {
+      buffer_view =
+          NotShared<DOMArrayBufferView>(blink::DOMUint32Array::Create(size));
+      break;
+    }
+    case V8MLOperandType::Enum::kInt8: {
+      buffer_view =
+          NotShared<DOMArrayBufferView>(blink::DOMInt8Array::Create(size));
+      break;
+    }
+    case V8MLOperandType::Enum::kUint8: {
+      buffer_view =
+          NotShared<DOMArrayBufferView>(blink::DOMUint8Array::Create(size));
+      break;
+    }
   }
   CHECK(buffer_view.Get());
   return buffer_view;
@@ -1922,11 +1942,11 @@ MLOperand* BuildResample2d(V8TestingScope& scope,
   EXPECT_NE(output, nullptr);
   EXPECT_EQ(output->Kind(), MLOperand::OperandKind::kOutput);
   EXPECT_EQ(output->Type(), input->Type());
-  auto* resample = output->Operator();
-  EXPECT_NE(resample, nullptr);
-  EXPECT_EQ(resample->Kind(), MLOperator::OperatorKind::kResample);
-  EXPECT_EQ(resample->IsConnected(), true);
-  EXPECT_NE(resample->Options(), nullptr);
+  auto* resample2d = output->Operator();
+  EXPECT_NE(resample2d, nullptr);
+  EXPECT_EQ(resample2d->Kind(), MLOperator::OperatorKind::kResample2d);
+  EXPECT_EQ(resample2d->IsConnected(), true);
+  EXPECT_NE(resample2d->Options(), nullptr);
   return output;
 }
 
@@ -2227,6 +2247,47 @@ TEST_F(MLGraphBuilderTest, Softmax) {
               DOMExceptionCode::kDataError);
     EXPECT_EQ(scope.GetExceptionState().Message(),
               "The input type must be one of the floating point types.");
+  }
+}
+
+TEST_F(MLGraphBuilderTest, SigmoidTest) {
+  V8TestingScope scope;
+  auto* builder = CreateMLGraphBuilder(scope);
+  {
+    // Test building sigmoid with float32 input.
+    Vector<uint32_t> input_shape({3, 4, 5});
+    auto* input = BuildInput(scope, builder, "input", input_shape,
+                             V8MLOperandType::Enum::kFloat32);
+    auto* output = builder->sigmoid(input, scope.GetExceptionState());
+    EXPECT_NE(output, nullptr);
+    EXPECT_EQ(output->Kind(), MLOperand::OperandKind::kOutput);
+    EXPECT_EQ(output->Type(), V8MLOperandType::Enum::kFloat32);
+    EXPECT_EQ(output->Dimensions(), input_shape);
+    const MLOperator* sigmoid = output->Operator();
+    EXPECT_NE(sigmoid, nullptr);
+    EXPECT_EQ(sigmoid->Kind(), MLOperator::OperatorKind::kSigmoid);
+    EXPECT_EQ(sigmoid->IsConnected(), true);
+    EXPECT_EQ(sigmoid->Options(), nullptr);
+  }
+  {
+    // Test throwing exception when building sigmoid with int32 input.
+    Vector<uint32_t> input_shape({3, 4, 5});
+    auto* input = BuildInput(scope, builder, "input", input_shape,
+                             V8MLOperandType::Enum::kInt32);
+    auto* output = builder->sigmoid(input, scope.GetExceptionState());
+    EXPECT_EQ(output, nullptr);
+    EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
+              DOMExceptionCode::kDataError);
+    EXPECT_EQ(scope.GetExceptionState().Message(),
+              "The input type must be one of the floating point types.");
+  }
+  {
+    // Test building sigmoid operator.
+    auto* sigmoid = builder->sigmoid(scope.GetExceptionState());
+    EXPECT_NE(sigmoid, nullptr);
+    EXPECT_EQ(sigmoid->Kind(), MLOperator::OperatorKind::kSigmoid);
+    EXPECT_EQ(sigmoid->IsConnected(), false);
+    EXPECT_EQ(sigmoid->Options(), nullptr);
   }
 }
 

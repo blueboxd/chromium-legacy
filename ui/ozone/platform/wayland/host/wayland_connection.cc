@@ -209,11 +209,10 @@ bool WaylandConnection::Initialize() {
 
   // Create the buffer factory before registry listener is set so that shm, drm,
   // zwp_linux_dmabuf objects are able to be stored.
-  wayland_buffer_factory_ = std::make_unique<WaylandBufferFactory>();
+  buffer_factory_ = std::make_unique<WaylandBufferFactory>();
 
   wl_registry_add_listener(registry_.get(), &registry_listener, this);
-  while (!wayland_output_manager_ ||
-         !wayland_output_manager_->IsOutputReady()) {
+  while (!output_manager_ || !output_manager_->IsOutputReady()) {
     RoundTripQueue();
   }
 
@@ -223,7 +222,7 @@ bool WaylandConnection::Initialize() {
     LOG(ERROR) << "No wl_compositor object";
     return false;
   }
-  if (!wayland_buffer_factory()->shm()) {
+  if (!buffer_factory()->shm()) {
     LOG(ERROR) << "No wl_shm object";
     return false;
   }
@@ -320,7 +319,7 @@ void WaylandConnection::UpdateInputDevices() {
   if (seat_->pointer()) {
     cursor_ = std::make_unique<WaylandCursor>(seat_->pointer(), this);
     cursor_->set_listener(listener_);
-    wayland_cursor_position_ = std::make_unique<WaylandCursorPosition>();
+    cursor_position_ = std::make_unique<WaylandCursorPosition>();
 
     // Wayland doesn't expose InputDeviceType.
     devices.emplace_back(InputDevice(seat_->pointer()->id(),
@@ -328,11 +327,12 @@ void WaylandConnection::UpdateInputDevices() {
                                      "pointer"));
 
     // Pointer is required for PointerGestures to be functional.
-    if (wayland_zwp_pointer_gestures_)
-      wayland_zwp_pointer_gestures_->Init();
+    if (zwp_pointer_gestures_) {
+      zwp_pointer_gestures_->Init();
+    }
   } else {
     cursor_.reset();
-    wayland_cursor_position_.reset();
+    cursor_position_.reset();
   }
 
   // Notify about mouse changes.
@@ -527,15 +527,16 @@ void WaylandConnection::Global(void* data,
       LOG(ERROR) << "Failed to bind zxdg_output_manager_v1";
       return;
     }
-    if (connection->wayland_output_manager_)
-      connection->wayland_output_manager_->InitializeAllXdgOutputs();
+    if (connection->output_manager_) {
+      connection->output_manager_->InitializeAllXdgOutputs();
+    }
   } else if (strcmp(interface, "org_kde_plasma_shell") == 0) {
-    NOTIMPLEMENTED_LOG_ONCE()
-        << interface << " is recognized but not yet supported";
+    // Recognized but not yet supported.
+    NOTIMPLEMENTED_LOG_ONCE();
     ReportShellUMA(UMALinuxWaylandShell::kOrgKdePlasmaShell);
   } else if (strcmp(interface, "zwlr_layer_shell_v1") == 0) {
-    NOTIMPLEMENTED_LOG_ONCE()
-        << interface << " is recognized but not yet supported";
+    // Recognized but not yet supported.
+    NOTIMPLEMENTED_LOG_ONCE();
     ReportShellUMA(UMALinuxWaylandShell::kZwlrLayerShellV1);
   } else if (!connection->zcr_stylus_v2_ &&
              strcmp(interface, "zcr_stylus_v2") == 0) {
@@ -597,20 +598,21 @@ const gfx::PointF WaylandConnection::MaybeConvertLocation(
 void WaylandConnection::GlobalRemove(void* data,
                                      wl_registry* registry,
                                      uint32_t name) {
-  WaylandConnection* connection = static_cast<WaylandConnection*>(data);
+  auto* connection = static_cast<WaylandConnection*>(data);
   // The Wayland protocol distinguishes global objects by unique numeric names,
   // which the WaylandOutputManager uses as unique output ids. But, it is only
   // possible to figure out, what global object is going to be removed on the
   // WaylandConnection::GlobalRemove call. Thus, whatever unique |name| comes,
   // it's forwarded to the WaylandOutputManager, which checks if such a global
   // output object exists and removes it.
-  if (connection->wayland_output_manager_)
-    connection->wayland_output_manager_->RemoveWaylandOutput(name);
+  if (connection->output_manager_) {
+    connection->output_manager_->RemoveWaylandOutput(name);
+  }
 }
 
 // static
 void WaylandConnection::Ping(void* data, xdg_wm_base* shell, uint32_t serial) {
-  WaylandConnection* connection = static_cast<WaylandConnection*>(data);
+  auto* connection = static_cast<WaylandConnection*>(data);
   xdg_wm_base_pong(shell, serial);
   connection->Flush();
 }
@@ -621,7 +623,7 @@ void WaylandConnection::ClockId(void* data,
                                 uint32_t clk_id) {
   DCHECK_EQ(base::TimeTicks::GetClock(),
             base::TimeTicks::Clock::LINUX_CLOCK_MONOTONIC);
-  WaylandConnection* connection = static_cast<WaylandConnection*>(data);
+  auto* connection = static_cast<WaylandConnection*>(data);
   connection->presentation_clk_id_ = clk_id;
 }
 

@@ -233,16 +233,16 @@ void SkiaOutputDeviceGL::SwapBuffers(BufferPresentedCallback feedback,
   gfx::Size surface_size =
       gfx::Size(sk_surface_->width(), sk_surface_->height());
 
-  auto data = std::move(frame.data);
+  auto data = frame.data;
   if (supports_async_swap_) {
     auto callback = base::BindOnce(
         &SkiaOutputDeviceGL::DoFinishSwapBuffersAsync,
         weak_ptr_factory_.GetWeakPtr(), surface_size, std::move(frame));
     gl_surface_->SwapBuffersAsync(std::move(callback), std::move(feedback),
-                                  std::move(data));
+                                  data);
   } else {
     gfx::SwapResult result =
-        gl_surface_->SwapBuffers(std::move(feedback), std::move(data));
+        gl_surface_->SwapBuffers(std::move(feedback), data);
     DoFinishSwapBuffers(surface_size, std::move(frame),
                         gfx::SwapCompletionResult(result));
   }
@@ -256,18 +256,18 @@ void SkiaOutputDeviceGL::PostSubBuffer(const gfx::Rect& rect,
   gfx::Size surface_size =
       gfx::Size(sk_surface_->width(), sk_surface_->height());
 
-  auto data = std::move(frame.data);
+  auto data = frame.data;
   if (supports_async_swap_) {
     auto callback = base::BindOnce(
         &SkiaOutputDeviceGL::DoFinishSwapBuffersAsync,
         weak_ptr_factory_.GetWeakPtr(), surface_size, std::move(frame));
     gl_surface_->PostSubBufferAsync(rect.x(), rect.y(), rect.width(),
                                     rect.height(), std::move(callback),
-                                    std::move(feedback), std::move(data));
+                                    std::move(feedback), data);
   } else {
-    gfx::SwapResult result = gl_surface_->PostSubBuffer(
-        rect.x(), rect.y(), rect.width(), rect.height(), std::move(feedback),
-        std::move(data));
+    gfx::SwapResult result =
+        gl_surface_->PostSubBuffer(rect.x(), rect.y(), rect.width(),
+                                   rect.height(), std::move(feedback), data);
     DoFinishSwapBuffers(surface_size, std::move(frame),
                         gfx::SwapCompletionResult(result));
   }
@@ -280,16 +280,16 @@ void SkiaOutputDeviceGL::CommitOverlayPlanes(BufferPresentedCallback feedback,
   gfx::Size surface_size =
       gfx::Size(sk_surface_->width(), sk_surface_->height());
 
-  auto data = std::move(frame.data);
+  auto data = frame.data;
   if (supports_async_swap_) {
     auto callback = base::BindOnce(
         &SkiaOutputDeviceGL::DoFinishSwapBuffersAsync,
         weak_ptr_factory_.GetWeakPtr(), surface_size, std::move(frame));
     gl_surface_->CommitOverlayPlanesAsync(std::move(callback),
-                                          std::move(feedback), std::move(data));
+                                          std::move(feedback), data);
   } else {
     gfx::SwapResult result =
-        gl_surface_->CommitOverlayPlanes(std::move(feedback), std::move(data));
+        gl_surface_->CommitOverlayPlanes(std::move(feedback), data);
     DoFinishSwapBuffers(surface_size, std::move(frame),
                         gfx::SwapCompletionResult(result));
   }
@@ -308,23 +308,6 @@ void SkiaOutputDeviceGL::DoFinishSwapBuffers(const gfx::Size& size,
                                              gfx::SwapCompletionResult result) {
   DCHECK(result.release_fence.is_null());
   FinishSwapBuffers(std::move(result), size, std::move(frame));
-}
-
-bool SkiaOutputDeviceGL::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
-  return gl_surface_->SetDrawRectangle(draw_rectangle);
-}
-
-void SkiaOutputDeviceGL::SetGpuVSyncEnabled(bool enabled) {
-  gl_surface_->SetGpuVSyncEnabled(enabled);
-}
-
-void SkiaOutputDeviceGL::SetEnableDCLayers(bool enable) {
-  gl_surface_->SetEnableDCLayers(enable);
-}
-
-void SkiaOutputDeviceGL::ScheduleOverlays(
-    SkiaOutputSurface::OverlayList overlays) {
-  NOTREACHED();
 }
 
 void SkiaOutputDeviceGL::EnsureBackbuffer() {

@@ -169,6 +169,20 @@ bool FileSharingThroughFuseBoxEnabled() {
   return base::FeatureList::IsEnabled(arc::kEnableArcNearbyShareFuseBox);
 }
 
+bool IsValidArcWindow(aura::Window* const window, uint32_t task_id) {
+  if (!ash::IsArcWindow(window)) {
+    return false;
+  }
+
+  absl::optional<int> maybe_task_id = arc::GetWindowTaskId(window);
+  if (!maybe_task_id.has_value() || maybe_task_id.value() < 0 ||
+      static_cast<uint32_t>(maybe_task_id.value()) != task_id) {
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 NearbyShareSessionImpl::NearbyShareSessionImpl(
@@ -196,7 +210,7 @@ NearbyShareSessionImpl::NearbyShareSessionImpl(
       /*should_cleanup_files=*/true));
   aura::Window* const arc_window = GetArcWindow(task_id_);
   if (arc_window) {
-    VLOG(1) << "ARC window found";
+    VLOG(1) << "ARC window found.";
     UpdateNearbyShareWindowFound(true);
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, base::BindOnce(&NearbyShareSessionImpl::OnArcWindowFound,
@@ -242,14 +256,10 @@ void NearbyShareSessionImpl::OnWindowInitialized(aura::Window* const window) {
   DCHECK(window);
 
   DVLOG(1) << __func__;
-  if (!ash::IsArcWindow(window))
-    return;
-
-  absl::optional<int> maybe_id = arc::GetWindowTaskId(window);
-  if (!maybe_id.has_value() || maybe_id.value() < 0 ||
-      static_cast<uint32_t>(maybe_id.value()) != task_id_) {
+  if (!IsValidArcWindow(window, task_id_)) {
     return;
   }
+
   env_observation_.Reset();
   arc_window_observation_.Observe(window);
 }
@@ -261,18 +271,17 @@ void NearbyShareSessionImpl::OnWindowVisibilityChanged(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   DVLOG(1) << __func__;
-  absl::optional<int> task_id = arc::GetWindowTaskId(window);
-  DCHECK(task_id.has_value());
-  DCHECK_GE(task_id.value(), 0);
-  if (visible && (base::checked_cast<uint32_t>(task_id.value()) == task_id_)) {
-    VLOG(1) << "ARC Window is visible";
-    if (window_initialization_timer_.IsRunning()) {
-      window_initialization_timer_.Stop();
-    }
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE, base::BindOnce(&NearbyShareSessionImpl::OnArcWindowFound,
-                                  weak_ptr_factory_.GetWeakPtr(), window));
+  if (!IsValidArcWindow(window, task_id_) || !visible) {
+    return;
   }
+
+  VLOG(1) << "ARC Window is visible.";
+  if (window_initialization_timer_.IsRunning()) {
+    window_initialization_timer_.Stop();
+  }
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, base::BindOnce(&NearbyShareSessionImpl::OnArcWindowFound,
+                                weak_ptr_factory_.GetWeakPtr(), window));
 }
 
 void NearbyShareSessionImpl::OnArcWindowFound(aura::Window* const arc_window) {
@@ -282,24 +291,25 @@ void NearbyShareSessionImpl::OnArcWindowFound(aura::Window* const arc_window) {
 
   DVLOG(1) << __func__;
   arc_window_ = arc_window;
-  if (share_info_->files.has_value() && !FileSharingThroughFuseBoxEnabled()) {
-    // File sharing through temporary copy.
-    const base::FilePath arc_nearby_share_directory =
-        GetUserCacheFilePath(profile_);
-
-    file_handler_ = base::MakeRefCounted<ShareInfoFileHandler>(
-        profile_, share_info_.get(), arc_nearby_share_directory,
-        backend_task_runner_);
-
-    prepare_directory_task_ = std::make_unique<webshare::PrepareDirectoryTask>(
-        arc_nearby_share_directory, file_handler_->GetTotalSizeOfFiles());
-    prepare_directory_task_->StartWithCallback(
-        base::BindOnce(&NearbyShareSessionImpl::OnPreparedDirectory,
-                       weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    // Sharing text, or file sharing through FuseBox.
+  if (FileSharingThroughFuseBoxEnabled() || !share_info_->files.has_value()) {
+    // Either sharing text or sharing anything through FuseBox experiment.
     ShowNearbyShareBubbleInArcWindow();
+    return;
   }
+
+  // Sharing file(s) through temporary copy.
+  const base::FilePath arc_nearby_share_directory =
+      GetUserCacheFilePath(profile_);
+
+  file_handler_ = base::MakeRefCounted<ShareInfoFileHandler>(
+      profile_, share_info_.get(), arc_nearby_share_directory,
+      backend_task_runner_);
+
+  prepare_directory_task_ = std::make_unique<webshare::PrepareDirectoryTask>(
+      arc_nearby_share_directory, file_handler_->GetTotalSizeOfFiles());
+  prepare_directory_task_->StartWithCallback(
+      base::BindOnce(&NearbyShareSessionImpl::OnPreparedDirectory,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 apps::IntentPtr NearbyShareSessionImpl::ConvertShareIntentInfoToIntent() {
@@ -309,6 +319,7 @@ apps::IntentPtr NearbyShareSessionImpl::ConvertShareIntentInfoToIntent() {
   // Sharing files
   if (share_info_->files.has_value()) {
     if (FileSharingThroughFuseBoxEnabled()) {
+      VLOG(1) << "Sharing files through FuseBox experiment.";
       return ConvertShareIntentInfoToMonikerFileIntent();
     }
     const auto share_file_paths = file_handler_->GetFilePaths();
@@ -528,7 +539,7 @@ void NearbyShareSessionImpl::OnTimerFired() {
 
   // TODO(b/191232397): Handle error case.
   LOG(ERROR) << "ARC window didn't get initialized within "
-             << kWindowInitializationTimeout.InSeconds() << " second(s)";
+             << kWindowInitializationTimeout.InSeconds() << " second(s).";
   UpdateNearbyShareWindowFound(false);
   CleanupSession(/*should_cleanup_files=*/true);
 }

@@ -626,6 +626,11 @@
     'browser_compositor': {
       'filepath': 'ui/compositor/'
     },
+    'browser_params': {
+      'filepath': 'chromeos/startup/browser_init_params'\
+                  '|chromeos/startup/browser_params_proxy'\
+                  '|chromeos/startup/browser_postlogin_params',
+    },
     'browser_scheduler': {
       'filepath': 'content/browser/scheduler'
     },
@@ -2224,7 +2229,8 @@
                      'jimmyxgong+watch-accelerators@chromium.org',
                      'cambickel+watch-accelerators@google.com',
                      'longbowei+watch-accelerators@google.com',
-                     'zhangwenyu+watch-accelerators@google.com'],
+                     'zhangwenyu+watch-accelerators@google.com',
+                     'michaelcheco+watch-accelerators@google.com'],
     'accessibility': ['abigailbklein+watch@google.com',
                       'akihiroota@chromium.org',
                       'dtseng+watch@chromium.org',
@@ -2480,6 +2486,7 @@
                   'mdjones+watch@chromium.org'],
     'browser_components': ['browser-components-watch@chromium.org'],
     'browser_compositor': ['vollick@chromium.org'],
+    'browser_params': ['andreaorru+watch@chromium.org'],
     'browser_scheduler': ['scheduler-bugs+browser@chromium.org'],
     'browsing_data': ['dullweber+watch@chromium.org',
                       'msramek+watch@chromium.org'],
@@ -2610,8 +2617,7 @@
     'cros_discovery': ['melzhang+watch+discovery@chromium.org'],
     'cros_reporting': ['cros-reporting-reviews@google.com'],
     'cros_sharesheet': ['melzhang+watch+sharesheet@chromium.org'],
-    'crosapi_mojom': ['andreaorru+watch@chromium.org',
-                      'elkurin+watch@chromium.org'],
+    'crosapi_mojom': ['elkurin+watch@chromium.org'],
     'crostini': ['crostini-ui@chromium.org'],
     'cups_printing': ['print-reviews+cups@chromium.org',
                       'cros-printing-reviews@google.com'],
@@ -2798,12 +2804,12 @@
     'minidump_tests': ['bsheedy@chromium.org'],
     'multidevice': ['danlee+watch-multidevice@google.com',
                     'hansberry+watch-multidevice@chromium.org',
+                    'joeantonetti+watch-multidevice@google.com',
                     'jonmann+watch-multidevice@chromium.org'],
     'multipaste': ['andrewxu+watch-multipaste@google.com',
                    'ckincaid+watch-multipaste@google.com',
                    'dmblack+watch-multipaste@google.com',
-                   'multipaste-eng+reviews@google.com',
-                   'newcomer+watch-multipaste@google.com'],
+                   'multipaste-eng+reviews@google.com'],
     'nacl': ['native-client-reviews@googlegroups.com'],
     'native_client_sdk': ['binji+watch@chromium.org',
                           'sbc@chromium.org'],
@@ -2886,6 +2892,7 @@
     'phonehub': ['crisrael+watch-phonehub@google.com',
                  'hansberry+watch-phonehub@chromium.org',
                  'jonmann+watch-phonehub@chromium.org',
+                 'joeantonetti+watch-phonehub@google.com',
                  'pushi+watch-phonehub@google.com'],
     'picture_in_picture': ['beaufort.francois+pip@gmail.com'],
     'plugin_metadata': ['wfh+watch@chromium.org'],

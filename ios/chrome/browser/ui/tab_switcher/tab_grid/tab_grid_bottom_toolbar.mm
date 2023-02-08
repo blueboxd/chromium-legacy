@@ -184,11 +184,19 @@
 }
 
 - (void)hide {
+  if (@available(iOS 16.0, *)) {
+    // The `_editButton` is hidden to dismiss its context menu if it's still
+    // presented.
+    _editButton.hidden = YES;
+  }
   _smallNewTabButton.alpha = 0.0;
   _largeNewTabButton.alpha = 0.0;
 }
 
 - (void)show {
+  if (@available(iOS 16.0, *)) {
+    _editButton.hidden = NO;
+  }
   _smallNewTabButton.alpha = 1.0;
   _largeNewTabButton.alpha = 1.0;
 }
@@ -395,8 +403,6 @@
 }
 
 - (void)updateLayout {
-  [self updateBackgroundVisibility];
-
   // Search mode doesn't have bottom toolbar or floating buttons, Handle it and
   // return early in that case.
   if (self.mode == TabGridModeSearch) {
@@ -405,6 +411,7 @@
     [_toolbar removeFromSuperview];
     [_largeNewTabButton removeFromSuperview];
     self.hidden = YES;
+    [self updateBackgroundVisibility];
     return;
   }
   _largeNewTabButtonBottomAnchor.constant =
@@ -419,6 +426,7 @@
     [self addSubview:_toolbar];
     [NSLayoutConstraint activateConstraints:_compactConstraints];
     self.hidden = NO;
+    [self updateBackgroundVisibility];
     return;
   }
   UIBarButtonItem* leadingButton = _closeAllOrUndoButton;
@@ -442,6 +450,7 @@
 
     [self addSubview:_toolbar];
     [NSLayoutConstraint activateConstraints:_compactConstraints];
+    self.hidden = NO;
   } else {
     [NSLayoutConstraint deactivateConstraints:_compactConstraints];
     [_toolbar removeFromSuperview];
@@ -452,12 +461,15 @@
         self.page == TabGridPageRemoteTabs) {
       [NSLayoutConstraint deactivateConstraints:_floatingConstraints];
       [_largeNewTabButton removeFromSuperview];
+      self.hidden = YES;
     } else {
       [self addSubview:_largeNewTabButton];
       [NSLayoutConstraint activateConstraints:_floatingConstraints];
+      self.hidden = NO;
     }
   }
-  self.hidden = !self.subviews.count;
+
+  [self updateBackgroundVisibility];
 }
 
 // Returns YES if the `_largeNewTabButton` is showing on the toolbar.
@@ -504,8 +516,10 @@
 
 // Updates the visibility of the backgrounds based on the state of the TabGrid.
 - (void)updateBackgroundVisibility {
-  _scrolledToBottomBackgroundView.hidden = !_scrolledToEdge;
-  _scrolledBackgroundView.hidden = _scrolledToEdge;
+  _scrolledToBottomBackgroundView.hidden =
+      [self isShowingFloatingButton] || !_scrolledToEdge;
+  _scrolledBackgroundView.hidden =
+      [self isShowingFloatingButton] || _scrolledToEdge;
 }
 
 @end

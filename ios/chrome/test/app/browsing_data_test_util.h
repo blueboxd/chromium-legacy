@@ -17,9 +17,9 @@ namespace chrome_test_util {
 // successful or timed out.
 [[nodiscard]] bool ClearBrowsingHistory();
 
-// Clears browsing cookies and returns whether clearing the cookies was
+// Clears cookies and site data and returns whether the operation was
 // successful or timed out.
-[[nodiscard]] bool ClearBrowsingCookies();
+[[nodiscard]] bool ClearCookiesAndSiteData();
 
 // Clears browsing data and returns whether clearing was successful or timed
 // out.

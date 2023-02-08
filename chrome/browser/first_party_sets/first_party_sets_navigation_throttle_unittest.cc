@@ -44,8 +44,6 @@ class FirstPartySetsNavigationThrottleTest
     subframe_ = content::RenderFrameHostTester::For(main_rfh())
                     ->AppendChild("subframe");
 
-    content::FirstPartySetsHandler::GetInstance()->SetInstanceForTesting(
-        &first_party_sets_handler_);
     service_ =
         FirstPartySetsPolicyServiceFactory::GetForBrowserContext(profile());
     ASSERT_NE(service_, nullptr);
@@ -105,6 +103,16 @@ TEST_F(FirstPartySetsNavigationThrottleTest,
   // Never create throttle for subframes.
   handle.set_render_frame_host(subframe());
   ASSERT_FALSE(handle.IsInOutermostMainFrame());
+  EXPECT_FALSE(
+      FirstPartySetsNavigationThrottle::MaybeCreateNavigationThrottle(&handle));
+}
+
+TEST_F(FirstPartySetsNavigationThrottleTest,
+       MaybeCreateNavigationThrottle_IrregularProfile) {
+  // Create throttle for main frames.
+  content::MockNavigationHandle handle(GURL(kExampleURL), main_rfh());
+  ASSERT_TRUE(handle.IsInOutermostMainFrame());
+  profile()->SetGuestSession(true);
   EXPECT_FALSE(
       FirstPartySetsNavigationThrottle::MaybeCreateNavigationThrottle(&handle));
 }

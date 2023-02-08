@@ -4,9 +4,6 @@
 
 #include "components/password_manager/core/browser/leak_detection_delegate.h"
 
-#include "base/metrics/field_trial.h"
-#include "base/metrics/field_trial_params.h"
-#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
@@ -19,7 +16,6 @@
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
-#include "components/password_manager/core/browser/password_scripts_fetcher.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -46,9 +42,7 @@ LeakDetectionDelegate::LeakDetectionDelegate(PasswordManagerClient* client)
 
 LeakDetectionDelegate::~LeakDetectionDelegate() = default;
 
-void LeakDetectionDelegate::StartLeakCheck(
-    const PasswordForm& credentials,
-    bool submitted_form_was_likely_signup_form) {
+void LeakDetectionDelegate::StartLeakCheck(const PasswordForm& credentials) {
   if (client_->IsIncognito())
     return;
 
@@ -59,8 +53,6 @@ void LeakDetectionDelegate::StartLeakCheck(
     return;
 
   DCHECK(!credentials.password_value.empty());
-
-  is_likely_signup_form_ = submitted_form_was_likely_signup_form;
 
   leak_check_ = leak_factory_->TryCreateLeakCheck(
       this, client_->GetIdentityManager(), client_->GetURLLoaderFactory(),
@@ -84,28 +76,10 @@ void LeakDetectionDelegate::OnLeakDetectionDone(bool is_leaked,
     logger.LogBoolean(Logger::STRING_LEAK_DETECTION_FINISHED, is_leaked);
   }
 
-  bool force_dialog_for_testing = base::GetFieldTrialParamByFeatureAsBool(
-      password_manager::features::kPasswordChange,
-      password_manager::features::
-          kPasswordChangeWithForcedDialogAfterEverySuccessfulSubmission,
-      false);
-  if (is_leaked || force_dialog_for_testing) {
-    PasswordScriptsFetcher* scripts_fetcher = nullptr;
-    // Password change scripts should only be offered during sign-in
-    // (not during sign-up), so don't query if this was a new-password form.
-    if (!is_likely_signup_form_ &&
-        client_->GetPasswordFeatureManager()
-            ->AreRequirementsForAutomatedPasswordChangeFulfilled() &&
-        password_manager::features::IsPasswordScriptsFetchingEnabled() &&
-        base::FeatureList::IsEnabled(
-            password_manager::features::kPasswordChange)) {
-      scripts_fetcher = client_->GetPasswordScriptsFetcher();
-    }
-
+  if (is_leaked) {
     // Query the helper to asynchronously determine the `CredentialLeakType`.
     helper_ = std::make_unique<LeakDetectionDelegateHelper>(
         client_->GetProfilePasswordStore(), client_->GetAccountPasswordStore(),
-        scripts_fetcher,
         base::BindOnce(&LeakDetectionDelegate::OnShowLeakDetectionNotification,
                        base::Unretained(this)));
     helper_->ProcessLeakedPassword(std::move(url), std::move(username),

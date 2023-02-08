@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assertInstanceof} from 'chrome://resources/js/assert.js';
+import {assertInstanceof} from 'chrome://resources/ash/common/assert.js';
 
 import {DialogType} from '../../../common/js/dialog_type.js';
 import {queryDecoratedElement, queryRequiredElement} from '../../../common/js/dom_utils.js';
@@ -15,6 +15,7 @@ import {SearchContainer} from '../../../containers/search_container.js';
 import {VolumeManager} from '../../../externs/volume_manager.js';
 import {XfConflictDialog} from '../../../widgets/xf_conflict_dialog.js';
 import {XfDlpRestrictionDetailsDialog} from '../../../widgets/xf_dlp_restriction_details_dialog.js';
+import {XfSplitter} from '../../../widgets/xf_splitter.js';
 import {FilesPasswordDialog} from '../../elements/files_password_dialog.js';
 import {FilesTooltip} from '../../elements/files_tooltip.js';
 import {BannerController} from '../banner_controller.js';
@@ -232,15 +233,6 @@ export class FileManagerUI {
      */
     this.dialogNavigationList =
         queryRequiredElement('.dialog-navigation-list', this.element);
-
-    /**
-     * Search container, which controls search UI elements.
-     * @type {!SearchContainer}
-     * @const
-     */
-    this.searchContainer = new SearchContainer(
-        queryRequiredElement('#search-wrapper', this.element),
-        queryRequiredElement('#search-options-container', this.element));
 
     /**
      * Toggle-view button.
@@ -500,8 +492,35 @@ export class FileManagerUI {
         queryRequiredElement('#location-breadcrumbs', this.element));
 
     // Splitter.
-    this.decorateSplitter_(
-        queryRequiredElement('#navigation-list-splitter', this.element));
+    const splitterContainer =
+        queryRequiredElement('#navigation-list-splitter', this.element);
+    if (util.isJellyEnabled()) {
+      // Remove the unused splitter <div> and wrap the tree and list with an
+      // xf-splitter.
+      const dialogNavList = splitterContainer.previousElementSibling;
+      const dialogMain = splitterContainer.nextElementSibling;
+      splitterContainer.remove();
+      const splitterWidget = document.createElement('xf-splitter');
+      splitterWidget.classList.add('jelly-splitter');
+      splitterWidget.id = '#navigation-list-splitter';
+      dialogNavList.parentNode.insertBefore(splitterWidget, dialogNavList);
+      splitterWidget.appendChild(dialogNavList);
+      splitterWidget.appendChild(dialogMain);
+      splitterWidget.addEventListener(
+          XfSplitter.events.SPLITTER_DRAGMOVE, this.relayout.bind(this));
+    } else {
+      this.decorateSplitter_(splitterContainer);
+    }
+
+    /**
+     * Search container, which controls search UI elements.
+     * @type {!SearchContainer}
+     * @const
+     */
+    this.searchContainer = new SearchContainer(
+        volumeManager, queryRequiredElement('#search-wrapper', this.element),
+        queryRequiredElement('#search-options-container', this.element),
+        queryRequiredElement('#path-display-container', this.element));
 
     // Init context menus.
     contextMenuHandler.setContextMenu(grid, this.fileContextMenu);
@@ -661,7 +680,8 @@ export class FileManagerUI {
    * @private
    */
   layoutChanged_() {
-    if (this.scrollRAFActive_ === true) {
+    // The Jelly splitter uses flexbox, no need for this.
+    if (util.isJellyEnabled() || this.scrollRAFActive_ === true) {
       return;
     }
 

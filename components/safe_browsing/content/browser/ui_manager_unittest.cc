@@ -146,6 +146,27 @@ class TestSafeBrowsingBlockingPageFactory
     return new TestSafeBrowsingBlockingPage(delegate, web_contents,
                                             main_frame_url, unsafe_resources);
   }
+#if !BUILDFLAG(IS_ANDROID)
+  security_interstitials::SecurityInterstitialPage* CreateEnterpriseWarnPage(
+      BaseUIManager* ui_manager,
+      content::WebContents* web_contents,
+      const GURL& main_frame_url,
+      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
+      override {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  security_interstitials::SecurityInterstitialPage* CreateEnterpriseBlockPage(
+      BaseUIManager* ui_manager,
+      content::WebContents* web_contents,
+      const GURL& main_frame_url,
+      const SafeBrowsingBlockingPage::UnsafeResourceList& unsafe_resources)
+      override {
+    NOTREACHED();
+    return nullptr;
+  }
+#endif
 };
 
 class TestSafeBrowsingUIManagerDelegate
@@ -169,6 +190,13 @@ class TestSafeBrowsingUIManagerDelegate
       const GURL& page_url,
       const std::string& reason,
       int net_error_code) override {}
+#if !BUILDFLAG(IS_ANDROID)
+  void TriggerUrlFilteringInterstitialExtensionEventIfDesired(
+      content::WebContents* web_contents,
+      const GURL& page_url,
+      const std::string& threat_type,
+      safe_browsing::RTLookupResponse rt_lookup_response) override {}
+#endif
   prerender::NoStatePrefetchContents* GetNoStatePrefetchContentsIfExists(
       content::WebContents* web_contents) override {
     return nullptr;

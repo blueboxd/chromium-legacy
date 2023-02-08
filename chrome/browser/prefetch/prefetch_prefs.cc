@@ -7,6 +7,8 @@
 #include "chrome/browser/prefetch/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/preloading.h"
 
 namespace prefetch {
 
@@ -60,18 +62,28 @@ void SetPreloadPagesState(PrefService* prefs, PreloadPagesState state) {
   prefs->SetInteger(prefs::kNetworkPredictionOptions, static_cast<int>(value));
 }
 
-bool IsSomePreloadingEnabled(const PrefService& prefs) {
-  if (base::FeatureList::IsEnabled(kPreloadingHoldback)) {
-    return false;
+content::PreloadingEligibility IsSomePreloadingEnabled(
+    const PrefService& prefs,
+    content::WebContents* web_contents) {
+  // Override kPreloadingHoldback when DevTools is opened to mitigate the cases
+  // in which developers are affected by kPreloadingHoldback.
+  if (!(web_contents && content::DevToolsAgentHost::HasFor(web_contents)) &&
+      base::FeatureList::IsEnabled(kPreloadingHoldback)) {
+    return content::PreloadingEligibility::kPreloadingDisabled;
   }
   return IsSomePreloadingEnabledIgnoringFinch(prefs);
 }
 
-bool IsSomePreloadingEnabledIgnoringFinch(const PrefService& prefs) {
+content::PreloadingEligibility IsSomePreloadingEnabledIgnoringFinch(
+    const PrefService& prefs) {
   if (battery::IsBatterySaverEnabled()) {
-    return false;
+    return content::PreloadingEligibility::kBatterySaverEnabled;
   }
-  return GetPreloadPagesState(prefs) != PreloadPagesState::kNoPreloading;
+  if (GetPreloadPagesState(prefs) == PreloadPagesState::kNoPreloading) {
+    return content::PreloadingEligibility::kPreloadingDisabled;
+  }
+
+  return content::PreloadingEligibility::kEligible;
 }
 
 }  // namespace prefetch

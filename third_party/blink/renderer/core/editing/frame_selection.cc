@@ -28,6 +28,7 @@
 #include <stdio.h>
 
 #include "base/auto_reset.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/accessibility/blink_ax_event_intent.h"
@@ -137,7 +138,7 @@ VisibleSelectionInFlatTree FrameSelection::ComputeVisibleSelectionInFlatTree()
   return selection_editor_->ComputeVisibleSelectionInFlatTree();
 }
 
-SelectionInDOMTree FrameSelection::GetSelectionInDOMTree() const {
+const SelectionInDOMTree& FrameSelection::GetSelectionInDOMTree() const {
   return selection_editor_->GetSelectionInDOMTree();
 }
 
@@ -257,29 +258,18 @@ bool FrameSelection::SetSelectionDeprecated(
   if (!is_changed && is_handle_visible_ == should_show_handle &&
       is_directional_ == options.IsDirectional())
     return false;
+  Document& current_document = GetDocument();
   if (is_changed) {
     AssertUserSelection(new_selection, options);
     selection_editor_->SetSelectionAndEndTyping(new_selection);
-
-    // The old selection might not be valid, and thus not iteratable. If that's
-    // the case, notify that all selection was removed and use an empty range as
-    // the old selection.
-    EphemeralRangeInFlatTree old_range;
-    if (old_selection_in_dom_tree.IsValidFor(GetDocument())) {
-      old_range =
-          ToEphemeralRangeInFlatTree(old_selection_in_dom_tree.ComputeRange());
-    } else {
-      DisplayLockUtilities::SelectionRemovedFromDocument(GetDocument());
-    }
-    DisplayLockUtilities::SelectionChanged(
-        old_range, ToEphemeralRangeInFlatTree(new_selection.ComputeRange()));
+    NotifyDisplayLockForSelectionChange(
+        current_document, old_selection_in_dom_tree, new_selection);
   }
   is_directional_ = options.IsDirectional();
   should_shrink_next_tap_ = options.ShouldShrinkNextTap();
   is_handle_visible_ = should_show_handle;
   ScheduleVisualUpdateForPaintInvalidationIfNeeded();
 
-  const Document& current_document = GetDocument();
   frame_->GetEditor().RespondToChangedSelection();
   DCHECK_EQ(current_document, GetDocument());
   return true;
@@ -297,15 +287,17 @@ void FrameSelection::DidSetSelectionDeprecated(
   // If the selection is currently being modified via the "Modify" method, we
   // should already have more detailed information on the stack than can be
   // deduced in this method.
-  ScopedBlinkAXEventIntent scoped_blink_ax_event_intent(
-      is_being_modified_
-          ? BlinkAXEventIntent()
-          : new_selection.IsNone()
-                ? BlinkAXEventIntent::FromClearedSelection(set_selection_by)
-                : BlinkAXEventIntent::FromNewSelection(
-                      options.Granularity(), new_selection.IsBaseFirst(),
-                      set_selection_by),
-      &current_document);
+  absl::optional<ScopedBlinkAXEventIntent> scoped_blink_ax_event_intent;
+  if (current_document.ExistingAXObjectCache()) {
+    scoped_blink_ax_event_intent.emplace(
+        is_being_modified_ ? BlinkAXEventIntent()
+        : new_selection.IsNone()
+            ? BlinkAXEventIntent::FromClearedSelection(set_selection_by)
+            : BlinkAXEventIntent::FromNewSelection(options.Granularity(),
+                                                   new_selection.IsBaseFirst(),
+                                                   set_selection_by),
+        &current_document);
+  }
 
   if (!new_selection.IsNone() && !options.DoNotSetFocus()) {
     SetFocusedNodeIfNeeded();
@@ -452,11 +444,15 @@ bool FrameSelection::Modify(SelectionModifyAlteration alter,
       frame_->GetEditor().Behavior().ShouldSkipSpaceWhenMovingRight()
           ? PlatformWordBehavior::kWordSkipSpaces
           : PlatformWordBehavior::kWordDontSkipSpaces;
-  ScopedBlinkAXEventIntent scoped_blink_ax_event_intent(
-      BlinkAXEventIntent::FromModifiedSelection(
-          alter, direction, granularity, set_selection_by,
-          selection_modifier.DirectionOfSelection(), platform_word_behavior),
-      &GetDocument());
+  Document& document = GetDocument();
+  absl::optional<ScopedBlinkAXEventIntent> scoped_blink_ax_event_intent;
+  if (document.ExistingAXObjectCache()) {
+    scoped_blink_ax_event_intent.emplace(
+        BlinkAXEventIntent::FromModifiedSelection(
+            alter, direction, granularity, set_selection_by,
+            selection_modifier.DirectionOfSelection(), platform_word_behavior),
+        &document);
+  }
 
   // For MacOS only selection is directionless at the beginning.
   // Selection gets direction on extent.
@@ -855,8 +851,7 @@ void FrameSelection::NotifyAccessibilityForSelectionChange() {
   AXObjectCache* cache = GetDocument().ExistingAXObjectCache();
   if (!cache)
     return;
-  const Position& extent = GetSelectionInDOMTree().Extent();
-  Node* anchor = extent.ComputeContainerNode();
+  Node* anchor = GetSelectionInDOMTree().Extent().ComputeContainerNode();
   if (anchor) {
     cache->SelectionChanged(anchor);
   } else {
@@ -873,6 +868,28 @@ void FrameSelection::NotifyCompositorForSelectionChange() {
 
 void FrameSelection::NotifyEventHandlerForSelectionChange() {
   frame_->GetEventHandler().GetSelectionController().NotifySelectionChanged();
+}
+
+void FrameSelection::NotifyDisplayLockForSelectionChange(
+    Document& document,
+    const SelectionInDOMTree& old_selection,
+    const SelectionInDOMTree& new_selection) {
+  if (DisplayLockUtilities::NeedsSelectionChangedUpdate(document) ||
+      (!old_selection.IsNone() && old_selection.GetDocument() != document &&
+       DisplayLockUtilities::NeedsSelectionChangedUpdate(
+           *old_selection.GetDocument()))) {
+    // The old selection might not be valid, and thus not iterable. If
+    // that's the case, notify that all selection was removed and use an empty
+    // range as the old selection.
+    EphemeralRangeInFlatTree old_range;
+    if (old_selection.IsValidFor(document)) {
+      old_range = ToEphemeralRangeInFlatTree(old_selection.ComputeRange());
+    } else {
+      DisplayLockUtilities::SelectionRemovedFromDocument(document);
+    }
+    DisplayLockUtilities::SelectionChanged(
+        old_range, ToEphemeralRangeInFlatTree(new_selection.ComputeRange()));
+  }
 }
 
 void FrameSelection::FocusedOrActiveStateChanged() {

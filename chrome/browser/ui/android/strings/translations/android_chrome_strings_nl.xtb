@@ -12,7 +12,6 @@
 <translation id="1062628064301375934">Help ons het web meer privé te maken</translation>
 <translation id="107147699690128016">Als je de bestandsextensie wijzigt, wordt het bestand mogelijk in een andere app geopend. Daardoor kan het een gevaar vormen voor je apparaat.</translation>
 <translation id="1089606299949659462">Beoordeling voltooid</translation>
-<translation id="1091604859693995976">Vernieuwen om te bekijken</translation>
 <translation id="1095761715416917775">Zorg dat je altijd toegang hebt tot je gesynchroniseerde gegevens</translation>
 <translation id="1100066534610197918">Open in nieuw tabblad in groep</translation>
 <translation id="1103142993930332957">Wil je Chrome helpen verbeteren?</translation>
@@ -519,6 +518,7 @@ Privéstatustokens verbeteren de privacy op het web en kunnen niet worden gebrui
 <translation id="3830886834687455630">Update Google Play-services om je wachtwoorden te checken</translation>
 <translation id="3845098929839618392">Openen op incognitotabblad</translation>
 <translation id="3856096718352044181">Controleer of dit een geldige provider is of probeer het later opnieuw</translation>
+<translation id="3858127568696903256">Bekijk hier content die je volgt</translation>
 <translation id="3858860766373142691">Naam</translation>
 <translation id="3861633093716975811">Populaire video's</translation>
 <translation id="3874520961715512166">Site verwijderd</translation>
@@ -761,6 +761,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="510275257476243843">1 uur resterend</translation>
 <translation id="5115811374190515607">naar <ph name="PRODUCT_NAME" /></translation>
 <translation id="5118713593561876160">Interesses</translation>
+<translation id="5122378528687922675">Vraag zo nodig je ouder (<ph name="PARENT_NAME_1" /> of <ph name="PARENT_NAME_2" />) om hulp</translation>
 <translation id="5123685120097942451">Incognitotabblad</translation>
 <translation id="5126510351761255129">Je kaart verifiëren</translation>
 <translation id="5132942445612118989">Je wachtwoorden, geschiedenis en meer synchroniseren op al je apparaten</translation>
@@ -1106,7 +1107,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties te bekijken
 <translation id="6903907808598579934">Synchronisatie aanzetten</translation>
 <translation id="6908998565271542516">Optie om een op volledige hoogte geopende website wel of niet goed te keuren</translation>
 <translation id="6909589135458168665">Pagina's vooraf laden</translation>
-<translation id="692924882724759447">Bekijk hier de sites die je volgt</translation>
 <translation id="6942665639005891494">Je kunt via de menuoptie Instellingen op elk gewenst moment de standaard downloadlocatie wijzigen</translation>
 <translation id="694267552845942083">Je past momenteel je synchronisatie-instellingen aan. Als je synchronisatie wilt aanzetten, tik je onderaan het scherm op Bevestigen. Omhoog navigeren</translation>
 <translation id="6945221475159498467">Selecteren</translation>
@@ -1148,6 +1148,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties te bekijken
 <translation id="7177466738963138057">Je kunt dit later wijzigen in Instellingen</translation>
 <translation id="7177873915659574692">Kan geen QR-code maken. De URL is langer dan <ph name="CHARACTER_LIMIT" /> tekens.</translation>
 <translation id="7177959540995930968">Bekijk meer informatie over deze functies in de Chrome-instellingen.</translation>
+<translation id="7180611975245234373">Vernieuwen</translation>
 <translation id="718226107353899806">Je kunt maximaal <ph name="MAX_NUM_REACTIONS" /> reacties toevoegen</translation>
 <translation id="7183693674623539380">Tabbladgroep: <ph name="TITLE_OF_GROUP" /></translation>
 <translation id="7187993566681480880">Beschermt je op Chrome en kan worden gebruikt om de beveiliging in andere Google-apps te verbeteren als je bent ingelogd.</translation>
@@ -1331,6 +1332,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties te bekijken
 <translation id="8084285576995584326">De gegevens van je Google-account beheren</translation>
 <translation id="808747664143081553">Verbonden met apparaat</translation>
 <translation id="8088176524274673045">Als je wilt delen met mensen in de buurt, laat je ze deze QR-code scannen</translation>
+<translation id="8090732854597034573">Vraag zo nodig je ouder om hulp</translation>
 <translation id="8100969750121413114">Log in om Chrome te personaliseren</translation>
 <translation id="8103578431304235997">Incognitotabblad</translation>
 <translation id="8105613260829665809">Door verder te gaan, ga je akkoord met de <ph name="BEGIN_TOS_LINK" />Servicevoorwaarden<ph name="END_TOS_LINK" />.\nChrome stuurt gebruiks- en crashgegevens naar Google om de app te helpen verbeteren. <ph name="BEGIN_UMA_LINK" />Beheren<ph name="END_UMA_LINK" /></translation>
@@ -1339,6 +1341,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties te bekijken
 <translation id="8109613176066109935">Zet de synchronisatie aan om op al je apparaten toegang tot je bookmarks te hebben</translation>
 <translation id="8110024788458304985">Help de functies en prestaties van Chrome te verbeteren</translation>
 <translation id="8110087112193408731">Chrome-activiteit in Digitaal welzijn bekijken?</translation>
+<translation id="8118117428362942925">Vraag zo nodig je ouder (<ph name="PARENT_NAME" />) om hulp</translation>
 <translation id="8127542551745560481">Homepage bewerken</translation>
 <translation id="8130309322784422030">Je opgeslagen inloggegevens zijn misschien verouderd</translation>
 <translation id="813082847718468539">Sitegegevens bekijken</translation>
@@ -1375,7 +1378,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties te bekijken
 <translation id="835847953965672673"><ph name="NUMBER_OF_DOWNLOADS" /> downloads hersteld</translation>
 <translation id="8368001212524806591">Prijs volgen</translation>
 <translation id="8383226135083126309"><ph name="BEGIN_BOLD" />Hoe we deze gegevens gebruiken:<ph name="END_BOLD" /> Chrome kan een schatting van je interesses maken. Later kan een site die je bezoekt Chrome vragen om je interesses te bekijken zodat de advertenties die je ziet kunnen worden gepersonaliseerd.</translation>
-<translation id="8387617938027387193">Je identiteit verifiëren</translation>
+<translation id="8387617938027387193">Verifiëren dat jij het bent</translation>
 <translation id="8393700583063109961">Bericht verzenden</translation>
 <translation id="8394720698884623075">Checkt URL's aan de hand van een lijst met onveilige sites die is opgeslagen in Chrome</translation>
 <translation id="8402673309244746971">Naar Je volgt</translation>

@@ -14,7 +14,7 @@
 namespace ash {
 
 class AppListViewDelegate;
-class AppListSearchView;
+class ProductivityLauncherSearchView;
 class SearchBoxView;
 class SearchResultPageAnchoredDialog;
 class SystemShadow;
@@ -55,23 +55,19 @@ class ASH_EXPORT SearchResultPageView : public AppListPage {
       const gfx::Rect& search_box_bounds) const override;
   void OnAnimationStarted(AppListState from_state,
                           AppListState to_state) override;
-  void OnAnimationUpdated(double progress,
-                          AppListState from_state,
-                          AppListState to_state) override;
   gfx::Size GetPreferredSearchBoxSize() const override;
 
   // Whether any results are available for selection within the search result
   // UI.
   bool CanSelectSearchResults() const;
 
-  AppListSearchView* search_view_for_test() { return search_view_; }
+  ProductivityLauncherSearchView* productivity_launcher_search_view_for_test() {
+    return productivity_launcher_search_view_;
+  }
 
   SearchResultPageAnchoredDialog* dialog_for_test() {
     return dialog_controller_->dialog();
   }
-
-  // Returns background color for the given state.
-  SkColor GetBackgroundColorForState(AppListState state) const;
 
   // Hide zero state search result view when ProductivityLauncher is enabled.
   bool ShouldShowSearchResultView() const;
@@ -107,7 +103,7 @@ class ASH_EXPORT SearchResultPageView : public AppListPage {
   int GetCornerRadiusForSearchResultsState(SearchResultsState state);
 
   // Search result container used for productivity launcher.
-  AppListSearchView* search_view_ = nullptr;
+  ProductivityLauncherSearchView* productivity_launcher_search_view_ = nullptr;
 
   // View containing SearchCardView instances. Owned by view hierarchy.
   views::View* root_view_ = nullptr;

@@ -4,7 +4,6 @@
 
 import("//build/config/chromeos/ui_mode.gni")
 import("//crypto/features.gni")
-import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/typescript/ts_definitions.gni")
 import("//tools/typescript/ts_library.gni")
 import("//ui/webui/resources/include_polymer.gni")
@@ -128,36 +127,13 @@ group("preprocess") {
   }
 }
 
-group("closure_compile") {
-  deps = [
-    "js:closure_compile",
-    "js:closure_compile_modules",
-  ]
-}
-
 # TypeScript targets
 
 preprocessed_folder = "$target_gen_dir/preprocessed"
 
-if (is_chromeos_ash) {
-  checked_in_dts_files = [
-    "js/cr.m.d.ts",
-    "js/load_time_data.m.d.ts",
-  ]
-
-  # Copies checked-in .d.ts files to the preprocess folder so that they are
-  # discovered by TSC the same way generated .d.ts files are.
-  copy("copy_checked_in_dts_files") {
-    sources = checked_in_dts_files
-    outputs = [ "$preprocessed_folder/{{source_target_relative}}" ]
-  }
-}
-
 # Files for which .d.ts files will be auto-generated with ts_definitions().
-generate_definitions_js_files = [ "js/assert.js" ]
-
 if (is_ios) {
-  generate_definitions_js_files += [ "js/ios/web_ui.js" ]
+  generate_definitions_js_files = [ "js/ios/web_ui.js" ]
 }
 
 ts_library("library") {
@@ -216,26 +192,21 @@ ts_library("library") {
     "//tools/typescript/definitions/settings_private.d.ts",
   ]
 
-  # Checked-in .d.ts files.
-  if (is_chromeos_ash) {
-    foreach(_file, checked_in_dts_files) {
-      definitions += [ "$root_dir/$_file" ]
-    }
-  }
-
   # Auto-generated .d.ts files.
-  foreach(_file, generate_definitions_js_files) {
-    definitions += [ "$root_dir/" + string_replace(_file, ".js", ".d.ts") ]
+  if (is_ios) {
+    foreach(_file, generate_definitions_js_files) {
+      definitions += [ "$root_dir/" + string_replace(_file, ".js", ".d.ts") ]
+    }
   }
 
   deps = [ "//third_party/polymer/v3_0:library" ]
   extra_deps += [
-    ":generate_definitions",
     ":preprocess",
+    "mojo:library",
   ]
 
-  if (is_chromeos_ash) {
-    extra_deps += [ ":copy_checked_in_dts_files" ]
+  if (is_ios) {
+    extra_deps += [ ":generate_definitions" ]
   }
 }
 
@@ -247,17 +218,14 @@ generate_grd("build_ts_grdp") {
       filter_include(get_target_outputs(":library"), [ "*.manifest" ])
 }
 
-ts_definitions("generate_definitions") {
-  root_dir = preprocessed_folder
-  out_dir = preprocessed_folder
-  js_files = generate_definitions_js_files
-  extra_deps = [
-    ":preprocess",
-    "mojo:library",
-  ]
-  if (is_chromeos_ash) {
-    # Copy checked-in d.ts files first, so that |generate_definitions| leverages
-    # these files, instead of accidentally auto-generating them.
-    extra_deps += [ ":copy_checked_in_dts_files" ]
+if (is_ios) {
+  ts_definitions("generate_definitions") {
+    root_dir = preprocessed_folder
+    out_dir = preprocessed_folder
+    js_files = generate_definitions_js_files
+    extra_deps = [
+      ":preprocess",
+      "mojo:library",
+    ]
   }
 }

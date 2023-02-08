@@ -49,8 +49,8 @@ void FakeCrosHealthd::Initialize() {
   CHECK(!g_instance);
   g_instance = new FakeCrosHealthd();
 
-  if (chromeos::mojo_service_manager::IsServiceManagerBound()) {
-    auto* proxy = chromeos::mojo_service_manager::GetServiceManagerProxy();
+  if (mojo_service_manager::IsServiceManagerBound()) {
+    auto* proxy = mojo_service_manager::GetServiceManagerProxy();
     proxy->Register(
         chromeos::mojo_services::kCrosHealthdDiagnostics,
         g_instance->diagnostics_provider_.BindNewPipeAndPassRemote());
@@ -793,6 +793,30 @@ void FakeCrosHealthd::RunLedLitUpRoutine(
     mojo::PendingRemote<mojom::LedLitUpRoutineReplier> replier,
     RunLedLitUpRoutineCallback callback) {
   last_run_routine_ = mojom::DiagnosticRoutineEnum::kLedLitUp;
+  std::move(callback).Run(run_routine_response_.Clone());
+}
+
+void FakeCrosHealthd::RunEmmcLifetimeRoutine(
+    RunEmmcLifetimeRoutineCallback callback) {
+  last_run_routine_ = mojom::DiagnosticRoutineEnum::kEmmcLifetime;
+  std::move(callback).Run(run_routine_response_.Clone());
+}
+
+void FakeCrosHealthd::RunAudioSetVolumeRoutine(
+    uint64_t node_id,
+    uint8_t volume,
+    bool mute_on,
+    RunAudioSetVolumeRoutineCallback callback) {
+  last_run_routine_ = mojom::DiagnosticRoutineEnum::kAudioSetVolume;
+  std::move(callback).Run(run_routine_response_.Clone());
+}
+
+void FakeCrosHealthd::RunAudioSetGainRoutine(
+    uint64_t node_id,
+    uint8_t gain,
+    bool mute_on,
+    RunAudioSetGainRoutineCallback callback) {
+  last_run_routine_ = mojom::DiagnosticRoutineEnum::kAudioSetGain;
   std::move(callback).Run(run_routine_response_.Clone());
 }
 

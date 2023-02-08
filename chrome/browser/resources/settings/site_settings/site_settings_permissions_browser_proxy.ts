@@ -9,11 +9,13 @@
 
 // clang-format off
 import {sendWithPromise} from 'chrome://resources/js/cr.js';
+
+import {ContentSettingsTypes} from './constants.js';
 // clang-format on
 
 export interface UnusedSitePermissions {
   origin: string;
-  permissions: string[];
+  permissions: ContentSettingsTypes[];
 }
 
 /**
@@ -22,6 +24,21 @@ export interface UnusedSitePermissions {
  */
 export interface SiteSettingsPermissionsBrowserProxy {
   /**
+   * Mark revoked permissions of unused sites as reviewed by the user so they
+   * will not be shown again.
+   */
+  acknowledgeRevokedUnusedSitePermissionsList(
+      unusedSitePermissionsList: UnusedSitePermissions[]): void;
+
+  /**
+   * Allow permissions again for an unused site where permissions were
+   * auto-revoked. The origin will not appear again for the user to review and
+   * permissions will not be auto-revoked for this origin in the future.
+   */
+  allowPermissionsAgainForUnusedSite(unusedSitePermissions:
+                                         UnusedSitePermissions): void;
+
+  /**
    * Gets the unused origins along with the permissions they have been granted.
    */
   getRevokedUnusedSitePermissionsList(): Promise<UnusedSitePermissions[]>;
@@ -29,6 +46,18 @@ export interface SiteSettingsPermissionsBrowserProxy {
 
 export class SiteSettingsPermissionsBrowserProxyImpl implements
     SiteSettingsPermissionsBrowserProxy {
+  acknowledgeRevokedUnusedSitePermissionsList(unusedSitePermissionsList:
+                                                  UnusedSitePermissions[]) {
+    chrome.send(
+        'acknowledgeRevokedUnusedSitePermissionsList',
+        [unusedSitePermissionsList]);
+  }
+
+  allowPermissionsAgainForUnusedSite(unusedSitePermissions:
+                                         UnusedSitePermissions) {
+    chrome.send('allowPermissionsAgainForUnusedSite', [unusedSitePermissions]);
+  }
+
   getRevokedUnusedSitePermissionsList() {
     return sendWithPromise('getRevokedUnusedSitePermissionsList');
   }

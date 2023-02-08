@@ -128,6 +128,7 @@
 <translation id="2084108471225856927">Mga setting ng device</translation>
 <translation id="2084809735218147718">Sumesenyas ng salamat</translation>
 <translation id="2088690981887365033">VPN network</translation>
+<translation id="2114191879048183086"><ph name="NUMBER_OF_ITEMS" /> (na) item ang ide-delete at hindi mo mare-restore ang mga ito.</translation>
 <translation id="2122305276694332719">Ang awtomatikong pagkonekta sa nakatagong network ay nagbibigay-daan sa ibang tao na makita ang iyong device at ibang setting ng network, at hindi ito inirerekomenda.</translation>
 <translation id="2125607626296734455">Khmer</translation>
 <translation id="2139545522194199494">Network <ph name="NETWORK_INDEX" /> sa <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Lakas ng Signal <ph name="SIGNAL_STRENGTH" />%, Pinapamahalaan ng iyong Administrator, Kumonekta</translation>
@@ -395,6 +396,7 @@
 <translation id="4398096759193130964">I-restore ang mga item o i-drag ang mga ito sa isang bagong folder sa labas ng trash</translation>
 <translation id="4401287888955153199">I-extract lahat</translation>
 <translation id="4410695710508688828">Hindi naisagawa ang operasyon sa pag-extract. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4414834425328380570">Ide-delete ang "<ph name="FILE_NAME" />" at hindi mo ito mare-restore.</translation>
 <translation id="4418686080762064601">Gumawa ng shortcut para sa iyong mga file</translation>
 <translation id="4425149324548788773">Aking Drive</translation>
 <translation id="4439427728133035643">Network <ph name="NETWORK_INDEX" /> sa <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Lakas ng Signal <ph name="SIGNAL_STRENGTH" />%, Kumonekta</translation>
@@ -412,7 +414,6 @@
 <translation id="4552759165874948005"><ph name="NETWORK_TYPE" /> network, lakas ng signal na <ph name="SIGNAL_STRENGTH" />%</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> na file</translation>
-<translation id="457386861538956877">Higit pa...</translation>
 <translation id="4579744207439506346">Idinagdag ang <ph name="ENTRY_NAME" /> sa pagpipilian.</translation>
 <translation id="4583436353463424810">Walang kamakailang dokumento</translation>
 <translation id="4594543368593301662">Ipinapakita ang mga resulta para sa <ph name="SEARCH_TERM" />.</translation>
@@ -502,7 +503,7 @@
 <translation id="5159383109919732130"><ph name="BEGIN_BOLD" />Huwag munang alisin ang iyong device!<ph name="END_BOLD" />
    <ph name="LINE_BREAKS" />
    Maaaring magsanhi ng pagkawala ng data ang pag-aalis sa iyong device habang ginagamit ito.  Mangyaring maghintay hanggang matapos ang operasyon, pagkatapos ay i-eject ang device gamit ang Files app.</translation>
-<translation id="5163869187418756376">Nabigo ang pagbabahagi. Suriin ang iyong koneksyon at subukang muli sa ibang pagkakataon.</translation>
+<translation id="5163869187418756376">Nabigo ang pagbabahagi. Suriin ang iyong koneksyon at subukan ulit sa ibang pagkakataon.</translation>
 <translation id="516592729076796170">US Programmer Dvorak</translation>
 <translation id="5177526793333269655">View na thumbnail</translation>
 <translation id="5181896909298187506">Walang kamakailang file</translation>
@@ -561,6 +562,7 @@
 <translation id="5580591966435005537">virtual machine</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5583664733673201137">Puno na ang lapad ng bantas</translation>
+<translation id="5596627076506792578">Higit pang opsyon</translation>
 <translation id="5602622065581044566">Bulgarian na may Phonetic keyboard</translation>
 <translation id="5605830556594064952">US Dvorak</translation>
 <translation id="5618330573454123917">Idinisenyo ang file na ito para sa isang computer na gumagamit ng Macintosh software. Hindi ito compatible sa iyong device na gumagamit ng ChromeOS. <ph name="BEGIN_LINK_HELP" />Matuto Pa<ph name="END_LINK_HELP" /> tungkol sa pagbubukas ng mga file sa ChromeOS.</translation>
@@ -571,7 +573,7 @@
 <translation id="5678784840044122290">Magiging available ang Linux application sa iyong Terminal at maaari din itong magpakita ng icon sa Launcher mo.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Hindi makadiskonekta sa isang archive o virtual disk<ph name="END_BOLD" />
    <ph name="LINE_BREAKS" />
-   Isara ang lahat ng file sa archive o virtual disk, pagkatapos ay subukang muli.</translation>
+   Isara ang lahat ng file sa archive o virtual disk, pagkatapos ay subukan ulit.</translation>
 <translation id="5691596662111998220">Whoops, hindi na umiiral ang <ph name="FILE_NAME" />.</translation>
 <translation id="5698411045597658393"><ph name="NETWORK_NAME" />, I-unlock</translation>
 <translation id="5700087501958648444">Impormasyon ng audio</translation>
@@ -798,7 +800,7 @@
 <translation id="7592775719802218421">Ginagawang available offline ang <ph name="FILE_NAME" /></translation>
 <translation id="7600126690270271294">Serbian</translation>
 <translation id="7603724359189955920">Mga Grid</translation>
-<translation id="7627790789328695202">Whoops, umiiral na ang <ph name="FILE_NAME" />. Palitan ang pangalan nito at subukang muli.</translation>
+<translation id="7627790789328695202">Whoops, umiiral na ang <ph name="FILE_NAME" />. Palitan ang pangalan nito at subukan ulit.</translation>
 <translation id="7628656427739290098">Kumpleto na nang <ph name="PERCENT" />%.</translation>
 <translation id="7649070708921625228">Tulong</translation>
 <translation id="7654209398114106148">Inililipat ang <ph name="NUMBER_OF_ITEMS" /> (na) item...</translation>
@@ -927,6 +929,7 @@
 <translation id="8560515948038859357">Cantonese</translation>
 <translation id="8561206103590473338">Elepante</translation>
 <translation id="8566466896628108558">Network <ph name="NETWORK_INDEX" /> sa <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, Lakas ng Signal <ph name="SIGNAL_STRENGTH" />%, Na-block ng iyong Administrator, Mga Detalye</translation>
+<translation id="8568374623837201676">Permanenteng i-delete ang file na ito?</translation>
 <translation id="8569764466147087991">Piliin ang isang file para buksan</translation>
 <translation id="8577897833047451336">Croatian</translation>
 <translation id="8578308463707544055">Indonesian</translation>

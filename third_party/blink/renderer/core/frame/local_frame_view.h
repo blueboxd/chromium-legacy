@@ -199,6 +199,13 @@ class CORE_EXPORT LocalFrameView final
   bool WillDoPaintHoldingForFCP() const;
 
   unsigned LayoutCountForTesting() const { return layout_count_for_testing_; }
+  // Returns the number of block layout calls.
+  //  * It's incremented when NGBlockNode::Layout() is called with NeedsLayout()
+  //  * It can overflow. Do not use it in production.
+  uint32_t BlockLayoutCountForTesting() const {
+    return block_layout_count_for_testing_;
+  }
+  void IncBlockLayoutCount() { ++block_layout_count_for_testing_; }
 
   void CountObjectsNeedingLayout(unsigned& needs_layout_objects,
                                  unsigned& total_objects,
@@ -472,6 +479,8 @@ class CORE_EXPORT LocalFrameView final
 
   void ScheduleAnimation(base::TimeDelta = base::TimeDelta(),
                          base::Location location = base::Location::Current());
+
+  void OnCommitRequested();
 
   // FIXME: This should probably be renamed as the 'inSubtreeLayout' parameter
   // passed around the LocalFrameView layout methods can be true while this
@@ -1034,6 +1043,7 @@ class CORE_EXPORT LocalFrameView final
 
   bool layout_scheduling_enabled_;
   unsigned layout_count_for_testing_;
+  uint32_t block_layout_count_for_testing_ = 0;
   unsigned lifecycle_update_count_for_testing_;
   HeapTaskRunnerTimer<LocalFrameView> update_plugins_timer_;
 

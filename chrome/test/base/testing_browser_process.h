@@ -145,6 +145,7 @@ class TestingBrowserProcess : public BrowserProcess {
 #if !BUILDFLAG(IS_ANDROID)
   SerialPolicyAllowedPorts* serial_policy_allowed_ports() override;
   HidPolicyAllowedDevices* hid_policy_allowed_devices() override;
+  HidSystemTrayIcon* hid_system_tray_icon() override;
 #endif
   BuildState* GetBuildState() override;
   breadcrumbs::BreadcrumbPersistentStorageManager*
@@ -168,6 +169,11 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetShuttingDown(bool is_shutting_down);
   void ShutdownBrowserPolicyConnector();
   TestingBrowserProcessPlatformPart* GetTestPlatformPart();
+  void SetStatusTray(std::unique_ptr<StatusTray> status_tray);
+#if !BUILDFLAG(IS_ANDROID)
+  void SetHidSystemTrayIcon(
+      std::unique_ptr<HidSystemTrayIcon> hid_system_tray_icon);
+#endif
 
  private:
   // See CreateInstance() and DestoryInstance() above.
@@ -233,8 +239,11 @@ class TestingBrowserProcess : public BrowserProcess {
 #if !BUILDFLAG(IS_ANDROID)
   std::unique_ptr<SerialPolicyAllowedPorts> serial_policy_allowed_ports_;
   std::unique_ptr<HidPolicyAllowedDevices> hid_policy_allowed_devices_;
+  std::unique_ptr<HidSystemTrayIcon> hid_system_tray_icon_;
   BuildState build_state_;
 #endif
+
+  std::unique_ptr<StatusTray> status_tray_;
 };
 
 // RAII (resource acquisition is initialization) for TestingBrowserProcess.

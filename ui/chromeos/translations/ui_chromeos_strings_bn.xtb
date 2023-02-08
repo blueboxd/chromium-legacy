@@ -128,6 +128,7 @@
 <translation id="2084108471225856927">ডিভাইস সেটিংস</translation>
 <translation id="2084809735218147718">ধন্যবাদ জানাচ্ছেন এমন ব্যক্তির ছবি</translation>
 <translation id="2088690981887365033">ভিপিএন নেটওয়ার্ক</translation>
+<translation id="2114191879048183086"><ph name="NUMBER_OF_ITEMS" />টি আইটেম মুছে ফেলা হবে এবং আপনি সেগুলি আর ফিরিয়ে আনতে পারবেন না।</translation>
 <translation id="2122305276694332719">কোনও লুকানো নেটওয়ার্কে অটোমেটিক কানেক্ট করলে, অন্যরা আপনার ডিভাইস ও নেটওয়ার্কের কিছু সেটিংস দেখার সুযোগ পান। তাই, এটি সাজেস্ট করা হয় না।</translation>
 <translation id="2125607626296734455">খেমের</translation>
 <translation id="2139545522194199494"><ph name="NETWORK_COUNT" />টির মধ্যে <ph name="NETWORK_INDEX" /> নম্বর নেটওয়ার্ক, <ph name="NETWORK_NAME" />, সিগন্যাল: <ph name="SIGNAL_STRENGTH" />%, আপনার অ্যাডমিনিস্ট্রেটর ম্যানেজ করে, কানেক্ট করুন</translation>
@@ -395,6 +396,7 @@
 <translation id="4398096759193130964">আইটেমগুলি ফিরিয়ে আনুন বা ট্র্যাশের বাইরে নতুন কোনও ফোল্ডারে এগুলি টেনে আনুন</translation>
 <translation id="4401287888955153199">জিপ ফাইল থেকে সব কন্টেন্ট এক্সট্র্যাক্ট করুন</translation>
 <translation id="4410695710508688828">এক্সট্র্যাক্ট করা যায়নি। <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4414834425328380570">"<ph name="FILE_NAME" />" মুছে ফেলা হবে এবং আপনি আর এটি ফিরিয়ে আনতে পারবেন না।</translation>
 <translation id="4418686080762064601">আপনার ফাইলের একটি শর্টকাট তৈরি করুন</translation>
 <translation id="4425149324548788773">আমার ড্রাইভ</translation>
 <translation id="4439427728133035643"><ph name="NETWORK_COUNT" />টির মধ্যে <ph name="NETWORK_INDEX" /> নম্বর নেটওয়ার্ক, <ph name="NETWORK_NAME" />, সিগন্যাল: <ph name="SIGNAL_STRENGTH" />%, কানেক্ট করুন</translation>
@@ -412,7 +414,6 @@
 <translation id="4552759165874948005"><ph name="NETWORK_TYPE" /> নেটওয়ার্ক, সিগন্যাল:<ph name="SIGNAL_STRENGTH" />%</translation>
 <translation id="4559767610552730302">বোকে</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ফাইল</translation>
-<translation id="457386861538956877">আরও...</translation>
 <translation id="4579744207439506346">বেছে নেওয়া ফাইল বা ফোল্ডারের সাথে <ph name="ENTRY_NAME" /> যোগ করা হয়েছে।</translation>
 <translation id="4583436353463424810">কোনও সাম্প্রতিক ডকুমেন্ট নেই</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" />-এর ফলাফল দেখানো হচ্ছে।</translation>
@@ -560,6 +561,7 @@
 <translation id="5580591966435005537">ভার্চুয়াল মেশিন</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5583664733673201137">যতিচিহ্নের প্রস্থ 'সম্পূর্ণ' হিসেবে সেট করা হয়েছে</translation>
+<translation id="5596627076506792578">আরও বিকল্পগুলি</translation>
 <translation id="5602622065581044566">বুলগেরিয়ান ভাষায় ফোনেটিক কীবোর্ড</translation>
 <translation id="5605830556594064952">মার্কিন যুক্তরাষ্ট্রীয় দভোরাক</translation>
 <translation id="5618330573454123917">Macintosh সফ্টওয়্যার ব্যবহার করে এমন একটি কম্পিউটারের জন্য এই ফাইলটি ডিজাইন করা হয়েছে। আপনার ডিভাইস ChromeOS-এ চলে বলে সেটি এর জন্য মানানসই নয়। ChromeOS-এ ফাইল খোলা সম্পর্কে <ph name="BEGIN_LINK_HELP" />আরও জানুন<ph name="END_LINK_HELP" />।</translation>
@@ -926,6 +928,7 @@
 <translation id="8560515948038859357">ক্যান্টনিজ</translation>
 <translation id="8561206103590473338">হাতি</translation>
 <translation id="8566466896628108558"><ph name="NETWORK_COUNT" />টি নেটওয়ার্কের মধ্যে <ph name="NETWORK_INDEX" /> নম্বর নেটওয়ার্ক, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, সিগন্যাল ক্ষমতা <ph name="SIGNAL_STRENGTH" />%, আপনার অ্যাডমিনিস্ট্রেটর ব্লক করেছেন, বিবরণ</translation>
+<translation id="8568374623837201676">এই ফাইলটি স্থায়ীভাবে মুছে ফেলতে চান?</translation>
 <translation id="8569764466147087991">খুলতে একটি স্ক্রিপ্ট বেছে নিন</translation>
 <translation id="8577897833047451336">ক্রোয়েশিয়ান</translation>
 <translation id="8578308463707544055">ইন্দোনেশিয়ান</translation>

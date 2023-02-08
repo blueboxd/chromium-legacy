@@ -23,7 +23,6 @@
 #include "base/trace_event/trace_event.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/webgpu_cmd_format.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -272,6 +271,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
     NOTREACHED();
     return nullptr;
   }
+#if !BUILDFLAG(IS_ANDROID)
   std::unique_ptr<gles2::AbstractTexture> CreateAbstractTexture(
       GLenum target,
       GLenum internal_format,
@@ -284,6 +284,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
     NOTREACHED();
     return nullptr;
   }
+#endif
   bool IsCompressedTextureFormat(unsigned format) override {
     NOTREACHED();
     return false;
@@ -499,23 +500,20 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
            WGPUDevice device,
            WGPUTextureUsage usage,
            std::vector<WGPUTextureFormat> view_formats) {
-      viz::ResourceFormat format = (representation->format()).resource_format();
+      viz::SharedImageFormat format = representation->format();
       // Include list of formats this is tested to work with.
       // See gpu/command_buffer/tests/webgpu_mailbox_unittest.cc
-      switch (format) {
+      if (format != viz::SharedImageFormat::kBGRA_8888 &&
 // TODO(crbug.com/1241369): Handle additional formats.
 #if !BUILDFLAG(IS_MAC)
-        case viz::ResourceFormat::RGBA_8888:
-#endif  // !BUILDFLAG(IS_MAC)
-        case viz::ResourceFormat::BGRA_8888:
-        case viz::ResourceFormat::RGBA_F16:
-          break;
-        default:
-          return nullptr;
+          format != viz::SharedImageFormat::kRGBA_8888 &&
+#endif
+          format != viz::SharedImageFormat::kRGBA_F16) {
+        return nullptr;
       }
 
       // Make sure we can create a WebGPU texture for this format
-      if (viz::ToWGPUFormat(format) == WGPUTextureFormat_Undefined) {
+      if (ToWGPUFormat(format) == WGPUTextureFormat_Undefined) {
         return nullptr;
       }
 
@@ -2036,13 +2034,11 @@ error::Error WebGPUDecoderImpl::HandleSetWebGPUExecutionContextToken(
       NOTREACHED();
       return error::kInvalidArguments;
   }
-  if (enable_unsafe_webgpu_) {
-    isolation_key_provider_->GetIsolationKey(
-        execution_context_token,
-        base::BindPostTask(base::SingleThreadTaskRunner::GetCurrentDefault(),
-                           base::BindOnce(&WebGPUDecoderImpl::OnGetIsolationKey,
-                                          weak_ptr_factory_.GetWeakPtr())));
-  }
+  isolation_key_provider_->GetIsolationKey(
+      execution_context_token,
+      base::BindPostTask(base::SingleThreadTaskRunner::GetCurrentDefault(),
+                         base::BindOnce(&WebGPUDecoderImpl::OnGetIsolationKey,
+                                        weak_ptr_factory_.GetWeakPtr())));
   return error::kNoError;
 }
 

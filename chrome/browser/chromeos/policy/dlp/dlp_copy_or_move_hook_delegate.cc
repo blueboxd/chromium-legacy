@@ -11,8 +11,10 @@
 #include "base/check.h"
 #include "base/files/file.h"
 #include "base/functional/bind.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/bind_post_task.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
@@ -32,10 +34,16 @@ void GotAccess(base::WeakPtr<DlpCopyOrMoveHookDelegate> hook_delegate,
                const storage::FileSystemURL& destination,
                DlpCopyOrMoveHookDelegate::StatusCallback callback,
                std::unique_ptr<file_access::ScopedFileAccess> access) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   bool is_allowed = access->is_allowed();
   if (hook_delegate.MaybeValid()) {
-    hook_delegate->GotAccess(source, destination, std::move(access));
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(&DlpCopyOrMoveHookDelegate::GotAccess, hook_delegate,
+                       source, destination, std::move(access)));
   }
+  // The `callback` was bound to the calling thread in OnBeginProcessFile and
+  // will be executed on the IO thread.
   if (is_allowed) {
     std::move(callback).Run(base::File::FILE_OK);
   } else {
@@ -43,6 +51,36 @@ void GotAccess(base::WeakPtr<DlpCopyOrMoveHookDelegate> hook_delegate,
   }
 }
 #endif
+
+void RequestCopyAccess(base::WeakPtr<DlpCopyOrMoveHookDelegate> hook_delegate,
+                       const storage::FileSystemURL& source,
+                       const storage::FileSystemURL& destination,
+                       DlpCopyOrMoveHookDelegate::StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+// TODO(http://b/259183766): We might need to consider the lacros case,
+// too.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  DlpRulesManager* dlp_rules_manager =
+      DlpRulesManagerFactory::GetForPrimaryProfile();
+  if (!dlp_rules_manager) {
+    std::move(callback).Run(base::File::FILE_OK);
+    return;
+  }
+  DlpFilesController* dlp_files_controller =
+      dlp_rules_manager->GetDlpFilesController();
+  if (!dlp_files_controller) {
+    std::move(callback).Run(base::File::FILE_OK);
+    return;
+  }
+  dlp_files_controller->RequestCopyAccess(
+      source, destination,
+      base::BindOnce(&policy::GotAccess, hook_delegate, source, destination,
+                     std::move(callback)));
+#else
+  NOTREACHED();
+#endif
+}
 
 }  // namespace
 
@@ -55,6 +93,7 @@ void DlpCopyOrMoveHookDelegate::GotAccess(
     const storage::FileSystemURL& source,
     const storage::FileSystemURL& destination,
     std::unique_ptr<file_access::ScopedFileAccess> access) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   current_access_map_.emplace(std::make_pair(source.path(), destination.path()),
                               std::move(access));
 }
@@ -63,10 +102,15 @@ void DlpCopyOrMoveHookDelegate::OnBeginProcessFile(
     const storage::FileSystemURL& source_url,
     const storage::FileSystemURL& destination_url,
     StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  StatusCallback continuation = base::BindPostTask(
+      base::SequencedTaskRunner::GetCurrentDefault(), std::move(callback));
   content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&DlpCopyOrMoveHookDelegate::RequestCopyAccess,
-                                base::Unretained(this), source_url,
-                                destination_url, std::move(callback)));
+      FROM_HERE,
+      base::BindOnce(
+          &RequestCopyAccess,
+          base::SupportsWeakPtr<DlpCopyOrMoveHookDelegate>::AsWeakPtr(),
+          source_url, destination_url, std::move(continuation)));
 }
 
 void DlpCopyOrMoveHookDelegate::OnEndCopy(
@@ -91,40 +135,9 @@ void DlpCopyOrMoveHookDelegate::OnError(
 void DlpCopyOrMoveHookDelegate::OnEnd(
     const storage::FileSystemURL& source_url,
     const storage::FileSystemURL& destination_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   current_access_map_.erase(
       std::make_pair(source_url.path(), destination_url.path()));
-}
-
-void DlpCopyOrMoveHookDelegate::RequestCopyAccess(
-    const storage::FileSystemURL& source,
-    const storage::FileSystemURL& destination,
-    DlpCopyOrMoveHookDelegate::StatusCallback callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-// TODO(http://b/259183766): We might need to consider the lacros case,
-// too.
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  DlpRulesManager* dlp_rules_manager =
-      DlpRulesManagerFactory::GetForPrimaryProfile();
-  if (!dlp_rules_manager) {
-    std::move(callback).Run(base::File::FILE_OK);
-    return;
-  }
-  DlpFilesController* dlp_files_controller =
-      dlp_rules_manager->GetDlpFilesController();
-  if (!dlp_files_controller) {
-    std::move(callback).Run(base::File::FILE_OK);
-    return;
-  }
-  dlp_files_controller->RequestCopyAccess(
-      source, destination,
-      base::BindOnce(
-          &policy::GotAccess,
-          base::SupportsWeakPtr<DlpCopyOrMoveHookDelegate>::AsWeakPtr(), source,
-          destination, std::move(callback)));
-#else
-  NOTREACHED();
-#endif
 }
 
 }  // namespace policy

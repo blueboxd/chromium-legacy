@@ -75,6 +75,10 @@
 #include "content/public/browser/tts_environment_android.h"
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS)
+#include "content/public/browser/firewall_hole_proxy.h"
+#endif
+
 namespace content {
 
 std::unique_ptr<BrowserMainParts> ContentBrowserClient::CreateBrowserMainParts(
@@ -507,6 +511,7 @@ bool ContentBrowserClient::IsAttributionReportingOperationAllowed(
 }
 
 bool ContentBrowserClient::IsSharedStorageAllowed(
+    content::BrowserContext* browser_context,
     content::RenderFrameHost* rfh,
     const url::Origin& top_frame_origin,
     const url::Origin& accessing_origin) {

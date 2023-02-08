@@ -49,6 +49,7 @@ constexpr wchar_t kEventReadControl[] = L"D:(A;;RC;;;WD)";
 constexpr wchar_t kEventReadControlModify[] = L"D:(A;;DCRC;;;WD)";
 constexpr wchar_t kNullDacl[] = L"D:NO_ACCESS_CONTROL";
 constexpr wchar_t kEmptyDacl[] = L"D:";
+constexpr wchar_t kAccessCheckSd[] = L"O:SYG:SYD:P(A;;0x1fffff;;;WD)";
 constexpr SECURITY_INFORMATION kAllSecurityInfo =
     OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION |
     DACL_SECURITY_INFORMATION | LABEL_SECURITY_INFORMATION;
@@ -104,9 +105,64 @@ base::win::ScopedHandle DuplicateHandle(const base::win::ScopedHandle& handle,
 
 void ExpectSid(const absl::optional<Sid>& sid, WellKnownSid known_sid) {
   ASSERT_TRUE(sid);
-  auto compare_sid = Sid::FromKnownSid(known_sid);
-  ASSERT_TRUE(compare_sid);
-  EXPECT_EQ(*sid, *compare_sid);
+  EXPECT_EQ(*sid, Sid(known_sid));
+}
+
+void AccessCheckError(const absl::optional<AccessCheckResult>& result,
+                      DWORD expected) {
+  EXPECT_FALSE(result.has_value());
+  EXPECT_EQ(::GetLastError(), expected);
+}
+
+void AccessCheckStatusError(const absl::optional<AccessCheckResult>& result,
+                            DWORD expected) {
+  ASSERT_TRUE(result.has_value());
+  EXPECT_FALSE(result->access_status);
+  EXPECT_EQ(::GetLastError(), expected);
+}
+
+void AccessCheckTest(const absl::optional<AccessCheckResult>& result,
+                     ACCESS_MASK expected_access) {
+  ASSERT_TRUE(result.has_value());
+  EXPECT_TRUE(result->access_status);
+  EXPECT_EQ(result->granted_access, expected_access);
+}
+
+template <typename T>
+void AccessCheckTest(T type,
+                     ACCESS_MASK generic_read,
+                     ACCESS_MASK generic_write,
+                     ACCESS_MASK generic_execute,
+                     ACCESS_MASK generic_all) {
+  absl::optional<SecurityDescriptor> sd =
+      SecurityDescriptor::FromSddl(kAccessCheckSd);
+  ASSERT_TRUE(sd);
+  absl::optional<AccessToken> token = AccessToken::FromCurrentProcess(
+      /*impersonation=*/true, TOKEN_ADJUST_DEFAULT);
+  ASSERT_TRUE(token.has_value());
+  AccessCheckTest(sd->AccessCheck(*token, GENERIC_READ, type), generic_read);
+  AccessCheckTest(sd->AccessCheck(*token, GENERIC_WRITE, type), generic_write);
+  AccessCheckTest(sd->AccessCheck(*token, GENERIC_EXECUTE, type),
+                  generic_execute);
+  AccessCheckTest(sd->AccessCheck(*token, GENERIC_ALL, type), generic_all);
+  AccessCheckTest(sd->AccessCheck(*token, 0x1fffff, type), 0x1fffff);
+  AccessCheckTest(sd->AccessCheck(*token, MAXIMUM_ALLOWED, type), 0x1fffff);
+  ASSERT_TRUE(sd->SetMandatoryLabel(SECURITY_MANDATORY_LOW_RID, 0,
+                                    SYSTEM_MANDATORY_LABEL_NO_WRITE_UP));
+  ASSERT_TRUE(token->SetIntegrityLevel(SECURITY_MANDATORY_UNTRUSTED_RID));
+  AccessCheckTest(sd->AccessCheck(*token, GENERIC_READ, type), generic_read);
+  AccessCheckTest(sd->AccessCheck(*token, GENERIC_EXECUTE, type),
+                  generic_execute);
+  AccessCheckStatusError(sd->AccessCheck(*token, GENERIC_WRITE, type),
+                         ERROR_ACCESS_DENIED);
+  ASSERT_TRUE(sd->SetMandatoryLabel(SECURITY_MANDATORY_UNTRUSTED_RID, 0,
+                                    SYSTEM_MANDATORY_LABEL_NO_WRITE_UP));
+  AccessCheckTest(sd->AccessCheck(*token, GENERIC_ALL, type), generic_all);
+}
+
+void AccessCheckTest(const GENERIC_MAPPING& type) {
+  AccessCheckTest(type, type.GenericRead, type.GenericWrite,
+                  type.GenericExecute, type.GenericAll);
 }
 
 }  // namespace
@@ -120,11 +176,11 @@ TEST(SecurityDescriptorTest, Initialize) {
   EXPECT_FALSE(sd.sacl());
   EXPECT_FALSE(sd.sacl_protected());
 
-  sd.set_owner(*Sid::FromKnownSid(WellKnownSid::kBuiltinUsers));
+  sd.set_owner(Sid(WellKnownSid::kBuiltinUsers));
   ExpectSid(sd.owner(), WellKnownSid::kBuiltinUsers);
   sd.clear_owner();
   EXPECT_FALSE(sd.owner());
-  sd.set_group(*Sid::FromKnownSid(WellKnownSid::kLocalSystem));
+  sd.set_group(Sid(WellKnownSid::kLocalSystem));
   ExpectSid(sd.group(), WellKnownSid::kLocalSystem);
   sd.clear_group();
   EXPECT_FALSE(sd.group());
@@ -304,40 +360,44 @@ TEST(SecurityDescriptorTest, SetDaclEntries) {
   std::vector<ExplicitAccessEntry> ace_list;
   EXPECT_TRUE(sd.SetDaclEntries(ace_list));
   EXPECT_EQ(sd.ToSddl(DACL_SECURITY_INFORMATION), kEmptyDacl);
-  ace_list.emplace_back(*Sid::FromKnownSid(WellKnownSid::kWorld),
-                        SecurityAccessMode::kGrant, EVENT_ALL_ACCESS, 0);
+  ace_list.emplace_back(Sid(WellKnownSid::kWorld), SecurityAccessMode::kGrant,
+                        EVENT_ALL_ACCESS, 0);
   EXPECT_TRUE(sd.SetDaclEntries(ace_list));
   EXPECT_EQ(sd.ToSddl(DACL_SECURITY_INFORMATION), kEvent);
-  ace_list.emplace_back(*Sid::FromKnownSid(WellKnownSid::kLocalSystem),
+  ace_list.emplace_back(Sid(WellKnownSid::kLocalSystem),
                         SecurityAccessMode::kDeny, EVENT_MODIFY_STATE, 0);
   EXPECT_TRUE(sd.SetDaclEntries(ace_list));
   EXPECT_EQ(sd.ToSddl(DACL_SECURITY_INFORMATION), kEventWithSystem);
-  ace_list.emplace_back(*Sid::FromKnownSid(WellKnownSid::kWorld),
-                        SecurityAccessMode::kRevoke, EVENT_MODIFY_STATE, 0);
+  ace_list.emplace_back(Sid(WellKnownSid::kWorld), SecurityAccessMode::kRevoke,
+                        EVENT_MODIFY_STATE, 0);
   EXPECT_TRUE(sd.SetDaclEntries(ace_list));
   EXPECT_EQ(sd.ToSddl(DACL_SECURITY_INFORMATION), kEventSystemOnly);
 }
 
 TEST(SecurityDescriptorTest, SetDaclEntry) {
   SecurityDescriptor sd;
-  EXPECT_TRUE(sd.SetDaclEntry(*Sid::FromKnownSid(WellKnownSid::kWorld),
+  EXPECT_TRUE(sd.SetDaclEntry(Sid(WellKnownSid::kWorld),
                               SecurityAccessMode::kGrant, READ_CONTROL, 0));
   EXPECT_EQ(sd.ToSddl(DACL_SECURITY_INFORMATION), kEventReadControl);
-  EXPECT_TRUE(sd.SetDaclEntry(*Sid::FromKnownSid(WellKnownSid::kWorld),
+  EXPECT_TRUE(sd.SetDaclEntry(Sid(WellKnownSid::kWorld),
                               SecurityAccessMode::kGrant, EVENT_MODIFY_STATE,
                               0));
   EXPECT_EQ(sd.ToSddl(DACL_SECURITY_INFORMATION), kEventReadControlModify);
-  EXPECT_TRUE(sd.SetDaclEntry(*Sid::FromKnownSid(WellKnownSid::kWorld),
+  EXPECT_TRUE(sd.SetDaclEntry(Sid(WellKnownSid::kWorld),
                               SecurityAccessMode::kSet, EVENT_ALL_ACCESS, 0));
   EXPECT_EQ(sd.ToSddl(DACL_SECURITY_INFORMATION), kEvent);
-  EXPECT_TRUE(sd.SetDaclEntry(*Sid::FromKnownSid(WellKnownSid::kLocalSystem),
+  EXPECT_TRUE(sd.SetDaclEntry(Sid(WellKnownSid::kLocalSystem),
                               SecurityAccessMode::kDeny, EVENT_MODIFY_STATE,
                               0));
   EXPECT_EQ(sd.ToSddl(DACL_SECURITY_INFORMATION), kEventWithSystem);
-  EXPECT_TRUE(sd.SetDaclEntry(*Sid::FromKnownSid(WellKnownSid::kWorld),
+  EXPECT_TRUE(sd.SetDaclEntry(Sid(WellKnownSid::kWorld),
                               SecurityAccessMode::kRevoke, EVENT_ALL_ACCESS,
                               0));
   EXPECT_EQ(sd.ToSddl(DACL_SECURITY_INFORMATION), kEventSystemOnly);
+  sd.clear_dacl();
+  EXPECT_TRUE(sd.SetDaclEntry(WellKnownSid::kWorld, SecurityAccessMode::kGrant,
+                              READ_CONTROL, 0));
+  EXPECT_EQ(sd.ToSddl(DACL_SECURITY_INFORMATION), kEventReadControl);
 }
 
 TEST(SecurityDescriptorTest, FromFile) {
@@ -370,7 +430,7 @@ TEST(SecurityDescriptorTest, WriteToFile) {
   EXPECT_EQ(curr_sd->ToSddl(DACL_SECURITY_INFORMATION), kInheritedFile);
 
   AccessControlList new_acl;
-  EXPECT_TRUE(new_acl.SetEntry(*Sid::FromKnownSid(WellKnownSid::kBuiltinUsers),
+  EXPECT_TRUE(new_acl.SetEntry(Sid(WellKnownSid::kBuiltinUsers),
                                SecurityAccessMode::kGrant, FILE_ALL_ACCESS, 0));
   SecurityDescriptor new_sd;
   new_sd.set_dacl(new_acl);
@@ -414,7 +474,9 @@ TEST(SecurityDescriptorTest, FromName) {
   EXPECT_TRUE(SecurityDescriptor::FromName(L".", SecurityObjectType::kFile,
                                            kAllSecurityInfo));
   EXPECT_FALSE(SecurityDescriptor::FromName(
-      L"Default", SecurityObjectType::kWindow, kAllSecurityInfo));
+      L"WinSta0", SecurityObjectType::kWindowStation, kAllSecurityInfo));
+  EXPECT_FALSE(SecurityDescriptor::FromName(
+      L"Default", SecurityObjectType::kDesktop, kAllSecurityInfo));
 }
 
 TEST(SecurityDescriptorTest, WriteToName) {
@@ -452,6 +514,12 @@ TEST(SecurityDescriptorTest, FromHandle) {
   auto dup_handle = DuplicateHandle(handle, EVENT_MODIFY_STATE);
   EXPECT_FALSE(SecurityDescriptor::FromHandle(
       dup_handle.get(), SecurityObjectType::kKernel, kAllSecurityInfo));
+  EXPECT_TRUE(SecurityDescriptor::FromHandle(::GetProcessWindowStation(),
+                                             SecurityObjectType::kWindowStation,
+                                             kAllSecurityInfo));
+  EXPECT_TRUE(SecurityDescriptor::FromHandle(
+      ::GetThreadDesktop(::GetCurrentThreadId()), SecurityObjectType::kDesktop,
+      kAllSecurityInfo));
 }
 
 TEST(SecurityDescriptorTest, WriteToHandle) {
@@ -474,6 +542,53 @@ TEST(SecurityDescriptorTest, WriteToHandle) {
       handle.get(), SecurityObjectType::kKernel, kAllSecurityInfo);
   ASSERT_TRUE(curr_sd);
   EXPECT_EQ(curr_sd->ToSddl(kDaclLabelSecurityInfo), kEventProtectedWithLabel);
+}
+
+TEST(SecurityDescriptorTest, AccessCheck) {
+  absl::optional<SecurityDescriptor> sd =
+      SecurityDescriptor::FromSddl(kAccessCheckSd);
+  ASSERT_TRUE(sd);
+  absl::optional<AccessToken> token = AccessToken::FromCurrentProcess();
+  ASSERT_TRUE(token);
+  AccessCheckError(sd->AccessCheck(*token, 1, SecurityObjectType::kFile),
+                   ERROR_NO_IMPERSONATION_TOKEN);
+  token = AccessToken::FromCurrentProcess(/*impersonation=*/true);
+  ASSERT_TRUE(token);
+  AccessCheckError(sd->AccessCheck(*token, 1, SecurityObjectType::kKernel),
+                   ERROR_INVALID_PARAMETER);
+  sd->set_dacl(AccessControlList());
+  AccessCheckStatusError(sd->AccessCheck(*token, 1, SecurityObjectType::kFile),
+                         ERROR_ACCESS_DENIED);
+  sd->clear_owner();
+  AccessCheckError(sd->AccessCheck(*token, 1, SecurityObjectType::kFile),
+                   ERROR_INVALID_SECURITY_DESCR);
+  AccessCheckTest({1, 2, 4, 8});
+  AccessCheckTest(SecurityObjectType::kFile, FILE_GENERIC_READ,
+                  FILE_GENERIC_WRITE, FILE_GENERIC_EXECUTE, FILE_ALL_ACCESS);
+  AccessCheckTest(SecurityObjectType::kRegistry, KEY_READ, KEY_WRITE,
+                  KEY_EXECUTE, KEY_ALL_ACCESS);
+  AccessCheckTest(
+      SecurityObjectType::kDesktop,
+      STANDARD_RIGHTS_READ | DESKTOP_READOBJECTS | DESKTOP_ENUMERATE,
+      STANDARD_RIGHTS_WRITE | DESKTOP_CREATEWINDOW | DESKTOP_CREATEMENU |
+          DESKTOP_HOOKCONTROL | DESKTOP_JOURNALRECORD |
+          DESKTOP_JOURNALPLAYBACK | DESKTOP_WRITEOBJECTS,
+      STANDARD_RIGHTS_EXECUTE | DESKTOP_SWITCHDESKTOP,
+      STANDARD_RIGHTS_REQUIRED | DESKTOP_CREATEMENU | DESKTOP_CREATEWINDOW |
+          DESKTOP_ENUMERATE | DESKTOP_HOOKCONTROL | DESKTOP_JOURNALPLAYBACK |
+          DESKTOP_JOURNALRECORD | DESKTOP_READOBJECTS | DESKTOP_SWITCHDESKTOP |
+          DESKTOP_WRITEOBJECTS);
+  AccessCheckTest(
+      SecurityObjectType::kWindowStation,
+      STANDARD_RIGHTS_READ | WINSTA_ENUMDESKTOPS | WINSTA_ENUMERATE |
+          WINSTA_READATTRIBUTES | WINSTA_READSCREEN,
+      STANDARD_RIGHTS_WRITE | WINSTA_ACCESSCLIPBOARD | WINSTA_CREATEDESKTOP |
+          WINSTA_WRITEATTRIBUTES,
+      STANDARD_RIGHTS_EXECUTE | WINSTA_ACCESSGLOBALATOMS | WINSTA_EXITWINDOWS,
+      STANDARD_RIGHTS_REQUIRED | WINSTA_ACCESSCLIPBOARD |
+          WINSTA_ACCESSGLOBALATOMS | WINSTA_CREATEDESKTOP |
+          WINSTA_ENUMDESKTOPS | WINSTA_ENUMERATE | WINSTA_EXITWINDOWS |
+          WINSTA_READATTRIBUTES | WINSTA_READSCREEN | WINSTA_WRITEATTRIBUTES);
 }
 
 }  // namespace base::win

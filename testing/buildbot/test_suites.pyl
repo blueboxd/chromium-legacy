@@ -2224,17 +2224,6 @@
           'shards': 40,
         },
       },
-      # TODO(crbug.com/1371630): Move to one of the fuchsia_common_gtests* sets.
-      'content_browsertests': {
-        'args': [
-          '--test-arg=--disable-gpu',
-          '--test-arg=--headless',
-          '--test-arg=--ozone-platform=headless',
-        ],
-        'swarming': {
-          'shards': 8,
-        },
-      },
       'sync_integration_tests': {},
       'unit_tests': {
         'args': [
@@ -3498,33 +3487,6 @@
       },
     },
 
-    'gpu_webgl2_conformance_telemetry_tests': {
-      'webgl2_conformance_tests': {
-        'telemetry_test_name': 'webgl2_conformance',
-        'args': [
-          '--webgl-conformance-version=2.0.1',
-          # The current working directory when run via isolate is
-          # out/Debug or out/Release. Reference this file relatively to
-          # it.
-          '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
-          # On dual-GPU devices we want the high-performance GPU to be active
-          '--extra-browser-args=--force_high_performance_gpu',
-          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
-        ],
-        'android_args': [
-          '$$MAGIC_SUBSTITUTION_GPUTelemetryNoRootForUnrootedDevices',
-        ],
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-        'swarming': {
-          # These tests currently take about an hour and fifteen minutes
-          # to run. Split them into roughly 5-minute shards.
-          'shards': 20,
-        },
-      },
-    },
-
     'gpu_webgl2_conformance_validating_telemetry_tests': {
       'webgl2_conformance_validating_tests': {
         'telemetry_test_name': 'webgl2_conformance',
@@ -3807,15 +3769,6 @@
       },
     },
 
-    'gpu_win_intel_specific_telemetry_tests': {
-      'power_measurement_test': {
-        'telemetry_test_name': 'power',
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-      },
-    },
-
     'headless_browser_gtests': {
       'headless_browsertests': {},
       'headless_unittests': {},
@@ -3877,11 +3830,6 @@
           'shards': 8,
         },
       },
-      'ios_chrome_signin_eg2tests_module': {
-      'swarming': {
-          'shards': 6,
-        },
-      },
       'ios_chrome_ui_eg2tests_module': {
         'swarming': {
           'shards': 12,
@@ -3895,6 +3843,11 @@
       'ios_chrome_settings_eg2tests_module': {
         'swarming': {
           'shards': 3,
+        },
+      },
+      'ios_chrome_signin_eg2tests_module': {
+      'swarming': {
+          'shards': 6,
         },
       },
       'ios_chrome_smoke_eg2tests_module': {},
@@ -4350,14 +4303,7 @@
     'mac_specific_chromium_gtests': {
       'power_sampler_unittests': {},
       'sandbox_unittests': {},
-      'updater_tests': {
-        'args': [
-          # Timeouts based on empirical observations of test runtimes, 2021-07.
-          '--test-launcher-timeout=90000',
-          '--ui-test-action-max-timeout=45000',
-          '--ui-test-action-timeout=40000',
-        ],
-      },
+      'updater_tests': {},
       'xr_browser_tests': {
         'test': 'xr_browser_tests',
       },
@@ -4969,23 +4915,8 @@
     },
 
     'updater_gtests_mac': {
-      'updater_tests': {
-        'args': [
-          '--gtest_shuffle',
-          # Timeouts based on empirical observations of test runtimes, 2021-07.
-          '--test-launcher-timeout=90000',
-          '--ui-test-action-max-timeout=45000',
-          '--ui-test-action-timeout=40000',
-        ],
-      },
+      'updater_tests': {},
       'updater_tests_system': {
-        'args': [
-          '--gtest_shuffle',
-          # Timeouts based on empirical observations of test runtimes, 2021-07.
-          '--test-launcher-timeout=90000',
-          '--ui-test-action-max-timeout=45000',
-          '--ui-test-action-timeout=40000',
-        ],
         'swarming': {
           'dimension_sets': [
             {
@@ -4998,24 +4929,8 @@
     },
 
     'updater_gtests_win': {
-      'updater_tests': {
-        'args': [
-          '--gtest_shuffle',
-          # Timeouts based on empirical observations of test runtimes, 2021-07.
-          '--test-launcher-timeout=90000',
-          '--ui-test-action-max-timeout=45000',
-          '--ui-test-action-timeout=40000',
-        ],
-      },
+      'updater_tests': {},
       'updater_tests_system': {
-        'args': [
-          '--gtest_shuffle',
-          # Timeouts based on empirical observations of test runtimes, 2021-07.
-          '--test-launcher-timeout=90000',
-          '--ui-test-action-max-timeout=45000',
-          '--ui-test-action-timeout=40000',
-          '--exclude-paths-from-win-defender',
-        ],
         'swarming': {
           'dimension_sets': [
             {
@@ -5028,14 +4943,6 @@
 
     'updater_gtests_win_uac': {
       'updater_tests_system': {
-        'args': [
-          '--gtest_shuffle',
-          # Timeouts based on empirical observations of test runtimes, 2021-07.
-          '--test-launcher-timeout=90000',
-          '--ui-test-action-max-timeout=45000',
-          '--ui-test-action-timeout=40000',
-          '--exclude-paths-from-win-defender',
-        ],
         'swarming': {
           'dimension_sets': [
             {
@@ -5044,17 +4951,7 @@
           ]
         }
       },
-      'updater_tests_win_uac': {
-        'args': [
-          '--test-launcher-bot-mode',
-          '--cfi-diag=0',
-          '--gtest_shuffle',
-          # Timeouts based on empirical observations of test runtimes, 2021-07.
-          '--test-launcher-timeout=90000',
-          '--ui-test-action-max-timeout=45000',
-          '--ui-test-action-timeout=40000',
-        ],
-      },
+      'updater_tests_win_uac': {},
     },
 
     'upload_perfetto': {
@@ -5379,26 +5276,8 @@
           ],
         },
       },
-      'updater_tests': {
-        'args': [
-          # Timeouts based on empirical observations of test runtimes, 2021-07.
-          '--test-launcher-timeout=90000',
-          '--ui-test-action-max-timeout=45000',
-          '--ui-test-action-timeout=40000',
-        ],
-      },
-      'updater_tests_system': {
-        'args': [
-          '--test-launcher-print-test-stdio=always',
-          # Timeouts based on empirical
-          # observations of test runtimes,
-          # 2021-07.
-          '--test-launcher-timeout=90000',
-          '--ui-test-action-max-timeout=45000',
-          '--ui-test-action-timeout=40000',
-          '--ui-test-action-timeout=40000',
-        ],
-      },
+      'updater_tests': {},
+      'updater_tests_system': {},
       'zucchini_unittests': {},
     },
 
@@ -6348,7 +6227,6 @@
       'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
-      'gpu_win_intel_specific_telemetry_tests',
     ],
 
     'gpu_fyi_win_optional_isolated_scripts': [
@@ -6401,7 +6279,6 @@
     'gpu_v8_desktop_passthrough_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
-      'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
     ],
 
@@ -7288,7 +7165,7 @@
     'lacros_skylab_tests_amd64_generic_rel': {
       'lacros_skylab_tests': {
         'variants': [
-          'CROS_EVE_PUBLIC',
+          'CROS_ZORK_PUBLIC',
         ]
       },
     },
@@ -7529,11 +7406,6 @@
         'variants': [
           'WIN10_INTEL_HD_630_STABLE',
           'WIN10_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-      'gpu_win_intel_specific_telemetry_tests': {
-        'variants': [
-          'WIN10_INTEL_HD_630_STABLE',
         ],
       },
     },

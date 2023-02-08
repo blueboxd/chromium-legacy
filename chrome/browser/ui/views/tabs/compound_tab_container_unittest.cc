@@ -517,3 +517,114 @@ TEST_F(CompoundTabContainerTest, UpdateAnimationTarget) {
   tab_container_->UpdateAnimationTarget(tab, animation_target,
                                         TabPinned::kUnpinned);
 }
+
+TEST_F(CompoundTabContainerTest, SubContainersOverlap) {
+  // With only pinned tabs, the compound container should match the pinned
+  // container's width.
+  views::View* const pinned_container = AddTab(0, TabPinned::kPinned)->parent();
+  tab_container_->CompleteAnimationAndLayout();
+  EXPECT_EQ(tab_container_->GetPreferredSize().width(),
+            pinned_container->GetPreferredSize().width());
+  EXPECT_EQ(tab_container_->GetMinimumSize().width(),
+            pinned_container->GetMinimumSize().width());
+  EXPECT_EQ(pinned_container->bounds().width(),
+            pinned_container->GetPreferredSize().width());
+
+  // With both subcontainers nonempty, the compound container's width should be
+  // less than the sum of its parts.
+  views::View* const unpinned_container =
+      AddTab(1, TabPinned::kUnpinned)->parent();
+  tab_container_->CompleteAnimationAndLayout();
+  EXPECT_LT(tab_container_->GetPreferredSize().width(),
+            pinned_container->GetPreferredSize().width() +
+                unpinned_container->GetPreferredSize().width());
+  EXPECT_LT(tab_container_->GetMinimumSize().width(),
+            pinned_container->GetMinimumSize().width() +
+                unpinned_container->GetMinimumSize().width());
+  // And the two containers should overlap.
+  EXPECT_LT(unpinned_container->bounds().x(),
+            pinned_container->bounds().right());
+
+  // Same as case 1, but reversed.
+  RemoveTab(0);
+  tab_container_->CompleteAnimationAndLayout();
+  EXPECT_EQ(tab_container_->GetPreferredSize().width(),
+            unpinned_container->GetPreferredSize().width());
+  EXPECT_EQ(tab_container_->GetMinimumSize().width(),
+            unpinned_container->GetMinimumSize().width());
+  EXPECT_EQ(unpinned_container->bounds().width(),
+            unpinned_container->GetPreferredSize().width());
+}
+
+TEST_F(CompoundTabContainerTest, AvailableWidth) {
+  views::View* const pinned_container = AddTab(0, TabPinned::kPinned)->parent();
+  views::View* const unpinned_container =
+      AddTab(1, TabPinned::kUnpinned)->parent();
+
+  // `pinned_container` gets as much space as we can give it - in this test
+  // harness, that's `tab_container_`'s width.
+  EXPECT_EQ(tab_container_->GetAvailableSize(pinned_container).width().value(),
+            tab_container_->width());
+
+  // `unpinned_container` doesn't, because `pinned_container` has some reserved.
+  EXPECT_LT(
+      tab_container_->GetAvailableSize(unpinned_container).width().value(),
+      tab_container_->width());
+
+  // Because of the overlap, `unpinned_container` should have slightly more
+  // available width than `(total available - pinned_container reserved width)`.
+  EXPECT_GT(
+      tab_container_->GetAvailableSize(unpinned_container).width().value(),
+      tab_container_->width() - pinned_container->GetPreferredSize().width());
+}
+
+TEST_F(CompoundTabContainerTest, GetEventAndTooltipHandlerForOverlappingArea) {
+  Tab* const pinned_tab = AddTab(0, TabPinned::kPinned);
+  views::View* const pinned_container = pinned_tab->parent();
+  Tab* const unpinned_tab = AddTab(1, TabPinned::kUnpinned);
+  views::View* const unpinned_container = unpinned_tab->parent();
+  tab_container_->CompleteAnimationAndLayout();
+
+  // Points squarely in each tab should be handled by the tab.
+  EXPECT_EQ(pinned_tab, tab_container_->GetEventHandlerForPoint(
+                            pinned_container->bounds().CenterPoint()));
+  LOG(ERROR) << tab_container_
+                    ->GetEventHandlerForPoint(
+                        pinned_container->bounds().CenterPoint())
+                    ->GetClassName();
+  EXPECT_EQ(pinned_tab, tab_container_->GetTooltipHandlerForPoint(
+                            pinned_container->bounds().CenterPoint()));
+  EXPECT_EQ(unpinned_tab, tab_container_->GetEventHandlerForPoint(
+                              unpinned_container->bounds().CenterPoint()));
+  EXPECT_EQ(unpinned_tab, tab_container_->GetTooltipHandlerForPoint(
+                              unpinned_container->bounds().CenterPoint()));
+
+  auto averagePoint = [](gfx::Point point, gfx::Point other) {
+    return gfx::Point((point.x() + other.x()) / 2, (point.y() + other.y()) / 2);
+  };
+
+  const gfx::Point pinned_container_right =
+      pinned_container->bounds().right_center();
+  const gfx::Point unpinned_container_left =
+      unpinned_container->bounds().left_center();
+  const gfx::Point center =
+      averagePoint(pinned_container_right, unpinned_container_left);
+
+  // A point in the overlap area, but left of the tab divider between the two
+  // containers, should go to the pinned container.
+  const gfx::Point pinned_overlap_test_point =
+      averagePoint(center, unpinned_container_left);
+  EXPECT_EQ(pinned_tab,
+            tab_container_->GetEventHandlerForPoint(pinned_overlap_test_point));
+  EXPECT_EQ(pinned_tab, tab_container_->GetTooltipHandlerForPoint(
+                            pinned_overlap_test_point));
+
+  // A point in the overlap area, but right of the tab divider between the two
+  // containers, should go to the unpinned container.
+  const gfx::Point unpinned_overlap_test_point =
+      averagePoint(center, pinned_container_right);
+  EXPECT_EQ(unpinned_tab, tab_container_->GetEventHandlerForPoint(
+                              unpinned_overlap_test_point));
+  EXPECT_EQ(unpinned_tab, tab_container_->GetTooltipHandlerForPoint(
+                              unpinned_overlap_test_point));
+}

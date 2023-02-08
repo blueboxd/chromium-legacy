@@ -432,6 +432,8 @@ const NGLayoutResult* NGBlockNode::Layout(
   // CachedLayoutResult() might clear flags, so remember the need for layout
   // before attempting to hit the cache.
   bool needed_layout = box_->NeedsLayout();
+  if (needed_layout)
+    box_->GetFrameView()->IncBlockLayoutCount();
 
   const NGLayoutResult* layout_result = box_->CachedLayoutResult(
       constraint_space, break_token, early_break, column_spanner_path,
@@ -739,14 +741,12 @@ const NGLayoutResult* NGBlockNode::LayoutRepeatableRoot(
 
   wtf_size_t index = FragmentIndex(break_token);
   const auto& fragment = To<NGPhysicalBoxFragment>(result->PhysicalFragment());
-  // Unless it's the very last fragment to be generated, we need to create a
-  // special "repeat" break token, which will be the incoming break token when
-  // generating the next fragment. This is needed in order to get the sequence
-  // numbers right, which is important when adding the result to the LayoutBox,
-  // and it's also needed by pre-paint / paint.
-  const NGBlockBreakToken* outgoing_break_token = nullptr;
-  if (constraint_space.ShouldRepeat())
-    outgoing_break_token = NGBlockBreakToken::CreateRepeated(*this, index);
+  // We need to create a special "repeat" break token, which will be the
+  // incoming break token when generating the next fragment. This is needed in
+  // order to get the sequence numbers right, which is important when adding the
+  // result to the LayoutBox, and it's also needed by pre-paint / paint.
+  const NGBlockBreakToken* outgoing_break_token =
+      NGBlockBreakToken::CreateRepeated(*this, index);
   auto mutator = fragment.GetMutableForCloning();
   mutator.SetBreakToken(outgoing_break_token);
   if (!is_first) {
@@ -760,25 +760,40 @@ const NGLayoutResult* NGBlockNode::LayoutRepeatableRoot(
   }
 
   if (!constraint_space.ShouldRepeat()) {
-    // This is the last fragment. It won't be repeated again. We have already
-    // created fragments for the repeated nodes, but the cloning was shallow.
-    // We're now ready to deep-clone the entire subtree for each repeated
-    // fragment, and update the layout result vector in the LayoutBox, including
-    // setting correct break tokens with sequence numbers.
-    wtf_size_t fragment_count = box_->PhysicalFragmentCount();
-    DCHECK_GE(fragment_count, 1u);
-    box_->ClearNeedsLayout();
-    for (wtf_size_t i = 1; i < fragment_count; i++) {
-      const NGPhysicalBoxFragment& physical_fragment =
-          *box_->GetPhysicalFragment(i);
-      is_first = i == 1;
-      bool is_last = i + 1 == fragment_count;
-      NGFragmentRepeater repeater(is_first, is_last);
-      repeater.CloneChildFragments(physical_fragment);
-    }
+    FinishRepeatableRoot();
   }
 
   return result;
+}
+
+void NGBlockNode::FinishRepeatableRoot() const {
+  DCHECK(!NGDisableSideEffectsScope::IsDisabled());
+
+  // This is the last fragment. It won't be repeated again. We have already
+  // created fragments for the repeated nodes, but the cloning was shallow.
+  // We're now ready to deep-clone the entire subtree for each repeated
+  // fragment, and update the layout result vector in the LayoutBox, including
+  // setting correct break tokens with sequence numbers.
+
+  // First remove the outgoing break token from the last fragment, that was set
+  // in LayoutRepeatableRoot().
+  const NGPhysicalBoxFragment& last_fragment = box_->PhysicalFragments().back();
+  auto mutator = last_fragment.GetMutableForCloning();
+  mutator.SetBreakToken(nullptr);
+
+  box_->FinalizeLayoutResults();
+
+  wtf_size_t fragment_count = box_->PhysicalFragmentCount();
+  DCHECK_GE(fragment_count, 1u);
+  box_->ClearNeedsLayout();
+  for (wtf_size_t i = 1; i < fragment_count; i++) {
+    const NGPhysicalBoxFragment& physical_fragment =
+        *box_->GetPhysicalFragment(i);
+    bool is_first = i == 1;
+    bool is_last = i + 1 == fragment_count;
+    NGFragmentRepeater repeater(is_first, is_last);
+    repeater.CloneChildFragments(physical_fragment);
+  }
 }
 
 const NGLayoutResult* NGBlockNode::CachedLayoutResultForOutOfFlowPositioned(
@@ -896,7 +911,8 @@ void NGBlockNode::FinishLayout(LayoutBlockFlow* block_flow,
       box_->ForceLayout();
 
 #if DCHECK_IS_ON()
-    if (!RuntimeEnabledFeatures::LayoutNGReplacedNoBoxSettersEnabled()) {
+    if (!RuntimeEnabledFeatures::LayoutNGReplacedNoBoxSettersEnabled() ||
+        !box_->IsSVGRoot()) {
       // Assert that legacy uses the size NG forces above. But legacy sends
       // LayoutUnit to float and back, which can slightly change the result. So
       // give a 1px cushion.

@@ -8,10 +8,10 @@ import 'chrome://customize-chrome-side-panel.top-chrome/theme_snapshot.js';
 import {CustomizeChromePageCallbackRouter, CustomizeChromePageHandlerRemote, CustomizeChromePageRemote} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome.mojom-webui.js';
 import {CustomizeChromeApiProxy} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome_api_proxy.js';
 import {ThemeSnapshotElement} from 'chrome://customize-chrome-side-panel.top-chrome/theme_snapshot.js';
-import {assertEquals} from 'chrome://webui-test/chai_assert.js';
+import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
-import {$$, createBackgroundImage, createTheme, installMock} from './test_support.js';
+import {$$, assertStyle, createBackgroundImage, createTheme, installMock} from './test_support.js';
 
 
 suite('ThemeSnapshotTest', () => {
@@ -52,8 +52,52 @@ suite('ThemeSnapshotTest', () => {
 
     // Assert.
     assertEquals(1, handler.getCallCount('updateTheme'));
+    const selector =
+        themeSnapshotElement.shadowRoot!.querySelector('iron-pages');
+    assertTrue(!!selector);
+    assertEquals('customTheme', selector.selected);
     assertEquals(
         'chrome://theme/foo',
-        $$<HTMLImageElement>(themeSnapshotElement, '#themeSnapshot img')!.src);
+        $$<HTMLImageElement>(themeSnapshotElement, '.theme-snapshot img')!.src);
+  });
+
+  test('not setting a theme updates preview background color', async () => {
+    // Arrange.
+    createThemeSnapshotElement();
+    const theme = createTheme();
+    theme.backgroundColor = {value: 4279522202};
+
+    // Act.
+    callbackRouterRemote.setTheme(theme);
+    await callbackRouterRemote.$.flushForTesting();
+
+    // Assert.
+    assertEquals(1, handler.getCallCount('updateTheme'));
+    const selector =
+        themeSnapshotElement.shadowRoot!.querySelector('iron-pages');
+    assertTrue(!!selector);
+    assertEquals('classicChrome', selector.selected);
+    assertStyle(
+        $$(themeSnapshotElement, '.theme-snapshot #classicChrome')!,
+        'background-color', 'rgb(20, 83, 154)');
+  });
+
+  test('uploading a background updates theme snapshot', async () => {
+    // Arrange.
+    createThemeSnapshotElement();
+    const theme = createTheme();
+    theme.backgroundImage = createBackgroundImage('chrome://theme/foo');
+    theme.backgroundImage.isUploadedImage = true;
+
+    // Act.
+    callbackRouterRemote.setTheme(theme);
+    await callbackRouterRemote.$.flushForTesting();
+
+    // Assert.
+    assertEquals(1, handler.getCallCount('updateTheme'));
+    const selector =
+        themeSnapshotElement.shadowRoot!.querySelector('iron-pages');
+    assertTrue(!!selector);
+    assertEquals('uploadedImage', selector.selected);
   });
 });

@@ -394,9 +394,6 @@ BASE_FEATURE(kIPHNewIncognitoTabTipFeature,
 BASE_FEATURE(kIPHBadgedReadingListFeature,
              "IPH_BadgedReadingList",
              base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kIPHBadgedWhatsNewFeature,
-             "IPH_BadgedWhatsNew",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHWhatsNewFeature,
              "IPH_WhatsNew",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -420,6 +417,9 @@ BASE_FEATURE(kIPHFollowWhileBrowsingFeature,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHOverflowMenuTipFeature,
              "IPH_OverflowMenuTip",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHPriceNotificationsWhileBrowsingFeature,
+             "IPH_PriceNotificationsWhileBrowsing",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_IOS)
 

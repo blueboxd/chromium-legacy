@@ -14,13 +14,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
-#include "components/password_manager/core/browser/password_store_consumer.h"
-#include "components/password_manager/core/browser/password_store_interface.h"
-#include "components/password_manager/core/browser/affiliation/affiliation_service.h"
+#include "components/password_manager/core/browser/password_form_digest.h"
 
 namespace password_manager {
 
-struct PasswordForm;
+class AffiliationService;
 
 // Interacts with the AffiliationService on behalf of the PasswordStore.
 // For each GetLogins() request, it provides the PasswordStore with a list of
@@ -31,13 +29,7 @@ struct PasswordForm;
 // achieved by implementing the "proactive fetching" strategy for interacting
 // with the AffiliationService (see affiliation_service.h for details), with
 // Android applications and web realms playing the role of facet Y.
-//
-// More specifically, this class prefetches affiliation information on start-up
-// for all credentials stored in the PasswordStore. Then, the actual GetLogins()
-// can be restricted to the cache, so that realms of the observed web forms will
-// never be looked up against the Affiliation API.
-class AffiliatedMatchHelper : public PasswordStoreInterface::Observer,
-                              public PasswordStoreConsumer {
+class AffiliatedMatchHelper {
  public:
   // Callback to returns the list of affiliated signon_realms (as per defined in
   // PasswordForm) to the caller.
@@ -49,10 +41,7 @@ class AffiliatedMatchHelper : public PasswordStoreInterface::Observer,
   explicit AffiliatedMatchHelper(AffiliationService* affiliation_service);
   AffiliatedMatchHelper(const AffiliatedMatchHelper&) = delete;
   AffiliatedMatchHelper& operator=(const AffiliatedMatchHelper&) = delete;
-  ~AffiliatedMatchHelper() override;
-
-  // Schedules deferred initialization.
-  void Initialize(PasswordStoreInterface* password_store);
+  virtual ~AffiliatedMatchHelper();
 
   // Retrieves realms of Android applications and Web realms affiliated with the
   // realm of the |observed_form| if it is web-based. Otherwise, yields the
@@ -65,14 +54,6 @@ class AffiliatedMatchHelper : public PasswordStoreInterface::Observer,
   // Returns whether or not |form| represents a valid Web credential for the
   // purposes of affiliation-based matching.
   static bool IsValidWebCredential(const PasswordFormDigest& form);
-
-  // I/O heavy initialization on start-up will be delayed by this long.
-  // This should be high enough not to exacerbate start-up I/O contention too
-  // much, but also low enough that the user be able log-in shortly after
-  // browser start-up into web sites using Android credentials.
-  // TODO(engedy): See if we can tie this instead to some meaningful event.
-  static constexpr base::TimeDelta kInitializationDelayOnStartup =
-      base::Seconds(30);
 
   AffiliationService* get_affiliation_service() { return affiliation_service_; }
 
@@ -89,19 +70,6 @@ class AffiliatedMatchHelper : public PasswordStoreInterface::Observer,
       AffiliatedRealmsCallback result_callback,
       const AffiliatedFacets& results,
       bool success);
-
-  // PasswordStoreInterface::Observer:
-  void OnLoginsChanged(PasswordStoreInterface* store,
-                       const PasswordStoreChangeList& changes) override;
-  void OnLoginsRetained(
-      PasswordStoreInterface* store,
-      const std::vector<PasswordForm>& retained_passwords) override;
-
-  // PasswordStoreConsumer:
-  void OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<PasswordForm>> results) override;
-
-  raw_ptr<PasswordStoreInterface> password_store_ = nullptr;
 
   raw_ptr<AffiliationService, DanglingUntriaged> affiliation_service_;
 

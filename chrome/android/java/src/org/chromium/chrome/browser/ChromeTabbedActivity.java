@@ -2324,7 +2324,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         }
 
         if (getToolbarManager().back()) {
-            BackPressManager.record(BackPressHandler.Type.TOOLBAR_TAB_CONTROLLER);
+            BackPressManager.record(BackPressHandler.Type.TAB_HISTORY);
             return true;
         }
 
@@ -2600,8 +2600,13 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             layoutTypeToShow = LayoutType.START_SURFACE;
             if (state == StartSurfaceState.SHOWING_PREVIOUS) {
                 ReturnToChromeUtil.recordBackNavigationToStart("FromTab");
+            } else {
+                // Resets the scroll position when Start is showing not via back operations.
+                mStartSurfaceSupplier.get().resetScrollPosition();
             }
         }
+
+        ReturnToChromeUtil.recordStartSurfaceState(state);
 
         // If we don't have a current tab, show the overview mode.
         if (currentTab == null) {

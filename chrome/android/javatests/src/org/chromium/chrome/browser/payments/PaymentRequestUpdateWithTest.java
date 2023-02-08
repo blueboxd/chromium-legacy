@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +20,6 @@ import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 
@@ -30,22 +30,23 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class PaymentRequestUpdateWithTest implements MainActivityStartCallback {
+public class PaymentRequestUpdateWithTest {
     @Rule
     public PaymentRequestTestRule mRule =
-            new PaymentRequestTestRule("payment_request_update_with_test.html", this);
+            new PaymentRequestTestRule("payment_request_update_with_test.html");
 
-    @Override
-    public void onMainActivityStarted() throws TimeoutException {
+    @Before
+    public void setUp() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
-        helper.setProfile(new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
-                "" /* honorific prefix */, "Lisa Simpson", "Acme Inc.", "123 Main", "California",
-                "Los Angeles", "", "90210", "", "US", "555 123-4567", "lisa@simpson.com", ""));
+        helper.setProfile(new AutofillProfile("" /* guid */,
+                "https://www.example.test" /* origin */, "" /* honorific prefix */, "Lisa Simpson",
+                "Acme Inc.", "123 Main", "California", "Los Angeles", "", "90210", "", "US",
+                "555 123-4567", "lisa@simpson.com", ""));
         String billingAddressId = helper.setProfile(new AutofillProfile("" /* guid */,
-                "https://www.example.com" /* origin */, "" /* honorific prefix */, "Maggie Simpson",
-                "Acme Inc.", "123 Main", "California", "Los Angeles", "", "90210", "", "Uzbekistan",
-                "555 123-4567", "maggie@simpson.com", ""));
-        helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
+                "https://www.example.test" /* origin */, "" /* honorific prefix */,
+                "Maggie Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "", "90210",
+                "", "Uzbekistan", "555 123-4567", "maggie@simpson.com", ""));
+        helper.setCreditCard(new CreditCard("", "https://example.test", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
                 billingAddressId, "" /* serverId */));
     }

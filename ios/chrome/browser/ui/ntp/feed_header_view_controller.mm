@@ -45,8 +45,6 @@ const CGFloat kHiddenFeedLabelWidth = 250;
 const CGFloat kHeaderMenuButtonInsetTopAndBottom = 2;
 const CGFloat kHeaderMenuButtonInsetSides = 2;
 // The height of the header container. The content is unaffected.
-// TODO(crbug.com/1277504): Only keep the WC header after launch.
-const CGFloat kWebChannelsHeaderHeight = 52;
 const CGFloat kDiscoverFeedHeaderHeight = 40;
 const CGFloat kCustomSearchEngineLabelHeight = 18;
 // * Values below are exclusive to Web Channels.
@@ -214,7 +212,7 @@ NSInteger kFeedSymbolPointSize = 17;
 
 - (CGFloat)feedHeaderHeight {
   return [self.feedControlDelegate isFollowingFeedAvailable]
-             ? kWebChannelsHeaderHeight
+             ? FollowingFeedHeaderHeight()
              : kDiscoverFeedHeaderHeight;
 }
 
@@ -536,9 +534,7 @@ NSInteger kFeedSymbolPointSize = 17;
         constraintEqualToAnchor:self.view.bottomAnchor],
     [self.container.centerXAnchor
         constraintEqualToAnchor:self.view.centerXAnchor],
-    [self.container.widthAnchor
-        constraintEqualToConstant:MIN(kDiscoverFeedContentWidth,
-                                      self.view.frame.size.width)],
+    [self.container.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
     [self.menuButton.trailingAnchor
         constraintEqualToAnchor:self.container.trailingAnchor
                        constant:-kButtonHorizontalMargin],

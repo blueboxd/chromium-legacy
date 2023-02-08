@@ -26,15 +26,12 @@ public class PrivacySandboxDialogController {
     private static WeakReference<Dialog> sDialog;
     private static Boolean sShowNew;
     private static boolean sDisableAnimations;
-    // TODO(crbug.com/1330704): This variable and its usage can be removed when the PrivacySandbox
-    // promo logic will be decoupled from the NewTabPage.
-    private static boolean sNewNoticeShownInCurrentSession;
+    private static boolean sDisableEEANoticeForTesting;
 
     /**
      * Launches an appropriate dialog if necessary and returns whether that happened.
      */
-    public static boolean maybeLaunchPrivacySandboxDialog(
-            @PrivacySandboxDialogLaunchContext int launchContext, Context context,
+    public static boolean maybeLaunchPrivacySandboxDialog(Context context,
             @NonNull SettingsLauncher settingsLauncher, boolean isIncognito,
             @Nullable BottomSheetController bottomSheetController) {
         if (isIncognito) {
@@ -65,7 +62,6 @@ public class PrivacySandboxDialogController {
                 new PrivacySandboxBottomSheetNotice(
                         context, bottomSheetController, settingsLauncher)
                         .showNotice(/*animate=*/!sDisableAnimations);
-                sNewNoticeShownInCurrentSession = true;
                 return true;
             case PromptType.CONSENT:
                 dialog = new PrivacySandboxDialogConsent(context);
@@ -83,10 +79,12 @@ public class PrivacySandboxDialogController {
      * Shows the NoticeEEA dialog.
      */
     public static void showNoticeEEA(Context context, SettingsLauncher settingsLauncher) {
-        Dialog dialog;
-        dialog = new PrivacySandboxDialogNoticeEEAV4(context, settingsLauncher);
-        dialog.show();
-        sDialog = new WeakReference<>(dialog);
+        if (!sDisableEEANoticeForTesting) {
+            Dialog dialog;
+            dialog = new PrivacySandboxDialogNoticeEEAV4(context, settingsLauncher);
+            dialog.show();
+            sDialog = new WeakReference<>(dialog);
+        }
     }
 
     static boolean showNewNotice() {
@@ -94,13 +92,6 @@ public class PrivacySandboxDialogController {
         // TODO(crbug.com/1375230) Remove this code path if the ability to
         // differentiate notice types is no longer required.
         return (sShowNew != null) ? sShowNew : true;
-    }
-
-    /**
-     * Returns true if the new notice has already been shown in the current session.
-     */
-    public static boolean hasNewNoticeBeenShownInCurrentSession() {
-        return sNewNoticeShownInCurrentSession;
     }
 
     @VisibleForTesting
@@ -121,5 +112,10 @@ public class PrivacySandboxDialogController {
     @VisibleForTesting
     static void disableAnimationsForTesting(boolean disable) {
         sDisableAnimations = disable;
+    }
+
+    @VisibleForTesting
+    static void disableEEANoticeForTesting(boolean disable) {
+        sDisableEEANoticeForTesting = disable;
     }
 }

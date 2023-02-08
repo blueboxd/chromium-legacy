@@ -256,6 +256,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="1553358976309200471">Actualizar Chrome</translation>
 <translation id="1555130319947370107">Azul</translation>
 <translation id="1559447966090556585">Queres recibir notificacións?</translation>
+<translation id="1559486004335285648">Autocompleta a información de pago</translation>
 <translation id="1559528461873125649">Non existe o ficheiro ou o directorio</translation>
 <translation id="1559572115229829303">&lt;p&gt;Non se pode establecer unha conexión privada con <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque a data e a hora do dispositivo (<ph name="DATE_AND_TIME" />) son incorrectas.&lt;/p&gt;
 
@@ -271,6 +272,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="1586541204584340881">As extensións que teñas instaladas</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="1592005682883173041">Acceso aos datos locais</translation>
+<translation id="1593359183944365958">270 graos</translation>
 <translation id="1594030484168838125">Escoller</translation>
 <translation id="1596296697375291157">Películas de intriga, policiais e de suspense</translation>
 <translation id="1599199147673445968">Tes unha tarxeta nova? Podes <ph name="BEGIN_LINK" />poñer os seus datos<ph name="END_LINK" /></translation>
@@ -337,6 +339,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="1741613555002899862">Debe especificarse e ser unha cadea válida cando DnsOverHttpsMode é <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1745880797583122200">O teu navegador está xestionado</translation>
 <translation id="1746113442205726301">Desprazamento da imaxe no eixe Y</translation>
+<translation id="1746531169546376413">0 graos</translation>
 <translation id="17513872634828108">Pestanas abertas</translation>
 <translation id="1752021286346845558">Caixa de correo 8</translation>
 <translation id="1753068535428855445">Citas e anuncios persoais</translation>
@@ -361,6 +364,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="1807246157184219062">Claro</translation>
 <translation id="1807528111851433570">Folla de inicio</translation>
 <translation id="181000283860817563">Facer un seguimento dos prezos en varios sitios</translation>
+<translation id="1810391395243432441">Protexe os contrasinais co bloqueo de pantalla</translation>
 <translation id="1812527064848182527">horizontal</translation>
 <translation id="1813414402673211292">Borrar datos de navegación</translation>
 <translation id="182139138257690338">descargas automáticas</translation>
@@ -380,6 +384,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="1871208020102129563">O proxy está configurado para utilizar servidores proxy fixos, non un URL de script .pac.</translation>
 <translation id="1871284979644508959">O campo é obrigatorio</translation>
 <translation id="1873899211667975540">Música rock</translation>
+<translation id="1874224422119691492">Podes cambiar o uso do bloqueo de pantalla para completar contrasinais en <ph name="SETTINGS" /></translation>
 <translation id="1875025161375567525">Bandexa de foto</translation>
 <translation id="1875512691959384712">Formularios de Google</translation>
 <translation id="187918866476621466">Abrir páxinas de inicio</translation>
@@ -411,7 +416,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="1958218078413065209">A túa máxima puntuación é <ph name="SCORE" />.</translation>
 <translation id="1959001866257244765">Enviar a Google os <ph name="BEGIN_WHITEPAPER_LINK" />URL dalgunhas páxinas que visitas, información limitada do sistema e parte do contido das páxinas<ph name="END_WHITEPAPER_LINK" /> para axudarlle a mellorar a seguranza da Web para todo o mundo. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Política de privacidade<ph name="END_PRIVACY_PAGE_LINK" /></translation>
 <translation id="1962204205936693436">Marcadores de <ph name="DOMAIN" /></translation>
-<translation id="1971033026002113380">Protexe os contrasinais con Touch ID</translation>
 <translation id="1973335181906896915">Erro de serialización</translation>
 <translation id="1974060860693918893">Configuración avanzada</translation>
 <translation id="1975457531113383421">Bandexa de entrada</translation>
@@ -743,10 +747,10 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2876949457278336305"><ph name="MANAGE_SECURITY_SETTINGS_FOCUSED_FRIENDLY_MATCH_TEXT" />. Para xestionar na configuración de Chrome a Navegación segura e outras opcións, preme Tabulador e, a continuación, Introducir</translation>
 <translation id="2878197950673342043">Dobrez de póster</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2879694782644540289">usar o bloqueo de pantalla para completar contrasinais</translation>
 <translation id="2881276955470682203">Queres gardar a tarxeta?</translation>
 <translation id="2882949212241984732">Dobrez en ventá dobre</translation>
 <translation id="2893773853358652045">Cuarto rolo</translation>
-<translation id="289834758818479772">Se compartes este dispositivo con outras persoas, podes activar Touch ID para verificar a túa identidade cando uses un contrasinal gardado</translation>
 <translation id="2900528713135656174">Crear evento</translation>
 <translation id="2903493209154104877">Enderezos</translation>
 <translation id="290376772003165898">A páxina non está en <ph name="LANGUAGE" />?</translation>
@@ -1001,6 +1005,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="3532844647053365774">O host <ph name="HOST" /> quere usar o teu micrófono</translation>
 <translation id="3533328374079021623">Caixa de correo 5</translation>
 <translation id="3537165859691846083">Carta plus</translation>
+<translation id="3542628208405253498">Imaxe da tarxeta</translation>
 <translation id="3542768452570884558">Abrir ligazón nunha ventá nova</translation>
 <translation id="3547746132308051926">20 x 24 polgadas</translation>
 <translation id="3550112004925580947">Hostalaría</translation>
@@ -1064,7 +1069,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="3678529606614285348">Abre a páxina nunha nova ventá do modo de incógnito (Ctrl+Maiúsculas+N)</translation>
 <translation id="3681007416295224113">Información do certificado</translation>
 <translation id="3693327506115126094">Elixe como queres que se realice a verificación</translation>
-<translation id="3699374065820972102">TouchID está activado para completar contrasinais</translation>
 <translation id="3701427423622901115">Realizouse o restablecemento.</translation>
 <translation id="3704162925118123524">É posible que a rede que utilizas precise que visites a súa páxina de inicio.</translation>
 <translation id="3705189812819839667"><ph name="RESULT_OWNER" /> (<ph name="RESULT_PRODUCT_SOURCE" />)</translation>
@@ -1092,6 +1096,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="3745099705178523657">Unha vez que confirmes os datos, os detalles da tarxeta da túa Conta de Google compartiranse con este sitio.</translation>
 <translation id="3748148204939282805">Os piratas informáticos de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> poden enganarte para que realices accións perigosas, como instalar un software ou revelar información persoal (por exemplo, contrasinais, números de teléfono ou tarxetas de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Máis información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3748912308089554501">Industria aeronáutica</translation>
+<translation id="3752543821772132562">Ignórase porque non se configurou <ph name="POLICY_NAME" />.</translation>
 <translation id="3754210790023674521">Saír do modo de pantalla superposta</translation>
 <translation id="3759461132968374835">Non informaches de ningún erro recentemente. Os erros producidos mentres estaban desactivados os informes de erros non aparecerán aquí.</translation>
 <translation id="3760561303380396507">Queres usar Windows Hello en lugar do CVC?</translation>
@@ -1179,7 +1184,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="401170183602135785">Sobre C6</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Documento PDF con {COUNT} páxina}other{Documento PDF con {COUNT} páxinas}}</translation>
 <translation id="4023431997072828269">Dado que estás a piques de enviar este formulario a través dunha conexión non segura, a túa información será visible para outras persoas.</translation>
-<translation id="4024923292610332139">desactivar TouchID para completar contrasinais</translation>
 <translation id="4025913568718019429">Botón para xestionar a configuración de Privacidade de Google. Para ir á configuración de privacidade da túa Conta de Google, preme Introducir</translation>
 <translation id="4030383055268325496">&amp;Desfacer a acción de engadir</translation>
 <translation id="4031179711345676612">Permítese o micrófono</translation>
@@ -1399,6 +1403,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="4541810033354695636">realidade aumentada</translation>
 <translation id="4542971377163063093">Bandexa 6</translation>
 <translation id="455113658016510503">A9</translation>
+<translation id="4556069465387849460">Estás usando o bloqueo de pantalla para completar contrasinais</translation>
 <translation id="4558551763791394412">Proba a desactivar as extensións.</translation>
 <translation id="4566017918361049074">Aire libre</translation>
 <translation id="4567686777917670400">O teu administrador pode cambiar a configuración do navegador de forma remota. A actividade deste dispositivo tamén se pode xestionar fóra de Chromium. <ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /></translation>
@@ -1541,7 +1546,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="4900217275619098670">Noveno rolo</translation>
 <translation id="4901778704868714008">Gardar…</translation>
 <translation id="4905659621780993806">O teu administrador reiniciará o dispositivo automaticamente o <ph name="DATE" /> a esta hora: <ph name="TIME" />. Garda os elementos que teñas abertos antes de que se reinicie o dispositivo.</translation>
-<translation id="4911007278801291296">Podes activar e desactivar TouchID en <ph name="SETTINGS" /></translation>
 <translation id="4913987521957242411">Perforación na parte superior esquerda</translation>
 <translation id="4918221908152712722">Instala a aplicación <ph name="APP_NAME" /> (non require descarga)</translation>
 <translation id="4923459931733593730">Pago</translation>
@@ -1723,6 +1727,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="5334013548165032829">Rexistros do sistema detallados</translation>
 <translation id="5334145288572353250">Queres gardar este enderezo?</translation>
 <translation id="5335920952954443287">Corazón que bate</translation>
+<translation id="5337569431717511221">Botón para establecer Chrome como navegador predeterminado. Para definir Chrome como navegador predeterminado do sistema, preme Introducir</translation>
 <translation id="5340250774223869109">A aplicación está bloqueada</translation>
 <translation id="534295439873310000">Dispositivos con NFC</translation>
 <translation id="5344579389779391559">Esta páxina pode tentar aplicar cargos</translation>
@@ -1754,7 +1759,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="5426179911063097041"><ph name="SITE" /> quere enviarche notificacións</translation>
 <translation id="5428105026674456456">Español</translation>
 <translation id="5430298929874300616">Eliminar marcador</translation>
-<translation id="5434423669266814150">activar Touch ID para completar contrasinais</translation>
 <translation id="5443468954631487277">Orde inversa cara arriba</translation>
 <translation id="5447765697759493033">Non se traducirá este sitio</translation>
 <translation id="5452270690849572955">Non se pode atopar esta páxina de <ph name="HOST_NAME" /></translation>
@@ -1796,6 +1800,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="5540969246441091044">Equitación</translation>
 <translation id="5541086400771735334">Caixa de correo 7</translation>
 <translation id="5541546772353173584">Engade un correo electrónico</translation>
+<translation id="5543722831081909240">180 graos</translation>
 <translation id="5545756402275714221">Artigos personalizados</translation>
 <translation id="5551890439174915351">100 x 200 polgadas</translation>
 <translation id="5552137475244467770">Chrome comproba periodicamente se os teus contrasinais aparecen nas listas que se publican en liña. Cando o fai, os teus contrasinais e os teus nomes de usuario están encriptados, polo que ninguén pode lelos, nin sequera Google.</translation>
@@ -2184,6 +2189,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="6591833882275308647">O teu <ph name="DEVICE_TYPE" /> non está xestionado</translation>
 <translation id="6592952801936330159">Botón Xestionar configuración dos sitios. Para xestionar na configuración de Chrome os permisos e os datos almacenados dos sitios, preme Introducir</translation>
 <translation id="6596325263575161958">Opcións de cifrado</translation>
+<translation id="6597665340361269064">90 graos</translation>
 <translation id="6599642189720630047">Produtos dos que se fai un seguimento</translation>
 <translation id="6611723696964473273">Noticias sobre economía</translation>
 <translation id="6612010098632894193">Vídeo en liña</translation>
@@ -2416,6 +2422,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="7199278868241956094">Oficio</translation>
 <translation id="7201591969684833065">O teu administrador pode ver:</translation>
 <translation id="7202217080450895452"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />. Para abrir unha nova pestana do modo de incógnito e navegar de forma privada, preme Tabulador e, a continuación, Introducir</translation>
+<translation id="7203375778433816396">Establecer Chrome como navegador predeterminado do sistema</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> non cumpre cos estándares de seguranza.</translation>
 <translation id="7210993021468939304">Actividade de Linux no contedor, e pode instalar e executar aplicacións de Linux no contedor.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /> acerca deste problema.</translation>
@@ -2563,6 +2570,7 @@ Detalles adicionais:
 <translation id="7537536606612762813">Obrigatoria</translation>
 <translation id="7542403920425041731">Unha vez que confirmes a información, os datos da tarxeta compartiranse con este sitio.</translation>
 <translation id="7542995811387359312">A opción de autocompletado da tarxeta de crédito está desactivada porque este formulario non utiliza unha conexión segura.</translation>
+<translation id="7546409722674205727">Iniciando <ph name="APP_NAME" /></translation>
 <translation id="7548892272833184391">Solucionar erros de conexión</translation>
 <translation id="7549584377607005141">Esta páxina web require datos introducidos anteriormente para mostrarse correctamente. Podes enviar estes datos de novo, pero volveranse repetir as accións que a páxina realizase previamente.</translation>
 <translation id="7550637293666041147">O nome de usuario do teu dispositivo e o de Chrome</translation>
@@ -2716,6 +2724,7 @@ Detalles adicionais:
 <translation id="7942349550061667556">Vermello</translation>
 <translation id="7943397946612013052">Bloqueouse a descarga</translation>
 <translation id="7943893128817522649">Pode pedirche permiso para descargar automaticamente varios ficheiros</translation>
+<translation id="7946724693008564269">Idioma detectado</translation>
 <translation id="7947285636476623132">Comproba o ano de caducidade e téntao de novo</translation>
 <translation id="7947813448670013867"><ph name="SEE_CHROME_TIPS_FOCUSED_FRIENDLY_MATCH_TEXT" />. Preme Tabulador e, a continuación, Introducir para obter máis información sobre as funcións de Chrome</translation>
 <translation id="7950027195171824198">Xestiona as túas preferencias relativas ás cookies na configuración de Chrome</translation>
@@ -2748,6 +2757,7 @@ Detalles adicionais:
 <translation id="8009843239480947060">10 x 11 polgadas</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{Gardarase esta tarxeta e o seu enderezo de facturación. Poderás utilizala ao iniciar sesión en <ph name="USER_EMAIL" />.}other{Gardaranse estas tarxetas e os seus enderezos de facturación. Poderás utilizalas ao iniciar sesión en <ph name="USER_EMAIL" />.}}</translation>
 <translation id="8019861005170389898"><ph name="TRADITIONAL_TEXT" /> (<ph name="ADDITIONAL_TEXT" />)</translation>
+<translation id="8023231537967344568"><ph name="SET_CHROME_AS_DEFAULT_BROWSER_FOCUSED_FRIENDLY_MATCH_TEXT" />, Preme Tabulador e, a continuación, Introducir para establecer Chrome como navegador predeterminado do sistema</translation>
 <translation id="8025119109950072390">Os atacantes deste sitio poden enganarte para que fagas algo perigoso como instalar software ou revelar a túa información persoal (por exemplo, contrasinais, números de teléfono ou datos das túas tarxetas de crédito).</translation>
 <translation id="8026334261755873520">Borrar datos de navegación</translation>
 <translation id="8027077570865220386">Bandexa 15</translation>
@@ -2887,6 +2897,7 @@ Detalles adicionais:
 <translation id="8355270400102541638">Contexto do fallo local:</translation>
 <translation id="8363502534493474904">Desactivar o modo avión</translation>
 <translation id="8364627913115013041">Sen configurar.</translation>
+<translation id="836616551641291797">Máis información sobre como se xestiona o teu navegador</translation>
 <translation id="8368001212524806591">Facer seguimento do prezo</translation>
 <translation id="8368027906805972958">Dispositivo descoñecido ou non compatible (<ph name="DEVICE_ID" />)</translation>
 <translation id="8368476060205742148">Servizos de Google Play</translation>
@@ -2899,6 +2910,7 @@ Detalles adicionais:
 <translation id="8396522675989118466">Este é o código de <ph name="NUMBER_OF_DIGITS" /> díxitos que aparece indicado neste lugar: <ph name="SIDE_OF_CARD" /></translation>
 <translation id="8398790343843005537">Atopa o teu teléfono</translation>
 <translation id="8405579342203358118">Xestiona na configuración de Chrome a información que se sincroniza</translation>
+<translation id="8406071103346257942">deixar de usar o bloqueo de pantalla para completar contrasinais</translation>
 <translation id="8409413588194360210">indicadores de pago</translation>
 <translation id="8412145213513410671">Erros (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Debes introducir a mesma frase de acceso dúas veces.</translation>
@@ -3167,6 +3179,7 @@ Detalles adicionais:
 <translation id="9128016270925453879">Cargáronse as políticas</translation>
 <translation id="9128870381267983090">Conectarse á rede</translation>
 <translation id="9131119348384879525">Queres capturar contido confidencial?</translation>
+<translation id="9133985615769429248">Se compartes este dispositivo con outras persoas, podes usar o bloqueo de pantalla para verificar a túa identidade cando uses un contrasinal gardado</translation>
 <translation id="9136861683332321024">Vehículos de luxo</translation>
 <translation id="9137013805542155359">Mostrar orixinal</translation>
 <translation id="9138037198177304356">O acceso ás notificacións está permitido</translation>

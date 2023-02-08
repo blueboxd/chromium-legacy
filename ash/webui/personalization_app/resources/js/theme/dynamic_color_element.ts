@@ -60,9 +60,7 @@ export class DynamicColorElement extends WithPersonalizationStore {
       // Whether or not to use the wallpaper to calculate the seed color.
       automaticSeedColorEnabled: {
         type: Boolean,
-        value: true,
-        notify: true,
-        reflectToAttribute: true,
+        computed: 'isAutomaticSeedColorEnabled_(colorSchemeSelected_)',
       },
       // The static color stored in the backend.
       staticColorSelected_: Object,
@@ -145,6 +143,8 @@ export class DynamicColorElement extends WithPersonalizationStore {
     ThemeObserver.initThemeObserverIfNeeded();
     this.watch<DynamicColorElement['staticColorSelected_']>(
         'staticColorSelected_', state => state.theme.staticColorSelected);
+    this.watch<DynamicColorElement['colorSchemeSelected_']>(
+        'colorSchemeSelected_', state => state.theme.colorSchemeSelected);
     this.updateFromStore();
     initializeDynamicColorData(getThemeProvider(), this.getStore());
   }
@@ -152,7 +152,6 @@ export class DynamicColorElement extends WithPersonalizationStore {
   private onClickColorSchemeButton_(event: Event) {
     const eventTarget = event.currentTarget as HTMLElement;
     const colorScheme = Number(eventTarget.dataset['colorSchemeId']);
-    this.colorSchemeSelected_ = colorScheme;
     setColorSchemePref(colorScheme, getThemeProvider(), this.getStore());
   }
 
@@ -163,7 +162,7 @@ export class DynamicColorElement extends WithPersonalizationStore {
     setStaticColorPref(staticColor, getThemeProvider(), this.getStore());
   }
 
-  private onClickToggle_() {
+  private onToggleChanged_() {
     if (this.automaticSeedColorEnabled) {
       const staticColor = this.staticColorSelected_ || DEFAULT_STATIC_COLOR;
       setStaticColorPref(staticColor, getThemeProvider(), this.getStore());
@@ -173,13 +172,26 @@ export class DynamicColorElement extends WithPersonalizationStore {
     }
   }
 
+  private isAutomaticSeedColorEnabled_(colorScheme: ColorScheme|null) {
+    return colorScheme === null || colorScheme !== ColorScheme.kStatic;
+  }
+
+  private getColorSchemeAriaChecked_(
+      colorScheme: string, colorSchemeSelected: string): 'true'|'false' {
+    if (!colorSchemeSelected) {
+      return 'false';
+    }
+    return colorSchemeSelected === colorScheme ? 'true' : 'false';
+  }
+
   private getStaticColorAriaChecked_(
-      staticColor: string, staticColorSelected: SkColor|null): string {
+      staticColor: string, staticColorSelected: SkColor|null): 'true'|'false' {
     if (!staticColorSelected) {
       return 'false';
     }
-    return (staticColor === convertToRgbHexStr(staticColorSelected.value))
-        .toString();
+    return staticColor === convertToRgbHexStr(staticColorSelected.value) ?
+        'true' :
+        'false';
   }
 
   private onStaticColorKeysPress_(

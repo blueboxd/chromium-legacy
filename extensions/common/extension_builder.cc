@@ -131,7 +131,7 @@ ExtensionBuilder::ExtensionBuilder(const std::string& name, Type type)
   manifest_data_->type = type;
 }
 
-ExtensionBuilder::~ExtensionBuilder() {}
+ExtensionBuilder::~ExtensionBuilder() = default;
 
 ExtensionBuilder::ExtensionBuilder(ExtensionBuilder&& other) = default;
 ExtensionBuilder& ExtensionBuilder::operator=(ExtensionBuilder&& other) =
@@ -144,11 +144,17 @@ scoped_refptr<const Extension> ExtensionBuilder::Build() {
     id_ = crx_file::id_util::GenerateId(manifest_data_->name);
 
   std::string error;
+
+  // This allows `*manifest_value` to be passed as a reference instead of
+  // needing to be cloned.
+  absl::optional<base::Value::Dict> manifest_data_value;
+  if (manifest_data_) {
+    manifest_data_value = manifest_data_->GetValue();
+  }
   scoped_refptr<const Extension> extension = Extension::Create(
       path_, location_,
-      manifest_data_ ? base::DictAdapterForMigration(manifest_data_->GetValue())
-                     : *manifest_value_,
-      flags_, id_, &error);
+      manifest_data_value ? *manifest_data_value : *manifest_value_, flags_,
+      id_, &error);
 
   CHECK(error.empty()) << error;
   CHECK(extension);
@@ -158,8 +164,8 @@ scoped_refptr<const Extension> ExtensionBuilder::Build() {
 
 base::Value ExtensionBuilder::BuildManifest() {
   CHECK(manifest_data_ || manifest_value_);
-  return manifest_data_ ? base::Value(manifest_data_->GetValue())
-                        : manifest_value_->Clone();
+  return base::Value(manifest_data_ ? manifest_data_->GetValue()
+                                    : manifest_value_->Clone());
 }
 
 ExtensionBuilder& ExtensionBuilder::AddPermission(
@@ -217,7 +223,7 @@ ExtensionBuilder& ExtensionBuilder::AddJSON(base::StringPiece json) {
   CHECK(parsed.has_value())
       << "Failed to parse json for extension '" << manifest_data_->name
       << "':" << parsed.error().message;
-  return MergeManifest(*parsed);
+  return MergeManifest(std::move(*parsed).TakeDict());
 }
 
 ExtensionBuilder& ExtensionBuilder::SetPath(const base::FilePath& path) {
@@ -234,7 +240,7 @@ ExtensionBuilder& ExtensionBuilder::SetLocation(
 ExtensionBuilder& ExtensionBuilder::SetManifest(
     std::unique_ptr<base::DictionaryValue> manifest) {
   CHECK(!manifest_data_);
-  manifest_value_ = std::move(manifest);
+  manifest_value_ = std::move(*manifest).TakeDict();
   return *this;
 }
 
@@ -243,19 +249,18 @@ ExtensionBuilder& ExtensionBuilder::SetManifest(base::Value::Dict manifest) {
       std::make_unique<base::Value>(std::move(manifest))));
 }
 
-ExtensionBuilder& ExtensionBuilder::MergeManifest(const base::Value& to_merge) {
-  CHECK(to_merge.is_dict());
+ExtensionBuilder& ExtensionBuilder::MergeManifest(base::Value::Dict to_merge) {
   if (manifest_data_) {
-    manifest_data_->get_extra().Merge(to_merge.GetDict().Clone());
+    manifest_data_->get_extra().Merge(std::move(to_merge));
   } else {
-    manifest_value_->MergeDictionary(&to_merge);
+    manifest_value_->Merge(std::move(to_merge));
   }
   return *this;
 }
 
 ExtensionBuilder& ExtensionBuilder::MergeManifest(
     std::unique_ptr<base::DictionaryValue> manifest) {
-  return MergeManifest(*manifest);
+  return MergeManifest(std::move(*manifest).TakeDict());
 }
 
 ExtensionBuilder& ExtensionBuilder::AddFlags(int init_from_value_flags) {

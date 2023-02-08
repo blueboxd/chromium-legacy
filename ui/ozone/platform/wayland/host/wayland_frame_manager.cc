@@ -115,7 +115,7 @@ void WaylandFrameManager::RecordFrame(std::unique_ptr<WaylandFrame> frame) {
   // time this frame is played back if |pending_frames_| is not empty.
   // Otherwise, there is no point to ensure wl_buffers exist as
   // MaybeProcessPendingFrame will do that as well.
-  if (!connection_->wayland_buffer_factory()->CanCreateDmabufImmed() &&
+  if (!connection_->buffer_factory()->CanCreateDmabufImmed() &&
       !pending_frames_.empty()) {
     buffer_pending_creation =
         EnsureWlBuffersExist(*frame) && !frame->buffer_lost;
@@ -159,9 +159,8 @@ void WaylandFrameManager::MaybeProcessPendingFrame() {
   const bool has_buffer_pending_creation = EnsureWlBuffersExist(*frame);
   // There are wl_buffers missing, need to wait.
   if (has_buffer_pending_creation && !frame->buffer_lost) {
-    DLOG_IF(FATAL,
-            has_buffer_pending_creation &&
-                connection_->wayland_buffer_factory()->CanCreateDmabufImmed())
+    DLOG_IF(FATAL, has_buffer_pending_creation &&
+                       connection_->buffer_factory()->CanCreateDmabufImmed())
         << "Buffers should have been created immediately.";
     return;
   }
@@ -430,7 +429,7 @@ void WaylandFrameManager::ApplySurfaceConfigure(
 void WaylandFrameManager::FrameCallbackDone(void* data,
                                             struct wl_callback* callback,
                                             uint32_t time) {
-  WaylandFrameManager* self = static_cast<WaylandFrameManager*>(data);
+  auto* self = static_cast<WaylandFrameManager*>(data);
   DCHECK(self);
   self->OnFrameCallback(callback);
 }
@@ -458,7 +457,7 @@ void WaylandFrameManager::FeedbackPresented(
     uint32_t seq_hi,
     uint32_t seq_lo,
     uint32_t flags) {
-  WaylandFrameManager* self = static_cast<WaylandFrameManager*>(data);
+  auto* self = static_cast<WaylandFrameManager*>(data);
   DCHECK(self);
   self->OnPresentation(
       wp_presentation_feedback,
@@ -472,7 +471,7 @@ void WaylandFrameManager::FeedbackPresented(
 void WaylandFrameManager::FeedbackDiscarded(
     void* data,
     struct wp_presentation_feedback* wp_presentation_feedback) {
-  WaylandFrameManager* self = static_cast<WaylandFrameManager*>(data);
+  auto* self = static_cast<WaylandFrameManager*>(data);
   DCHECK(self);
   self->OnPresentation(wp_presentation_feedback,
                        gfx::PresentationFeedback::Failure(),

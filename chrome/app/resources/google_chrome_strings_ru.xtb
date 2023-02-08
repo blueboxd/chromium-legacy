@@ -50,13 +50,13 @@
 <translation id="1874309113135274312">Google Chrome (бета, mDNS-In)</translation>
 <translation id="1877026089748256423">Версия Chrome устарела</translation>
 <translation id="1919130412786645364">Разрешить вход в Chrome</translation>
-<translation id="1952239763774043237">На вашем компьютере используется macOS 10.12. Чтобы получать обновления Google Chrome, установите на устройство macOS 10.13 или более поздней версии.</translation>
+<translation id="1952239763774043237">Чтобы обновлять Google Chrome, нужна macOS 10.13 или более поздней версии. У вас установлена macOS 10.12.</translation>
 <translation id="1953553007165777902">Скачивание… Осталось: <ph name="MINUTE" /> мин.</translation>
 <translation id="2018528049276128029">В каждом профиле отдельно хранятся данные пользователей Chrome, такие как закладки, история просмотров и пароли.</translation>
 <translation id="2018879682492276940">Ошибка установки. Повторите попытку.</translation>
 <translation id="2071318482926839249">Вход уже выполнен в другой аккаунт. Вы можете создать свой профиль, чтобы использовать браузер Chrome отдельно.</translation>
 <translation id="207902854391093810">Если пробные функции включены, сайты, которые вы посещаете, смогут проводить оценку эффективности рекламы, запрашивая информацию у Chrome. Оценка эффективности рекламы ограничивает межсайтовое отслеживание, сокращая объем информации, передаваемой между сайтами, до минимума.</translation>
-<translation id="2091012649849228750">На вашем компьютере используется Windows 8. Чтобы получать обновления Google Chrome, установите на устройство Windows 10 или более поздней версии.</translation>
+<translation id="2091012649849228750">Чтобы обновлять Google Chrome, нужна Windows 10 или более поздней версии. У вас установлена Windows 8.</translation>
 <translation id="2094648590148273905">Условия использования Chrome OS Flex</translation>
 <translation id="2094919256425865063">Завершить работу Chrome?</translation>
 <translation id="2106831557840787829">Chrome OS Flex, как и <ph name="BEGIN_LINK_LINUX_OSS" />среда разработки Linux<ph name="END_LINK_LINUX_OSS" />, работает благодаря дополнительному <ph name="BEGIN_LINK_CROS_OSS" />программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS" />.</translation>
@@ -124,6 +124,7 @@
 <translation id="3140883423282498090">Внесенные изменения станут активны после перезапуска Google Chrome.</translation>
 <translation id="3149510190863420837">Приложения Chrome</translation>
 <translation id="3169523567916669830">Во время тестирования новых функций вы сможете просматривать и удалять потенциально интересные вам темы, используемые сайтами для показа рекламы. Chrome определяет такие темы на основе вашей недавней истории браузера.</translation>
+<translation id="3211604354460514046">{NUM_DEVICES,plural, =1{Google Chrome подключен к HID-устройству}one{Google Chrome подключен к HID-устройствам}few{Google Chrome подключен к HID-устройствам}many{Google Chrome подключен к HID-устройствам}other{Google Chrome подключен к HID-устройствам}}</translation>
 <translation id="3245429137663807393">Если вы также отправляете отчеты об использовании Chrome, в них включаются URL посещенных вами страниц.</translation>
 <translation id="3282568296779691940">Войти в Chrome</translation>
 <translation id="3286538390144397061">Перезапустить сейчас</translation>
@@ -211,10 +212,10 @@
 <translation id="4970880042055371251">Версия Chrome OS</translation>
 <translation id="4970947549776831107">Chrome заблокировал файл с опасным расширением.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
-<translation id="5037581483200764584">На вашем компьютере используется OS X 10.11. Чтобы получать обновления Google Chrome, установите на устройство macOS 10.13 или более поздней версии.</translation>
+<translation id="5037581483200764584">Чтобы обновлять Google Chrome, нужна macOS 10.13 или более поздней версии. У вас установлена OS X 10.11.</translation>
 <translation id="5098668839038261629">Также выполняется выход из Chrome</translation>
 <translation id="5132929315877954718">Широкий выбор приложений, игр, расширений и тем для Google Chrome.</translation>
-<translation id="5139423532931106058">Настроить профиль Chrome</translation>
+<translation id="5139423532931106058">Настройте профиль Chrome</translation>
 <translation id="5163087008893166964">Добро пожаловать в Chrome! Открыто новое окно браузера.</translation>
 <translation id="5170938038195470297">Использовать этот профиль невозможно, так как он был создан в более новой версии Google Chrome. Некоторые функции могут быть недоступны. Укажите другой каталог профиля или установите более новую версию Chrome.</translation>
 <translation id="521447420733633466">Если кроме вас устройством пользуется кто-то ещё, например родные или друзья, они тоже смогут настроить Chrome на свой вкус.</translation>
@@ -270,7 +271,7 @@
 <translation id="6418662306461808273">Переключиться на существующий профиль Chrome?</translation>
 <translation id="6506909944137591434">Для создания 3D-карты места, в котором вы находитесь, браузеру Chrome требуется доступ к камере.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome для разработчиков</translation>
-<translation id="659498884637196217">В Менеджере паролей Google на этом устройстве</translation>
+<translation id="659498884637196217">В Google Менеджере паролей на этом устройстве</translation>
 <translation id="6632473616050862500">Chrome OS Flex работает благодаря дополнительному <ph name="BEGIN_LINK_CROS_OSS" />программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6676384891291319759">Доступ в Интернет</translation>
 <translation id="6679975945624592337">Разрешить Google Chrome работать в фоновом режиме</translation>
@@ -284,7 +285,7 @@
 <translation id="6881299373831449287">Обновление Chrome</translation>
 <translation id="6885412569789873916">Приложения Chrome (бета)</translation>
 <translation id="6933858244219479645">Chrome OS</translation>
-<translation id="6938166777909186039">На вашем компьютере используется Windows 8.1. Чтобы получать обновления Google Chrome, установите на устройство Windows 10 или более поздней версии.</translation>
+<translation id="6938166777909186039">Чтобы обновлять Google Chrome, нужна Windows 10 или более поздней версии. У вас установлена Windows 8.1.</translation>
 <translation id="6943584222992551122">Данные о работе этого пользователя в браузере будут удалены с устройства. Чтобы восстановить их, войдите в Chrome как <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Разрешить в Google Chrome (бета) передачу входящего трафика по протоколу mDNS</translation>
 <translation id="6989339256997917931">Google Chrome был обновлен, однако вы не использовали его в течение последних 30 дней.</translation>
@@ -344,7 +345,7 @@
 <translation id="7930071585467473040">Google Chrome пытается скопировать пароли</translation>
 <translation id="7951272445806340501">Чтобы установить обновление, перезапустите Chrome OS Flex.</translation>
 <translation id="7962410387636238736">Google Chrome больше не будет обновляться на этом компьютере, так как поддержка Windows XP и Windows Vista прекращена.</translation>
-<translation id="8005666035647241369">В Менеджере паролей Google на этом устройстве</translation>
+<translation id="8005666035647241369">В Google Менеджере паролей на этом устройстве</translation>
 <translation id="8008534537613507642">Переустановить Chrome</translation>
 <translation id="8013993649590906847">Если у изображения нет понятного описания, Chrome попытается его найти. Для создания описаний изображения отправляются в Google.</translation>
 <translation id="80471789339884597">Спасибо, что установили <ph name="BUNDLE_NAME" />. Чтобы изменения вступили в силу, перезапустите все открытые браузеры.</translation>
@@ -389,7 +390,7 @@
 <translation id="8686817260976772516">Профили Chrome нужны для раздельного использования браузера, например разными людьми или в разных целях.</translation>
 <translation id="8712767363896337380">Почти готово! Чтобы завершить обновление, перезапустите Chrome.</translation>
 <translation id="873133009373065397">Google Chrome не удалось определить или задать браузер по умолчанию</translation>
-<translation id="8821043148920470810">На вашем компьютере используется Windows 7. Чтобы получать обновления Google Chrome, установите на устройство Windows 10 или более поздней версии.</translation>
+<translation id="8821043148920470810">Чтобы обновлять Google Chrome, нужна Windows 10 или более поздней версии. У вас установлена Windows 7.</translation>
 <translation id="8823341990149967727">Версия Chrome устарела</translation>
 <translation id="8825634023950448068">Для защиты вашей конфиденциальности интересы автоматически удаляются через 4 недели с момента создания. Если после этого вы продолжите использовать браузер, то удаленные интересы могут вновь появиться в списке. Если вы не хотите видеть на сайтах конкретную рекламу или выводы Chrome не соответствуют действительности, можно удалить связанный интерес.</translation>
 <translation id="8834965163890861871">Google Chrome пытается изменить пароли. Чтобы разрешить это действие, введите свой пароль Windows.</translation>

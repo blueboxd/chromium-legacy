@@ -125,6 +125,7 @@
 <translation id="1870148520156231997">পাসওয়ার্ড দেখুন</translation>
 <translation id="1872096359983322073">টর্চ</translation>
 <translation id="1891796056033961979">আপনার সেভ করা বুকমার্ক, পাসওয়ার্ড, সেটিংস এবং আরও অনেক কিছু এই স্ক্রিন থেকে পাওয়া যাবে।</translation>
+<translation id="1894023287452300670">এখানে দাম ট্র্যাক করুন</translation>
 <translation id="1911619930368729126">Google ড্রাইভে আপলোড করুন</translation>
 <translation id="1923342640370224680">শেষ ঘণ্টা</translation>
 <translation id="1930989359703290198">আপনার সংস্থা শুধু কিছু নির্দিষ্ট অ্যাকাউন্ট ব্যবহার করে আপনাকে সাইন-ইন করার অনুমতি দিয়েছে। অনুমোদন করা নেই এমন অ্যাকাউন্ট লুকানো আছে। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
@@ -147,7 +148,9 @@
 <translation id="2074131957428911366"><ph name="BEGIN_LINK" />সেটিংসে<ph name="END_LINK" /> কী সিঙ্ক করা হবে তা আপনি সবসময় বেছে নিতে পারেন।</translation>
 <translation id="2079545284768500474">আগের অবস্থায় ফিরুন</translation>
 <translation id="2080769225927880590">সঠিক অ্যাকাউন্ট ব্যবহার করে সাইন-ইন করুন</translation>
+<translation id="2090878303988764231">আপনি যে কন্টেন্ট দেখেন তা ম্যানেজ করতে সাইন-ইন করুন</translation>
 <translation id="2103075008456228677">history.google.com খুলুন</translation>
+<translation id="21133533946938348">ট্যাব পিন করুন</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />টি আইটেম সরানো হয়েছে</translation>
 <translation id="2122754583996902531">আপনার ব্রাউজার ম্যানেজ করা হয়। <ph name="BEGIN_LINK" />আরও জানুন<ph name="END_LINK" /></translation>
 <translation id="212623074644302906">পড়ার তালিকায় যোগ করার জন্য জিজ্ঞাসা করুন</translation>
@@ -189,6 +192,7 @@
 <translation id="2421044535038393232">এডিট করতে থাকুন</translation>
 <translation id="2434405374328098816">আপনি আগে থেকেই "<ph name="USERNAME" />"-এর জন্য <ph name="WEBSITE" />-এ পাসওয়ার্ড সেভ করেছেন</translation>
 <translation id="2435457462613246316">পাসওয়ার্ড দেখান</translation>
+<translation id="2451654228769116489">ট্যাব পিন করুন</translation>
 <translation id="2461070143328828326">পাসওয়ার্ড সেটিংস</translation>
 <translation id="2469960372084740698">Safe Browsing বন্ধ করতে চান?</translation>
 <translation id="2473876017985765807">আপনি আগেই <ph name="WEBSITE" />-এর জন্য পাসওয়ার্ড সেভ করেছেন</translation>
@@ -286,6 +290,7 @@
 <translation id="3130863904455712965">ইতিহাস ও আরও অনেক কিছু</translation>
 <translation id="3131206671572504478">সব ব্লক করুন</translation>
 <translation id="313283613037595347">নতুন ছদ্মবেশী ট্যাব তৈরি করুন।</translation>
+<translation id="3146109040683991651">Chrome-কে ডিফল্ট ব্রাউজার হিসেবে সেট করুন</translation>
 <translation id="3153862085237805241">কার্ড সেভ করুন</translation>
 <translation id="3157387275655328056">পড়ার তালিকায় যোগ করুন</translation>
 <translation id="3157684681743766797">সবগুলি চিহ্নিত করুন…</translation>
@@ -674,6 +679,7 @@
 <translation id="6059830886158432458">আপনার খবর ও গতিবিধি এখানে নিয়ন্ত্রণ করুন</translation>
 <translation id="6064824697233747382">আপনার সংস্থার প্রয়োজনে আপনার সিঙ্ক প্রসেস বন্ধ করা হয়েছে।</translation>
 <translation id="6066301408025741299">বাতিল করতে আলতো চাপুন৷</translation>
+<translation id="6071409777669089905">ট্যাব আনপিন করুন</translation>
 <translation id="60829778314739003">সম্মতি দিন এবং কাজ চালিয়ে যান</translation>
 <translation id="6084848228346514841">ট্যাব বেছে নিন</translation>
 <translation id="6103540626693881831">অন-ডিভাইস এনক্রিপশন</translation>
@@ -974,6 +980,7 @@
 <translation id="8197543752516192074">পৃষ্ঠাটি অনুবাদ করুন</translation>
 <translation id="8205564605687841303">বাতিল করুন</translation>
 <translation id="8206354486702514201">এই সেটিংটি আপনার প্রশাসক দ্বারা কার্যকরী করা হয়েছে৷</translation>
+<translation id="821809831108207540">আপনার 'ডিসকভার' ফিড ও Chrome পছন্দমতো সাজাতে সাইন-ইন করে সিঙ্ক চালু করুন।</translation>
 <translation id="8225985093977202398">ক্যাশ করা ছবি এবং ফাইল</translation>
 <translation id="8237382152611443140">অটোফিল পাসওয়ার্ড সেটিংস খুলুন</translation>
 <translation id="8261506727792406068">মুছুন</translation>
@@ -1101,6 +1108,7 @@
 <translation id="9219154867334666734">ট্যাব সার্চ করুন…</translation>
 <translation id="9223358826628549784">ক্র্যাশ রিপোর্ট পাঠানো হয়েছে৷</translation>
 <translation id="941747855997058526">পাসওয়ার্ড বেছে নিন...</translation>
+<translation id="948048872540558976">নতুন ট্যাব তৈরি করুন</translation>
 <translation id="952704832371081537">বাতিল করুন</translation>
 <translation id="953008885340860025">Chrome থেকে সাইন-আউট হয়ে গেছেন</translation>
 <translation id="959066944189734975">আপনি <ph name="CHANNEL_NAME" /> ফলো করছেন</translation>

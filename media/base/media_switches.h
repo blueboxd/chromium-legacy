@@ -138,6 +138,8 @@ MEDIA_EXPORT extern const char kCastStreamingForceEnableHardwareH264[];
 // to take effect.
 MEDIA_EXPORT extern const char kCastStreamingForceEnableHardwareVp8[];
 
+MEDIA_EXPORT extern const char kDisableUseMojoVideoDecoderForPepper[];
+
 }  // namespace switches
 
 namespace media {
@@ -182,6 +184,9 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kGlobalMediaControlsAutoDismiss);
 #if BUILDFLAG(IS_CHROMEOS)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kGlobalMediaControlsForCast);
 #endif
+#if !BUILDFLAG(IS_ANDROID)
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaRemotingWithoutFullscreen);
+#endif
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kGlobalMediaControlsForChromeOS);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kGlobalMediaControlsPictureInPicture);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kGlobalMediaControlsSeamlessTransfer);
@@ -216,7 +221,6 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaLearningSmoothnessExperiment);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaOptimizer);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaPowerExperiment);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMemoryPressureBasedSourceBufferGC);
-MEDIA_EXPORT BASE_DECLARE_FEATURE(kMultiPlaneSoftwareVideoSharedImages);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMultiPlaneVideoCaptureSharedImages);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kOpenscreenCastStreamingSession);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kOverlayFullscreenVideo);
@@ -281,7 +285,6 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaDrmPersistentLicense);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaDrmPreprovisioning);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaDrmPreprovisioningAtStartup);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kCanPlayHls);
-MEDIA_EXPORT BASE_DECLARE_FEATURE(kPictureInPictureAPI);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kHlsPlayer);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kRequestSystemAudioFocus);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseAudioLatencyFromHAL);
@@ -378,6 +381,8 @@ MEDIA_EXPORT bool IsVideoCaptureAcceleratedJpegDecodingEnabled();
 #if BUILDFLAG(IS_WIN)
 MEDIA_EXPORT bool IsMediaFoundationD3D11VideoCaptureEnabled();
 #endif
+
+MEDIA_EXPORT bool IsUseMojoVideoDecoderForPepperEnabled();
 
 enum class kCrosGlobalMediaControlsPinOptions {
   kPin,

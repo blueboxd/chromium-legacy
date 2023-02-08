@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
+import {webUIListenerCallback} from 'chrome://resources/ash/common/cr.m.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
 /** @implements {SelectToSpeakSubpageBrowserProxy} */
@@ -85,8 +85,8 @@ export class TestSelectToSpeakSubpageBrowserProxy extends TestBrowserProxy {
     this.methodCalled('getAppLocale');
   }
 
-  previewTtsVoice() {
-    this.methodCalled('previewTtsVoice');
+  previewTtsVoice(previewText, previewVoice) {
+    this.methodCalled('previewTtsVoice', [previewText, previewVoice]);
   }
 
   refreshTtsVoices() {

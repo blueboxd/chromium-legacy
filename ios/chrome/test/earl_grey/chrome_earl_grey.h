@@ -615,10 +615,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // A GREYAssert is induced if cookies can not be returned.
 - (NSDictionary*)cookies;
 
-// Clears browsing cookies. Raises an EarlGrey exception if cookies is not
-// cleared within a timeout.
-- (void)clearBrowsingCookies;
-
 #pragma mark - Accessibility Utilities (EG2)
 
 // Verifies that all interactive elements on screen (or at least one of their
@@ -804,14 +800,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 
 // Clear the watcher list, stopping monitoring.
 - (void)stopWatcher;
-
-@end
-
-// Helpers that only compile under EarlGrey 1 are included in this "EG1"
-// category.
-// TODO(crbug.com/922813): Update these helpers to compile under EG2 and move
-// them into the main class declaration as they are converted.
-@interface ChromeEarlGreyImpl (EG1)
 
 @end
 

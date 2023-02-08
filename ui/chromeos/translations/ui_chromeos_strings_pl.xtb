@@ -128,6 +128,7 @@
 <translation id="2084108471225856927">Ustawienia urządzenia</translation>
 <translation id="2084809735218147718">Osoba śpiewająca, aby wyrazić podziękowanie</translation>
 <translation id="2088690981887365033">Sieć VPN</translation>
+<translation id="2114191879048183086">Elementy (<ph name="NUMBER_OF_ITEMS" />) zostaną usunięte i nie będzie można ich przywrócić.</translation>
 <translation id="2122305276694332719">Automatyczne łączenie się z ukrytą siecią pozwala innym widzieć Twoje urządzenie wraz z niektórymi ustawieniami sieci. Nie zalecamy korzystania z tej funkcji.</translation>
 <translation id="2125607626296734455">Khmerski</translation>
 <translation id="2139545522194199494">Sieć <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, siła sygnału: <ph name="SIGNAL_STRENGTH" />%, zarządzana przez administratora, połącz</translation>
@@ -395,6 +396,7 @@
 <translation id="4398096759193130964">Przywróć elementy lub przeciągnij je do nowego folderu poza koszem</translation>
 <translation id="4401287888955153199">Wyodrębnij wszystko</translation>
 <translation id="4410695710508688828">Operacja wyodrębnienia zakończona niepowodzeniem. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4414834425328380570">Plik „<ph name="FILE_NAME" />” zostanie usunięty i nie będzie można go przywrócić.</translation>
 <translation id="4418686080762064601">Utwórz skrót do swoich plików</translation>
 <translation id="4425149324548788773">Mój dysk</translation>
 <translation id="4439427728133035643">Sieć <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, siła sygnału: <ph name="SIGNAL_STRENGTH" />%, połącz</translation>
@@ -412,7 +414,6 @@
 <translation id="4552759165874948005">Sieć <ph name="NETWORK_TYPE" />, siła sygnału <ph name="SIGNAL_STRENGTH" />%</translation>
 <translation id="4559767610552730302">Boke</translation>
 <translation id="4572815280350369984">Plik <ph name="FILE_TYPE" /></translation>
-<translation id="457386861538956877">Więcej</translation>
 <translation id="4579744207439506346">Do zaznaczenia dodano element <ph name="ENTRY_NAME" />.</translation>
 <translation id="4583436353463424810">Brak nowych dokumentów</translation>
 <translation id="4594543368593301662">Wyświetlam wyniki dla: <ph name="SEARCH_TERM" />.</translation>
@@ -561,6 +562,7 @@
 <translation id="5580591966435005537">maszyna wirtualna</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5583664733673201137">Szerokość przestankowania: pełna</translation>
+<translation id="5596627076506792578">Więcej opcji</translation>
 <translation id="5602622065581044566">Bułgarski z klawiaturą fonetyczną</translation>
 <translation id="5605830556594064952">amerykańska klawiatura Dvoraka</translation>
 <translation id="5618330573454123917">To jest plik na komputery Mac. Twoje urządzenie z Chrome OS go nie obsługuje. <ph name="BEGIN_LINK_HELP" />Dowiedz się więcej<ph name="END_LINK_HELP" /> o otwieraniu plików w Chrome OS.</translation>
@@ -927,6 +929,7 @@
 <translation id="8560515948038859357">Kantoński</translation>
 <translation id="8561206103590473338">Słoń</translation>
 <translation id="8566466896628108558">Sieć <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, siła sygnału: <ph name="SIGNAL_STRENGTH" />%, zablokowana przez administratora, szczegóły</translation>
+<translation id="8568374623837201676">Usunąć trwale ten plik?</translation>
 <translation id="8569764466147087991">Wybierz plik do otwarcia</translation>
 <translation id="8577897833047451336">Chorwacki</translation>
 <translation id="8578308463707544055">Indonezyjski</translation>

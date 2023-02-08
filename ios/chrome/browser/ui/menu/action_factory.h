@@ -31,6 +31,10 @@ class GURL;
 // the given `block` upon execution.
 - (UIAction*)actionToShareWithBlock:(ProceduralBlock)block;
 
+// Creates a UIAction instance configured for pinning a tab which will invoke
+// the given `block` upon execution.
+- (UIAction*)actionToPinTabWithBlock:(ProceduralBlock)block;
+
 // Creates a UIAction instance configured for deletion which will invoke
 // the given delete `block` when executed.
 - (UIAction*)actionToDeleteWithBlock:(ProceduralBlock)block;
@@ -106,6 +110,11 @@ class GURL;
 // Creates a UIAction instance for searching an image with Lens.
 // Invokes the given `completion` block after execution.
 - (UIAction*)actionToSearchImageUsingLensWithBlock:(ProceduralBlock)block;
+
+// Updates the given `ProceduralBlock` to record the
+// `MobileWebContextMenuOpenTab` user action.
+- (ProceduralBlock)recordMobileWebContextMenuOpenTabActionWithBlock:
+    (ProceduralBlock)block;
 
 @end
 

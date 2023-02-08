@@ -7,7 +7,9 @@
  * the UI. Both top-level categories and content settings that represent
  * individual permissions under Site Details should appear here.
  * This should be kept in sync with the |kContentSettingsTypeGroupNames| array
- * in chrome/browser/ui/webui/settings/site_settings_helper.cc
+ * in chrome/browser/ui/webui/settings/site_settings_helper.cc. See
+ * chrome/browser/resources/settings/site_settings_page/site_settings_page_util
+ * for translations.
  */
 export enum ContentSettingsTypes {
   ADS = 'ads',
@@ -166,3 +168,24 @@ export enum AllSitesDialog {
  * match for SiteExceptions.
  */
 export const SITE_EXCEPTION_WILDCARD: string = '*';
+
+/**
+ * Corresponds to the animation-duration CSS parameter defined in
+ * chrome/browser/resources/settings/site_settings_page/site_review_shared.css.
+ * Set to be slightly higher, as we want to ensure that the animation is
+ * finished before updating the model for the right visual effect.
+ */
+export const MODEL_UPDATE_DELAY_MS = 300;
+
+/**
+ * Types of cookies exceptions based on the use of wildcard in the patterns:
+ * - THIRD_PARTY: primary pattern is wildcard (third-party exception).
+ * - SITE_DATA: primary pattern is set, secondary pattern is wildcard (site data
+ * exceptions) or is set (only possible via extensions API).
+ * - COMBINED: any pattern combination can be used.
+ */
+export enum CookiesExceptionType {
+  THIRD_PARTY = 'third-party',
+  SITE_DATA = 'site-data',
+  COMBINED = 'combined',
+}

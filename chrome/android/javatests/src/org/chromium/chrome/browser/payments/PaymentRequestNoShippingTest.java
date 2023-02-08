@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments;
 import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +22,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
-import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.payments.Event;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -34,15 +34,15 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
+public class PaymentRequestNoShippingTest {
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule =
-            new PaymentRequestTestRule("payment_request_no_shipping_test.html", this);
+            new PaymentRequestTestRule("payment_request_no_shipping_test.html");
 
-    @Override
-    public void onMainActivityStarted() throws TimeoutException {
+    @Before
+    public void setUp() throws TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
-        helper.setProfile(new AutofillProfile("", "https://example.com", true,
+        helper.setProfile(new AutofillProfile("", "https://example.test", true,
                 "" /* honorific prefix */, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles",
                 "", "90291", "", "US", "650-253-0000", "jon.doe@gmail.com", "en-US"));
     }
@@ -53,7 +53,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @DisabledTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testCloseDialog() throws TimeoutException {
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait("buy", mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(
@@ -66,7 +66,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @DisabledTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testEditAndCloseDialog() throws TimeoutException {
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait("buy", mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_secondary, mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
@@ -81,7 +81,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @DisabledTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testEditAndCancelDialog() throws TimeoutException {
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
+        mPaymentRequestTestRule.triggerUIAndWait("buy", mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_secondary, mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
@@ -96,7 +96,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @DisabledTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testPay() throws TimeoutException {
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.triggerUIAndWait("buy", mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
@@ -113,7 +113,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @DisabledTest(message = "crbug.com/1182234")
     @Feature({"Payments"})
     public void testCancelUnmaskAndRetry() throws TimeoutException {
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.triggerUIAndWait("buy", mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
         mPaymentRequestTestRule.clickCardUnmaskButtonAndWait(
@@ -138,15 +138,13 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     public void testQuickDismissAndPayShouldNotCrash() throws TimeoutException {
         // Install two payment apps, so that the PaymentRequest UI is shown rather than skipped.
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://bobpay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://bobpay.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://alicepay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
-
-        mPaymentRequestTestRule.openPage();
+                "https://alicepay.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         mPaymentRequestTestRule.runJavaScriptAndWaitForUIEvent(
-                "triggerPaymentRequest([{supportedMethods:'https://bobpay.com'}, "
-                        + "{supportedMethods:'https://alicepay.com'}]);",
+                "triggerPaymentRequest([{supportedMethods:'https://bobpay.test'}, "
+                        + "{supportedMethods:'https://alicepay.test'}]);",
                 mPaymentRequestTestRule.getReadyToPay());
 
         // Quickly dismiss and then press on "Continue"
@@ -182,15 +180,13 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     public void testQuickDismissAndCloseShouldNotCrash() throws TimeoutException {
         // Install two payment apps, so that the PaymentRequest UI is shown rather than skipped.
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://bobpay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://bobpay.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://alicepay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
-
-        mPaymentRequestTestRule.openPage();
+                "https://alicepay.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         mPaymentRequestTestRule.runJavaScriptAndWaitForUIEvent(
-                "triggerPaymentRequest([{supportedMethods:'https://bobpay.com'}, "
-                        + "{supportedMethods:'https://alicepay.com'}]);",
+                "triggerPaymentRequest([{supportedMethods:'https://bobpay.test'}, "
+                        + "{supportedMethods:'https://alicepay.test'}]);",
                 mPaymentRequestTestRule.getReadyToPay());
 
         // Quickly dismiss and then press on [X].
@@ -218,15 +214,13 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     public void testQuickCloseAndDismissShouldNotCrash() throws TimeoutException {
         // Install two payment apps, so that the PaymentRequest UI is shown rather than skipped.
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://bobpay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://bobpay.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://alicepay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
-
-        mPaymentRequestTestRule.openPage();
+                "https://alicepay.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         mPaymentRequestTestRule.runJavaScriptAndWaitForUIEvent(
-                "triggerPaymentRequest([{supportedMethods:'https://bobpay.com'}, "
-                        + "{supportedMethods:'https://alicepay.com'}]);",
+                "triggerPaymentRequest([{supportedMethods:'https://bobpay.test'}, "
+                        + "{supportedMethods:'https://alicepay.test'}]);",
                 mPaymentRequestTestRule.getReadyToPay());
 
         // Quickly press on [X] and then dismiss.
@@ -255,7 +249,7 @@ public class PaymentRequestNoShippingTest implements MainActivityStartCallback {
     @Feature({"Payments"})
     public void testPaymentRequestEventsMetric() throws TimeoutException {
         // Start and cancel the Payment Request.
-        mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
+        mPaymentRequestTestRule.triggerUIAndWait("buy", mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(

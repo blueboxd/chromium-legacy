@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/preloading/prefetch/prefetch_container.h"
 #include "content/browser/preloading/prefetch/prefetch_status.h"
+#include "content/browser/preloading/prefetch/prefetch_streaming_url_loader_status.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
 #include "net/cookies/canonical_cookie.h"
@@ -82,10 +83,12 @@ class CONTENT_EXPORT PrefetchService {
       const GURL& url,
       base::WeakPtr<PrefetchContainer> prefetch_container);
 
-  // Returns the prefetch with |url| that is ready to serve. In order for a
-  // prefetch to be ready to serve, |PrepareToServe| must have been previously
-  // called with the prefetch.
-  base::WeakPtr<PrefetchContainer> GetPrefetchToServe(const GURL& url);
+  // Finds the prefetch (if any) that can be used to serve a navigation to
+  // |url|, and then calls |on_prefetch_to_serve_ready| with that prefetch.
+  using OnPrefetchToServeReady = base::OnceCallback<void(
+      base::WeakPtr<PrefetchContainer> prefetch_to_serve)>;
+  void GetPrefetchToServe(const GURL& url,
+                          OnPrefetchToServeReady on_prefetch_to_serve_ready);
 
   // Removes the prefetch with the given |prefetch_container_key| from
   // |all_prefetches_|.
@@ -202,6 +205,21 @@ class CONTENT_EXPORT PrefetchService {
       network::mojom::URLResponseHeadPtr head,
       std::unique_ptr<std::string> body);
 
+  // Called when the response for |prefetch_container| has started. Based on
+  // |head|, returns a status to inform the |PrefetchStreamingURLLoader| whether
+  // the prefetch is servable. If servable, then |kHeadReceivedWaitingOnBody|
+  // will be returned, otherwise a valid failure status is returned.
+  PrefetchStreamingURLLoaderStatus OnPrefetchResponseStarted(
+      base::WeakPtr<PrefetchContainer> prefetch_container,
+      network::mojom::URLResponseHead* head);
+
+  // Called when the response for |prefetch_container| has completed when using
+  // the streaming URL loader. Only used if |PrefetchUseStreamingURLLoader| is
+  // true.
+  void OnStreamingPrefetchResponseCompleted(
+      base::WeakPtr<PrefetchContainer> prefetch_container,
+      const network::URLLoaderCompletionStatus& completion_status);
+
   // Copies any cookies in the isolated network context associated with
   // |prefetch_container| to the default network context.
   void CopyIsolatedCookies(base::WeakPtr<PrefetchContainer> prefetch_container);
@@ -209,6 +227,13 @@ class CONTENT_EXPORT PrefetchService {
       base::WeakPtr<PrefetchContainer> prefetch_container,
       const net::CookieAccessResultList& cookie_list,
       const net::CookieAccessResultList& excluded_cookies);
+
+  // Helper function for |GetPrefetchToServe| to return |prefetch_container| via
+  // |on_prefetch_to_serve_ready|. Starts the cookie copy process for the given
+  // prefetch if needed, and updates its state.
+  void ReturnPrefetchToServe(
+      base::WeakPtr<PrefetchContainer> prefetch_container,
+      OnPrefetchToServeReady on_prefetch_to_serve_ready);
 
   // Checks if there is a prefetch in |all_prefetches_| with the same URL as
   // |prefetch_container| but from a different referring RenderFrameHost.

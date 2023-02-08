@@ -20,8 +20,6 @@ import static org.chromium.ui.test.util.ViewUtils.waitForView;
 
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
-import android.support.test.runner.lifecycle.Stage;
 import android.view.View;
 
 import androidx.test.espresso.contrib.RecyclerViewActions;
@@ -41,7 +39,6 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
@@ -198,8 +195,6 @@ public class StartSurfaceBackButtonTest {
     @Feature({"StartSurface"})
     // clang-format off
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
-    @DisableIf.
-        Build(sdk_is_less_than = Build.VERSION_CODES.N, message = "Flaky, see crbug.com/1246457")
     public void testShow_SingleAsHomepage_BackButtonWithTabSwitcher() {
         // clang-format on
         singleAsHomepage_BackButtonWithTabSwitcher();
@@ -211,8 +206,6 @@ public class StartSurfaceBackButtonTest {
     // clang-format off
     @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS +
         "open_ntp_instead_of_start/false/open_start_as_homepage/true"})
-    @DisableIf.
-        Build(sdk_is_less_than = Build.VERSION_CODES.N, message = "Flaky, see crbug.com/1246457")
     public void testShow_SingleAsHomepageV2_BackButtonWithTabSwitcher() {
         // clang-format on
         singleAsHomepage_BackButtonWithTabSwitcher();
@@ -232,9 +225,7 @@ public class StartSurfaceBackButtonTest {
         // Launches the first site in mv tiles.
         StartSurfaceTestUtils.launchFirstMVTile(cta, /* currentTabCount = */ 1);
 
-        if (isInstantReturn()
-                && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                        && Build.VERSION.SDK_INT < Build.VERSION_CODES.O)) {
+        if (isInstantReturn() && Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             // Fix the issue that failed to perform a single click on the tab switcher button.
             // See code below.
             return;
@@ -261,21 +252,8 @@ public class StartSurfaceBackButtonTest {
         StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
         TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
 
-        // Verifies Chrome is closed.
-        try {
-            StartSurfaceTestUtils.pressBack(mActivityTestRule);
-        } catch (Exception e) {
-        } finally {
-            CriteriaHelper.pollUiThread(
-                    ()
-                            -> {
-                        return ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(
-                                       cta)
-                                == Stage.STOPPED;
-                    },
-                    "Tapping back button should close Chrome.", MAX_TIMEOUT_MS,
-                    CriteriaHelper.DEFAULT_POLLING_INTERVAL);
-        }
+        // Verifies that Chrome goes to the background.
+        StartSurfaceTestUtils.pressBackAndVerifyChromeToBackground(mActivityTestRule);
     }
 
     @Test

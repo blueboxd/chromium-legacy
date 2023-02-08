@@ -13,8 +13,11 @@
 #import "components/network_time/network_time_tracker.h"
 #import "ios/chrome/browser/policy/browser_policy_connector_ios.h"
 #import "ios/chrome/browser/policy/configuration_policy_handler_list_factory.h"
+#import "ios/chrome/browser/promos_manager/features.h"
+#import "ios/chrome/browser/promos_manager/mock_promos_manager.h"
 #import "ios/components/security_interstitials/safe_browsing/fake_safe_browsing_service.h"
 #import "ios/public/provider/chrome/browser/push_notification/push_notification_api.h"
+#import "ios/public/provider/chrome/browser/signin/signin_identity_api.h"
 #import "ios/public/provider/chrome/browser/signin/signin_sso_api.h"
 #import "net/url_request/url_request_context_getter.h"
 #import "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -222,6 +225,12 @@ TestingApplicationContext::GetBrowserPolicyConnector() {
 
 PromosManager* TestingApplicationContext::GetPromosManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (IsFullscreenPromosManagerEnabled()) {
+    promos_manager_ = std::make_unique<MockPromosManager>();
+    return promos_manager_.get();
+  }
+
   return nullptr;
 }
 
@@ -238,6 +247,15 @@ id<SingleSignOnService> TestingApplicationContext::GetSSOService() {
     DCHECK(single_sign_on_service_);
   }
   return single_sign_on_service_;
+}
+
+SystemIdentityManager* TestingApplicationContext::GetSystemIdentityManager() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!system_identity_manager_) {
+    system_identity_manager_ =
+        ios::provider::CreateSystemIdentityManager(GetSSOService());
+  }
+  return system_identity_manager_.get();
 }
 
 segmentation_platform::OTRWebStateObserver*

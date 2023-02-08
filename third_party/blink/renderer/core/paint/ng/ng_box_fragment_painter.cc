@@ -510,8 +510,7 @@ void NGBoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
       // make it easier to merge scrolling background and scrolling contents
       // into the same layer. The function checks if it's appropriate to paint
       // overflow controls now.
-      if (RuntimeEnabledFeatures::ScrollUpdateOptimizationsEnabled())
-        painted_overflow_controls = PaintOverflowControls(info, paint_offset);
+      painted_overflow_controls = PaintOverflowControls(info, paint_offset);
 
       info.SetIsPaintingBackgroundInContentsSpace(true);
       PaintObject(info, paint_offset);
@@ -1744,9 +1743,7 @@ bool NGBoxFragmentPainter::ShouldPaint(
   // rectangle.
   if (box_fragment_.IsPaginatedRoot())
     return true;
-  const auto& box = *To<LayoutBox>(box_fragment_.GetLayoutObject());
-  return paint_state.LocalRectIntersectsCullRect(
-      box.PhysicalVisualOverflowRect());
+  return paint_state.LocalRectIntersectsCullRect(box_fragment_.InkOverflow());
 }
 
 void NGBoxFragmentPainter::PaintTextClipMask(const PaintInfo& paint_info,

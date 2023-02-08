@@ -5,6 +5,9 @@
 #ifndef ASH_WEBUI_SHORTCUT_CUSTOMIZATION_UI_BACKEND_ACCELERATOR_CONFIGURATION_PROVIDER_H_
 #define ASH_WEBUI_SHORTCUT_CUSTOMIZATION_UI_BACKEND_ACCELERATOR_CONFIGURATION_PROVIDER_H_
 
+#include <map>
+
+#include "ash/accelerators/accelerator_layout_table.h"
 #include "ash/public/cpp/accelerator_configuration.h"
 #include "ash/public/mojom/accelerator_keys.mojom.h"
 #include "ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom.h"
@@ -25,10 +28,11 @@ class AcceleratorConfigurationProvider
       public ui::InputDeviceEventObserver,
       public input_method::InputMethodManager::Observer {
  public:
+  using ActionIdToAcceleratorsInfoMap =
+      base::flat_map<AcceleratorActionId,
+                     std::vector<mojom::AcceleratorInfoPtr>>;
   using AcceleratorConfigurationMap =
-      base::flat_map<mojom::AcceleratorSource,
-                     base::flat_map<AcceleratorActionId,
-                                    std::vector<mojom::AcceleratorInfoPtr>>>;
+      base::flat_map<mojom::AcceleratorSource, ActionIdToAcceleratorsInfoMap>;
   using AcceleratorSourceMap = base::flat_map<
       mojom::AcceleratorSource,
       std::map<AcceleratorActionId, std::vector<ui::Accelerator>>>;
@@ -63,6 +67,13 @@ class AcceleratorConfigurationProvider
           shortcut_customization::mojom::AcceleratorConfigurationProvider>
           receiver);
 
+  void InitializeNonConfigurableAccelerators(
+      NonConfigurableActionsTextDetailsMap);
+
+  mojom::AcceleratorInfoPtr CreateTextAcceleratorInfo(
+      const AcceleratorTextDetails& details);
+  mojom::TextAcceleratorPropertiesPtr CreateTextAcceleratorParts();
+
  private:
   friend class AcceleratorConfigurationProviderTest;
 
@@ -77,17 +88,24 @@ class AcceleratorConfigurationProvider
 
   void NotifyAcceleratorsUpdated();
 
+  // Create accelerator info using accelerator and extra properties.
+  mojom::AcceleratorInfoPtr CreateDefaultAcceleratorInfo(
+      const ui::Accelerator& accelerator,
+      bool locked,
+      mojom::AcceleratorType type,
+      mojom::AcceleratorState state) const;
+
   // Create base accelerator info using accelerator.
   mojom::AcceleratorInfoPtr CreateBaseAcceleratorInfo(
-      ui::Accelerator accelerator) const;
+      const ui::Accelerator& accelerator) const;
 
   // Create alias accelerator info for top row key if applicable.
   mojom::AcceleratorInfoPtr CreateRemappedTopRowAcceleratorInfo(
-      ui::Accelerator accelerator) const;
+      const ui::Accelerator& accelerator) const;
 
   // Create alias accelerator info for six pack key if applicable.
   mojom::AcceleratorInfoPtr CreateRemappedSixPackAcceleratorInfo(
-      ui::Accelerator accelerator) const;
+      const ui::Accelerator& accelerator) const;
 
   // Create alias accelerator infos when the accelerator contains a top row key
   // or six pack key. For |top_row_key|, replace the base accelerator with
@@ -96,7 +114,7 @@ class AcceleratorConfigurationProvider
   // vector here since it may display two accelerator infos for six pack
   // remapping case.
   std::vector<mojom::AcceleratorInfoPtr> CreateAcceleratorInfoVariants(
-      ui::Accelerator accelerator) const;
+      const ui::Accelerator& accelerator) const;
 
   std::vector<mojom::AcceleratorLayoutInfoPtr> layout_infos_;
 
@@ -107,6 +125,8 @@ class AcceleratorConfigurationProvider
 
   // Stores all connected keyboards.
   std::vector<ui::InputDevice> connected_keyboards_;
+
+  NonConfigurableActionsTextDetailsMap non_configurable_actions_mapping_;
 
   mojo::Receiver<
       shortcut_customization::mojom::AcceleratorConfigurationProvider>
@@ -120,6 +140,8 @@ class AcceleratorConfigurationProvider
   base::WeakPtrFactory<AcceleratorConfigurationProvider> weak_ptr_factory_{
       this};
 };
+
+std::u16string GetKeyDisplay(ui::KeyboardCode key_code);
 
 }  // namespace shortcut_ui
 }  // namespace ash

@@ -243,6 +243,7 @@
 <translation id="5975083100439434680">Umanjivanje</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Kontrolišite pristup ovog sajta uređaju</translation>
+<translation id="6018815681665454784">Želite da obrišete i resetujete?</translation>
 <translation id="6040143037577758943">Zatvori</translation>
 <translation id="6042308850641462728">Još</translation>
 <translation id="6064125863973209585">Dovršena preuzimanja</translation>
@@ -322,6 +323,7 @@
 <translation id="7658239707568436148">Otkaži</translation>
 <translation id="7667547420449112975">Čarobnjak iz Oza</translation>
 <translation id="7690549345586282764">Prikaži zumiranje</translation>
+<translation id="7695658402549134106">Podešavanje sajta za <ph name="SITE_NAME" /></translation>
 <translation id="7719367874908701697">Zumiranje stranice</translation>
 <translation id="7781829728241885113">Juče</translation>
 <translation id="7791543448312431591">Dodaj</translation>
@@ -348,6 +350,7 @@
 <translation id="813082847718468539">Pogledajte informacije o sajtu</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8154912474061769055">Funkcije na mnogim sajtovima mogu da ne rade</translation>
+<translation id="8168435359814927499">Sadržaj</translation>
 <translation id="8197286292360124385">Odobrena je dozvola <ph name="PERMISSION_1" /></translation>
 <translation id="8200772114523450471">Nastavi</translation>
 <translation id="8206354486702514201">Ovo podešavanje primenjuje administrator.</translation>

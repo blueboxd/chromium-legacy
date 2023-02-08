@@ -128,6 +128,7 @@
 <translation id="2084108471225856927">Поставки за уредот</translation>
 <translation id="2084809735218147718">Човек што пее „Благодарам“</translation>
 <translation id="2088690981887365033">VPN-мрежа</translation>
+<translation id="2114191879048183086"><ph name="NUMBER_OF_ITEMS" /> ставки ќе се избришат и нема да може да ги вратите.</translation>
 <translation id="2122305276694332719">Автоматското поврзување на скриена мрежа им овозможува на другите да го видат вашиот уред и некои други мрежни поставки и не се препорачува.</translation>
 <translation id="2125607626296734455">кмерски</translation>
 <translation id="2139545522194199494">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" /> %, управувана од администраторот, поврзи</translation>
@@ -395,6 +396,7 @@
 <translation id="4398096759193130964">Вратете ги ставките или повлечете ги во нова папка надвор од корпата</translation>
 <translation id="4401287888955153199">Отпакувај сѐ</translation>
 <translation id="4410695710508688828">Не успеа отпакувањето. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4414834425328380570">„<ph name="FILE_NAME" />“ ќе се избрише и нема да може да ја вратите.</translation>
 <translation id="4418686080762064601">Создајте кратенка за вашите датотеки</translation>
 <translation id="4425149324548788773">Мојот Drive</translation>
 <translation id="4439427728133035643">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" /> %, поврзи</translation>
@@ -412,7 +414,6 @@
 <translation id="4552759165874948005">Мрежа со <ph name="NETWORK_TYPE" />, јачина на сигнал <ph name="SIGNAL_STRENGTH" /> %</translation>
 <translation id="4559767610552730302">Боке</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> датотека</translation>
-<translation id="457386861538956877">Повеќе…</translation>
 <translation id="4579744207439506346">Го додадовте <ph name="ENTRY_NAME" /> во изборот.</translation>
 <translation id="4583436353463424810">Нема неодамнешни документи</translation>
 <translation id="4594543368593301662">Се прикажуваат резултати за <ph name="SEARCH_TERM" />.</translation>
@@ -560,6 +561,7 @@
 <translation id="5580591966435005537">виртуелна машина</translation>
 <translation id="5583640892426849032">Backspace-копче</translation>
 <translation id="5583664733673201137">Ширината на интерпункцијата е полна</translation>
+<translation id="5596627076506792578">Повеќе опции</translation>
 <translation id="5602622065581044566">бугарски со фонетска тастатура</translation>
 <translation id="5605830556594064952">US Dvorak</translation>
 <translation id="5618330573454123917">Датотекава е создадена за компјутер што користи софтвер на Macintosh. Таа не е компатибилна со вашиот уред што извршува Chrome OS. <ph name="BEGIN_LINK_HELP" />Дознајте повеќе<ph name="END_LINK_HELP" /> за отворање датотеки во Chrome OS.</translation>
@@ -926,6 +928,7 @@
 <translation id="8560515948038859357">кантонски</translation>
 <translation id="8561206103590473338">Слон</translation>
 <translation id="8566466896628108558">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" /> %, блокирано од администраторот, детали</translation>
+<translation id="8568374623837201676">Трајно да се избриши датотекава?</translation>
 <translation id="8569764466147087991">Избери датотека за отворање</translation>
 <translation id="8577897833047451336">хрватски</translation>
 <translation id="8578308463707544055">индонезиски</translation>

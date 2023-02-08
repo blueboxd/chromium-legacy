@@ -170,6 +170,7 @@
 #include "content/public/browser/document_service_internal.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/render_frame_host_observer.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
@@ -273,6 +274,10 @@
 #include "content/browser/hid/hid_service.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/serial/serial_service.h"
+#endif
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
+#include "content/browser/smart_card/smart_card_service.h"
 #endif
 
 #if BUILDFLAG(IS_MAC)
@@ -1848,6 +1853,10 @@ void RenderFrameHostImpl::DidEnterBackForwardCacheInternal() {
 #if BUILDFLAG(IS_P2P_ENABLED)
   GetProcess()->PauseSocketManagerForRenderFrameHost(GetGlobalId());
 #endif  // BUILDFLAG(IS_P2P_ENABLED)
+
+  for (auto& observer : observers_) {
+    observer.DidEnterBackForwardCache();
+  }
 }
 
 // The frame as been restored from the BackForwardCache.
@@ -3589,6 +3598,14 @@ void RenderFrameHostImpl::SetCrossOriginOpenerPolicyReporter(
 
 bool RenderFrameHostImpl::IsCredentialless() const {
   return policy_container_host_->policies().is_credentialless;
+}
+
+void RenderFrameHostImpl::AddObserver(RenderFrameHostObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void RenderFrameHostImpl::RemoveObserver(RenderFrameHostObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void RenderFrameHostImpl::OnCreateChildFrame(
@@ -8558,6 +8575,14 @@ void RenderFrameHostImpl::StartPendingDeletionOnSubtree(
     // frame detach if the kStopCancellingNavigationsOnCommitAndNewNavigation
     // flag is enabled, or for all pending deletion cases otherwise.
     ResetAllNavigationsInSubtreeForFrameDetach();
+  } else {
+    CHECK(
+        pending_deletion_reason == PendingDeletionReason::kSwappedOut ||
+        base::FeatureList::IsEnabled(kAvoidUnnecessaryNavigationCancellations));
+    // The pending deletion state is caused by swapping out the RFH. Reset only
+    // the navigations that are owned by or will be using the swapped out RFH,
+    // and also reset all navigations happening in the descendant frames.
+    ResetNavigationsUsingSwappedOutRFHAndAllNavigationsInSubtree();
   }
 
   for (std::unique_ptr<FrameTreeNode>& child_frame : children_) {
@@ -8638,6 +8663,34 @@ void RenderFrameHostImpl::PendingDeletionCheckCompletedOnSubtree() {
 
   if (self) {
     check_deletion_for_bug_1276535_ = false;
+  }
+}
+
+void RenderFrameHostImpl::
+    ResetNavigationsUsingSwappedOutRFHAndAllNavigationsInSubtree() {
+  // Only delete the navigation owned by the swapped out RFH or those that
+  // intend to use the current RFH.
+  ResetOwnedNavigationRequests(
+      NavigationDiscardReason::kRenderFrameHostDestruction);
+  if (frame_tree_node_->navigation_request() &&
+      frame_tree_node_->navigation_request()->state() >=
+          NavigationRequest::WILL_PROCESS_RESPONSE &&
+      frame_tree_node_->navigation_request()->GetRenderFrameHost() == this) {
+    // It's possible for a RenderFrameHost to already have been picked for a
+    // navigation but the NavigationRequest's ownership hasn't been moved to the
+    // RenderFrameHost yet, if the navigation is deferred by a
+    // NavigationThrottle or CommitDeferringCondition. We need to reset the
+    // NavigationRequest to prevent it from trying to commit in the pending
+    // deletion RFH.
+    frame_tree_node_->ResetNavigationRequest(
+        NavigationDiscardReason::kRenderFrameHostDestruction);
+  }
+
+  // For the child frames, we should delete all ongoing navigations instead of
+  // just the one using the current RFH, because the child frames will be
+  // deleted when this RFH gets unloaded.
+  for (auto& child : children_) {
+    child->current_frame_host()->ResetAllNavigationsInSubtreeForFrameDetach();
   }
 }
 
@@ -10537,6 +10590,13 @@ void RenderFrameHostImpl::GetHidService(
 }
 #endif
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
+void RenderFrameHostImpl::GetSmartCardService(
+    mojo::PendingReceiver<blink::mojom::SmartCardService> receiver) {
+  SmartCardService::Create(this, std::move(receiver));
+}
+#endif
+
 IdleManagerImpl* RenderFrameHostImpl::GetIdleManager() {
   return idle_manager_.get();
 }
@@ -10672,7 +10732,7 @@ void RenderFrameHostImpl::BindTrustTokenQueryAnswerer(
     return;
   }
 
-  // TODO(crbug.com/1145346): Document.hasPrivateStateToken is restricted to
+  // TODO(crbug.com/1145346): Document.hasPrivateToken is restricted to
   // secure contexts, so we could additionally add a check verifying that the
   // bind request "is coming from a secure context"---but there's currently no
   // direct way to perform such a check in the browser.
@@ -13295,7 +13355,11 @@ void RenderFrameHostImpl::
     // If the origin doesn't match, we would do a DumpWithoutCrashing above.
     // So, don't do a DumpWithoutCrashing unless there's another param that
     // doesn't match.
+    // Note: This is temporarily disabled on Android as there has been a recent
+    // spike of reports on Android WebView.
+#if !BUILDFLAG(IS_ANDROID)
     base::debug::DumpWithoutCrashing();
+#endif  // !BUILDFLAG(IS_ANDROID)
   }
 }
 
@@ -13748,6 +13812,12 @@ void RenderFrameHostImpl::SetLifecycleState(LifecycleStateImpl new_state) {
         }
       }
     }
+
+    if (lifecycle_state_ == LifecycleStateImpl::kInBackForwardCache) {
+      for (auto& observer : observers_) {
+        observer.DidRestoreFromBackForwardCache();
+      }
+    }
   }
 
   if (lifecycle_state() == LifecycleStateImpl::kInBackForwardCache)
@@ -13989,8 +14059,8 @@ void RenderFrameHostImpl::SetFrameTree(FrameTree& frame_tree) {
   DCHECK_EQ(&frame_tree_node_->frame_tree(), &frame_tree);
   frame_tree_ = &frame_tree;
   render_view_host()->SetFrameTree(frame_tree);
-  if (GetRenderWidgetHost()) {
-    GetRenderWidgetHost()->SetFrameTree(frame_tree);
+  if (owned_render_widget_host_) {
+    owned_render_widget_host_->SetFrameTree(frame_tree);
   }
 }
 

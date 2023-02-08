@@ -151,7 +151,7 @@
 <translation id="4008040567710660924">Дазвол выкарыстання файлаў cookie ад канкрэтнага сайта.</translation>
 <translation id="4046123991198612571">Наступны трэк</translation>
 <translation id="4149994727733219643">Спрошчаны выгляд для вэб-старонак</translation>
-<translation id="4165986682804962316">Налады сайта</translation>
+<translation id="4165986682804962316">Налады сайтаў</translation>
 <translation id="4169549551965910670">Выканана падключэнне да прылады USB</translation>
 <translation id="4194328954146351878">Пытацца, перш чым дазваляць сайтам праглядаць і змяняць інфармацыю на прыладах NFC (рэкамендуецца)</translation>
 <translation id="4200726100658658164">Адкрыць налады месцазнаходжання</translation>
@@ -243,6 +243,7 @@
 <translation id="5975083100439434680">Паменшыць</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Кіруйце доступам гэтага сайта да вашай прылады</translation>
+<translation id="6018815681665454784">Выдаліць даныя і скінуць дазволы?</translation>
 <translation id="6040143037577758943">Закрыць</translation>
 <translation id="6042308850641462728">Яшчэ</translation>
 <translation id="6064125863973209585">Завершаныя спампоўкі</translation>
@@ -322,6 +323,7 @@
 <translation id="7658239707568436148">Скасаваць</translation>
 <translation id="7667547420449112975">Чараўнік краіны Оз</translation>
 <translation id="7690549345586282764">Паказваць маштаб</translation>
+<translation id="7695658402549134106">Якую версію выкарыстоўваць для сайта <ph name="SITE_NAME" /></translation>
 <translation id="7719367874908701697">Маштаб старонкі</translation>
 <translation id="7781829728241885113">Учора</translation>
 <translation id="7791543448312431591">Дадаць</translation>
@@ -348,6 +350,7 @@
 <translation id="813082847718468539">Прагляд звестак пра сайт</translation>
 <translation id="8131740175452115882">Пацвердзіць</translation>
 <translation id="8154912474061769055">На многіх сайтах можа не працаваць частка функцый</translation>
+<translation id="8168435359814927499">Змесціва</translation>
 <translation id="8197286292360124385">Дазволена: <ph name="PERMISSION_1" /></translation>
 <translation id="8200772114523450471">Узнавіць</translation>
 <translation id="8206354486702514201">Гэтай наладай кіруе адміністратар.</translation>

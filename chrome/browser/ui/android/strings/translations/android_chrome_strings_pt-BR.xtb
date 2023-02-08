@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
-<translation id="1016498331642356377">Pesquisar rapidamente usando sua voz. Para editar este atalho, toque e mantenha pressionado.</translation>
+<translation id="1016498331642356377">Pesquisar rapidamente usando sua voz. Para editar este atalho, toque e pressione.</translation>
 <translation id="1028699632127661925">Enviando para este dispositivo: <ph name="DEVICE_NAME" />…</translation>
 <translation id="103269572468856066">Remover também dados desses sites e apps?</translation>
 <translation id="1034259925032978114">A janela está aberta</translation>
@@ -12,7 +12,6 @@
 <translation id="1062628064301375934">Ajude-nos a criar uma Web com mais privacidade</translation>
 <translation id="107147699690128016">Se você mudar a extensão do arquivo, ele poderá ser aberto em um aplicativo diferente e colocar em risco seu dispositivo.</translation>
 <translation id="1089606299949659462">Revisão concluída</translation>
-<translation id="1091604859693995976">Atualize para mostrar o conteúdo</translation>
 <translation id="1095761715416917775">Tenha sempre acesso aos seus dados sincronizados</translation>
 <translation id="1100066534610197918">Abrir em nova guia no grupo</translation>
 <translation id="1103142993930332957">Quer ajudar a melhorar o Chrome?</translation>
@@ -341,7 +340,7 @@ Os tokens de estado particular melhoram a privacidade na Web e não podem ser us
 <translation id="2886836735871983413">Uma lista de sites vai aparecer aqui conforme você navega na Web</translation>
 <translation id="2888126860611144412">Sobre o Google Chrome</translation>
 <translation id="2891154217021530873">Para de carregar a página</translation>
-<translation id="2893180576842394309">O histórico será usado para personalizar a Pesquisa, anúncios e outros serviços Google.</translation>
+<translation id="2893180576842394309">O histórico será usado para personalizar a Pesquisa, anúncios e outros serviços do Google.</translation>
 <translation id="2900528713135656174">Criar evento</translation>
 <translation id="2901411048554510387">Exibindo sugestões para <ph name="WEBSITE_TITLE" /></translation>
 <translation id="2904414404539560095">Lista de dispositivos com os quais é possível compartilhar uma guia aberta no tamanho máximo.</translation>
@@ -519,6 +518,7 @@ Os tokens de estado particular melhoram a privacidade na Web e não podem ser us
 <translation id="3830886834687455630">Atualize o Google Play Services para verificar suas senhas</translation>
 <translation id="3845098929839618392">Abrir em guia anônima</translation>
 <translation id="3856096718352044181">Verifique se o provedor é válido ou tente novamente mais tarde</translation>
+<translation id="3858127568696903256">O conteúdo que você segue aparece aqui</translation>
 <translation id="3858860766373142691">Nome</translation>
 <translation id="3861633093716975811">Vídeos mais acessados</translation>
 <translation id="3874520961715512166">Site removido</translation>
@@ -762,6 +762,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="510275257476243843">Uma hora restante</translation>
 <translation id="5115811374190515607">para <ph name="PRODUCT_NAME" /></translation>
 <translation id="5118713593561876160">Interesses</translation>
+<translation id="5122378528687922675">Se precisar de ajuda, entre em contato com seu familiar responsável (<ph name="PARENT_NAME_1" /> ou <ph name="PARENT_NAME_2" />)</translation>
 <translation id="5123685120097942451">Guia anônima</translation>
 <translation id="5126510351761255129">Verificar seu cartão</translation>
 <translation id="5132942445612118989">Sincronize suas senhas, seu histórico e muito mais em todos os dispositivos</translation>
@@ -1071,7 +1072,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="6737612727720318154">Autorize o uso de um interesse ou site se considerar que anúncios relacionados ao item podem ser úteis para você</translation>
 <translation id="6738516213925468394">Seus dados foram criptografados com sua <ph name="BEGIN_LINK" />senha longa de sincronização<ph name="END_LINK" /> em <ph name="TIME" />. Digite-a para iniciar a sincronização.</translation>
 <translation id="6738867403308150051">Fazendo o download...</translation>
-<translation id="6751521182688001123">Abrir rapidamente uma nova guia. Para editar este atalho, toque e mantenha pressionado.</translation>
+<translation id="6751521182688001123">Abrir rapidamente uma nova guia. Para editar este atalho, toque e pressione.</translation>
 <translation id="6756507620369789050">Compartilhar feedback</translation>
 <translation id="6767294960381293877">Lista de dispositivos com os quais é possível compartilhar uma guia aberta na metade da altura.</translation>
 <translation id="6770042910635026163">Sites que você visita que definem seus interesses</translation>
@@ -1081,7 +1082,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="6802555630140434547">A janela será fechada</translation>
 <translation id="6811034713472274749">A página já pode ser visualizada</translation>
 <translation id="6813446258015311409">Fazer login no Chrome, aberta.</translation>
-<translation id="6817747507826986771">Compartilhar esta página rapidamente. Para editar este atalho, toque e mantenha pressionado.</translation>
+<translation id="6817747507826986771">Compartilhar esta página rapidamente. Para editar este atalho, toque e pressione.</translation>
 <translation id="6819199143469632133">Para ver o conteúdo do Google nos seus dispositivos, faça login</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824899148643461612">A guia <ph name="TAB_TITLE" /> está selecionada</translation>
@@ -1107,7 +1108,6 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="6903907808598579934">Ativar a sincronização</translation>
 <translation id="6908998565271542516">Opção para aprovar ou não um site aberta no tamanho máximo</translation>
 <translation id="6909589135458168665">Páginas pré-carregadas</translation>
-<translation id="692924882724759447">Confira aqui os sites que você segue</translation>
 <translation id="6942665639005891494">Altere o local padrão de download a qualquer momento usando a opção do menu "Configurações"</translation>
 <translation id="694267552845942083">No momento, você está personalizando suas configurações de sincronização. Para terminar de ativar a sincronização, toque no botão "Confirmar" na parte inferior da tela. Navegar para cima</translation>
 <translation id="6945221475159498467">Selecionar</translation>
@@ -1149,6 +1149,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="7177466738963138057">Você poderá alterar isso mais tarde nas configurações</translation>
 <translation id="7177873915659574692">Não é possível criar o código QR. O URL tem mais de <ph name="CHARACTER_LIMIT" /> caracteres.</translation>
 <translation id="7177959540995930968">Saiba mais sobre esses recursos nas configurações do Chrome.</translation>
+<translation id="7180611975245234373">Atualizar</translation>
 <translation id="718226107353899806">Você pode adicionar até <ph name="MAX_NUM_REACTIONS" /> reações</translation>
 <translation id="7183693674623539380">Grupo de guias: <ph name="TITLE_OF_GROUP" /></translation>
 <translation id="7187993566681480880">Protege você no Chrome e pode ser usado para melhorar a segurança em outros apps do Google quando sua conta está conectada.</translation>
@@ -1332,6 +1333,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="8084285576995584326">Controlar os dados da sua Conta do Google</translation>
 <translation id="808747664143081553">Conectado ao dispositivo</translation>
 <translation id="8088176524274673045">Para compartilhar com pessoas próximas, permita que elas leiam esse código QR</translation>
+<translation id="8090732854597034573">Se precisar de ajuda, entre em contato com seu familiar responsável</translation>
 <translation id="8100969750121413114">Faça login para personalizar o Chrome</translation>
 <translation id="8103578431304235997">Guia anônima</translation>
 <translation id="8105613260829665809">Ao continuar, você concorda com os <ph name="BEGIN_TOS_LINK" />Termos de Serviço<ph name="END_TOS_LINK" />.\nPara ajudar a melhorar o app, o Chrome envia dados de uso e de falha ao Google. <ph name="BEGIN_UMA_LINK" />Gerenciar<ph name="END_UMA_LINK" /></translation>
@@ -1340,6 +1342,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="8109613176066109935">Para ter seus favoritos em todos os seus dispositivos, ative a sincronização</translation>
 <translation id="8110024788458304985">Ajudar a melhorar os recursos e o desempenho do Chrome</translation>
 <translation id="8110087112193408731">Mostrar sua atividade do Chrome no Bem-estar digital?</translation>
+<translation id="8118117428362942925">Se precisar de ajuda, entre em contato com seu familiar responsável (<ph name="PARENT_NAME" />)</translation>
 <translation id="8127542551745560481">Editar página inicial</translation>
 <translation id="8130309322784422030">Suas informações de login armazenadas podem estar desatualizadas</translation>
 <translation id="813082847718468539">Ver informações do site</translation>

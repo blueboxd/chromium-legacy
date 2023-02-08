@@ -77,12 +77,18 @@
     gap: 4px;
   }
 
-  .edit-footer {
+  .edit-description {
     align-items: center;
-    background-color: var(--edit-footer-background);
     color: var(--cr-secondary-text-color);
     display: flex;
     gap: 8px;
+  }
+
+  .edit-footer {
+    background-color: var(--edit-footer-background);
+    color: var(--cr-secondary-text-color);
+    display: flex;
+    justify-content: space-between;
     padding: 14px;
   }
 
@@ -93,6 +99,10 @@
     gap: 6px;
     margin: 0 48px;
     text-align: center;
+  }
+
+  .empty[guest] {
+    margin-top: 66px;
   }
 
   .empty-body {
@@ -227,9 +237,9 @@
 <div class="column" id="powerBookmarksContainer">
   <cr-toolbar-search-field label="$i18n{searchBookmarks}"
       clear-label="$i18n{clearSearch}" on-search-changed="onSearchChanged_"
-      disabled="[[editing_]]">
+      disabled="[[editing_]]" hidden="[[guestMode_]]">
   </cr-toolbar-search-field>
-  <div class="label-row">
+  <div class="label-row" hidden="[[guestMode_]]">
     <template is="dom-repeat" items="[[labels_]]">
       <button class="label" selected$="[[item.active]]" disabled="[[editing_]]"
           on-click="onLabelClicked_" aria-pressed="[[item.active]]">
@@ -239,7 +249,7 @@
       </button>
     </template>
   </div>
-  <div class="heading-row">
+  <div class="heading-row" hidden="[[guestMode_]]">
     <button class="back-button" on-click="onBackClicked_"
         disabled="[[disableBackButton_(activeFolderPath_.*, editing_)]]">
       <div class="icon-arrow-back" hidden="[[!activeFolderPath_.length]]">
@@ -269,9 +279,12 @@
       <power-bookmark-row id="bookmark-[[item.id]]" bookmark="[[item]]"
           description= "[[getBookmarkDescription_(item, compactDescriptions_.*,
                           expandedDescriptions_.*, compact_)]]"
-          compact="[[compact_]]"
+          compact="[[compact_]]" trailing-icon="cr:more-vert"
+          trailing-icon-aria-label="TODO"
           has-checkbox="[[editing_]]"
           on-row-clicked="onRowClicked_"
+          on-context-menu="onShowContextMenuClicked_"
+          on-trailing-icon-clicked="onShowContextMenuClicked_"
           on-checkbox-change="onRowSelectedChange_">
         <div slot="extra-content-container">
           <template is="dom-if"
@@ -296,22 +309,32 @@
     </template>
   </div>
   <div class="footer-or-empty-state" empty$="[[!shownBookmarks_.length]]">
-    <div class="empty" hidden="[[shownBookmarks_.length]]">
+    <div class="empty" hidden="[[shownBookmarks_.length]]"
+        guest$="[[guestMode_]]">
       <div class="empty-image"></div>
-      <div class="empty-title">$i18n{emptyTitle}</div>
-      <div class="empty-body">$i18n{emptyBody}</div>
+      <div class="empty-title">[[getEmptyTitle_()]]</div>
+      <div class="empty-body">[[getEmptyBody_()]]</div>
     </div>
-    <cr-button class="footer-button" hidden="[[editing_]]"
+    <cr-button class="footer-button" hidden="[[hideAddTabButton_(editing_)]]"
         on-click="onAddTabClicked_"
-        disabled="[[!canAddCurrentUrl_(activeFolderPath_.*, currentUrl_)]]">
+        disabled="[[!canAddCurrentUrl_(shownBookmarks_.*, activeFolderPath_.*,
+                     currentUrl_)]]">
       <iron-icon icon="bookmarks:add-tab" class="label-icon"></iron-icon>
       $i18n{addCurrentTab}
     </cr-button>
     <div class="edit-footer" hidden="[[!editing_]]">
-      <cr-icon-button iron-icon="cr:close"
-          aria-label="$i18n{cancelA11yLabel}"
-          on-click="onBulkEditClicked_"></cr-icon-button>
-      [[getSelectedDescription_(selectedBookmarks_.*)]]
+      <div class="edit-description">
+        <cr-icon-button iron-icon="cr:close"
+            aria-label="$i18n{cancelA11yLabel}"
+            on-click="onBulkEditClicked_"></cr-icon-button>
+        [[getSelectedDescription_(selectedBookmarks_.*)]]
+      </div>
+      <div class="edit-icons">
+        <cr-icon-button iron-icon="bookmarks:delete"
+            disabled="[[!selectedBookmarks_.length]]"
+            aria-label="$i18n{tooltipDelete}" on-click="onDeleteClicked_">
+        </cr-icon-button>
+      </div>
     </div>
   </div>
 </div>
@@ -335,3 +358,9 @@
     $i18n{compactView}
   </button>
 </cr-action-menu>
+
+<cr-lazy-render id="contextMenu">
+  <template>
+    <power-bookmarks-context-menu></power-bookmarks-context-menu>
+  </template>
+</cr-lazy-render>

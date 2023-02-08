@@ -20,6 +20,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browsing_data/browsing_data_lifetime_policy_handler.h"
 #include "chrome/browser/enterprise/connectors/device_trust/prefs.h"
+#include "chrome/browser/enterprise/idle/idle_timeout_policy_handler.h"
 #include "chrome/browser/first_party_sets/first_party_sets_overrides_policy_handler.h"
 #include "chrome/browser/net/disk_cache_dir_policy_handler.h"
 #include "chrome/browser/net/explicitly_allowed_network_ports_policy_handler.h"
@@ -161,6 +162,7 @@
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/policy/handlers/configuration_policy_handler_ash.h"
 #include "chrome/browser/ash/policy/handlers/lacros_availability_policy_handler.h"
+#include "chrome/browser/ash/policy/handlers/lacros_selection_policy_handler.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/policy/default_geolocation_policy_handler.h"
 #include "chrome/browser/policy/os_color_mode_policy_handler.h"
@@ -1373,6 +1375,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kTrashEnabled,
     ash::prefs::kFilesAppTrashEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kUsbDetectorNotificationEnabled,
+    ash::prefs::kUsbDetectorNotificationEnabled,
+    base::Value::Type::BOOLEAN },
 #endif // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_LINUX)
@@ -1799,6 +1804,19 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kVirtualKeyboardResizesLayoutByDefault,
     base::Value::Type::BOOLEAN},
 #endif  // BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_WIN)
+  { key::kCloudAPAuthEnabled,
+    prefs::kCloudApAuthEnabled,
+    base::Value::Type::INTEGER },
+#endif  // BUILDFLAG(IS_WIN)
+#if BUILDFLAG(ENABLE_PPAPI)
+  { key::kUseMojoVideoDecoderForPepperAllowed,
+    policy::policy_prefs::kUseMojoVideoDecoderForPepperAllowed,
+    base::Value::Type::BOOLEAN },
+  { key::kPPAPISharedImagesSwapChainAllowed,
+    policy::policy_prefs::kPPAPISharedImagesSwapChainAllowed,
+    base::Value::Type::BOOLEAN },
+#endif // BUILDFLAG(ENABLE_PPAPI)
 };
 // clang-format on
 
@@ -1817,22 +1835,6 @@ void GetExtensionAllowedTypesMap(
   }
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-void GetIdleTimeoutActionsMap(
-    std::vector<std::unique_ptr<StringMappingListPolicyHandler::MappingEntry>>*
-        result) {
-  // Mapping from IdleTimeoutActions action names to ActionType.
-  for (size_t i = 0; i < enterprise_idle::kActionTypeMapSize; i++) {
-    const enterprise_idle::ActionTypeMapEntry& entry =
-        enterprise_idle::kActionTypeMap[i];
-    result->push_back(
-        std::make_unique<StringMappingListPolicyHandler::MappingEntry>(
-            entry.name, std::make_unique<base::Value>(
-                            static_cast<int>(entry.action_type))));
-  }
-}
-#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
 // Future policies are not supported on Stable and Beta by default.
 bool AreFuturePoliciesSupported() {
@@ -2024,11 +2026,11 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-  handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
-      key::kIdleTimeout, prefs::kIdleTimeout, 5, INT_MAX, /*clamp=*/true));
-  handlers->AddHandler(std::make_unique<StringMappingListPolicyHandler>(
-      key::kIdleTimeoutActions, prefs::kIdleTimeoutActions,
-      base::BindRepeating(&GetIdleTimeoutActionsMap)));
+  handlers->AddHandler(
+      std::make_unique<enterprise_idle::IdleTimeoutPolicyHandler>());
+  handlers->AddHandler(
+      std::make_unique<enterprise_idle::IdleTimeoutActionsPolicyHandler>(
+          chrome_schema));
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
   handlers->AddHandler(std::make_unique<RestoreOnStartupPolicyHandler>());
@@ -2126,11 +2128,11 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
-#if defined(USE_CUPS)
+#if BUILDFLAG(USE_CUPS)
   handlers->AddHandler(std::make_unique<extensions::ExtensionListPolicyHandler>(
       key::kPrintingAPIExtensionsAllowlist,
       prefs::kPrintingAPIExtensionsAllowlist, /*allow_wildcards=*/false));
-#endif  // defined(USE_CUPS)
+#endif  // BUILDFLAG(USE_CUPS)
 #else   // BUILDFLAG(IS_CHROMEOS)
   std::vector<std::unique_ptr<ConfigurationPolicyHandler>>
       signin_legacy_policies;
@@ -2400,6 +2402,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<BooleanDisablingPolicyHandler>(
       key::kNearbyShareAllowed, prefs::kNearbySharingEnabledPrefName));
   handlers->AddHandler(std::make_unique<LacrosAvailabilityPolicyHandler>());
+  handlers->AddHandler(std::make_unique<LacrosSelectionPolicyHandler>());
   handlers->AddHandler(std::make_unique<BooleanDisablingPolicyHandler>(
       key::kFastPairEnabled, ash::prefs::kFastPairEnabled));
   handlers->AddHandler(std::make_unique<arc::ArcPolicyHandler>());

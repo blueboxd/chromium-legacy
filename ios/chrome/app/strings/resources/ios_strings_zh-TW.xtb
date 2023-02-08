@@ -86,7 +86,7 @@
 <translation id="1531836666020185856">精選內容</translation>
 <translation id="1535268707340844072">你目前的設定可能會導致某些網站無法正常運作。如要管理所有網站的 Cookie，請參閱 <ph name="BEGIN_LINK" />Cookie 設定<ph name="END_LINK" />。</translation>
 <translation id="1540800554400757039">地址 1</translation>
-<translation id="1545749641540134597">掃描 QR 圖碼</translation>
+<translation id="1545749641540134597">掃描 QR code</translation>
 <translation id="1552525382687785070">你的管理員停用了同步功能</translation>
 <translation id="1554477036522844996">開啟新視窗</translation>
 <translation id="1565371473877914088">新無痕分頁</translation>
@@ -125,6 +125,7 @@
 <translation id="1870148520156231997">顯示密碼</translation>
 <translation id="1872096359983322073">閃光燈</translation>
 <translation id="1891796056033961979">你可以在這個畫面查看已儲存的書籤、密碼、設定和其他內容。</translation>
+<translation id="1894023287452300670">追蹤這個地區的價格</translation>
 <translation id="1911619930368729126">上傳至 Google 雲端硬碟</translation>
 <translation id="1923342640370224680">前一個小時</translation>
 <translation id="1930989359703290198">貴機構規定你只能使用特定帳戶登入。系統已隱藏不適用的帳戶。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
@@ -147,7 +148,9 @@
 <translation id="2074131957428911366">你隨時可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中選擇要同步處理的資料。</translation>
 <translation id="2079545284768500474">復原</translation>
 <translation id="2080769225927880590">使用有效帳戶登入</translation>
+<translation id="2090878303988764231">登入帳戶即可管理看到的內容</translation>
 <translation id="2103075008456228677">開啟 history.google.com</translation>
+<translation id="21133533946938348">固定分頁</translation>
 <translation id="2116625576999540962">已移動 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
 <translation id="2122754583996902531">你的瀏覽器受到管理。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="212623074644302906">詢問是否加入閱讀清單</translation>
@@ -189,6 +192,7 @@
 <translation id="2421044535038393232">繼續編輯</translation>
 <translation id="2434405374328098816">你已儲存過「<ph name="USERNAME" />」在 <ph name="WEBSITE" /> 使用的密碼</translation>
 <translation id="2435457462613246316">顯示密碼</translation>
+<translation id="2451654228769116489">固定分頁</translation>
 <translation id="2461070143328828326">密碼設定</translation>
 <translation id="2469960372084740698">要停用安全瀏覽功能嗎？</translation>
 <translation id="2473876017985765807">你已儲存過 <ph name="WEBSITE" /> 的密碼</translation>
@@ -286,6 +290,7 @@
 <translation id="3130863904455712965">歷史記錄和其他資料</translation>
 <translation id="3131206671572504478">全部封鎖</translation>
 <translation id="313283613037595347">新增無痕分頁。</translation>
+<translation id="3146109040683991651">將 Chrome 設為預設瀏覽器</translation>
 <translation id="3153862085237805241">儲存卡片</translation>
 <translation id="3157387275655328056">加入閱讀清單</translation>
 <translation id="3157684681743766797">全部標示…</translation>
@@ -673,6 +678,7 @@
 <translation id="6059830886158432458">請在這裡控管你的報導和活動</translation>
 <translation id="6064824697233747382">貴機構要求你關閉同步功能。</translation>
 <translation id="6066301408025741299">輕觸即可取消。</translation>
+<translation id="6071409777669089905">取消固定分頁</translation>
 <translation id="60829778314739003">接受並繼續</translation>
 <translation id="6084848228346514841">選取分頁</translation>
 <translation id="6103540626693881831">裝置端加密</translation>
@@ -973,6 +979,7 @@
 <translation id="8197543752516192074">翻譯網頁</translation>
 <translation id="8205564605687841303">取消</translation>
 <translation id="8206354486702514201">這項設定由管理員執行。</translation>
+<translation id="821809831108207540">如要個人化「探索」動態消息和 Chrome，請登入並開啟同步功能。</translation>
 <translation id="8225985093977202398">快取圖片和檔案</translation>
 <translation id="8237382152611443140">開啟 [自動填入密碼] 設定</translation>
 <translation id="8261506727792406068">刪除</translation>
@@ -1100,6 +1107,7 @@
 <translation id="9219154867334666734">搜尋分頁…</translation>
 <translation id="9223358826628549784">當機報告已送出。</translation>
 <translation id="941747855997058526">選取密碼...</translation>
+<translation id="948048872540558976">新建分頁</translation>
 <translation id="952704832371081537">取消</translation>
 <translation id="953008885340860025">你已登出 Chrome</translation>
 <translation id="959066944189734975">你正在追蹤「<ph name="CHANNEL_NAME" />」</translation>

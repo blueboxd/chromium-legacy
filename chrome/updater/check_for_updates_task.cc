@@ -30,8 +30,8 @@ namespace {
 bool ShouldSkipCheck(scoped_refptr<Configurator> config,
                      scoped_refptr<updater::PersistedData> persisted_data) {
   // To spread out synchronized load, sometimes use a higher delay.
-  const base::TimeDelta check_delay = base::Seconds(
-      config->NextCheckDelay() * (base::RandDouble() < 0.1 ? 1.2 : 1));
+  const base::TimeDelta check_delay =
+      config->NextCheckDelay() * (base::RandDouble() < 0.1 ? 1.2 : 1);
 
   // Skip if periodic updates are disabled altogether.
   if (check_delay.is_zero()) {
@@ -50,13 +50,12 @@ bool ShouldSkipCheck(scoped_refptr<Configurator> config,
   }
 
   // Skip if the updater is in the update suppression period.
-  UpdatesSuppressedTimes suppression;
-  if (config->GetPolicyService()->GetUpdatesSuppressedTimes(nullptr,
-                                                            &suppression) &&
-      suppression.valid()) {
+  PolicyStatus<UpdatesSuppressedTimes> suppression =
+      config->GetPolicyService()->GetUpdatesSuppressedTimes();
+  if (suppression && suppression.policy().valid()) {
     base::Time::Exploded now;
     base::Time::Now().LocalExplode(&now);
-    if (suppression.contains(now.hour, now.minute)) {
+    if (suppression.policy().contains(now.hour, now.minute)) {
       VLOG(0) << "Skipping checking for updates: in update suppression period.";
       return true;
     }
@@ -97,7 +96,7 @@ void CheckForUpdatesTask::Run(base::OnceClosure callback) {
                 std::move(closure).Run();
               },
               std::move(callback))),
-      base::Seconds(config_->InitialDelay()));
+      config_->InitialDelay());
 }
 
 }  // namespace updater

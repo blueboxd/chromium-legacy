@@ -16,6 +16,8 @@ class TestNetworkConnectionTracker;
 class TestURLLoaderFactory;
 }  // namespace network
 
+class MockPromosManager;
+
 class TestingApplicationContext : public ApplicationContext {
  public:
   TestingApplicationContext();
@@ -71,6 +73,7 @@ class TestingApplicationContext : public ApplicationContext {
   breadcrumbs::BreadcrumbPersistentStorageManager*
   GetBreadcrumbPersistentStorageManager() override;
   id<SingleSignOnService> GetSSOService() override;
+  SystemIdentityManager* GetSystemIdentityManager() override;
   segmentation_platform::OTRWebStateObserver*
   GetSegmentationOTRWebStateObserver() override;
   PushNotificationService* GetPushNotificationService() override;
@@ -86,6 +89,7 @@ class TestingApplicationContext : public ApplicationContext {
   // hard dependency on the policy infrastructure. In order to outlive the pref
   // service, the policy connector must live outside the keyed services.
   std::unique_ptr<BrowserPolicyConnectorIOS> browser_policy_connector_;
+  std::unique_ptr<MockPromosManager> promos_manager_;
 
   ios::ChromeBrowserStateManager* chrome_browser_state_manager_;
   std::unique_ptr<network_time::NetworkTimeTracker> network_time_tracker_;
@@ -95,6 +99,7 @@ class TestingApplicationContext : public ApplicationContext {
   std::unique_ptr<network::TestNetworkConnectionTracker>
       test_network_connection_tracker_;
   __strong id<SingleSignOnService> single_sign_on_service_ = nil;
+  std::unique_ptr<SystemIdentityManager> system_identity_manager_;
   std::unique_ptr<PushNotificationService> push_notification_service_;
 };
 

@@ -36,6 +36,7 @@
 #include "ash/wm/work_area_insets.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/ui/base/window_state_type.h"
@@ -291,6 +292,23 @@ TEST_F(WindowFloatTest, DragToOtherDisplayThenMaximize) {
   const WMEvent maximize(WM_EVENT_MAXIMIZE);
   window_state->OnWMEvent(&maximize);
   EXPECT_EQ(Shell::GetAllRootWindows()[1], window->GetRootWindow());
+}
+
+// Tests that windows that are floated on non-primary displays are onscreen.
+// Regression test for b/261860554.
+TEST_F(WindowFloatTest, FloatOnOtherDisplay) {
+  UpdateDisplay("1200x800,1201+0-1200x800");
+
+  // Create a window on the secondary display.
+  std::unique_ptr<aura::Window> window =
+      CreateAppWindow(gfx::Rect(1200, 0, 300, 300));
+  ASSERT_EQ(Shell::GetAllRootWindows()[1], window->GetRootWindow());
+
+  // After floating, the bounds of `window` should be full contained by the
+  // secondary display bounds.
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  EXPECT_TRUE(
+      gfx::Rect(1200, 0, 1200, 800).Contains(window->GetBoundsInScreen()));
 }
 
 // Test float window per desk logic.
@@ -671,6 +689,45 @@ TEST_F(WindowFloatMetricsTest, FloatWindowCountPerSession) {
   EXPECT_EQ(Shell::Get()->float_controller()->floated_window_counter_, 3);
 }
 
+// Tests the float window moved to another desk counts.
+TEST_F(WindowFloatMetricsTest, FloatWindowMovedToAnotherDeskCountPerSession) {
+  // Float a window, then move to another desk, tests that it counts properly.
+  std::unique_ptr<aura::Window> window_1 = CreateFloatedWindow();
+  // Create a new desk.
+  NewDesk();
+  auto* desks_controller = DesksController::Get();
+  auto* desk_2 = desks_controller->desks()[1].get();
+  EnterOverview();
+  auto* overview_session =
+      Shell::Get()->overview_controller()->overview_session();
+  // The window should exist on the grid of the first display.
+  auto* overview_item =
+      overview_session->GetOverviewItemForWindow(window_1.get());
+  auto* grid =
+      overview_session->GetGridWithRootWindow(Shell::GetPrimaryRootWindow());
+  EXPECT_EQ(1u, grid->size());
+  // Get position of `desk_2`'s desk mini view.
+  const auto* desks_bar_view = grid->desks_bar_view();
+  gfx::Point desk_2_mini_view_center =
+      desks_bar_view->mini_views()[1]->GetBoundsInScreen().CenterPoint();
+
+  // On overview, drag and drop floated `window_1` to `desk_2`.
+  DragItemToPoint(overview_item, desk_2_mini_view_center, GetEventGenerator(),
+                  /*by_touch_gestures=*/false,
+                  /*drop=*/true);
+
+  // Verify `window_1` belongs to `desk_2`.
+  auto* float_controller = Shell::Get()->float_controller();
+  ASSERT_EQ(float_controller->FindDeskOfFloatedWindow(window_1.get()), desk_2);
+  // Check total counts, it should count 1.
+  EXPECT_EQ(float_controller->floated_window_move_to_another_desk_counter_, 1);
+  // Move to `desk_2` and remove `desk_2` by combine 2 desks.
+  // Check total counts, it should count 2.
+  ActivateDesk(desk_2);
+  RemoveDesk(desk_2, DeskCloseType::kCombineDesks);
+  EXPECT_EQ(float_controller->floated_window_move_to_another_desk_counter_, 2);
+}
+
 // Tests that the float window duration histogram is properly recorded.
 TEST_F(WindowFloatMetricsTest, FloatWindowDuration) {
   constexpr char kHistogramName[] = "Ash.Float.FloatWindowDuration";
@@ -727,7 +784,8 @@ TEST_F(WindowFloatMetricsTest, FloatWindowDuration) {
   histogram_tester_.ExpectBucketCount(kHistogramName, 3, 4);
 }
 
-class TabletWindowFloatTest : public WindowFloatTest {
+class TabletWindowFloatTest : public WindowFloatTest,
+                              public display::DisplayObserver {
  public:
   TabletWindowFloatTest() = default;
   TabletWindowFloatTest(const TabletWindowFloatTest&) = delete;
@@ -797,6 +855,12 @@ class TabletWindowFloatTest : public WindowFloatTest {
     }
   }
 
+  void SetOnTabletStateChangedCallback(
+      base::RepeatingCallback<void(display::TabletState)> callback) {
+    on_tablet_state_changed_callback_ = callback;
+    display_observer_.emplace(this);
+  }
+
   // WindowFloatTest:
   void SetUp() override {
     // This allows us to snap to the bottom in portrait mode.
@@ -804,6 +868,23 @@ class TabletWindowFloatTest : public WindowFloatTest {
         ::switches::kUseFirstDisplayAsInternal);
     WindowFloatTest::SetUp();
   }
+
+  void TearDown() override {
+    display_observer_.reset();
+    WindowFloatTest::TearDown();
+  }
+
+  // display::DisplayObserver:
+  void OnDisplayTabletStateChanged(display::TabletState state) override {
+    on_tablet_state_changed_callback_.Run(state);
+  }
+
+ private:
+  // Called when the tablet state changes.
+  base::RepeatingCallback<void(display::TabletState)>
+      on_tablet_state_changed_callback_;
+
+  absl::optional<display::ScopedDisplayObserver> display_observer_;
 };
 
 TEST_F(TabletWindowFloatTest, TabletClamshellTransition) {
@@ -870,6 +951,50 @@ TEST_F(TabletWindowFloatTest, TabletClamshellTransitionAnimation) {
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
   EXPECT_TRUE(IsVisiblyAnimating(normal_window.get()));
   EXPECT_TRUE(IsVisiblyAnimating(floated_window.get()));
+}
+
+// Tests that the new minimum size is respected when entering tablet mode.
+// Regression test for b/261780362.
+TEST_F(TabletWindowFloatTest, MinimumSizeChangeOnTablet) {
+  UpdateDisplay("800x600");
+
+  // Create a window in clamshell mode without a minimum size, and larger than
+  // its tablet minimum size.
+  aura::test::TestWindowDelegate window_delegate;
+  std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
+      &window_delegate, /*id=*/-1, gfx::Rect(500, 500)));
+  window->SetProperty(aura::client::kAppType,
+                      static_cast<int>(AppType::BROWSER));
+  wm::ActivateWindow(window.get());
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(WindowState::Get(window.get())->IsFloated());
+
+  // Set a minimum size for tablet that is floatable.
+  const gfx::Size tablet_minimum_size(300, 300);
+
+  // Change the minimum size when tablet mode is changed. This mimics the
+  // behaviour chrome windows have, when they switch to a more tap friendly mode
+  // with larger buttons, which results in a larger minimum size.
+  SetOnTabletStateChangedCallback(
+      base::BindLambdaForTesting([&](display::TabletState state) {
+        switch (state) {
+          case display::TabletState::kInTabletMode:
+            window_delegate.set_minimum_size(tablet_minimum_size);
+            return;
+          case display::TabletState::kInClamshellMode:
+            window_delegate.set_minimum_size(gfx::Size());
+            return;
+          case display::TabletState::kEnteringTabletMode:
+          case display::TabletState::kExitingTabletMode:
+            break;
+        }
+      }));
+
+  // Tests that on entering tablet mode, the window is sized to its minimum
+  // width.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  ASSERT_TRUE(WindowState::Get(window.get())->IsFloated());
+  EXPECT_EQ(tablet_minimum_size.width(), window->bounds().width());
 }
 
 // Tests that a window can be floated in tablet mode, unless its minimum width
@@ -1339,6 +1464,31 @@ TEST_F(TabletWindowFloatTest, TuckToMagnetismCorner) {
   const int padding = chromeos::wm::kFloatedWindowPaddingDp;
   EXPECT_EQ(gfx::Point(0, work_area.bottom() - padding),
             window->bounds().bottom_right());
+}
+
+// Tests that tapping on a point on the edge but far from the tuck handle does
+// not untuck a tucked window. Regression test for b/262573071.
+TEST_F(TabletWindowFloatTest, ClickOnEdgeDoesNotUntuck) {
+  UpdateDisplay("800x600");
+
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  // The window is magnetized to the bottom right by default.
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+  auto* float_controller = Shell::Get()->float_controller();
+
+  // Tuck the window in the bottom right.
+  FlingWindow(window.get(), /*left=*/false, /*up=*/false);
+  ASSERT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
+
+  // Select a point close to the edge that is not close to the tuck handle.
+  const gfx::Point point(799, window->GetBoundsInScreen().y());
+  views::Widget* tuck_handle_widget =
+      float_controller->GetTuckHandleWidget(window.get());
+  ASSERT_FALSE(tuck_handle_widget->GetWindowBoundsInScreen().Contains(point));
+
+  // Tests that we are still tucked after tapping that point.
+  GetEventGenerator()->GestureTapAt(point);
+  EXPECT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window.get()));
 }
 
 TEST_F(TabletWindowFloatTest, UntuckWindowGestures) {

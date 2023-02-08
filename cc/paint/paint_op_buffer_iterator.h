@@ -19,9 +19,9 @@ class CC_PAINT_EXPORT PaintOpBuffer::Iterator {
   explicit Iterator(const PaintOpBuffer* buffer)
       : Iterator(buffer, buffer->data_.get(), 0u) {}
 
-  PaintOp* get() const { return reinterpret_cast<PaintOp*>(ptr_); }
-  PaintOp* operator->() const { return get(); }
-  PaintOp& operator*() const { return *get(); }
+  const PaintOp* get() const { return reinterpret_cast<const PaintOp*>(ptr_); }
+  const PaintOp* operator->() const { return get(); }
+  const PaintOp& operator*() const { return *get(); }
   Iterator begin() const { return Iterator(buffer_); }
   Iterator end() const {
     return Iterator(buffer_, buffer_->data_.get() + buffer_->used_,
@@ -45,15 +45,13 @@ class CC_PAINT_EXPORT PaintOpBuffer::Iterator {
   explicit operator bool() const { return op_offset_ < buffer_->used_; }
 
  private:
-  Iterator(const PaintOpBuffer* buffer, char* ptr, size_t op_offset)
-      : buffer_(buffer), ptr_(ptr), op_offset_(op_offset) {
-    DCHECK(!buffer->are_ops_destroyed());
-  }
+  Iterator(const PaintOpBuffer* buffer, const char* ptr, size_t op_offset)
+      : buffer_(buffer), ptr_(ptr), op_offset_(op_offset) {}
 
   // `buffer_` and `ptr_` are not a raw_ptr<...> for performance reasons
   // (based on analysis of sampling profiler data and tab_search:top100:2020).
   RAW_PTR_EXCLUSION const PaintOpBuffer* buffer_ = nullptr;
-  RAW_PTR_EXCLUSION char* ptr_ = nullptr;
+  RAW_PTR_EXCLUSION const char* ptr_ = nullptr;
 
   size_t op_offset_ = 0;
 };
@@ -65,7 +63,6 @@ class CC_PAINT_EXPORT PaintOpBuffer::OffsetIterator {
   OffsetIterator(const PaintOpBuffer* buffer,
                  const std::vector<size_t>* offsets)
       : buffer_(buffer), ptr_(buffer_->data_.get()), offsets_(offsets) {
-    DCHECK(!buffer->are_ops_destroyed());
     if (!offsets || offsets->empty()) {
       *this = end();
       return;
@@ -74,9 +71,9 @@ class CC_PAINT_EXPORT PaintOpBuffer::OffsetIterator {
     ptr_ += op_offset_;
   }
 
-  PaintOp* get() const { return reinterpret_cast<PaintOp*>(ptr_); }
-  PaintOp* operator->() const { return get(); }
-  PaintOp& operator*() const { return *get(); }
+  const PaintOp* get() const { return reinterpret_cast<const PaintOp*>(ptr_); }
+  const PaintOp* operator->() const { return get(); }
+  const PaintOp& operator*() const { return *get(); }
   OffsetIterator begin() const { return OffsetIterator(buffer_, offsets_); }
   OffsetIterator end() const {
     return OffsetIterator(buffer_, buffer_->data_.get() + buffer_->used_,
@@ -116,18 +113,16 @@ class CC_PAINT_EXPORT PaintOpBuffer::OffsetIterator {
 
  private:
   OffsetIterator(const PaintOpBuffer* buffer,
-                 char* ptr,
+                 const char* ptr,
                  size_t op_offset,
                  const std::vector<size_t>* offsets)
-      : buffer_(buffer), ptr_(ptr), offsets_(offsets), op_offset_(op_offset) {
-    DCHECK(!buffer->are_ops_destroyed());
-  }
+      : buffer_(buffer), ptr_(ptr), offsets_(offsets), op_offset_(op_offset) {}
 
   // `buffer_`, `ptr_`, and `offsets_` are not a raw_ptr<...> for performance
   // reasons (based on analysis of sampling profiler data and
   // tab_search:top100:2020).
   RAW_PTR_EXCLUSION const PaintOpBuffer* buffer_ = nullptr;
-  RAW_PTR_EXCLUSION char* ptr_ = nullptr;
+  RAW_PTR_EXCLUSION const char* ptr_ = nullptr;
   RAW_PTR_EXCLUSION const std::vector<size_t>* offsets_;
 
   size_t op_offset_ = 0;
@@ -143,11 +138,11 @@ class CC_PAINT_EXPORT PaintOpBuffer::CompositeIterator {
   CompositeIterator(const CompositeIterator& other);
   CompositeIterator(CompositeIterator&& other);
 
-  PaintOp* get() const {
+  const PaintOp* get() const {
     return absl::visit([](const auto& iter) { return iter.get(); }, iter_);
   }
-  PaintOp* operator->() const { return get(); }
-  PaintOp& operator*() const { return *get(); }
+  const PaintOp* operator->() const { return get(); }
+  const PaintOp& operator*() const { return *get(); }
   CompositeIterator begin() const {
     return absl::holds_alternative<Iterator>(iter_)
                ? CompositeIterator(absl::get<Iterator>(iter_).begin())

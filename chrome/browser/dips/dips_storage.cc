@@ -12,8 +12,9 @@
 #include "base/strings/strcat.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
+#include "chrome/browser/dips/dips_features.h"
 #include "chrome/browser/dips/dips_utils.h"
-#include "sql/init_status.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
 
 namespace {
@@ -82,8 +83,8 @@ DIPSState DIPSStorage::ReadSite(std::string site) {
            state->user_interaction_times.last.has_value() ||
            state->stateful_bounce_times.first.has_value() ||
            state->stateful_bounce_times.last.has_value() ||
-           state->stateless_bounce_times.first.has_value() ||
-           state->stateless_bounce_times.last.has_value());
+           state->bounce_times.first.has_value() ||
+           state->bounce_times.last.has_value());
 
     return DIPSState(this, std::move(site), state.value());
   }
@@ -96,25 +97,48 @@ void DIPSStorage::Write(const DIPSState& state) {
 
   db_->Write(state.site(), state.site_storage_times(),
              state.user_interaction_times(), state.stateful_bounce_times(),
-             state.stateless_bounce_times());
+             state.bounce_times());
 }
 
 void DIPSStorage::RemoveEvents(base::Time delete_begin,
                                base::Time delete_end,
-                               const UrlPredicate& predicate,
+                               network::mojom::ClearDataFilterPtr filter,
                                const DIPSEventRemovalType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(db_);
   DCHECK(delete_end.is_null() || delete_begin <= delete_end);
 
-  if (delete_end.is_null())
+  if (delete_end.is_null()) {
     delete_end = base::Time::Max();
+  }
 
-  // Currently, only time-based deletions are supported.
-  if (!predicate.is_null())
-    return;
+  if (filter.is_null()) {
+    db_->RemoveEventsByTime(delete_begin, delete_end, type);
+  } else if (type == DIPSEventRemovalType::kStorage &&
+             filter->origins.empty()) {
+    // Site-filtered deletion is only supported for cookie-related
+    // DIPS events, since only cookie deletion allows domains but not hosts.
+    //
+    // TODO(jdh): Assess the use of cookie deletions with both a time range and
+    // a list of domains to determine whether supporting time ranges here is
+    // necessary.
+    // Time ranges aren't currently supported for site-filtered
+    // deletion of DIPS Events.
+    if (delete_begin != base::Time() || delete_end != base::Time::Max()) {
+      return;
+    }
 
-  db_->RemoveEventsByTime(delete_begin, delete_end, type);
+    bool preserve =
+        (filter->type == network::mojom::ClearDataFilter::Type::KEEP_MATCHES);
+    std::vector<std::string> sites = std::move(filter->domains);
+
+    db_->RemoveEventsBySite(preserve, sites, type);
+  }
+}
+
+void DIPSStorage::RemoveRows(const std::vector<std::string>& sites) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  db_->RemoveRows(sites);
 }
 
 // DIPSTabHelper Function Impls ------------------------------------------------
@@ -154,40 +178,60 @@ void DIPSStorage::RecordInteraction(const GURL& url,
   state.update_user_interaction_time(time);
 }
 
-void DIPSStorage::RecordStatefulBounce(const GURL& url, base::Time time) {
+void DIPSStorage::RecordBounce(const GURL& url,
+                               base::Time time,
+                               bool stateful) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(db_);
-  Read(url).update_stateful_bounce_time(time);
+  DIPSState state = Read(url);
+  state.update_bounce_time(time);
+  if (stateful) {
+    state.update_stateful_bounce_time(time);
+  }
 }
 
-void DIPSStorage::RecordStatelessBounce(const GURL& url, base::Time time) {
+std::vector<std::string> DIPSStorage::GetSitesThatBounced() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(db_);
-  Read(url).update_stateless_bounce_time(time);
+  return db_->GetSitesThatBounced();
 }
 
-std::vector<std::string> DIPSStorage::GetSitesThatBounced(
-    base::Time range_start,
-    base::Time last_interaction) const {
+std::vector<std::string> DIPSStorage::GetSitesThatBouncedWithState() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(db_);
-  return db_->GetSitesThatBounced(range_start, last_interaction);
+  return db_->GetSitesThatBouncedWithState();
 }
 
-std::vector<std::string> DIPSStorage::GetSitesThatBouncedWithState(
-    base::Time range_start,
-    base::Time last_interaction) const {
+std::vector<std::string> DIPSStorage::GetSitesThatUsedStorage() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(db_);
-  return db_->GetSitesThatBouncedWithState(range_start, last_interaction);
+  return db_->GetSitesThatUsedStorage();
 }
 
-std::vector<std::string> DIPSStorage::GetSitesThatUsedStorage(
-    base::Time range_start,
-    base::Time last_interaction) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(db_);
-  return db_->GetSitesThatUsedStorage(range_start, last_interaction);
+void DIPSStorage::DeleteDIPSEligibleState(DIPSCookieMode mode) {
+  std::vector<std::string> sites_to_clear;
+  switch (dips::kTriggeringAction.Get()) {
+    case DIPSTriggeringAction::kStorage: {
+      sites_to_clear = GetSitesThatUsedStorage();
+      break;
+    }
+    case DIPSTriggeringAction::kBounce: {
+      sites_to_clear = GetSitesThatBounced();
+      break;
+    }
+    case DIPSTriggeringAction::kStatefulBounce: {
+      sites_to_clear = GetSitesThatBouncedWithState();
+      break;
+    }
+  }
+
+  base::UmaHistogramCounts1000(base::StrCat({"Privacy.DIPS.ClearedSitesCount",
+                                             GetHistogramSuffix(mode)}),
+                               sites_to_clear.size());
+
+  // Perform clearing of sites.
+  // TODO: Actually clear the site-data for `sites_to_clear` here as well.
+  RemoveRows(sites_to_clear);
 }
 
 /* static */

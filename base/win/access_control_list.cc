@@ -91,6 +91,12 @@ ExplicitAccessEntry::ExplicitAccessEntry(const Sid& sid,
       access_mask_(access_mask),
       inheritance_(inheritance) {}
 
+ExplicitAccessEntry::ExplicitAccessEntry(WellKnownSid known_sid,
+                                         SecurityAccessMode mode,
+                                         DWORD access_mask,
+                                         DWORD inheritance)
+    : ExplicitAccessEntry(Sid(known_sid), mode, access_mask, inheritance) {}
+
 ExplicitAccessEntry::ExplicitAccessEntry(ExplicitAccessEntry&&) = default;
 ExplicitAccessEntry& ExplicitAccessEntry::operator=(ExplicitAccessEntry&&) =
     default;
@@ -108,16 +114,11 @@ absl::optional<AccessControlList> AccessControlList::FromMandatoryLabel(
     DWORD integrity_level,
     DWORD inheritance,
     DWORD mandatory_policy) {
-  absl::optional<Sid> sid = Sid::FromIntegrityLevel(integrity_level);
-  if (!sid) {
-    ::SetLastError(ERROR_INVALID_SID);
-    return absl::nullopt;
-  }
-
+  Sid sid = Sid::FromIntegrityLevel(integrity_level);
   // Get total ACL length. SYSTEM_MANDATORY_LABEL_ACE contains the first DWORD
   // of the SID so remove it from total.
   DWORD length = sizeof(ACL) + sizeof(SYSTEM_MANDATORY_LABEL_ACE) +
-                 ::GetLengthSid(sid->GetPSID()) - sizeof(DWORD);
+                 ::GetLengthSid(sid.GetPSID()) - sizeof(DWORD);
   std::unique_ptr<uint8_t[]> sacl_ptr = std::make_unique<uint8_t[]>(length);
   PACL sacl = reinterpret_cast<PACL>(sacl_ptr.get());
 
@@ -126,7 +127,7 @@ absl::optional<AccessControlList> AccessControlList::FromMandatoryLabel(
   }
 
   if (!::AddMandatoryAce(sacl, ACL_REVISION, inheritance, mandatory_policy,
-                         sid->GetPSID())) {
+                         sid.GetPSID())) {
     return absl::nullopt;
   }
 

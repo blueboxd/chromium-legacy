@@ -837,8 +837,11 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::LayoutRow(
         // for all monolithic content already in the initial column balancing
         // pass (and if that fails, there's no way it's going to fit), by
         // checking TallestUnbreakableBlockSize() from the layout results.
-        if (NGBoxFragment(ConstraintSpace().GetWritingDirection(), column)
-                .HasBlockLayoutOverflow()) {
+        LayoutUnit block_end_overflow =
+            NGBoxFragment(ConstraintSpace().GetWritingDirection(), column)
+                .BlockEndLayoutOverflow();
+        if (row_offset + block_end_overflow >
+            FragmentainerSpaceLeft(ConstraintSpace())) {
           if (ConstraintSpace().IsInsideBalancedColumns() &&
               !container_builder_.IsInitialColumnBalancingPass())
             container_builder_.PropagateSpaceShortage(minimal_space_shortage);
@@ -892,6 +895,7 @@ const NGLayoutResult* NGColumnLayoutAlgorithm::LayoutRow(
         container_builder_.PropagateOOFFragmentainerDescendants(
             new_column.Fragment(), new_column.offset,
             /* relative_offset */ LogicalOffset(), containing_block_adjustment,
+            /* containing_block */ nullptr,
             /* fixedpos_containing_block */ nullptr,
             &column_balancing_info.out_of_flow_fragmentainer_descendants);
       }

@@ -106,25 +106,30 @@ struct TimestampRange {
   // Expand the range to include `time` if necessary. Returns true iff the range
   // was modified.
   bool Update(base::Time time);
+
+  // Checks that `this` range is either null or falls within `other`.
+  bool IsNullOrWithin(TimestampRange other) const;
 };
 
 inline bool operator==(const TimestampRange& lhs, const TimestampRange& rhs) {
   return std::tie(lhs.first, lhs.last) == std::tie(rhs.first, rhs.last);
 }
 
+std::ostream& operator<<(std::ostream& os, TimestampRange type);
+
 // StateValue:
 struct StateValue {
   TimestampRange site_storage_times;
   TimestampRange user_interaction_times;
   TimestampRange stateful_bounce_times;
-  TimestampRange stateless_bounce_times;
+  TimestampRange bounce_times;
 };
 
 inline bool operator==(const StateValue& lhs, const StateValue& rhs) {
   return std::tie(lhs.site_storage_times, lhs.user_interaction_times,
-                  lhs.stateful_bounce_times, lhs.stateless_bounce_times) ==
+                  lhs.stateful_bounce_times, lhs.bounce_times) ==
          std::tie(rhs.site_storage_times, rhs.user_interaction_times,
-                  rhs.stateful_bounce_times, rhs.stateless_bounce_times);
+                  rhs.stateful_bounce_times, rhs.bounce_times);
 }
 
 enum class DIPSTriggeringAction { kStorage, kBounce, kStatefulBounce };
@@ -141,8 +146,25 @@ std::string GetSiteForDIPS(const GURL& url);
 enum class DIPSRecordedEvent {
   kStorage,
   kInteraction,
-  kStatelessBounce,
-  kStatefulBounce,
+};
+
+// RedirectCategory is basically the cross-product of CookieAccessType and a
+// boolean value indicating site engagement. It's used in UMA enum histograms.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class RedirectCategory {
+  kNoCookies_NoEngagement = 0,
+  kReadCookies_NoEngagement = 1,
+  kWriteCookies_NoEngagement = 2,
+  kReadWriteCookies_NoEngagement = 3,
+  kNoCookies_HasEngagement = 4,
+  kReadCookies_HasEngagement = 5,
+  kWriteCookies_HasEngagement = 6,
+  kReadWriteCookies_HasEngagement = 7,
+  kUnknownCookies_NoEngagement = 8,
+  kUnknownCookies_HasEngagement = 9,
+  kMaxValue = kUnknownCookies_HasEngagement,
 };
 
 #endif  // CHROME_BROWSER_DIPS_DIPS_UTILS_H_

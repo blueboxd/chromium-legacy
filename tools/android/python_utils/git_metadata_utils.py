@@ -7,9 +7,15 @@
 import datetime as dt
 import functools
 import pathlib
+import sys
 from typing import Optional, Union
 
-from . import subprocess_utils
+_PYTHON_UTILS_PATH = pathlib.Path(__file__).resolve().parents[0]
+if str(_PYTHON_UTILS_PATH) not in sys.path:
+    sys.path.append(str(_PYTHON_UTILS_PATH))
+import subprocess_utils
+
+PathStr = Union[pathlib.Path, str]
 
 
 @functools.lru_cache(maxsize=1)
@@ -22,7 +28,7 @@ def get_chromium_src_path() -> pathlib.Path:
         The absolute path to the 'src' root directory of the Chromium Git
         checkout containing this file.
     """
-    _CHROMIUM_SRC_ROOT = pathlib.Path(__file__).parents[3].resolve(strict=True)
+    _CHROMIUM_SRC_ROOT = pathlib.Path(__file__).resolve(strict=True).parents[3]
     if _CHROMIUM_SRC_ROOT.name != 'src':
         raise AssertionError(
             f'_CHROMIUM_SRC_ROOT "{_CHROMIUM_SRC_ROOT}" should end in "src".')
@@ -35,7 +41,7 @@ def get_chromium_src_path() -> pathlib.Path:
     return _CHROMIUM_SRC_ROOT
 
 
-def get_head_commit_format(git_repo: Optional[Union[str, pathlib.Path]] = None,
+def get_head_commit_format(git_repo: Optional[PathStr] = None,
                            format: str = '') -> str:
     """Gets formatted info from the commit at HEAD for a Git repository.
 
@@ -70,8 +76,7 @@ def get_head_commit_format(git_repo: Optional[Union[str, pathlib.Path]] = None,
         cwd=git_repo)
 
 
-def get_head_commit_hash(git_repo: Optional[Union[str, pathlib.Path]] = None
-                         ) -> str:
+def get_head_commit_hash(git_repo: Optional[PathStr] = None) -> str:
     """Gets the hash of the commit at HEAD for a Git repository.
 
     This returns the full, non-abbreviated, SHA1 hash of the commit as a string
@@ -81,14 +86,13 @@ def get_head_commit_hash(git_repo: Optional[Union[str, pathlib.Path]] = None
     return get_head_commit_format(git_repo, '%H')
 
 
-def get_head_commit_time(git_repo: Optional[Union[str, pathlib.Path]] = None
-                         ) -> str:
+def get_head_commit_time(git_repo: Optional[PathStr] = None) -> str:
     """Gets the time of the commit at HEAD for a Git repo in string form."""
     return get_head_commit_format(git_repo, '%cd')
 
 
-def get_head_commit_datetime(
-        git_repo: Optional[Union[str, pathlib.Path]] = None) -> dt.datetime:
+def get_head_commit_datetime(git_repo: Optional[PathStr] = None
+                             ) -> dt.datetime:
     """Gets the datetime of the commit at HEAD for a Git repository in UTC.
 
     The datetime returned contains timezone information (in timezone.utc) so
@@ -99,8 +103,7 @@ def get_head_commit_datetime(
     return dt.datetime.fromtimestamp(float(timestamp), tz=dt.timezone.utc)
 
 
-def get_head_commit_cr_position(
-        git_repo: Optional[Union[str, pathlib.Path]] = None) -> str:
+def get_head_commit_cr_position(git_repo: Optional[PathStr] = None) -> str:
     """Get the cr position of the commit at HEAD for a Git repository.
 
     CL descriptions are typically of the form:

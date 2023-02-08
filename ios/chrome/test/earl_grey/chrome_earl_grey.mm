@@ -18,6 +18,7 @@
 #import "ios/testing/earl_grey/app_launch_configuration.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
+#import "ios/testing/earl_grey/system_alert_handler.h"
 #import "ios/testing/nserror_util.h"
 #import "ios/web/public/test/element_selector.h"
 #import "net/base/mac/url_conversions.h"
@@ -373,6 +374,8 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
     EG_TEST_HELPER_ASSERT_TRUE(
         [ChromeEarlGreyAppInterface waitForWindowIDInjectionIfNeeded],
         @"WindowID failed to inject");
+    // Loading URL (especially the first time) can trigger alerts.
+    [SystemAlertHandler handleSystemAlertIfVisible];
   }
 }
 
@@ -520,15 +523,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
   }
 
   return cookies;
-}
-
-- (void)clearBrowsingCookies {
-  EG_TEST_HELPER_ASSERT_NO_ERROR(
-      [ChromeEarlGreyAppInterface clearBrowsingCookies]);
-
-  // After clearing browsing cookies via code, wait for the UI to be done
-  // with any updates. This includes icons from the new tab page being removed.
-  GREYWaitForAppToIdle(@"App failed to idle");
 }
 
 #pragma mark - WebState Utilities (EG2)
@@ -1038,6 +1032,8 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
         [ChromeEarlGreyAppInterface
             waitForWindowIDInjectionIfNeededInWindowWithNumber:windowNumber],
         @"WindowID failed to inject");
+    // Loading URL (especially the first time) can trigger alerts.
+    [SystemAlertHandler handleSystemAlertIfVisible];
   }
 }
 

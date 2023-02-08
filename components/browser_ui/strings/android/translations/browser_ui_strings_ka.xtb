@@ -243,6 +243,7 @@
 <translation id="5975083100439434680">დაშორება</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> — <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">გაანკონტროლეთ ამ საიტის თქვენს მოწყობილობაზე წვდომა</translation>
+<translation id="6018815681665454784">გსურთ გასუფთავება და აღდგენა?</translation>
 <translation id="6040143037577758943">დახურვა</translation>
 <translation id="6042308850641462728">სხვა</translation>
 <translation id="6064125863973209585">დასრულებული ჩამოტვირთვები</translation>
@@ -322,6 +323,7 @@
 <translation id="7658239707568436148">გაუქმება</translation>
 <translation id="7667547420449112975">ოზის საოცარი ჯადოქარი</translation>
 <translation id="7690549345586282764">მასშტაბის ჩვენება</translation>
+<translation id="7695658402549134106">საიტის პარამეტრი <ph name="SITE_NAME" />-ისთვის</translation>
 <translation id="7719367874908701697">გვერდის მასშტაბი</translation>
 <translation id="7781829728241885113">გუშინ</translation>
 <translation id="7791543448312431591">დამატება</translation>
@@ -348,6 +350,7 @@
 <translation id="813082847718468539">საიტის ინფორმაციის ნახვა</translation>
 <translation id="8131740175452115882">დაადასტურება</translation>
 <translation id="8154912474061769055">ფუნქციებმა, შესაძლოა, არ იმუშაოს მრავალ საიტზე</translation>
+<translation id="8168435359814927499">შიგთავსი</translation>
 <translation id="8197286292360124385"><ph name="PERMISSION_1" /> დაშვებულია</translation>
 <translation id="8200772114523450471">გაგრძელება</translation>
 <translation id="8206354486702514201">ეს პარამეტრი იძულებითაა დაყენებული თქვენი ადმინისტრატორის მიერ.</translation>

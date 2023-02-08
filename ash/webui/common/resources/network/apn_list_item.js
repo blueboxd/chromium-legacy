@@ -13,7 +13,7 @@ import {I18nBehavior, I18nBehaviorInterface} from '//resources/ash/common/i18n_b
 import {mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {ApnDetailDialogMode, ApnEventData} from 'chrome://resources/ash/common/network/cellular_utils.js';
 import {MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
-import {assert} from 'chrome://resources/js/assert.js';
+import {assert} from 'chrome://resources/ash/common/assert.js';
 import {ApnProperties, ApnState, CrosNetworkConfigRemote} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
 
 import {getTemplate} from './apn_list_item.html.js';
@@ -83,7 +83,6 @@ class ApnListItem extends ApnListItemBase {
    * @private
    */
   onDetailsClicked_() {
-    assert(!!this.guid);
     assert(!!this.apn);
     this.dispatchEvent(new CustomEvent('show-apn-detail-dialog', {
       composed: true,
@@ -93,7 +92,6 @@ class ApnListItem extends ApnListItemBase {
         // Only allow editing if the APN is a custom APN.
         mode: this.isAutoDetected ? ApnDetailDialogMode.VIEW :
                                     ApnDetailDialogMode.EDIT,
-        guid: this.guid,
       }),
     }));
   }

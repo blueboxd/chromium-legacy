@@ -5,7 +5,11 @@ Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
 
-<!-- The order of the following items is from: http://crbug.com/610358. -->
+<!--
+The order of the following items is from: http://crbug.com/610358.
+Used when PrivacySandboxSettingsV4 is disabled.
+Also add new settings to site_settings_preferences_with_categories.xml!
+-->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <!-- All sites -->
@@ -15,19 +19,9 @@ found in the LICENSE file.
         android:title="@string/all_sites"
         android:icon="@drawable/settings_all_sites"
         app:iconTint="@macro/default_icon_color" />
-    <!-- Cookies (PrivacySandboxSettings4 disabled) -->
+    <!-- Cookies -->
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:key="cookies"
-        android:fragment="org.chromium.components.browser_ui.site_settings.SingleCategorySettings" />
-    <!-- Cookies (PrivacySandboxSettings4 enabled) -->
-    <org.chromium.components.browser_ui.settings.ChromeBasePreference
-        android:key="third_party_cookies"
-        android:title="@string/third_party_cookies_page_title"
-        android:icon="@drawable/permission_cookie"
-        app:iconTint="@macro/default_icon_color"
-        android:fragment="org.chromium.components.browser_ui.site_settings.SingleCategorySettings" />
-    <org.chromium.components.browser_ui.settings.ChromeBasePreference
-        android:key="site_data"
         android:fragment="org.chromium.components.browser_ui.site_settings.SingleCategorySettings" />
     <!-- Location -->
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
@@ -78,7 +72,8 @@ found in the LICENSE file.
         android:fragment="org.chromium.components.browser_ui.site_settings.SingleCategorySettings"
         android:key="sound" />
     <!-- Storage -->
-    <!-- TODO(finnur): Move this over to the new Usage screen, once it exists. -->
+    <!-- TODO(finnur): Move this over to the new Usage screen, once it exists.
+                       Also update site_settings_preferences_with_categories.xml. -->
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.components.browser_ui.site_settings.AllSiteSettings"
         android:key="use_storage"
@@ -126,7 +121,8 @@ found in the LICENSE file.
         android:fragment="org.chromium.components.browser_ui.site_settings.SingleCategorySettings"
         android:key="auto_dark_web_content" />
     <!-- Request Desktop Site -->
-    <!-- TODO(crbug.com/1243758): Update the location of this setting once approved. -->
+    <!-- TODO(crbug.com/1243758): Update the location of this setting once approved.
+                                  Also update site_settings_preferences_with_categories.xml. -->
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.components.browser_ui.site_settings.SingleCategorySettings"
         android:key="request_desktop_site" />

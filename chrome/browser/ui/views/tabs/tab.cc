@@ -685,7 +685,13 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
 }
 
 void Tab::AddedToWidget() {
-  UpdateForegroundColors();
+  paint_as_active_subscription_ =
+      GetWidget()->RegisterPaintAsActiveChangedCallback(base::BindRepeating(
+          &Tab::UpdateForegroundColors, base::Unretained(this)));
+}
+
+void Tab::RemovedFromWidget() {
+  paint_as_active_subscription_ = {};
 }
 
 void Tab::OnFocus() {
@@ -800,10 +806,6 @@ void Tab::AlertStateChanged() {
     controller_->UpdateHoverCard(
         this, TabSlotController::HoverCardUpdateType::kTabDataChanged);
   Layout();
-}
-
-void Tab::FrameColorsChanged() {
-  UpdateForegroundColors();
 }
 
 void Tab::SelectedStateChanged() {

@@ -140,7 +140,6 @@
 <translation id="2161394479394250669">인쇄 작업 취소</translation>
 <translation id="2163937499206714165">어두운 모드 사용 설정</translation>
 <translation id="2180197493692062006">문제가 발생했습니다. 앱을 다시 열어 보세요.</translation>
-<translation id="2184005227776731758">APN</translation>
 <translation id="2209788852729124853">트래픽 카운터 재설정</translation>
 <translation id="2212733584906323460">이름 결정</translation>
 <translation id="2217935453350629363">현재 속도</translation>
@@ -179,7 +178,7 @@
 <translation id="2498950423397131220">플로팅</translation>
 <translation id="2505327257735685095">현재 배경화면 이미지 새로고침</translation>
 <translation id="2513396635448525189">로그인 이미지</translation>
-<translation id="2517472476991765520">검색</translation>
+<translation id="2517472476991765520">스캔</translation>
 <translation id="2526590354069164005">데스크톱</translation>
 <translation id="253029298928638905">다시 시작 중...</translation>
 <translation id="2533048460510040082">추천 도움말 콘텐츠</translation>
@@ -187,6 +186,7 @@
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> 테스트 실행 중…</translation>
 <translation id="2584559707064218956">설정하려면 설정으로 이동하세요.</translation>
 <translation id="2597774443162333062">디버깅을 위해 파일이 Google로 전송됩니다.</translation>
+<translation id="2599691907981599502">{NUMBER_OF_PAGES,plural, =1{스캔이 완료되었습니다. 1페이지가 스캔되었습니다}other{스캔이 완료되었습니다. {NUMBER_OF_PAGES}페이지가 스캔되었습니다}}</translation>
 <translation id="2619761439309613843">매일 새로고침</translation>
 <translation id="2620436844016719705">시스템</translation>
 <translation id="2638662041295312666">로그인 이미지</translation>
@@ -393,6 +393,7 @@
 <translation id="4793710386569335688">도움이 더 필요하면 <ph name="BEGIN_LINK" />고객센터<ph name="END_LINK" />로 이동하세요.</translation>
 <translation id="4793756956024303490">압축 알고리즘</translation>
 <translation id="4794140124556169553">CPU 테스트를 실행하면 시스템 성능에 영향을 줄 수 있습니다.</translation>
+<translation id="4798078634453489142">새 APN을 추가하려면 APN을 삭제하세요</translation>
 <translation id="4800589996161293643">Chromebook 커뮤니티</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341"><ph name="DOCUMENT_TITLE" /> 인쇄 작업 취소됨</translation>
@@ -474,7 +475,7 @@
 <translation id="5372659122375744710">Wi-Fi 네트워크가 안전하지 않습니다.</translation>
 <translation id="5376354385557966694">자동 밝은 모드</translation>
 <translation id="5378184552853359930">IP 유형</translation>
-<translation id="5389159777326897627">배경화면/스타일</translation>
+<translation id="5389159777326897627">배경화면 및 스타일</translation>
 <translation id="5389224261615877010">무지개</translation>
 <translation id="5400907029458559844">기기 연결 중입니다.</translation>
 <translation id="5401938042319910061">모든 루틴 실행</translation>
@@ -492,6 +493,7 @@
 <translation id="5519195206574732858">LTE</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5559898619118303662">일몰 시 어두운 테마로 자동 전환</translation>
+<translation id="5571714952674387371">세부정보 보기 및 수정</translation>
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">다시 스캔</translation>
 <translation id="5583640892426849032">Backspace</translation>
@@ -561,6 +563,7 @@
 <translation id="6189418609903030344">배터리 용량은 사용함에 따라 감소함</translation>
 <translation id="6191293864534840972">네임서버 형식이 잘못되었습니다.</translation>
 <translation id="6213737986933151570">CDMA1XRTT</translation>
+<translation id="6223066887782788441">전체 종료</translation>
 <translation id="6223752125779001553">사용 가능한 스캐너 없음</translation>
 <translation id="6232017090690406397">배터리</translation>
 <translation id="6235460611964961764">데이터 사용량 수동 재설정</translation>
@@ -688,12 +691,12 @@
 <translation id="741244894080940828">변환</translation>
 <translation id="7415801143053185905">HTTPS 지연 시간 매우 높음</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
-<translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{스캔이 완료되었습니다. 1페이지가 스캔되었습니다}other{스캔이 완료되었습니다. {NUMBER_OF_PAGES}페이지가 스캔되었습니다}}</translation>
 <translation id="7458970041932198923">아바타를 보고 설정하려면 네트워크에 연결하고 페이지를 새로고침하세요.</translation>
 <translation id="7469648432129124067">포털 감지됨</translation>
 <translation id="7481312909269577407">앞으로</translation>
 <translation id="7487067081878637334">테크놀로지</translation>
 <translation id="7490813197707563893">MAC 주소</translation>
+<translation id="7491478667760509108">플로팅 종료</translation>
 <translation id="7497215489070763236">서버 CA 인증서</translation>
 <translation id="7502658306369382406">IPv6 주소</translation>
 <translation id="7515998400212163428">Android</translation>
@@ -794,6 +797,7 @@
 <translation id="8498220429738806196">트래픽 카운터</translation>
 <translation id="8503813439785031346">사용자 이름</translation>
 <translation id="8503836310948963452">몇 분 정도밖에 남지 않았습니다...</translation>
+<translation id="8508640263392900755">APN 세부정보</translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8575298406870537639">이동통신사에서 네트워크에 연결하기 위해 이 옵션을 요구할 수 있습니다. 자세한 내용은 이동통신사에 문의하세요.</translation>
 <translation id="8576249514688522074">초기화되지 않음</translation>
@@ -869,6 +873,7 @@
 <translation id="9173638680043580060">1분 미만 남음</translation>
 <translation id="917720651393141712">테스트</translation>
 <translation id="9188992814426075118">키보드 백라이트가 배경화면에 어울리게 자동으로 설정됩니다.</translation>
+<translation id="9193744392140377127">APN*</translation>
 <translation id="9204237731135241582">Android 앱에서 게이트웨이에 접근할 수 없습니다.</translation>
 <translation id="9211490828691860325">모든 데스크</translation>
 <translation id="932327136139879170">홈</translation>

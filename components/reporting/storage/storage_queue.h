@@ -46,7 +46,10 @@ namespace test {
 enum class StorageQueueOperationKind {
   kReadBlock,
   kWriteBlock,
-  kWriteMetadata
+  kWriteMetadata,
+  kWrappedRecordLowMemory,
+  kEncryptedRecordLowMemory,
+  kWriteLowDiskSpace,
 };
 
 }  // namespace test
@@ -134,10 +137,13 @@ class StorageQueue : public base::RefCountedDeleteOnSequence<StorageQueue> {
   // to its completion.
   void RegisterCompletionCallback(base::OnceClosure callback);
 
-  // Test only: makes specified records fail on specified operation kind.
+  // Test only: provides an injection handler that would receive operation kind
+  // and seq id, and then return Status. Non-OK Status injects the error and
+  // can be returned as a resulting operation status too.
+  // If `handler` is null, error injections is disabled.
   void TestInjectErrorsForOperation(
-      const test::StorageQueueOperationKind operation_kind,
-      std::initializer_list<int64_t> sequencing_ids);
+      base::RepeatingCallback<Status(test::StorageQueueOperationKind, int64_t)>
+          handler = decltype(handler)());
 
   // Access queue options.
   const QueueOptions& options() const { return options_; }
@@ -170,8 +176,8 @@ class StorageQueue : public base::RefCountedDeleteOnSequence<StorageQueue> {
     static StatusOr<scoped_refptr<SingleFile>> Create(
         const base::FilePath& filename,
         int64_t size,
-        scoped_refptr<ResourceInterface> memory_resource,
-        scoped_refptr<ResourceInterface> disk_space_resource,
+        scoped_refptr<ResourceManager> memory_resource,
+        scoped_refptr<ResourceManager> disk_space_resource,
         scoped_refptr<RefCountedClosureList> completion_closure_list);
 
     Status Open(bool read_only);  // No-op if already opened.
@@ -213,8 +219,8 @@ class StorageQueue : public base::RefCountedDeleteOnSequence<StorageQueue> {
     // Private constructor, called by factory method only.
     SingleFile(const base::FilePath& filename,
                int64_t size,
-               scoped_refptr<ResourceInterface> memory_resource,
-               scoped_refptr<ResourceInterface> disk_space_resource,
+               scoped_refptr<ResourceManager> memory_resource,
+               scoped_refptr<ResourceManager> disk_space_resource,
                scoped_refptr<RefCountedClosureList> completion_closure_list);
 
     SEQUENCE_CHECKER(sequence_checker_);
@@ -232,8 +238,8 @@ class StorageQueue : public base::RefCountedDeleteOnSequence<StorageQueue> {
 
     std::unique_ptr<base::File> handle_;  // Set only when opened/created.
 
-    const scoped_refptr<ResourceInterface> memory_resource_;
-    const scoped_refptr<ResourceInterface> disk_space_resource_;
+    const scoped_refptr<ResourceManager> memory_resource_;
+    const scoped_refptr<ResourceManager> disk_space_resource_;
 
     // When reading the file, this is the buffer and data positions.
     // If the data is read sequentially, buffered portions are reused
@@ -483,9 +489,11 @@ class StorageQueue : public base::RefCountedDeleteOnSequence<StorageQueue> {
   // Compression module.
   scoped_refptr<CompressionModule> compression_module_;
 
-  // Test only: records specified to fail for a given operation kind.
-  base::flat_map<test::StorageQueueOperationKind, base::flat_set<int64_t>>
-      test_injected_failures_;
+  // Test only: records callback to be invoked. It will be called with operation
+  // kind and seq id, and will return Status (non-OK status indicates the
+  // failure to be injected). In production code must be null.
+  base::RepeatingCallback<Status(test::StorageQueueOperationKind, int64_t)>
+      test_injection_handler_;
 
   // Weak pointer factory (must be last member in class).
   base::WeakPtrFactory<StorageQueue> weakptr_factory_{this};

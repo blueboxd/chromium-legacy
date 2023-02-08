@@ -13,7 +13,7 @@ namespace features {
 // TODO(crbug.com/1363512):  Remove support for sender side letterboxing.
 BASE_FEATURE(kCastDisableLetterboxing,
              "CastDisableLetterboxing",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // The mirroring service previously used a model name filter before even
 // attempting to query the receiver for media remoting support. This
@@ -21,6 +21,15 @@ BASE_FEATURE(kCastDisableLetterboxing,
 // See https://crbug.com/1198616 and b/224993260 for background.
 BASE_FEATURE(kCastDisableModelNameCheck,
              "CastDisableModelNameCheck",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// This changes the default interval for refresh frame requests when the capture
+// source is showing static content from the slower default to a faster one.
+//
+// This feature is overridden by the Chrome command line flag
+// --mirroring-refresh-interval-ms=<num>.
+BASE_FEATURE(kCastFastRefreshFrames,
+             "CastFastRefreshFrames",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features

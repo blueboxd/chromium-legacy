@@ -888,7 +888,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.EventPath.CalculateTime" units="microseconds"
-    expires_after="2023-04-01">
+    expires_after="2023-06-11">
   <owner>dizhangg@chromium.org</owner>
   <owner>dom-dev@chromium.org</owner>
   <summary>
@@ -991,7 +991,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.FedCm.IsSignInUser" enum="Boolean"
-    expires_after="2023-03-12">
+    expires_after="2023-06-11">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>
@@ -1060,7 +1060,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.FedCm.Status.SignInStateMatch"
-    enum="FedCmSignInStateMatchStatus" expires_after="2023-03-12">
+    enum="FedCmSignInStateMatchStatus" expires_after="2023-06-11">
   <owner>tanzachary@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>
@@ -1084,7 +1084,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.FedCm.Timing.ContinueOnDialog" units="ms"
-    expires_after="2023-03-12">
+    expires_after="2023-06-11">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>
@@ -1116,7 +1116,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.FedCm.Timing.TurnaroundTime" units="ms"
-    expires_after="2023-03-12">
+    expires_after="2023-06-11">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>
@@ -1206,7 +1206,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Fetch.ReducedUserAgent" enum="Boolean"
-    expires_after="M111">
+    expires_after="2023-04-30">
   <owner>miketaylr@chromium.org</owner>
   <owner>victortan@chromium.org</owner>
   <owner>potassium-katabolism@google.com</owner>
@@ -1855,34 +1855,15 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Blink.Layout.NGRatio.Blocks" units="%"
-    expires_after="2023-04-16">
-  <owner>tkent@chromium.org</owner>
+<histogram name="Blink.Layout.UpdateLayerPositionsAfterLayout"
+    units="microseconds" expires_after="2023-05-07">
+  <owner>pdr@chromium.org</owner>
+  <owner>ikilpatrick@chromium.org</owner>
   <owner>layout-dev@chromium.org</owner>
   <summary>
-    Records LayoutNG ratio for the number of blocks.
+    Time spent in PaintLayer::UpdateLayerPositionsAfterLayout.
 
-    This records a percentage of LayoutNG-based blocks relative to all blocks.
-    This is recorded once per page on unloading the page. A value takes into
-    account of all frames in a single page.
-
-    See https://bit.ly/ng-ratio for more details.
-  </summary>
-</histogram>
-
-<histogram name="Blink.Layout.NGRatio.Calls" units="%"
-    expires_after="2023-04-16">
-  <owner>tkent@chromium.org</owner>
-  <owner>layout-dev@chromium.org</owner>
-  <summary>
-    Records LayoutNG ratio for the number of UpdateLayout calls.
-
-    This records a percentage of UpdateLayout() calls for LayoutNG-based objects
-    relative to all UpdateLayout() calls. This is recorded once per page on
-    unloading the page. A value takes into account of all frames in a single
-    page.
-
-    See https://bit.ly/ng-ratio for more details.
+    Note: Not recorded on ~5% of Windows machines with low-resolution clocks.
   </summary>
 </histogram>
 
@@ -2105,7 +2086,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.MemoryCache.RevalidationPolicy.AsyncScript"
-    enum="RevalidationPolicy" expires_after="2023-04-01">
+    enum="RevalidationPolicy" expires_after="2023-06-11">
   <owner>hiroshige@chromium.org</owner>
   <owner>lizeb@chromium.org</owner>
   <owner>gjc@chromium.org</owner>
@@ -3419,6 +3400,25 @@ chromium-metrics-reviews@google.com.
   </summary>
   <token key="BlinkVisibleLoadTimeSuffixes"
       variants="BlinkVisibleLoadTimeSuffixes"/>
+</histogram>
+
+<histogram base="true" name="Blink.VisualUpdateDelay.UpdateTime"
+    units="microseconds" expires_after="2023-03-26">
+<!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
+
+<!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
+
+<!-- Name completed by histogram_suffixes name="BlinkUpdateTimeAggregatedSuffixes" -->
+
+  <owner>szager@chromium.org</owner>
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Elapsed time between when a widget first registers a state invalidation that
+    requires a visual refresh; and when the main thread begins a main frame that
+    will send the updated visual state to the compositor.
+
+    This histogram only records metrics on machines with high-resolution clocks.
+  </summary>
 </histogram>
 
 <histogram base="true" name="Blink.WaitForCommit.UpdateTime"

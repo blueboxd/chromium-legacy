@@ -2135,6 +2135,16 @@ void WebFrameWidgetImpl::Resize(const gfx::Size& new_size) {
   view->Resize(*size_);
 }
 
+void WebFrameWidgetImpl::OnCommitRequested() {
+  // This can be called during shutdown, in which case local_root_ will be
+  // nullptr.
+  if (!LocalRootImpl() || !LocalRootImpl()->GetFrame()) {
+    return;
+  }
+  if (auto* view = LocalRootImpl()->GetFrame()->View())
+    view->OnCommitRequested();
+}
+
 void WebFrameWidgetImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
   TRACE_EVENT1("blink", "WebFrameWidgetImpl::BeginMainFrame", "frameTime",
                last_frame_time);
@@ -2372,13 +2382,15 @@ void WebFrameWidgetImpl::RecordEndOfFrameMetrics(
     cc::ActiveFrameSequenceTrackers trackers) {
   if (!LocalRootImpl())
     return;
-
+  Document* document = LocalRootImpl()->GetFrame()->GetDocument();
+  DCHECK(document);
   LocalRootImpl()
       ->GetFrame()
       ->View()
       ->GetUkmAggregator()
       ->RecordEndOfFrameMetrics(frame_begin_time, base::TimeTicks::Now(),
-                                trackers);
+                                trackers, document->UkmSourceID(),
+                                document->UkmRecorder());
 }
 
 void WebFrameWidgetImpl::WillHandleGestureEvent(const WebGestureEvent& event,
@@ -3973,9 +3985,10 @@ void WebFrameWidgetImpl::CalculateSelectionBounds(
 
   // Calculate the bounding box of the selection area.
   if (bounding_box_in_root_frame) {
-    const gfx::Rect bounding_box = ToEnclosingRect(
-        CreateRange(selection.GetSelectionInDOMTree().ComputeRange())
-            ->BoundingRect());
+    Range* range =
+        CreateRange(selection.GetSelectionInDOMTree().ComputeRange());
+    const gfx::Rect bounding_box = ToEnclosingRect(range->BoundingRect());
+    range->Dispose();
     *bounding_box_in_root_frame = visual_viewport.RootFrameToViewport(
         local_frame->View()->ConvertToRootFrame(bounding_box));
   }

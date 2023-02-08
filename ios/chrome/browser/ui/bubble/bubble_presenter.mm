@@ -12,6 +12,7 @@
 #import "components/feature_engagement/public/feature_constants.h"
 #import "components/feature_engagement/public/tracker.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter_delegate.h"
@@ -69,6 +70,8 @@ const CGFloat kBubblePresentationDelay = 1;
     BubbleViewControllerPresenter* defaultPageModeTipBubblePresenter;
 @property(nonatomic, strong)
     BubbleViewControllerPresenter* whatsNewBubblePresenter;
+@property(nonatomic, strong) BubbleViewControllerPresenter*
+    priceNotificationsWhileBrowsingBubbleTipPresenter;
 
 @property(nonatomic, assign) ChromeBrowserState* browserState;
 
@@ -164,10 +167,8 @@ const CGFloat kBubblePresentationDelay = 1;
   NSString* text =
       l10n_util::GetNSStringWithFixup(IDS_IOS_DISCOVER_FEED_HEADER_IPH);
 
-  NamedGuide* guide = [NamedGuide guideWithName:kDiscoverFeedHeaderMenuGuide
-                                           view:self.rootViewController.view];
-  DCHECK(guide);
-  UIView* menuButton = guide.constrainedView;
+  UIView* menuButton = [self.layoutGuideCenter
+      referencedViewUnderName:kDiscoverFeedHeaderMenuGuide];
   // Checks "canPresentBubble" after checking that the NTP with feed is visible.
   // This ensures that the feature tracker doesn't trigger the IPH event if the
   // bubble isn't shown, which would prevent it from ever being shown again.
@@ -303,7 +304,7 @@ const CGFloat kBubblePresentationDelay = 1;
   // the tip, then end early to prevent the potential reassignment of the
   // existing `whatsNewBubblePresenter` to nil.
   BubbleViewControllerPresenter* presenter = [self
-      presentBubbleForFeature:feature_engagement::kIPHWhatsNewFeature
+      presentBubbleForFeature:feature_engagement::kIPHFollowWhileBrowsingFeature
                     direction:arrowDirection
                     alignment:BubbleAlignmentTrailing
                          text:text
@@ -313,6 +314,35 @@ const CGFloat kBubblePresentationDelay = 1;
     return;
 
   self.whatsNewBubblePresenter = presenter;
+}
+
+- (void)presentPriceNotificationsWhileBrowsingTipBubble {
+  if (![self canPresentBubble])
+    return;
+
+  BubbleArrowDirection arrowDirection =
+      IsSplitToolbarMode(self.rootViewController) ? BubbleArrowDirectionDown
+                                                  : BubbleArrowDirectionUp;
+  NSString* text = l10n_util::GetNSString(
+      IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_TOAST_IPH_TEXT);
+  CGPoint toolsMenuAnchor = [self anchorPointToGuide:kToolsMenuGuide
+                                           direction:arrowDirection];
+
+  // If the feature engagement tracker does not consider it valid to display
+  // the tip, then end early to prevent the potential reassignment of the
+  // existing `whatsNewBubblePresenter` to nil.
+  BubbleViewControllerPresenter* presenter =
+      [self presentBubbleForFeature:
+                feature_engagement::kIPHPriceNotificationsWhileBrowsingFeature
+                          direction:arrowDirection
+                          alignment:BubbleAlignmentTrailing
+                               text:text
+              voiceOverAnnouncement:text
+                        anchorPoint:toolsMenuAnchor];
+  if (!presenter)
+    return;
+
+  self.priceNotificationsWhileBrowsingBubbleTipPresenter = presenter;
 }
 
 #pragma mark - Private
@@ -603,6 +633,17 @@ bubblePresenterForFeature:(const base::Feature&)feature
       experimental_flags::ShouldAlwaysShowFollowIPH()) {
     return YES;
   }
+
+  // Always present the price notifications IPH if it's triggered by system
+  // experimental settings.
+  if (feature.name ==
+          feature_engagement::kIPHPriceNotificationsWhileBrowsingFeature.name &&
+      base::FeatureList::IsEnabled(
+          feature_engagement::kIPHPriceNotificationsWhileBrowsingFeature) &&
+      IsPriceNotificationsEnabled()) {
+    return YES;
+  }
+
   return NO;
 }
 

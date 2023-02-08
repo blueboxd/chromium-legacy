@@ -51,6 +51,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_manager_util.h"
 #include "ui/display/screen.h"
+#include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/public/activation_client.h"
@@ -64,6 +65,8 @@ namespace {
 constexpr int kAuraShellSeatObserverPriority = 1;
 static_assert(Seat::IsValidObserverPriority(kAuraShellSeatObserverPriority),
               "kAuraShellSeatObserverPriority is not in the valid range.");
+static_assert(sizeof(uint32_t) == sizeof(float),
+              "Sizes much match for reinterpret cast to be meaningful");
 
 // A property key containing a boolean set to true if na aura surface object is
 // associated with surface object.
@@ -201,21 +204,24 @@ void aura_surface_set_server_start_resize(wl_client* client,
   GetUserDataAs<AuraSurface>(resource)->SetServerStartResize();
 }
 
-void aura_surface_intent_to_snap(wl_client* client,
-                                 wl_resource* resource,
-                                 uint32_t snap_direction) {
+void aura_surface_intent_to_snap_deprecated(wl_client* client,
+                                            wl_resource* resource,
+                                            uint32_t snap_direction) {
   GetUserDataAs<AuraSurface>(resource)->IntentToSnap(snap_direction);
 }
 
-void aura_surface_set_snap_left(wl_client* client, wl_resource* resource) {
+void aura_surface_set_snap_left_deprecated(wl_client* client,
+                                           wl_resource* resource) {
   GetUserDataAs<AuraSurface>(resource)->SetSnapPrimary();
 }
 
-void aura_surface_set_snap_right(wl_client* client, wl_resource* resource) {
+void aura_surface_set_snap_right_deprecated(wl_client* client,
+                                            wl_resource* resource) {
   GetUserDataAs<AuraSurface>(resource)->SetSnapSecondary();
 }
 
-void aura_surface_unset_snap(wl_client* client, wl_resource* resource) {
+void aura_surface_unset_snap_deprecated(wl_client* client,
+                                        wl_resource* resource) {
   GetUserDataAs<AuraSurface>(resource)->UnsetSnap();
 }
 
@@ -306,10 +312,10 @@ const struct zaura_surface_interface aura_surface_implementation = {
     aura_surface_set_fullscreen_mode_deprecated,
     aura_surface_set_client_surface_str_id,
     aura_surface_set_server_start_resize,
-    aura_surface_intent_to_snap,
-    aura_surface_set_snap_left,
-    aura_surface_set_snap_right,
-    aura_surface_unset_snap,
+    aura_surface_intent_to_snap_deprecated,
+    aura_surface_set_snap_left_deprecated,
+    aura_surface_set_snap_right_deprecated,
+    aura_surface_unset_snap_deprecated,
     aura_surface_set_window_session_id,
     aura_surface_set_can_go_back,
     aura_surface_unset_can_go_back,
@@ -431,11 +437,11 @@ void AuraSurface::IntentToSnap(uint32_t snap_direction) {
 }
 
 void AuraSurface::SetSnapPrimary() {
-  surface_->SetSnappedToPrimary();
+  surface_->SetSnapPrimary(chromeos::kDefaultSnapRatio);
 }
 
 void AuraSurface::SetSnapSecondary() {
-  surface_->SetSnappedToSecondary();
+  surface_->SetSnapSecondary(chromeos::kDefaultSnapRatio);
 }
 
 void AuraSurface::UnsetSnap() {
@@ -675,12 +681,16 @@ void AuraSurface::ShowTooltip(const char* text,
                               const base::TimeDelta& show_delay,
                               const base::TimeDelta& hide_delay) {
   tooltip_text_ = base::UTF8ToUTF16(text);
-  wm::SetTooltipText(surface_->window(), &tooltip_text_);
-  wm::SetTooltipId(surface_->window(), surface_);
+  auto* window = surface_->window();
+  wm::SetTooltipText(window, &tooltip_text_);
+  wm::SetTooltipId(window, surface_);
+  ash::Shell::Get()->tooltip_controller()->UpdateTooltip(window);
 }
 
 void AuraSurface::HideTooltip() {
   tooltip_text_ = std::u16string();
+  auto* window = surface_->window();
+  ash::Shell::Get()->tooltip_controller()->UpdateTooltip(window);
 }
 
 chromeos::OrientationType OrientationLock(uint32_t orientation_lock) {
@@ -834,6 +844,32 @@ void AuraToplevel::SetFloat() {
 
 void AuraToplevel::UnsetFloat() {
   shell_surface_->UnsetFloat();
+}
+
+void AuraToplevel::SetSnapPrimary(float snap_ratio) {
+  shell_surface_->SetSnapPrimary(snap_ratio);
+}
+
+void AuraToplevel::SetSnapSecondary(float snap_ratio) {
+  shell_surface_->SetSnapSecondary(snap_ratio);
+}
+
+void AuraToplevel::IntentToSnap(uint32_t snap_direction) {
+  switch (snap_direction) {
+    case ZAURA_SURFACE_SNAP_DIRECTION_NONE:
+      shell_surface_->HideSnapPreview();
+      break;
+    case ZAURA_SURFACE_SNAP_DIRECTION_LEFT:
+      shell_surface_->ShowSnapPreviewToPrimary();
+      break;
+    case ZAURA_SURFACE_SNAP_DIRECTION_RIGHT:
+      shell_surface_->ShowSnapPreviewToSecondary();
+      break;
+  }
+}
+
+void AuraToplevel::UnsetSnap() {
+  shell_surface_->UnsetSnap();
 }
 
 template <class T>
@@ -1045,6 +1081,7 @@ const uint32_t kFixedBugIds[] = {
               // |wayland_simple_client|
     1352584,
     1358908,
+    1400226,
 };
 
 // Implements aura shell interface and monitors workspace state needed
@@ -1272,6 +1309,30 @@ void aura_toplevel_unset_float(wl_client* client, wl_resource* resource) {
   GetUserDataAs<AuraToplevel>(resource)->UnsetFloat();
 }
 
+void aura_toplevel_set_snap_primary(wl_client* client,
+                                    wl_resource* resource,
+                                    uint32_t snap_ratio_as_uint) {
+  float snap_ratio = *reinterpret_cast<float*>(&snap_ratio_as_uint);
+  GetUserDataAs<AuraToplevel>(resource)->SetSnapPrimary(snap_ratio);
+}
+
+void aura_toplevel_set_snap_secondary(wl_client* client,
+                                      wl_resource* resource,
+                                      uint32_t snap_ratio_as_uint) {
+  float snap_ratio = *reinterpret_cast<float*>(&snap_ratio_as_uint);
+  GetUserDataAs<AuraToplevel>(resource)->SetSnapSecondary(snap_ratio);
+}
+
+void aura_toplevel_intent_to_snap(wl_client* client,
+                                  wl_resource* resource,
+                                  uint32_t snap_direction) {
+  GetUserDataAs<AuraToplevel>(resource)->IntentToSnap(snap_direction);
+}
+
+void aura_toplevel_unset_snap(wl_client* client, wl_resource* resource) {
+  GetUserDataAs<AuraToplevel>(resource)->UnsetSnap();
+}
+
 void aura_toplevel_set_restore_info_with_window_id_source(
     wl_client* client,
     wl_resource* resource,
@@ -1371,6 +1432,10 @@ const struct zaura_toplevel_interface aura_toplevel_implementation = {
     aura_toplevel_deactivate,
     aura_toplevel_set_fullscreen_mode,
     aura_toplevel_set_scale_factor,
+    aura_toplevel_set_snap_primary,
+    aura_toplevel_set_snap_secondary,
+    aura_toplevel_intent_to_snap,
+    aura_toplevel_unset_snap,
 };
 
 void aura_popup_surface_submission_in_pixel_coordinates(wl_client* client,
@@ -1411,8 +1476,6 @@ void aura_popup_release(wl_client* client, wl_resource* resource) {
 void aura_popup_set_scale_factor(wl_client* client,
                                  wl_resource* resource,
                                  uint32_t scale_factor_as_uint) {
-  static_assert(sizeof(uint32_t) == sizeof(float),
-                "Sizes much match for reinterpret cast to be meaningful");
   float scale_factor = *reinterpret_cast<float*>(&scale_factor_as_uint);
   GetUserDataAs<AuraPopup>(resource)->SetScaleFactor(scale_factor);
 }

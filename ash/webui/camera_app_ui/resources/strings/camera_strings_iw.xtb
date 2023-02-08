@@ -71,7 +71,7 @@
 <translation id="3411958449466169012">טיימר כבוי</translation>
 <translation id="3448774564454087943">הסרטון לא נשמר כי הוא קצר מדי</translation>
 <translation id="346539236881580388">צילום חוזר</translation>
-<translation id="3517926952904427380">לא ניתן לצלם לאורך</translation>
+<translation id="3517926952904427380">לא ניתן לצלם תמונת דיוקן</translation>
 <translation id="3566302376254083266">מתבצעת תזוזה לשמאל למעלה</translation>
 <translation id="3569311554794739032">להסיר את <ph name="FILE" />?</translation>
 <translation id="3573890771273113519">מעבר למצב סריקה</translation>
@@ -179,7 +179,7 @@
 <translation id="8712637175834984815">הבנתי</translation>
 <translation id="8730621377337864115">בוצע</translation>
 <translation id="8732462232047530626">תצוגה מקדימה של מטא-נתונים</translation>
-<translation id="8815966864175525708">מעבר לצילום תמונות לאורך</translation>
+<translation id="8815966864175525708">מעבר לצילום תמונת דיוקן</translation>
 <translation id="8828441885228359828">המשך הצילום</translation>
 <translation id="8870695351537079478">לא ניתן להתחיל בצילום סרטון</translation>
 <translation id="8880167521484863515">4 על 3</translation>

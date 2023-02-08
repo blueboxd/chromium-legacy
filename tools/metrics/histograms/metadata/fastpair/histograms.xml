@@ -48,6 +48,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="FastPair.RetroactivePairing"
+    enum="FastPairRetroactiveSuccessFunnelEvent" expires_after="2023-06-01">
+  <owner>jackshira@chromium.org</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records each successful step in the Retroactive Pairing flow. Emitted on:
+    device detected, GATT initialization started, writing account key, timed out
+    writing account key, account key successfully written to the device, BLE
+    address rotated, notification displayed to user, save requested by user
+    (notification clicked), and account key saved to Footprints.
+  </summary>
+</histogram>
+
 <histogram name="FastPair.SubsequentPairing"
     enum="FastPairSubsequentSuccessFunnelEvent" expires_after="2023-06-01">
   <owner>jackshira@chromium.org</owner>
@@ -57,6 +71,125 @@ chromium-metrics-reviews@google.com.
     on notification click, on initialization start, on pairing start, and on
     completion of the entire pairing process.
   </summary>
+</histogram>
+
+<histogram name="FastPair.{FastPairPairingProtocol}.Pairing"
+    enum="FastPairProtocolPairingSteps" expires_after="2023-02-26">
+  <owner>jackshira@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records each sucessful step in the Protocol-based Pairing flow. These steps
+    are: on pairing start, when retries have been exhausted, when device is
+    already paired, on successful bond, on passkey negotiated, on passkey
+    characteristic found, on notifications enabled for passkey characteristic,
+    on passkey response, on passkey validation, on passkey confirmation, and on
+    pairing complete.
+  </summary>
+  <token key="FastPairPairingProtocol">
+    <variant name="InitialPairing" summary="Initial pairing protocol"/>
+    <variant name="SubsequentPairing" summary="Subsequent pairing protocol"/>
+  </token>
+</histogram>
+
+<histogram name="FastPair.{PairingScenario}.Initialization"
+    enum="FastPairInitializePairingProcessEvent" expires_after="2023-06-01">
+  <owner>jackshira@chromium.org</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the flow for the initialization of the GATT connection and the
+    process for grabbing the classic address for the Bluetooth device and
+    validating encryption keys. This flow is common across all three Fast Pair
+    pairing scenarios. Emitted on the following steps: initialization started
+    (when the process is kicked off), already pairing failure (when the device
+    is already pairing when the notification is clicked), passed to pairing
+    dialog (when a V1 device is detected, indicated that the device will not be
+    logging the subsequent metrics in the flow), exhausted retries failure (on
+    failure after three retry attempts), handshake reused (when a GATT handshake
+    already exists, bypassing the GATT handshake flow for this attempt), and
+    initialization complete (after the GATT handshake has completed, and the
+    classic address for the device is known).
+  </summary>
+  <token key="PairingScenario">
+    <variant name="InitialPairing"
+        summary="the first time a user pairs a device via Fast Pair, device
+                 needs to be in pairing mode, account key written to the
+                 device to save it to their account, discovered via BLE
+                 scanning"/>
+    <variant name="RetroactivePairing"
+        summary="user elects to save a device paired via classic Bluetooth
+                 settings to their Google account, account key written to
+                 device"/>
+    <variant name="SubsequentPairing"
+        summary="device is already saved to the user's account and is
+                 discovered via not-discoverable advertisement, which means
+                 the device does not have to be in pairing mode, no account
+                 key saved to device, discovered via BLE scanning"/>
+  </token>
+</histogram>
+
+<histogram name="FastPair.{PairingScenario}.Initialization.FailureReason"
+    enum="FastPairPairFailure" expires_after="2023-06-01">
+  <owner>jackshira@chromium.org</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the failure reason for initialization of the GATT connection and
+    handshake (process for grabbing the classic address for the Bluetooth device
+    and validating encryption keys). Emitted on every failure attempt. The
+    initialization can succeed overall on a third retry, and still emit to this
+    bucket on previous failed attempts. No metric is emitted on success. The
+    only `FastPairPairFailure`s that will be related to this flow are: Pairing
+    Device Lost, Data Encryptor Retrieval, Key-based Pairing Response Decrypt,
+    Incorrect Key-based Pairing Response Type, Create GATT Connection, Pairing
+    Device Lost Between GATT Connection Attempts, GATT Service Discovery
+    Timeout, Key-based Pairing Characteristic Discovery, Key-based Pairing
+    Characteristic Notify Session, Key-based Pairing Response Timeout, and
+    Key-based Pairing Characteristic Write.
+  </summary>
+  <token key="PairingScenario">
+    <variant name="InitialPairing"
+        summary="the first time a user pairs a device via Fast Pair, device
+                 needs to be in pairing mode, discovered via BLE scanning,
+                 account key written to the device and saved to their account"/>
+    <variant name="RetroactivePairing"
+        summary="user elects to save a device paired via classic Bluetooth
+                 settings to their Google account, account key written to
+                 device"/>
+    <variant name="SubsequentPairing"
+        summary="device is already saved to the user's account and is
+                 discovered via not-discoverable advertisement over BLE
+                 scanning, the device does not have to be in pairing mode, no
+                 account key saved to device"/>
+  </token>
+</histogram>
+
+<histogram
+    name="FastPair.{PairingScenario}.Initialization.RetriesBeforeSuccess"
+    units="count" expires_after="2023-06-01">
+  <owner>jackshira@chromium.org</owner>
+  <owner>julietlevesque@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Records the number of retries that occurred before the successful completion
+    of the initialization flow for the GATT connection and handshake. Emitted
+    only on success of the initialization flow. No metric is emitted on failure.
+  </summary>
+  <token key="PairingScenario">
+    <variant name="InitialPairing"
+        summary="the first time a user pairs a device via Fast Pair, device
+                 needs to be in pairing mode, discovered via BLE scanning,
+                 account key written to the device and saved to their account"/>
+    <variant name="RetroactivePairing"
+        summary="user elects to save a device paired via classic Bluetooth
+                 settings to their Google account, account key written to
+                 device"/>
+    <variant name="SubsequentPairing"
+        summary="device is already saved to the user's account and is
+                 discovered via not-discoverable advertisement over BLE
+                 scanning, the device does not have to be in pairing mode, no
+                 account key saved to device"/>
+  </token>
 </histogram>
 
 </histograms>

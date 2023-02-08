@@ -10,16 +10,17 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/pill_button.h"
 #include "ash/style/rounded_container.h"
+#include "ash/system/cast/cast_zero_state_view.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/hover_highlight_view.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_detailed_view.h"
+#include "base/functional/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
@@ -27,12 +28,10 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/image/image.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/views/controls/button/button.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/layout/box_layout.h"
 
 namespace ash {
 
@@ -112,6 +111,11 @@ void CastDetailedView::UpdateReceiverListFromCachedData() {
   // Remove all of the existing views.
   view_to_sink_map_.clear();
   scroll_content()->RemoveAllChildViews();
+  add_access_code_device_ = nullptr;
+  if (zero_state_view_) {
+    RemoveChildViewT(zero_state_view_);
+    zero_state_view_ = nullptr;
+  }
 
   // QsRevamp places items in a rounded container.
   views::View* item_container =
@@ -131,14 +135,47 @@ void CastDetailedView::UpdateReceiverListFromCachedData() {
   // Add a view for each receiver.
   for (auto& it : sinks_and_routes_) {
     const CastSink& sink = it.second.sink;
-    views::View* container = AddScrollListItem(
+    const CastRoute& route = it.second.route;
+    HoverHighlightView* container = AddScrollListItem(
         item_container, SinkIconTypeToIcon(sink.sink_icon_type),
         base::UTF8ToUTF16(sink.name));
     view_to_sink_map_[container] = sink.id;
+
+    // Add a stop casting button if this machine ("local source") is casting to
+    // the device. See also CastNotificationController::OnDevicesUpdated().
+    if (features::IsQsRevampEnabled() && !route.id.empty() &&
+        route.is_local_source) {
+      auto button = std::make_unique<PillButton>(
+          base::BindRepeating(&CastDetailedView::StopCasting,
+                              base::Unretained(this), route.id),
+          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAST_STOP_CASTING),
+          PillButton::kPrimaryWithoutIcon);
+      container->AddRightView(
+          button.release(),
+          views::CreateEmptyBorder(gfx::Insets::TLBR(0, 0, 0, 8)));
+    }
+  }
+
+  // If there are no receiver views, show the zero state view.
+  if (features::IsQsRevampEnabled() && !add_access_code_device_ &&
+      view_to_sink_map_.empty()) {
+    AddZeroStateView();
+    scroller()->SetVisible(false);
+  } else {
+    scroller()->SetVisible(true);
   }
 
   scroll_content()->SizeToPreferredSize();
   scroller()->Layout();
+}
+
+void CastDetailedView::AddZeroStateView() {
+  DCHECK(!zero_state_view_);
+  DCHECK(scroller());
+  zero_state_view_ = AddChildViewAt(std::make_unique<CastZeroStateView>(),
+                                    GetIndexOf(scroller()).value());
+  // Make the view fill the entire space below the title row.
+  box_layout()->SetFlexForView(zero_state_view_, 1);
 }
 
 void CastDetailedView::HandleViewClicked(views::View* view) {
@@ -157,6 +194,12 @@ void CastDetailedView::HandleViewClicked(views::View* view) {
   // Close the system tray to emphasize the pinned Cast notification.
   if (features::IsQsRevampEnabled())
     CloseBubble();  // Deletes `this`.
+}
+
+void CastDetailedView::StopCasting(const std::string& route_id) {
+  DCHECK(features::IsQsRevampEnabled());
+  CastConfigController::Get()->StopCasting(route_id);
+  CloseBubble();  // Deletes `this`.
 }
 
 BEGIN_METADATA(CastDetailedView, TrayDetailedView)

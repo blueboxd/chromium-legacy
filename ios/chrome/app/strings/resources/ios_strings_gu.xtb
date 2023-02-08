@@ -125,6 +125,7 @@
 <translation id="1870148520156231997">પાસવર્ડ જણાવો</translation>
 <translation id="1872096359983322073">ટોર્ચ</translation>
 <translation id="1891796056033961979">તમારા સાચવેલા બુકમાર્ક, પાસવર્ડ, સેટિંગ અને બીજી ઘણી વસ્તુઓ આ સ્ક્રીન પર ઉપલબ્ધ છે.</translation>
+<translation id="1894023287452300670">અહીં કિંમત ટ્રૅક કરો</translation>
 <translation id="1911619930368729126">Google ડ્રાઇવ પર અપલોડ કરો</translation>
 <translation id="1923342640370224680">છેલ્લી કલાક</translation>
 <translation id="1930989359703290198">તમારી સંસ્થા માત્ર અમુક ચોક્કસ એકાઉન્ટ વડે તમને સાઇન ઇન કરવાની મંજૂરી આપે છે. મંજૂરી ન હોય એવા એકાઉન્ટને છુપાવવામાં આવે છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
@@ -147,7 +148,9 @@
 <translation id="2074131957428911366">શું સિંક કરવું તે હંમેશાં તમે <ph name="BEGIN_LINK" />સેટિંગ<ph name="END_LINK" />માં પસંદ કરી શકો છો.</translation>
 <translation id="2079545284768500474">છેલ્લો ફેરફાર રદ કરો</translation>
 <translation id="2080769225927880590">કોઈ માન્ય એકાઉન્ટ વડે સાઇન ઇન કરો</translation>
+<translation id="2090878303988764231">તમે જોઈ શકો તેવું કન્ટેન્ટ મેનેજ કરવા માટે સાઇન ઇન કરો</translation>
 <translation id="2103075008456228677">history.google.com ખોલો</translation>
+<translation id="21133533946938348">ટૅબ પિન કરો</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> આઇટમ ખસેડી</translation>
 <translation id="2122754583996902531">તમારું બ્રાઉઝર મેનેજ કરવામાં આવી રહ્યું છે. <ph name="BEGIN_LINK" />વધુ જાણો<ph name="END_LINK" /></translation>
 <translation id="212623074644302906">વાંચન સૂચિમાં ઉમેરવા માટે કહો</translation>
@@ -189,6 +192,7 @@
 <translation id="2421044535038393232">ફેરફાર કરતા રહો</translation>
 <translation id="2434405374328098816">તમે <ph name="WEBSITE" /> પર "<ph name="USERNAME" />" માટેનો પાસવર્ડ પહેલેથી સાચવ્યો છે</translation>
 <translation id="2435457462613246316">પાસવર્ડ બતાવો</translation>
+<translation id="2451654228769116489">ટૅબને પિન કરો</translation>
 <translation id="2461070143328828326">પાસવર્ડ સેટિંગ</translation>
 <translation id="2469960372084740698">Safe Browsing બંધ કરીએ?</translation>
 <translation id="2473876017985765807">તમે <ph name="WEBSITE" /> માટેનો પાસવર્ડ પહેલેથી સાચવ્યો છે</translation>
@@ -286,6 +290,7 @@
 <translation id="3130863904455712965">ઇતિહાસ અને વધુ</translation>
 <translation id="3131206671572504478">બધી બ્લૉક કરો</translation>
 <translation id="313283613037595347">નવી છૂપી ટૅબ બનાવો.</translation>
+<translation id="3146109040683991651">Chromeને ડિફૉલ્ટ બ્રાઉઝર તરીકે સેટ કરો</translation>
 <translation id="3153862085237805241">કાર્ડ સાચવો</translation>
 <translation id="3157387275655328056">વાંચન સૂચિમાં ઉમેરો</translation>
 <translation id="3157684681743766797">તમામને આ રીતે ચિહ્નિત કરો…</translation>
@@ -673,6 +678,7 @@
 <translation id="6059830886158432458">તમારી સ્ટોરી અને પ્રવૃત્તિને અહીં નિયંત્રિત કરો</translation>
 <translation id="6064824697233747382">તમારી સંસ્થા માટે જરૂરી છે કે તમે સિંકની સુવિધા બંધ કરો.</translation>
 <translation id="6066301408025741299">રદ કરવા માટે ટેપ કરો.</translation>
+<translation id="6071409777669089905">ટૅબને અનપિન કરો</translation>
 <translation id="60829778314739003">સ્વીકારો અને આગળ વધો</translation>
 <translation id="6084848228346514841">કોઈ ટૅબ પસંદ કરો</translation>
 <translation id="6103540626693881831">ડિવાઇસ પર એન્ક્રિપ્શન</translation>
@@ -973,6 +979,7 @@
 <translation id="8197543752516192074">પેજનો અનુવાદ કરો</translation>
 <translation id="8205564605687841303">રદ કરો</translation>
 <translation id="8206354486702514201">આ સેટિંગ તમારા વહીવટકર્તા દ્વારા લાગુ કરેલી છે.</translation>
+<translation id="821809831108207540">તમારું Discover ફીડ અને Chromeને મનગમતું બનાવવા માટે, સાઇન ઇન કરો અને સિંકની સુવિધા ચાલુ કરો.</translation>
 <translation id="8225985093977202398">કૅશ કરેલી છબીઓ અને ફાઇલો</translation>
 <translation id="8237382152611443140">પાસવર્ડ ઑટોમૅટિક રીતે ભરવાની સુવિધાનાં સેટિંગ ખોલો</translation>
 <translation id="8261506727792406068">ડિલીટ કરો</translation>
@@ -1100,6 +1107,7 @@
 <translation id="9219154867334666734">ટૅબ શોધો…</translation>
 <translation id="9223358826628549784">ક્રૅશ રિપોર્ટ મોકલ્યો.</translation>
 <translation id="941747855997058526">પાસવર્ડ પસંદ કરો...</translation>
+<translation id="948048872540558976">નવું ટૅબ બનાવો</translation>
 <translation id="952704832371081537">રદ કરો</translation>
 <translation id="953008885340860025">Chromeમાંથી સાઇન આઉટ થયા</translation>
 <translation id="959066944189734975">તમે <ph name="CHANNEL_NAME" />ને ફૉલો કરી રહ્યાં છો</translation>

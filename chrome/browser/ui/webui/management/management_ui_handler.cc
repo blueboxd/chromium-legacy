@@ -18,6 +18,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -322,8 +323,13 @@ void AddDeviceReportingInfo(base::Value::List* report_sources,
   bool report_audio_status = false;
   ash::CrosSettings::Get()->GetBoolean(ash::kReportDeviceAudioStatus,
                                        &report_audio_status);
+  // TODO(b/262295601): Add/refine management strings corresponding to XDR
+  // reporting policy.
+  bool device_report_xdr_events = false;
+  ash::CrosSettings::Get()->GetBoolean(ash::kDeviceReportXDREvents,
+                                       &device_report_xdr_events);
   if (collector->IsReportingActivityTimes() || report_device_peripherals ||
-      report_audio_status ||
+      report_audio_status || device_report_xdr_events ||
       profile->GetPrefs()->GetBoolean(::prefs::kInsightsExtensionEnabled)) {
     AddDeviceReportingElement(report_sources, kManagementReportActivityTimes,
                               DeviceReportingType::kDeviceActivity);
@@ -346,7 +352,7 @@ void AddDeviceReportingInfo(base::Value::List* report_sources,
     AddDeviceReportingElement(report_sources, kManagementReportCrashReports,
                               DeviceReportingType::kCrashReport);
   }
-  if (collector->IsReportingAppInfoAndActivity()) {
+  if (collector->IsReportingAppInfoAndActivity() || device_report_xdr_events) {
     AddDeviceReportingElement(report_sources,
                               kManagementReportAppInfoAndActivity,
                               DeviceReportingType::kAppInfoAndActivity);
@@ -841,7 +847,9 @@ base::Value::Dict ManagementUIHandler::GetContextualManagedData(
                l10n_util::GetStringFUTF16(
                    managed_() ? IDS_MANAGEMENT_BROWSER_NOTICE
                               : IDS_MANAGEMENT_NOT_MANAGED_NOTICE,
-                   base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
+                   base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl),
+                   base::EscapeForHTML(l10n_util::GetStringUTF16(
+                       IDS_MANAGEMENT_LEARN_MORE_ACCCESSIBILITY_TEXT))));
 #endif
 
   if (enterprise_manager.empty()) {

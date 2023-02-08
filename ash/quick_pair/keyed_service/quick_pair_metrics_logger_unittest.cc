@@ -79,6 +79,14 @@ const char kFastPairAccountKeyWriteFailureMetricInitial[] =
     "Bluetooth.ChromeOS.FastPair.AccountKey.Failure.InitialPairingProtocol";
 const char kFastPairAccountKeyWriteFailureMetricRetroactive[] =
     "Bluetooth.ChromeOS.FastPair.AccountKey.Failure.RetroactivePairingProtocol";
+constexpr char kRetroactiveSuccessFunnelMetric[] =
+    "FastPair.RetroactivePairing";
+constexpr char kInitializePairingProcessInitial[] =
+    "FastPair.InitialPairing.Initialization";
+constexpr char kInitializePairingProcessSubsequent[] =
+    "FastPair.SubsequentPairing.Initialization";
+constexpr char kInitializePairingProcessRetroactive[] =
+    "FastPair.RetroactivePairing.Initialization";
 
 constexpr char kTestDeviceAddress[] = "11:12:13:14:15:16";
 constexpr char kTestBleDeviceName[] = "Test Device Name";
@@ -310,6 +318,14 @@ class QuickPairMetricsLoggerTest : public testing::Test {
                                                    /*error=*/absl::nullopt);
         break;
       case Protocol::kFastPairRetroactive:
+        fake_retroactive_pairing_detector_->NotifyRetroactivePairFound(
+            retroactive_device_);
+        mock_ui_broker_->NotifyAssociateAccountAction(
+            retroactive_device_, AssociateAccountAction::kAssoicateAccount);
+        mock_pairer_broker_->NotifyPairingStart(retroactive_device_);
+        mock_pairer_broker_->NotifyHandshakeComplete(retroactive_device_);
+        mock_pairer_broker_->NotifyAccountKeyWrite(retroactive_device_,
+                                                   /*error=*/absl::nullopt);
         break;
     }
   }
@@ -1116,6 +1132,51 @@ TEST_F(QuickPairMetricsLoggerTest, LogSuccessFunnel_Initial) {
                 kInitialSuccessFunnelMetric,
                 FastPairInitialSuccessFunnelEvent::kProcessComplete),
             1);
+
+  EXPECT_EQ(histogram_tester().GetBucketCount(
+                kInitializePairingProcessInitial,
+                FastPairInitializePairingProcessEvent::kInitializationStarted),
+            1);
+  EXPECT_EQ(histogram_tester().GetBucketCount(
+                kInitializePairingProcessInitial,
+                FastPairInitializePairingProcessEvent::kInitializationComplete),
+            1);
+}
+
+TEST_F(QuickPairMetricsLoggerTest, LogSuccessFunnel_Retroactive) {
+  SimulatePairingFlow(Protocol::kFastPairRetroactive);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(histogram_tester().GetBucketCount(
+                kRetroactiveSuccessFunnelMetric,
+                FastPairRetroactiveSuccessFunnelEvent::kDeviceDetected),
+            1);
+  EXPECT_EQ(histogram_tester().GetBucketCount(
+                kRetroactiveSuccessFunnelMetric,
+                FastPairRetroactiveSuccessFunnelEvent::kInitializationStarted),
+            1);
+  EXPECT_EQ(histogram_tester().GetBucketCount(
+                kRetroactiveSuccessFunnelMetric,
+                FastPairRetroactiveSuccessFunnelEvent::kWritingAccountKey),
+            1);
+  EXPECT_EQ(
+      histogram_tester().GetBucketCount(
+          kRetroactiveSuccessFunnelMetric,
+          FastPairRetroactiveSuccessFunnelEvent::kAccountKeyWrittenToDevice),
+      1);
+  EXPECT_EQ(histogram_tester().GetBucketCount(
+                kRetroactiveSuccessFunnelMetric,
+                FastPairRetroactiveSuccessFunnelEvent::kSaveRequested),
+            1);
+
+  EXPECT_EQ(histogram_tester().GetBucketCount(
+                kInitializePairingProcessRetroactive,
+                FastPairInitializePairingProcessEvent::kInitializationStarted),
+            1);
+  EXPECT_EQ(histogram_tester().GetBucketCount(
+                kInitializePairingProcessRetroactive,
+                FastPairInitializePairingProcessEvent::kInitializationComplete),
+            1);
 }
 
 TEST_F(QuickPairMetricsLoggerTest, LogSuccessFunnel_Subseqent) {
@@ -1137,6 +1198,15 @@ TEST_F(QuickPairMetricsLoggerTest, LogSuccessFunnel_Subseqent) {
   EXPECT_EQ(histogram_tester().GetBucketCount(
                 kSubsequentSuccessFunnelMetric,
                 FastPairSubsequentSuccessFunnelEvent::kProcessComplete),
+            1);
+
+  EXPECT_EQ(histogram_tester().GetBucketCount(
+                kInitializePairingProcessSubsequent,
+                FastPairInitializePairingProcessEvent::kInitializationStarted),
+            1);
+  EXPECT_EQ(histogram_tester().GetBucketCount(
+                kInitializePairingProcessSubsequent,
+                FastPairInitializePairingProcessEvent::kInitializationComplete),
             1);
 }
 

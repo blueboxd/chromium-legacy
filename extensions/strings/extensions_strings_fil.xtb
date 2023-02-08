@@ -28,7 +28,7 @@
 <translation id="4115165561519362854">Iniaatas ng administrator ng computer na ito sa <ph name="EXTENSION_NAME" /> na magkaroon ng minimum na bersyon na <ph name="EXTENSION_VERSION" />. Hindi ito mae-enable hanggang sa ma-update ito sa bersyong iyon (o mas bago).</translation>
 <translation id="4233778200880751280">Hindi ma-load ang page na tungkol dito na '<ph name="ABOUT_PAGE" />'.</translation>
 <translation id="471800408830181311">Nabigong ilabas ang pribadong key.</translation>
-<translation id="4811956658694082538">Hindi na-install ang package dahil nag-crash ang isang proseso ng utility. Subukang i-restart ang Chrome at subukang muli.</translation>
+<translation id="4811956658694082538">Hindi na-install ang package dahil nag-crash ang isang proseso ng utility. Subukang i-restart ang Chrome at subukan ulit.</translation>
 <translation id="4988792151665380515">Nabigong i-export ang pampublikong key.</translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5098647635849512368">Hindi mahanap ang ganap na daanan sa direktoryo sa pack.</translation>
@@ -61,6 +61,7 @@
 <translation id="8636666366616799973">Di-wasto ang package. Mga Detalye: '<ph name="ERROR_MESSAGE" />'.</translation>
 <translation id="8761756413268424715">Humihiling ang "<ph name="APP_NAME" />" ng access sa isa sa iyong mga device:</translation>
 <translation id="8885905466771744233">Umiiral na ang pribadong key para sa tinukoy na extension. Gamiting muli ang key na iyon o tanggalin muna ito.</translation>
+<translation id="9039223174332979184">Nire-require ng administrator ng machine na ito ang <ph name="EXTENSION_NAME" /> na magkaroon ng minimum na bersyon 3 ng manifest.</translation>
 <translation id="907841381057066561">Nabigo sa paglikha ng pansamantalang zip file sa oras ng packaging.</translation>
 <translation id="941543339607623937">Di-wastong pribadong key.</translation>
 </translationbundle>

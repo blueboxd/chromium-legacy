@@ -72,6 +72,7 @@
 #include "components/account_manager_core/account_manager_facade.h"
 #include "components/commerce/core/commerce_feature_list.h"
 #include "components/commerce/core/shopping_service.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/favicon_base/favicon_url_parser.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/performance_manager/public/features.h"
@@ -204,7 +205,8 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(
       std::make_unique<ClearBrowsingDataHandler>(web_ui, profile));
   AddSettingsPageUIHandler(std::make_unique<SafetyCheckHandler>());
-  AddSettingsPageUIHandler(std::make_unique<SiteSettingsPermissionsHandler>());
+  AddSettingsPageUIHandler(
+      std::make_unique<SiteSettingsPermissionsHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<DownloadsHandler>(profile));
   AddSettingsPageUIHandler(std::make_unique<ExtensionControlHandler>());
   AddSettingsPageUIHandler(std::make_unique<FontHandler>(profile));
@@ -341,6 +343,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
                           show_privacy_guide && base::FeatureList::IsEnabled(
                                                     features::kPrivacyGuide2));
 
+  html_source->AddBoolean("esbSettingsImprovementsEnabled",
+                          base::FeatureList::IsEnabled(
+                              safe_browsing::kEsbIphBubbleAndCollapseSettings));
+
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   html_source->AddBoolean(
       "biometricAuthenticationForFilling",
@@ -400,6 +406,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   plural_string_handler->AddLocalizedString(
       "safetyCheckUnusedSitePermissionsSecondaryLabel",
       IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_SECONDARY_LABEL);
+  plural_string_handler->AddLocalizedString(
+      "safetyCheckUnusedSitePermissionsToastBulkLabel",
+      IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_TOAST_BULK_LABEL);
   web_ui->AddMessageHandler(std::move(plural_string_handler));
 
   // Add the metrics handler to write uma stats.
@@ -438,9 +447,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("safetyCheckNotificationPermissionsEnabled",
                           base::FeatureList::IsEnabled(
                               features::kSafetyCheckNotificationPermissions));
-  html_source->AddBoolean("safetyCheckUnusedSitePermissionsEnabled",
-                          base::FeatureList::IsEnabled(
-                              features::kSafetyCheckUnusedSitePermissions));
+  html_source->AddBoolean(
+      "safetyCheckUnusedSitePermissionsEnabled",
+      base::FeatureList::IsEnabled(
+          content_settings::features::kSafetyCheckUnusedSitePermissions));
 
   // Performance
   AddSettingsPageUIHandler(std::make_unique<PerformanceHandler>());

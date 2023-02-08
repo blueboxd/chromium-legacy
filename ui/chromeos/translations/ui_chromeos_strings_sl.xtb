@@ -128,6 +128,7 @@
 <translation id="2084108471225856927">Nastavitve naprave</translation>
 <translation id="2084809735218147718">Oseba, ki se podpisuje v zahvalo</translation>
 <translation id="2088690981887365033">Omrežje VPN</translation>
+<translation id="2114191879048183086"><ph name="NUMBER_OF_ITEMS" /> elementov bo izbrisanih in ne boste jih mogli obnoviti.</translation>
 <translation id="2122305276694332719">Samodejna povezava s skritim omrežjem omogoča drugim, da vidijo vašo napravo in nekatere nastavitve omrežja, zato tega ne priporočamo.</translation>
 <translation id="2125607626296734455">kmerščina</translation>
 <translation id="2139545522194199494">Omrežje <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, moč signala je <ph name="SIGNAL_STRENGTH" /> %, upravlja ga vaš skrbnik, vzpostavitev povezave</translation>
@@ -178,7 +179,7 @@
 <translation id="2470939964922472929">Prevečkrat ste vnesli napačno kodo PIN. Če želite nastaviti novo kodo PIN, vnesite 8-mestno osebno kodo za odblokiranje (PUK), ki jo dobite od operaterja.</translation>
 <translation id="2500392669976258912">gudžaratščina (fonetična)</translation>
 <translation id="2515586267016047495">Alt</translation>
-<translation id="2517472476991765520">Išči</translation>
+<translation id="2517472476991765520">Optično preberi</translation>
 <translation id="252641322760726369">Pridržite datoteko in se dotaknite ikone <ph name="ICON" /> ter izberite ukaz »<ph name="PIN_COMMAND" />«, če želite hitro dostopati do datotek na polici.</translation>
 <translation id="2534460670861217804">Varni proxy HTTP</translation>
 <translation id="2541377937973966830">Vsebina te mape je samo za branje. Nekatere dejavnosti niso podprte.</translation>
@@ -395,6 +396,7 @@
 <translation id="4398096759193130964">Obnovite elemente ali jih povlecite v novo mapo zunaj smetnjaka.</translation>
 <translation id="4401287888955153199">Razširi vse</translation>
 <translation id="4410695710508688828">Dejanje ekstrahiranja ni uspelo. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4414834425328380570">Datoteka »<ph name="FILE_NAME" />« bo izbrisana in ne bo je mogoče obnoviti.</translation>
 <translation id="4418686080762064601">Ustvarite bližnjico za svoje datoteke</translation>
 <translation id="4425149324548788773">Moj disk</translation>
 <translation id="4439427728133035643">Omrežje <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, moč signala je <ph name="SIGNAL_STRENGTH" /> %, vzpostavitev povezave</translation>
@@ -412,7 +414,6 @@
 <translation id="4552759165874948005">Omrežje <ph name="NETWORK_TYPE" />, moč signala je <ph name="SIGNAL_STRENGTH" /> %</translation>
 <translation id="4559767610552730302">Boke</translation>
 <translation id="4572815280350369984">Datoteka <ph name="FILE_TYPE" /></translation>
-<translation id="457386861538956877">Več ...</translation>
 <translation id="4579744207439506346">Vnos <ph name="ENTRY_NAME" /> je bil dodan v izbor.</translation>
 <translation id="4583436353463424810">Ni nedavnih dokumentov</translation>
 <translation id="4594543368593301662">Prikaz rezultatov za »<ph name="SEARCH_TERM" />«.</translation>
@@ -561,6 +562,7 @@
 <translation id="5580591966435005537">navidezni računalnik</translation>
 <translation id="5583640892426849032">Vračalka</translation>
 <translation id="5583664733673201137">Širina ločila je zapolnjena</translation>
+<translation id="5596627076506792578">Več možnosti</translation>
 <translation id="5602622065581044566">bolgarščina s fonetično tipkovnico</translation>
 <translation id="5605830556594064952">Združene države – Dvorak</translation>
 <translation id="5618330573454123917">Ta datoteka je zasnovana za računalnike s programsko opremo Macintosh, in ni združljiva z vašo napravo, ki uporablja sistem Chrome OS. <ph name="BEGIN_LINK_HELP" />Preberite več<ph name="END_LINK_HELP" /> o odpiranju datotek v sistemu Chrome OS.</translation>
@@ -927,6 +929,7 @@
 <translation id="8560515948038859357">kantonščina</translation>
 <translation id="8561206103590473338">Slon</translation>
 <translation id="8566466896628108558">Omrežje <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, moč signala <ph name="SIGNAL_STRENGTH" /> %, blokiral skrbnik, podrobnosti</translation>
+<translation id="8568374623837201676">Želite trajno izbrisati to datoteko?</translation>
 <translation id="8569764466147087991">Izberite datoteko, ki jo želite odpreti</translation>
 <translation id="8577897833047451336">hrvaščina</translation>
 <translation id="8578308463707544055">indonezijščina</translation>

@@ -243,6 +243,7 @@
 <translation id="5975083100439434680">জুম আউট কৰক</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> - <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">আপোনাৰ ডিভাইচটোলৈ এই ছাইটটোৰ থকা এক্সেছ নিয়ন্ত্ৰণ কৰক</translation>
+<translation id="6018815681665454784">মচিব আৰু ৰিছেট কৰিবনে?</translation>
 <translation id="6040143037577758943">বন্ধ কৰক</translation>
 <translation id="6042308850641462728">অধিক</translation>
 <translation id="6064125863973209585">সম্পূৰ্ণ হোৱা ডাউনল’ডসমূহ</translation>
@@ -322,6 +323,7 @@
 <translation id="7658239707568436148">বাতিল কৰক</translation>
 <translation id="7667547420449112975">অষ্ট্ৰেলিয়াৰ বিস্ময়কৰ যাদুকৰ</translation>
 <translation id="7690549345586282764">জুম দেখুৱাওক</translation>
+<translation id="7695658402549134106"><ph name="SITE_NAME" />ৰ বাবে ছাইটৰ অগ্ৰাধিকাৰ</translation>
 <translation id="7719367874908701697">পৃষ্ঠাৰ জুম</translation>
 <translation id="7781829728241885113">কালি</translation>
 <translation id="7791543448312431591">যোগ কৰক</translation>
@@ -348,6 +350,7 @@
 <translation id="813082847718468539">ছাইটৰ তথ্য চাওক</translation>
 <translation id="8131740175452115882">নিশ্চিত কৰক</translation>
 <translation id="8154912474061769055">বহুতো ছাইটত সুবিধাসমূহে কাম নকৰিবও পাৰে</translation>
+<translation id="8168435359814927499">সমল</translation>
 <translation id="8197286292360124385"><ph name="PERMISSION_1" />ৰ অনুমতি দিয়া আছে</translation>
 <translation id="8200772114523450471">পুনৰ আৰম্ভ কৰক</translation>
 <translation id="8206354486702514201">আপোনাৰ প্ৰশাসকে এই ছেটিংটো বলৱৎ কৰিছে।</translation>
@@ -408,5 +411,5 @@
 <translation id="9138217887606523162">বৰ্তমানৰ জুম <ph name="ZOOM_LEVEL" /> %%</translation>
 <translation id="9162462602695099906">এই পৃষ্ঠাখন বিপজ্জনক</translation>
 <translation id="930525582205581608">এই ছাইটটো পাহৰি যাব নেকি?</translation>
-<translation id="967624055006145463">ডেটা সঞ্চয় কৰা হ’ল</translation>
+<translation id="967624055006145463">ডেটা ষ্ট’ৰ কৰা হ’ল</translation>
 </translationbundle>

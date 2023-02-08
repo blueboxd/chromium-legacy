@@ -15,25 +15,6 @@ struct NewScreencastPrecondition;
 
 class ProjectorClient;
 
-// Enum class used to notify the ProjectorController on the availability of
-// speech recognition.
-enum class ASH_PUBLIC_EXPORT SpeechRecognitionAvailability {
-  // Device does not support SODA (Speech on Device API)
-  kOnDeviceSpeechRecognitionNotSupported,
-  // User's language is not supported by SODA.
-  kUserLanguageNotSupported,
-  // SODA binary is not yet installed.
-  kSodaNotInstalled,
-  // SODA binary and language packs are downloading.
-  kSodaInstalling,
-  // SODA installation failed.
-  kSodaInstallationErrorUnspecified,
-  // SODA installation error needs reboot
-  kSodaInstallationErrorNeedsReboot,
-  // SODA is available to be used.
-  kAvailable
-};
-
 // Interface to control projector in ash.
 class ASH_PUBLIC_EXPORT ProjectorController {
  public:
@@ -57,9 +38,8 @@ class ASH_PUBLIC_EXPORT ProjectorController {
   // ProjectorController.
   virtual void SetClient(ProjectorClient* client) = 0;
 
-  // Called when speech recognition using SODA is available.
-  virtual void OnSpeechRecognitionAvailabilityChanged(
-      SpeechRecognitionAvailability availability) = 0;
+  // Called when speech recognition availability changes.
+  virtual void OnSpeechRecognitionAvailabilityChanged() = 0;
 
   // Called when transcription result from mic input is ready.
   virtual void OnTranscription(

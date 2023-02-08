@@ -45,12 +45,7 @@ found in the LICENSE file.
                shortcut="Enter|Ctrl">
       <command id="move-to-trash" shortcut="Backspace|Alt Delete" label="$i18n{MOVE_TO_TRASH_BUTTON_LABEL}">
       <command id="restore-from-trash" shortcut="Backspace|Alt Delete" label="$i18n{RESTORE_FROM_TRASH_BUTTON_LABEL}">
-      <!-- TODO(crbug.com/953310): Remove 'Backspace|Alt' and 'Delete' from
-           'delete' once trash is permanently enabled. For now, these shortcuts
-           are left for backward-compatibility for when trash is not enabled,
-           but 'restore-from-trash' intentionally shadows these shortcuts when
-           trash is enabled -->
-      <command id="delete" shortcut="Backspace|Alt Delete Backspace|Alt|Shift Delete|Shift">
+      <command id="delete" shortcut="Backspace|Alt|Shift Delete|Shift Backspace|Alt Delete ">
       <command id="empty-trash" shortcut="Backspace|Alt|Ctrl|Shift Delete|Ctrl|Shift" shortcut="" label="$i18n{EMPTY_TRASH_BUTTON_LABEL}">
       <command id="refresh" label="$i18n{REFRESH_BUTTON_LABEL}"
                shortcut="b|Ctrl" hidden>
@@ -322,7 +317,7 @@ found in the LICENSE file.
     </menus>
 
     <div class="dialog-container">
-      <div class="dialog-navigation-list">
+      <div class="dialog-navigation-list" slot="splitter-before">
         <div class="dialog-navigation-list-contents" role="navigation">
           <tree id="directory-tree" role="tree" tabindex="0" files-ng></tree>
         </div>
@@ -332,7 +327,7 @@ found in the LICENSE file.
           <div class="icon"></div>
         </cr-button>
       </div>
-      <div class="dialog-main">
+      <div class="dialog-main" slot="splitter-after">
         <div class="dialog-header files-ng" role="contentinfo">
           <div id="location-breadcrumbs" class="breadcrumbs"></div>
           <div id="read-only-indicator" aria-label="$i18n{READONLY_INDICATOR_TOOLTIP}" hidden
@@ -465,6 +460,7 @@ found in the LICENSE file.
             </div>
           </div>
         </div>
+        <div id="path-display-container"></div>
         <div class="files-feedback-panels" visibleif="full-page">
           <xf-display-panel id="progress-panel" role="complementary"
                             aria-label="$i18n{FILES_FEEDBACK_WINDOW}">

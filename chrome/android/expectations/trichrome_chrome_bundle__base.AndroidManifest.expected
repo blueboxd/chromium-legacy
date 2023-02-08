@@ -325,7 +325,7 @@
         android:excludeFromRecents="true"
         android:label="@string/fre_activity_label"
         android:launchMode="singleInstance"
-        android:theme="@style/Theme.BrowserUI.AlertDialog.NoActionBar"
+        android:theme="@style/Theme.BrowserUI.AlertDialog.NoActionBar.DayNight"
         android:windowSoftInputMode="stateHidden|adjustPan">
     </activity>  # DIFF-ANCHOR: 67932092
     <activity  # DIFF-ANCHOR: bb612a34
@@ -934,7 +934,7 @@
     <receiver  # DIFF-ANCHOR: 226134db
         android:name="org.chromium.chrome.browser.quickactionsearchwidget.QuickActionSearchWidgetProvider$QuickActionSearchWidgetProviderDino"
         android:exported="true"
-        android:label="@string/dino_widget_title">
+        android:label="@string/dino_widget_text">
       <intent-filter>  # DIFF-ANCHOR: 4ed161a4
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
       </intent-filter>  # DIFF-ANCHOR: 4ed161a4
@@ -1117,7 +1117,6 @@
         android:name="org.chromium.chrome.browser.notifications.NotificationService"
         android:exported="false">
     </service>  # DIFF-ANCHOR: 7fb8c03f
-    <service android:name="org.chromium.chrome.browser.omaha.OmahaClient" android:exported="false"/>
     <service  # DIFF-ANCHOR: 53256720
         android:name="org.chromium.chrome.browser.photo_picker.DecoderService"
         android:description="@string/decoder_description"

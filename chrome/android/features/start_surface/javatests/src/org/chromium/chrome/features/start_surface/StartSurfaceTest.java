@@ -31,14 +31,11 @@ import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.S
 import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.START_SURFACE_TEST_SINGLE_ENABLED_PARAMS;
 import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.getStartSurfaceLayoutType;
 import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.sClassParamsForStartSurfaceTest;
-import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.scrollToolbar;
-import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.scrollToolbarAndVerify;
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.ui.test.util.ViewUtils.waitForStableView;
 import static org.chromium.ui.test.util.ViewUtils.waitForView;
 
 import android.os.Build;
-import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
@@ -51,7 +48,6 @@ import androidx.test.filters.MediumTest;
 import com.google.android.material.appbar.AppBarLayout;
 
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -204,11 +200,20 @@ public class StartSurfaceTest {
         waitForView(allOf(withParent(withId(TabUiTestHelper.getTabSwitcherParentId(cta))),
                 withId(R.id.tab_list_view)));
 
-        StartSurfaceTestUtils.pressBack(mActivityTestRule);
-        onViewWaiting(allOf(withId(R.id.primary_tasks_surface_view), isDisplayed()));
+        // When the start surface refactoring is enabled, tapping the back button on Tab switcher
+        // will show the last tab.
+        if (TabUiTestHelper.getIsStartSurfaceRefactorEnabledFromUIThread(
+                    mActivityTestRule.getActivity())) {
+            StartSurfaceTestUtils.pressBack(mActivityTestRule);
+            // Verifies that the last tab is opening.
+            LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
+        } else {
+            StartSurfaceTestUtils.pressBack(mActivityTestRule);
+            onViewWaiting(allOf(withId(R.id.primary_tasks_surface_view), isDisplayed()));
 
-        StartSurfaceTestUtils.clickFirstTabInCarousel();
-        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
+            StartSurfaceTestUtils.clickFirstTabInCarousel();
+            LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
+        }
     }
 
     @Test
@@ -243,9 +248,7 @@ public class StartSurfaceTest {
         StartSurfaceTestUtils.pressBack(mActivityTestRule);
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
 
-        if (isInstantReturn()
-                && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                        && Build.VERSION.SDK_INT < Build.VERSION_CODES.O)) {
+        if (isInstantReturn() && Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             // TODO(crbug.com/1139515): Fix incognito_toggle_tabs visibility AssertionFailedError
             // issue.
             // TODO(crbug.com/1092642): Fix androidx.test.espresso.PerformException issue when
@@ -296,14 +299,11 @@ public class StartSurfaceTest {
     @Test
     @LargeTest
     @Feature({"StartSurface"})
-    @DisableFeatures(ChromeFeatureList.START_SURFACE_REFACTOR)
     @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS
             + "open_ntp_instead_of_start/false/open_start_as_homepage/true"})
     // clang-format off
     public void testShow_SingleAsHomepage_SingleTab() {
         // clang-format on
-        Assume.assumeFalse("https://crbug.com/1205642, https://crbug.com/1214303",
-                !mUseInstantStart && mImmediateReturn && VERSION.SDK_INT == VERSION_CODES.M);
         if (!mImmediateReturn) {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
         }
@@ -334,11 +334,21 @@ public class StartSurfaceTest {
             // omnibox.
             return;
         }
-        StartSurfaceTestUtils.pressBack(mActivityTestRule);
-        onViewWaiting(withId(R.id.primary_tasks_surface_view));
 
-        onViewWaiting(withId(R.id.single_tab_view)).perform(click());
-        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
+        // When the start surface refactoring is enabled, tapping the back button on Tab switcher
+        // will show the last tab.
+        if (TabUiTestHelper.getIsStartSurfaceRefactorEnabledFromUIThread(
+                    mActivityTestRule.getActivity())) {
+            StartSurfaceTestUtils.pressBack(mActivityTestRule);
+            // Verifies that the last tab is opening.
+            LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
+        } else {
+            StartSurfaceTestUtils.pressBack(mActivityTestRule);
+            onViewWaiting(withId(R.id.primary_tasks_surface_view));
+
+            onViewWaiting(withId(R.id.single_tab_view)).perform(click());
+            LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
+        }
     }
 
     @Test
@@ -346,8 +356,6 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     // clang-format off
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
-    @DisableIf.
-        Build(sdk_is_less_than = Build.VERSION_CODES.N, message = "Flaky, see crbug.com/1246457")
     public void testShow_SingleAsHomepage_FromResumeShowStart() throws Exception {
         // clang-format on
         if (!mImmediateReturn) {
@@ -357,7 +365,8 @@ public class StartSurfaceTest {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         CriteriaHelper.pollUiThread(()
                                             -> cta.getLayoutManager() != null
-                        && cta.getLayoutManager().isLayoutVisible(LayoutType.TAB_SWITCHER));
+                        && cta.getLayoutManager().isLayoutVisible(
+                                StartSurfaceTestUtils.getStartSurfaceLayoutType()));
         StartSurfaceTestUtils.waitForTabModel(cta);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { cta.getTabModelSelector().getModel(false).closeAllTabs(); });
@@ -561,6 +570,11 @@ public class StartSurfaceTest {
 
         Assert.assertEquals(expectedRecordCount,
                 RecordHistogram.getHistogramTotalCountForTesting(
+                        ReturnToChromeUtil
+                                .LAST_ACTIVE_TAB_IS_NTP_WHEN_OVERVIEW_IS_SHOWN_AT_LAUNCH_UMA));
+
+        Assert.assertEquals(expectedRecordCount,
+                RecordHistogram.getHistogramTotalCountForTesting(
                         StartSurfaceConfiguration.getHistogramName(
                                 ExploreSurfaceCoordinator.FEED_CONTENT_FIRST_LOADED_TIME_MS_UMA,
                                 isInstantStart)));
@@ -584,6 +598,19 @@ public class StartSurfaceTest {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramValueCountForTesting(
                         StartSurfaceCoordinator.START_SHOWN_AT_STARTUP_UMA, showAtStartup));
+
+        if (mImmediateReturn) {
+            Assert.assertEquals(1,
+                    RecordHistogram.getHistogramValueCountForTesting(
+                            ReturnToChromeUtil.START_SHOW_STATE_UMA,
+                            StartSurfaceState.SHOWING_START));
+        } else {
+            Assert.assertEquals(1,
+                    RecordHistogram.getHistogramValueCountForTesting(
+                            ReturnToChromeUtil.START_SHOW_STATE_UMA,
+
+                            StartSurfaceState.SHOWING_HOMEPAGE));
+        }
     }
 
     @Test
@@ -643,9 +670,9 @@ public class StartSurfaceTest {
         assertFalse(bottomSheetTestSupport.hasSuppressionTokens());
 
         StartSurfaceTestUtils.pressHomePageButton(cta);
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
         assertFalse(bottomSheetTestSupport.hasSuppressionTokens());
 
-        StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
         StartSurfaceTestUtils.clickTabSwitcherButton(cta);
         StartSurfaceTestUtils.waitForTabSwitcherVisible(cta);
         assertTrue(bottomSheetTestSupport.hasSuppressionTokens());
@@ -656,8 +683,6 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
     public void testShow_SingleAsHomepage_ResetScrollPosition() {
-        assumeTrue("https://crbug.com/1385547 - Disable for NoInstant.", mUseInstantStart);
-        
         if (!mImmediateReturn) {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
         }
@@ -668,7 +693,7 @@ public class StartSurfaceTest {
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
 
         // Scroll the toolbar.
-        StartSurfaceTestUtils.scrollToolbarAndVerify(cta);
+        StartSurfaceTestUtils.scrollToolbar(cta);
         AppBarLayout taskSurfaceHeader = cta.findViewById(R.id.task_surface_header);
         assertNotEquals(taskSurfaceHeader.getBottom(), taskSurfaceHeader.getHeight());
 
@@ -688,6 +713,40 @@ public class StartSurfaceTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
+    @EnableFeatures(ChromeFeatureList.START_SURFACE_REFACTOR)
+    @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
+    public void testShow_SingleAsHomepage_DoNotResetScrollPositionFromBack() {
+        assumeTrue(mImmediateReturn);
+
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
+        TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
+
+        // Scroll the toolbar.
+        StartSurfaceTestUtils.scrollToolbar(cta);
+        AppBarLayout taskSurfaceHeader = cta.findViewById(R.id.task_surface_header);
+        assertNotEquals(taskSurfaceHeader.getBottom(), taskSurfaceHeader.getHeight());
+
+        // Verifies the case of scrolling Start surface ->  MV tile -> tapping back ->
+        // Start surface. The Start surface should not reset its scroll position.
+        StartSurfaceTestUtils.launchFirstMVTile(cta, 1);
+        Assert.assertEquals("The launched tab should have the launch type FROM_START_SURFACE",
+                TabLaunchType.FROM_START_SURFACE,
+                cta.getActivityTabProvider().get().getLaunchType());
+        StartSurfaceTestUtils.pressBack(mActivityTestRule);
+        // Back gesture on the tab should take us back to the start surface homepage.
+        StartSurfaceTestUtils.waitForStartSurfaceVisible(
+                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
+
+        // The Start surface should not reset its scroll position.
+        CriteriaHelper.pollInstrumentationThread(
+                () -> taskSurfaceHeader.getBottom() != taskSurfaceHeader.getHeight());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
     public void singleAsHomepage_PressHomeButtonWillKeepTab() {
         if (!mImmediateReturn) {
@@ -702,9 +761,7 @@ public class StartSurfaceTest {
         // Launches the first site in mv tiles.
         StartSurfaceTestUtils.launchFirstMVTile(cta, /* currentTabCount = */ 1);
 
-        if (isInstantReturn()
-                && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                        && Build.VERSION.SDK_INT < Build.VERSION_CODES.O)) {
+        if (isInstantReturn() && Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             // Fix the issue that failed to perform a single click on the tab switcher button.
             // See code below.
             return;
@@ -762,54 +819,6 @@ public class StartSurfaceTest {
     @MediumTest
     @Feature({"StartSurface"})
     // clang-format off
-    @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS
-            + "open_ntp_instead_of_start/false/open_start_as_homepage/true"
-            + "/show_last_active_tab_only/true"})
-    public void  testNotScrollableWhenContentIsShorterThanScreen() {
-        // clang-format on
-        if (!mImmediateReturn) {
-            StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
-        }
-
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForStartSurfaceVisible(
-                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
-        StartSurfaceTestUtils.waitForDeferredStartup(mActivityTestRule);
-        int screenHeight = cta.getResources().getDisplayMetrics().heightPixels;
-
-        // If the content is shorter than the screen, the view shouldn't be scrolled.
-        onViewWaiting(allOf(withId(R.id.task_surface_header), isDisplayed()));
-        AppBarLayout taskSurfaceHeader = cta.findViewById(R.id.task_surface_header);
-        int contentHeight = taskSurfaceHeader.getMeasuredHeight()
-                + cta.findViewById(R.id.tasks_surface_body).getMeasuredHeight();
-        if (contentHeight <= screenHeight) {
-            checkContentIsNotScrollable(cta, taskSurfaceHeader);
-            return;
-        }
-
-        //  If the content is larger than the screen, scroll the toolbar.
-        scrollToolbarAndVerify(cta);
-
-        // Turning off Feed should reset Start surface's scroll position.
-        StartSurfaceTestUtils.toggleFeedHeader(false);
-        CriteriaHelper.pollInstrumentationThread(
-                () -> taskSurfaceHeader.getBottom() == taskSurfaceHeader.getHeight());
-        // If the content is shorter than the screen now without Feed, the view shouldn't be
-        // scrolled.
-        contentHeight = taskSurfaceHeader.getMeasuredHeight()
-                + cta.findViewById(R.id.tasks_surface_body).getMeasuredHeight();
-        if (contentHeight <= screenHeight) checkContentIsNotScrollable(cta, taskSurfaceHeader);
-
-        // Turning on Feed makes the content larger than the screen, the view should be
-        // scrollable again.
-        StartSurfaceTestUtils.toggleFeedHeader(true);
-        scrollToolbarAndVerify(cta);
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"StartSurface"})
-    // clang-format off
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
     public void test_DoNotLoadLastSelectedTabOnStartup() {
         // clang-format on
@@ -838,15 +847,6 @@ public class StartSurfaceTest {
         TabUiTestHelper.verifyTabModelTabCount(cta, 2, 0);
         StartSurfaceTestUtils.waitForCurrentTabLoaded(mActivityTestRule);
         Assert.assertEquals(1, RenderProcessHostUtils.getCurrentRenderProcessCount());
-    }
-
-    private void checkContentIsNotScrollable(
-            ChromeTabbedActivity cta, AppBarLayout taskSurfaceHeader) {
-        scrollToolbar(cta);
-        CriteriaHelper.pollInstrumentationThread(
-                ()
-                        -> taskSurfaceHeader.getBottom() == taskSurfaceHeader.getHeight()
-                        && cta.findViewById(R.id.tab_switcher_toolbar).getTranslationY() == 0);
     }
 
     /**

@@ -130,6 +130,7 @@
 <translation id="2084108471225856927">Ρυθμίσεις συσκευής</translation>
 <translation id="2084809735218147718">Άτομο που λέει ευχαριστώ στη νοηματική γλώσσα</translation>
 <translation id="2088690981887365033">Δίκτυο VPN</translation>
+<translation id="2114191879048183086"><ph name="NUMBER_OF_ITEMS" /> στοιχεία θα διαγραφούν και δεν θα είστε σε θέση να τα επαναφέρετε.</translation>
 <translation id="2122305276694332719">Η αυτόματη σύνδεση σε ένα κρυφό δίκτυο επιτρέπει σε άλλα άτομα να βλέπουν τη συσκευή σας και ορισμένες ρυθμίσεις δικτύου σας και δεν συνιστάται.</translation>
 <translation id="2125607626296734455">Xμερ</translation>
 <translation id="2139545522194199494">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />%, Διαχειριζόμενο από τον διαχειριστή σας, Σύνδεση</translation>
@@ -403,6 +404,7 @@
 <translation id="4398096759193130964">Επαναφέρετε τα στοιχεία ή σύρετέ τα σε νέο φάκελο εκτός του κάδου.</translation>
 <translation id="4401287888955153199">Εξαγωγή όλων</translation>
 <translation id="4410695710508688828">Η λειτουργία εξαγωγής απέτυχε. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4414834425328380570">Το αρχείο <ph name="FILE_NAME" /> θα διαγραφεί και δεν θα μπορείτε να το επαναφέρετε.</translation>
 <translation id="4418686080762064601">Δημιουργήστε μια συντόμευση για τα αρχεία σας</translation>
 <translation id="4425149324548788773">Το Drive μου</translation>
 <translation id="4439427728133035643">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />%, Σύνδεση</translation>
@@ -420,7 +422,6 @@
 <translation id="4552759165874948005">Δίκτυο <ph name="NETWORK_TYPE" />, ισχύς σήματος <ph name="SIGNAL_STRENGTH" />%</translation>
 <translation id="4559767610552730302">Εφέ Bokeh</translation>
 <translation id="4572815280350369984">Αρχείο <ph name="FILE_TYPE" /></translation>
-<translation id="457386861538956877">Περισσότερα...</translation>
 <translation id="4579744207439506346">Το <ph name="ENTRY_NAME" /> προστέθηκε στην επιλογή.</translation>
 <translation id="4583436353463424810">Δεν υπάρχουν πρόσφατα έγγραφα</translation>
 <translation id="4594543368593301662">Εμφάνιση αποτελεσμάτων για <ph name="SEARCH_TERM" />.</translation>
@@ -574,6 +575,7 @@
 <translation id="5580591966435005537">εικονική μηχανή</translation>
 <translation id="5583640892426849032">Πλήκτρο Backspace</translation>
 <translation id="5583664733673201137">Το εύρος στίξης είναι Πλήρες</translation>
+<translation id="5596627076506792578">Περισσότερες επιλογές</translation>
 <translation id="5602622065581044566">Βουλγαρικά με φωνητικό πληκτρολόγιο</translation>
 <translation id="5605830556594064952">Dvorak ΗΠΑ</translation>
 <translation id="5618330573454123917">Αυτό το αρχείο έχει σχεδιαστεί για υπολογιστή που χρησιμοποιεί λογισμικό Macintosh. Δεν είναι συμβατό με τη συσκευή σας, η οποία εκτελεί Chrome OS. <ph name="BEGIN_LINK_HELP" />Μάθετε περισσότερα<ph name="END_LINK_HELP" /> σχετικά με το άνοιγμα αρχείων στο Chrome OS.</translation>
@@ -947,6 +949,7 @@
 <translation id="8560515948038859357">Καντονικά</translation>
 <translation id="8561206103590473338">Ελέφαντας</translation>
 <translation id="8566466896628108558">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, ισχύς σήματος <ph name="SIGNAL_STRENGTH" />%, Αποκλείστηκε από τον διαχειριστή σας, Λεπτομέρειες</translation>
+<translation id="8568374623837201676">Οριστική διαγραφή αυτού του αρχείου;</translation>
 <translation id="8569764466147087991">Επιλέξτε αρχείο για άνοιγμα</translation>
 <translation id="8577897833047451336">Κροατικά</translation>
 <translation id="8578308463707544055">Ινδονησιακά</translation>

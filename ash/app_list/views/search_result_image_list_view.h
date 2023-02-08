@@ -21,7 +21,7 @@ class Label;
 namespace ash {
 
 // SearchResultImageListView displays a horizontal strip of
-// SearchResultImageViews inside the AppListSearchView.
+// SearchResultImageViews inside the ProductivityLauncherSearchView.
 class ASH_EXPORT SearchResultImageListView : public SearchResultContainerView {
  public:
   METADATA_HEADER(SearchResultImageListView);
@@ -45,7 +45,6 @@ class ASH_EXPORT SearchResultImageListView : public SearchResultContainerView {
  private:
   // Overridden from views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void OnThemeChanged() override;
 
   // Overridden from SearchResultContainerView:
   void OnSelectedResultChanged() override;

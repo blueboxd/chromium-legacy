@@ -57,7 +57,7 @@ Samo neko ko ima pristupnu frazu može da čita šifrovane podatke. Pristupna fr
 <translation id="1321993286294231467">Došlo je do greške pri čuvanju slike.</translation>
 <translation id="1322735045095424339">Organizacija zahteva režim bez arhiviranja</translation>
 <translation id="1323735185997015385">Izbriši</translation>
-<translation id="132683371494960526">Dodirnite dvaput da biste promenili nadređeni direktorijum.</translation>
+<translation id="132683371494960526">Dodirnite dvaput da biste promenili nadređeni folder.</translation>
 <translation id="1335348992705722518">Upravljaj podešavanjima…</translation>
 <translation id="1340643665687018190">Zatvori meni</translation>
 <translation id="1358214951266274152">Posetite link koji ste kopirali</translation>
@@ -117,7 +117,7 @@ Samo neko ko ima pristupnu frazu može da čita šifrovane podatke. Pristupna fr
 <translation id="1753905327828125965">Najposećenije</translation>
 <translation id="1789803444939621101">Dobro došli nazad, <ph name="USER_NAME" /></translation>
 <translation id="1803264062614276815">Ime vlasnika kartice</translation>
-<translation id="1809939268435598390">Izbriši direktorijum</translation>
+<translation id="1809939268435598390">Izbriši folder</translation>
 <translation id="1813414402673211292">Brisanje podataka pregledanja</translation>
 <translation id="1815941218935345331">Šifra</translation>
 <translation id="1820259098641718022">Dodato je na listu za čitanje</translation>
@@ -125,6 +125,7 @@ Samo neko ko ima pristupnu frazu može da čita šifrovane podatke. Pristupna fr
 <translation id="1870148520156231997">Prikažite lozinku</translation>
 <translation id="1872096359983322073">Blic</translation>
 <translation id="1891796056033961979">Sačuvani obeleživači, lozinke, podešavanja i drugo su dostupni na ovom ekranu.</translation>
+<translation id="1894023287452300670">Pratite cenu ovde</translation>
 <translation id="1911619930368729126">Otpremi u Google disk</translation>
 <translation id="1923342640370224680">Prethodni sat</translation>
 <translation id="1930989359703290198">Organizacija vam dozvoljava da se prijavite samo pomoću određenih naloga. Nalozi koji nisu dozvoljeni su skriveni. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
@@ -147,7 +148,9 @@ Samo neko ko ima pristupnu frazu može da čita šifrovane podatke. Pristupna fr
 <translation id="2074131957428911366">Uvek možete da odaberete šta ćete sinhronizovati u <ph name="BEGIN_LINK" />podešavanjima<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Opozovi</translation>
 <translation id="2080769225927880590">Prijavite se pomoću važećeg naloga</translation>
+<translation id="2090878303988764231">Prijavite se da biste upravljali sadržajem koji vidite</translation>
 <translation id="2103075008456228677">Otvori history.google.com</translation>
+<translation id="21133533946938348">Zakači karticu</translation>
 <translation id="2116625576999540962">Broj premeštenih stavki je <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
 <translation id="2122754583996902531">Pregledačem se upravlja. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="212623074644302906">Pitaj da dodaš na listu za čitanje</translation>
@@ -189,6 +192,7 @@ Sajtovi ne mogu da koriste kolačiće da bi videli vaše aktivnosti pregledanja
 <translation id="2421044535038393232">Nastavi izmene</translation>
 <translation id="2434405374328098816">Već ste sačuvali lozinku za „<ph name="USERNAME" />“ na <ph name="WEBSITE" /></translation>
 <translation id="2435457462613246316">Prikaži lozinku</translation>
+<translation id="2451654228769116489">Zakači karticu</translation>
 <translation id="2461070143328828326">Podešavanja lozinke</translation>
 <translation id="2469960372084740698">Želite da isključite Bezbednosno pregledanje?</translation>
 <translation id="2473876017985765807">Već ste sačuvali lozinku za <ph name="WEBSITE" /></translation>
@@ -252,7 +256,7 @@ Sajtovi ne mogu da koriste kolačiće da bi videli vaše aktivnosti pregledanja
 <translation id="2883151425485251736">Pregledajte i menjajte teme koje ste sakrili sa naloga</translation>
 <translation id="288655811176831528">Zatvori karticu</translation>
 <translation id="2890171748217283516">Sajtovi koje pratite se čuvaju na Google nalogu. Njima možete da upravljate u podešavanjima Discover-a.</translation>
-<translation id="2898963176829412617">Novi direktorijum...</translation>
+<translation id="2898963176829412617">Novi folder...</translation>
 <translation id="2902684821701498619">Dodaj na Listu za čitanje</translation>
 <translation id="2916171785467530738">Automatski dovršavaj pretrage i URL-ove</translation>
 <translation id="291754862089661335">Postavite QR ili bar-kod u ovaj okvir</translation>
@@ -286,6 +290,7 @@ Pogledajte uputstva pretraživača za brisanje istorije pretrage ako je to prime
 <translation id="3130863904455712965">Istorija i drugo</translation>
 <translation id="3131206671572504478">Sve je blokirano</translation>
 <translation id="313283613037595347">Napravi novu karticu bez arhiviranja.</translation>
+<translation id="3146109040683991651">Postavi Chrome kao podrazumevani pregledač</translation>
 <translation id="3153862085237805241">Sačuvaj karticu</translation>
 <translation id="3157387275655328056">Dodaj na listu za čitanje</translation>
 <translation id="3157684681743766797">Označi sve…</translation>
@@ -635,7 +640,7 @@ Handoff treba da se omogući u odeljku General (Opšte) u meniju Settings (Pode
 <translation id="5834415013958049700">Slika Objektiva koju ste kopirali</translation>
 <translation id="5846482154967366008">Pretraživač</translation>
 <translation id="5854790677617711513">Starije od 30 dana</translation>
-<translation id="5857090052475505287">Novi direktorijum</translation>
+<translation id="5857090052475505287">Novi folder</translation>
 <translation id="5857675236236529683">Kada budete spremni, ovde pronađite listu za čitanje</translation>
 <translation id="5857770089550859117">Za početak sinhronizacije potrebna je pristupna fraza.</translation>
 <translation id="5859715514067755465">Napred</translation>
@@ -673,6 +678,7 @@ Handoff treba da se omogući u odeljku General (Opšte) u meniju Settings (Pode
 <translation id="6059830886158432458">Ovde kontrolišite priče i aktivnosti</translation>
 <translation id="6064824697233747382">Organizacija traži da isključite sinhronizaciju.</translation>
 <translation id="6066301408025741299">Dodirnite da biste otkazali.</translation>
+<translation id="6071409777669089905">Otkači karticu</translation>
 <translation id="60829778314739003">Prihvatam, nastavi</translation>
 <translation id="6084848228346514841">Izaberite kartice</translation>
 <translation id="6103540626693881831">Šifrovanje na uređaju</translation>
@@ -973,6 +979,7 @@ Sajtovi mogu da koriste kolačiće da bi videli vaše aktivnosti pregledanja na
 <translation id="8197543752516192074">Prevedi stranicu</translation>
 <translation id="8205564605687841303">Otkaži</translation>
 <translation id="8206354486702514201">Ovo podešavanje primenjuje administrator.</translation>
+<translation id="821809831108207540">Da biste personalizovali Discover fid i Chrome, prijavite se i uključite sinhronizaciju.</translation>
 <translation id="8225985093977202398">Keširane slike i fajlovi</translation>
 <translation id="8237382152611443140">Otvorite podešavanja za automatsko popunjavanje lozinke</translation>
 <translation id="8261506727792406068">Izbriši</translation>
@@ -1100,6 +1107,7 @@ Sajtovi mogu da koriste kolačiće da bi videli vaše aktivnosti pregledanja na
 <translation id="9219154867334666734">Pretražite kartice…</translation>
 <translation id="9223358826628549784">Izveštaj o otkazivanju je poslat.</translation>
 <translation id="941747855997058526">Izaberite lozinku…</translation>
+<translation id="948048872540558976">Napravite novu karticu</translation>
 <translation id="952704832371081537">Otkaži</translation>
 <translation id="953008885340860025">Odjavljeni ste iz Chrome-a</translation>
 <translation id="959066944189734975">Pratite <ph name="CHANNEL_NAME" /></translation>

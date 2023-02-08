@@ -527,8 +527,21 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::BindVideoFrameOnMediaThread(
   usage |= gpu::SHARED_IMAGE_USAGE_MACOS_VIDEO_TOOLBOX;
 #endif
 
-  if (base::FeatureList::IsEnabled(
-          media::kMultiPlaneVideoCaptureSharedImages)) {
+  unsigned texture_target =
+      buffer_context_->gpu_factories()->ImageTextureTarget(
+          gpu_memory_buffer_->GetFormat());
+
+  // TODO(sunnyps): Get rid of NV12_DUAL_GMB format and instead rely on enabled
+  // by default multi plane shared images on Windows.
+
+  const bool use_multiplane =
+#if BUILDFLAG(IS_WIN)
+      output_format ==
+          media::GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB ||
+#endif
+      base::FeatureList::IsEnabled(media::kMultiPlaneVideoCaptureSharedImages);
+
+  if (use_multiplane) {
     planes.push_back(gfx::BufferPlane::Y);
     planes.push_back(gfx::BufferPlane::UV);
   } else {
@@ -549,10 +562,6 @@ bool VideoCaptureImpl::VideoFrameBufferPreparer::BindVideoFrameOnMediaThread(
           buffer_context_->gmb_resources()->mailboxes[plane]);
     }
   }
-
-  const unsigned texture_target =
-      buffer_context_->gpu_factories()->ImageTextureTarget(
-          gpu_memory_buffer_->GetFormat());
 
   const gpu::SyncToken sync_token = sii->GenVerifiedSyncToken();
 
@@ -811,8 +820,7 @@ void VideoCaptureImpl::OnStateChanged(
     for (const auto& client : clients_)
       client.second.state_update_cb.Run(state_);
     clients_.clear();
-    RecordStartOutcomeUMA(start_timedout_ ? VideoCaptureStartOutcome::kTimedout
-                                          : VideoCaptureStartOutcome::kFailed);
+    RecordStartOutcomeUMA(result->get_error_code());
     return;
   }
 
@@ -828,7 +836,7 @@ void VideoCaptureImpl::OnStateChanged(
       // a frame refresh to start the video call with.
       // Capture device will make a decision if it should refresh a frame.
       RequestRefreshFrame();
-      RecordStartOutcomeUMA(VideoCaptureStartOutcome::kStarted);
+      RecordStartOutcomeUMA(media::VideoCaptureError::kNone);
       break;
     case media::mojom::VideoCaptureState::STOPPED:
       OnLog("VideoCaptureImpl changing state to VIDEO_CAPTURE_STATE_STOPPED");
@@ -1155,7 +1163,6 @@ void VideoCaptureImpl::StartCaptureInternal() {
                            base::BindOnce(&VideoCaptureImpl::OnStartTimedout,
                                           base::Unretained(this)));
   }
-  start_timedout_ = false;
   start_outcome_reported_ = false;
   base::UmaHistogramBoolean("Media.VideoCapture.Start", true);
 
@@ -1166,8 +1173,6 @@ void VideoCaptureImpl::StartCaptureInternal() {
 void VideoCaptureImpl::OnStartTimedout() {
   DCHECK_CALLED_ON_VALID_THREAD(io_thread_checker_);
   OnLog("VideoCaptureImpl timed out during starting");
-
-  start_timedout_ = true;
 
   OnStateChanged(media::mojom::blink::VideoCaptureResult::NewErrorCode(
       media::VideoCaptureError::kVideoCaptureImplTimedOutOnStart));
@@ -1209,11 +1214,26 @@ media::mojom::blink::VideoCaptureHost* VideoCaptureImpl::GetVideoCaptureHost() {
   return video_capture_host_.get();
 }
 
-void VideoCaptureImpl::RecordStartOutcomeUMA(VideoCaptureStartOutcome outcome) {
+void VideoCaptureImpl::RecordStartOutcomeUMA(
+    media::VideoCaptureError error_code) {
   // Record the success or failure of starting only the first time we transition
   // into such a state, not eg when resuming after pausing.
   if (!start_outcome_reported_) {
+    VideoCaptureStartOutcome outcome;
+    switch (error_code) {
+      case media::VideoCaptureError::kNone:
+        outcome = VideoCaptureStartOutcome::kStarted;
+        break;
+      case media::VideoCaptureError::kVideoCaptureImplTimedOutOnStart:
+        outcome = VideoCaptureStartOutcome::kTimedout;
+        break;
+      default:
+        outcome = VideoCaptureStartOutcome::kFailed;
+        break;
+    }
     base::UmaHistogramEnumeration("Media.VideoCapture.StartOutcome", outcome);
+    base::UmaHistogramEnumeration("Media.VideoCapture.StartErrorCode",
+                                  error_code);
     start_outcome_reported_ = true;
   }
 }

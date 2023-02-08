@@ -128,6 +128,7 @@
 <translation id="2084108471225856927">Apparaatinstellingen</translation>
 <translation id="2084809735218147718">Persoon die iemand bedankt</translation>
 <translation id="2088690981887365033">VPN-netwerk</translation>
+<translation id="2114191879048183086"><ph name="NUMBER_OF_ITEMS" /> items worden verwijderd en je kunt ze niet herstellen.</translation>
 <translation id="2122305276694332719">Als er automatisch verbinding wordt gemaakt met een verborgen netwerk, kunnen anderen je apparaat en bepaalde netwerkinstellingen zien. Dit wordt niet aanbevolen.</translation>
 <translation id="2125607626296734455">Khmer</translation>
 <translation id="2139545522194199494">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, signaalsterkte <ph name="SIGNAL_STRENGTH" />%, beheerd door je beheerder, verbinden</translation>
@@ -395,6 +396,7 @@
 <translation id="4398096759193130964">Herstel de items of sleep ze naar een nieuwe map buiten de prullenbak</translation>
 <translation id="4401287888955153199">Alles uitpakken</translation>
 <translation id="4410695710508688828">Bewerking voor uitpakken is mislukt. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4414834425328380570"><ph name="FILE_NAME" /> wordt verwijderd en je kunt het niet herstellen.</translation>
 <translation id="4418686080762064601">Een snelkoppeling maken voor je bestanden</translation>
 <translation id="4425149324548788773">Mijn Drive</translation>
 <translation id="4439427728133035643">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, signaalsterkte <ph name="SIGNAL_STRENGTH" />%, verbinden</translation>
@@ -412,7 +414,6 @@
 <translation id="4552759165874948005">Netwerk: <ph name="NETWORK_TYPE" />, signaalsterkte: <ph name="SIGNAL_STRENGTH" />%</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-bestand</translation>
-<translation id="457386861538956877">Meer...</translation>
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> aan selectie toegevoegd.</translation>
 <translation id="4583436353463424810">Geen recente documenten</translation>
 <translation id="4594543368593301662">Resultaten voor <ph name="SEARCH_TERM" />.</translation>
@@ -562,6 +563,7 @@
 <translation id="5580591966435005537">virtuele machine</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5583664733673201137">Interpunctiebreedte: volledig (vol)</translation>
+<translation id="5596627076506792578">Meer opties</translation>
 <translation id="5602622065581044566">Bulgaars met fonetisch toetsenbord</translation>
 <translation id="5605830556594064952">Amerikaans Dvorak</translation>
 <translation id="5618330573454123917">Dit bestand is bedoeld voor een computer met Macintosh-software. Het is niet geschikt voor jouw apparaat, waarop Chrome OS wordt gebruikt. Bekijk <ph name="BEGIN_LINK_HELP" />meer informatie<ph name="END_LINK_HELP" /> over hoe je bestanden opent in Chrome OS.</translation>
@@ -928,6 +930,7 @@
 <translation id="8560515948038859357">Kantonees</translation>
 <translation id="8561206103590473338">Olifant</translation>
 <translation id="8566466896628108558">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, signaalsterkte <ph name="SIGNAL_STRENGTH" />%, geblokkeerd door je beheerder, details</translation>
+<translation id="8568374623837201676">Dit bestand definitief verwijderen?</translation>
 <translation id="8569764466147087991">Selecteer een bestand om te openen</translation>
 <translation id="8577897833047451336">Kroatisch</translation>
 <translation id="8578308463707544055">Indonesisch</translation>

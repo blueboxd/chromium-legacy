@@ -128,6 +128,7 @@
 <translation id="2084108471225856927">Postavke uređaja</translation>
 <translation id="2084809735218147718">Zahvaljuje vam pjesmom</translation>
 <translation id="2088690981887365033">VPN mreža</translation>
+<translation id="2114191879048183086">Izbrisat će se više stavki (<ph name="NUMBER_OF_ITEMS" />) i nećete ih moći vratiti.</translation>
 <translation id="2122305276694332719">Automatsko povezivanje sa skrivenom mrežom omogućuje drugima da vide vaš uređaj i neke mrežne postavke i stoga se ne preporučuje.</translation>
 <translation id="2125607626296734455">kmerski</translation>
 <translation id="2139545522194199494">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, upravlja administrator, povežite</translation>
@@ -395,6 +396,7 @@
 <translation id="4398096759193130964">Vratite stavke ili ih povucite u novu mapu izvan otpada</translation>
 <translation id="4401287888955153199">Izdvoji sve</translation>
 <translation id="4410695710508688828">Operacija izdvajanja nije uspjela. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4414834425328380570">Datoteka <ph name="FILE_NAME" /> izbrisat će se i nećete je moći vratiti.</translation>
 <translation id="4418686080762064601">Izradite prečac za svoje datoteke</translation>
 <translation id="4425149324548788773">Moj disk</translation>
 <translation id="4439427728133035643">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, povežite</translation>
@@ -412,7 +414,6 @@
 <translation id="4552759165874948005"><ph name="NETWORK_TYPE" /> mreža, jačina signala <ph name="SIGNAL_STRENGTH" />%</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> datoteka</translation>
-<translation id="457386861538956877">Više...</translation>
 <translation id="4579744207439506346">Stavka <ph name="ENTRY_NAME" /> dodana je odabiru.</translation>
 <translation id="4583436353463424810">Nema nedavnih dokumenata</translation>
 <translation id="4594543368593301662">Prikazuju se rezultati za <ph name="SEARCH_TERM" />.</translation>
@@ -561,6 +562,7 @@
 <translation id="5580591966435005537">virtualni uređaj</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5583664733673201137">Interpunkcija je u punoj širini</translation>
+<translation id="5596627076506792578">Više opcija</translation>
 <translation id="5602622065581044566">bugarski s fonetskom tipkovnicom</translation>
 <translation id="5605830556594064952">američka (SAD: Dvorak)</translation>
 <translation id="5618330573454123917">Ta je datoteka predviđena za računalo koje upotrebljava Mac OS. Nije kompatibilna s vašim uređajem na kojem se izvodi Chrome OS. <ph name="BEGIN_LINK_HELP" />Saznajte više<ph name="END_LINK_HELP" /> o otvaranju datoteka u Chrome OS-u.</translation>
@@ -927,6 +929,7 @@
 <translation id="8560515948038859357">kantonski</translation>
 <translation id="8561206103590473338">Slon</translation>
 <translation id="8566466896628108558">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, blokirao vaš administrator, pojedinosti</translation>
+<translation id="8568374623837201676">Želite li trajno izbrisati tu datoteku?</translation>
 <translation id="8569764466147087991">Odaberite datoteku za otvaranje</translation>
 <translation id="8577897833047451336">hrvatski</translation>
 <translation id="8578308463707544055">indonezijski</translation>

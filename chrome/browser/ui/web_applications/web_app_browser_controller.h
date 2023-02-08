@@ -92,6 +92,7 @@ class WebAppBrowserController : public AppBrowserController,
   bool IsHostedApp() const override;
   std::unique_ptr<TabMenuModelFactory> GetTabMenuModelFactory() const override;
   bool AppUsesWindowControlsOverlay() const override;
+  bool AppUsesTabbed() const override;
   bool IsWindowControlsOverlayEnabled() const override;
   void ToggleWindowControlsOverlayEnabled(
       base::OnceClosure on_complete) override;
@@ -132,7 +133,7 @@ class WebAppBrowserController : public AppBrowserController,
   // Invoked when the icon is loaded.
   void OnLoadIcon(apps::IconValuePtr icon_value);
 
-  void OnReadIcon(SkBitmap bitmap);
+  void OnReadIcon(IconPurpose purpose, SkBitmap bitmap);
   void PerformDigitalAssetLinkVerification(Browser* browser);
 
 #if BUILDFLAG(IS_CHROMEOS)

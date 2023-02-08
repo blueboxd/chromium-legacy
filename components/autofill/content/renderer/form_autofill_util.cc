@@ -18,6 +18,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
@@ -499,6 +500,31 @@ std::u16string InferLabelFromPlaceholder(const WebFormControlElement& element) {
   return std::u16string();
 }
 
+// Detects a label declared after the `element`, which is visually positioned
+// above the element (usually using CCS). Such labels often act as a
+// placeholders. E.g.
+// <div>
+//  <input>
+//  <span>Placeholder</span>
+// </div>
+std::u16string InferLabelFromOverlayingSuccessor(
+    const WebFormControlElement& element) {
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillSupportPoorMansPlaceholder)) {
+    return std::u16string();
+  }
+
+  WebNode next = element.NextSibling();
+  while (!next.IsNull() && !next.IsElementNode())
+    next = next.NextSibling();
+  if (!next.IsNull()) {
+    gfx::Rect bounds = next.To<WebElement>().BoundsInWidget();
+    if (!bounds.IsEmpty() && element.BoundsInWidget().Contains(bounds))
+      return FindChildText(next);
+  }
+  return std::u16string();
+}
+
 // Helper for |InferLabelForElement()| that infers a label, from
 // the value attribute when it is present and user has not typed in (if
 // element's value attribute is same as the element's value).
@@ -796,6 +822,13 @@ bool InferLabelForElement(const WebFormControlElement& element,
   std::u16string inferred_label = InferLabelFromPlaceholder(element);
   if (IsLabelValid(inferred_label)) {
     label_source = FormFieldData::LabelSource::kPlaceHolder;
+    label = std::move(inferred_label);
+    return true;
+  }
+
+  inferred_label = InferLabelFromOverlayingSuccessor(element);
+  if (IsLabelValid(inferred_label)) {
+    label_source = FormFieldData::LabelSource::kOverlayingLabel;
     label = std::move(inferred_label);
     return true;
   }
@@ -1377,6 +1410,16 @@ void MatchLabelsAndFields(
     field_data->label += label_text;
     field_data->label_source = FormFieldData::LabelSource::kFor;
     base::UmaHistogramEnumeration(kAssignedLabelSourceHistogram, label_source);
+
+    if (label_source == AssignedLabelSource::kName) {
+      // Add a DevTools issue informing the developer that the `label`'s for-
+      // attribute is pointing to the name of a field, even though the ID should
+      // be used.
+      // TODO(crbug.com/1339277): Use `root` once the feature is launched.
+      label.GetDocument().GetFrame()->AddGenericIssue(
+          blink::mojom::GenericIssueErrorType::kFormLabelForNameError,
+          label.GetDevToolsNodeId());
+    }
   }
 }
 
@@ -1491,6 +1534,8 @@ bool FormOrFieldsetsToFormData(
     // `root` of `MatchLabelsAndFields()` all label tags are considered. This is
     // necessary to support label-for inference in unowned forms and in owned
     // forms utilizing the form-attribute.
+    // TODO(crbug.com/1339277): Change the type of `MatchLabelsAndFields()`'s
+    // first parameter to `WebDocument`.
     if (!control_elements.empty())
       MatchLabelsAndFields(control_elements[0].GetDocument(), field_set);
   } else {

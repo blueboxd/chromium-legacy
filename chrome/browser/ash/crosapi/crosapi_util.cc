@@ -36,6 +36,7 @@
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/components/settings/cros_settings_provider.h"
+#include "chromeos/ash/components/system/statistics_provider.h"
 #include "chromeos/components/cdm_factory_daemon/mojom/browser_cdm_factory.mojom.h"
 #include "chromeos/components/remote_apps/mojom/remote_apps.mojom.h"
 #include "chromeos/components/sensors/mojom/cros_sensor_service.mojom.h"
@@ -75,6 +76,7 @@
 #include "chromeos/crosapi/mojom/feedback.mojom.h"
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
 #include "chromeos/crosapi/mojom/file_system_provider.mojom.h"
+#include "chromeos/crosapi/mojom/firewall_hole.mojom.h"
 #include "chromeos/crosapi/mojom/force_installed_tracker.mojom.h"
 #include "chromeos/crosapi/mojom/fullscreen_controller.mojom.h"
 #include "chromeos/crosapi/mojom/geolocation.mojom.h"
@@ -90,7 +92,9 @@
 #include "chromeos/crosapi/mojom/login_screen_storage.mojom.h"
 #include "chromeos/crosapi/mojom/login_state.mojom.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
+#include "chromeos/crosapi/mojom/metrics.mojom.h"
 #include "chromeos/crosapi/mojom/metrics_reporting.mojom.h"
+#include "chromeos/crosapi/mojom/multi_capture_service.mojom.h"
 #include "chromeos/crosapi/mojom/network_change.mojom.h"
 #include "chromeos/crosapi/mojom/network_settings_service.mojom.h"
 #include "chromeos/crosapi/mojom/networking_attributes.mojom.h"
@@ -123,7 +127,6 @@
 #include "chromeos/crosapi/mojom/web_page_info.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/startup/startup.h"
-#include "chromeos/system/statistics_provider.h"
 #include "chromeos/ui/wm/features.h"
 #include "chromeos/version/version_loader.h"
 #include "components/account_manager_core/account_manager_util.h"
@@ -141,6 +144,7 @@
 #include "device/bluetooth/floss/floss_features.h"
 #include "media/capture/mojom/video_capture.mojom.h"
 #include "media/mojo/mojom/stable/stable_video_decoder.mojom.h"
+#include "printing/buildflags/buildflags.h"
 #include "services/device/public/mojom/hid.mojom.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
@@ -184,8 +188,9 @@ absl::optional<policy::ComponentPolicyMap> GetDeviceAccountComponentPolicy(
     EnvironmentProvider* environment_provider) {
   const policy::ComponentPolicyMap& map =
       environment_provider->GetDeviceAccountComponentPolicy();
-  if (map.empty())
+  if (map.empty()) {
     return absl::nullopt;
+  }
 
   return policy::CopyComponentPolicyMap(map);
 }
@@ -195,11 +200,11 @@ bool GetIsCurrentUserOwner() {
 }
 
 bool GetUseCupsForPrinting() {
-#if defined(USE_CUPS)
+#if BUILDFLAG(USE_CUPS)
   return true;
 #else
   return false;
-#endif  // defined(USE_CUPS)
+#endif  // BUILDFLAG(USE_CUPS)
 }
 
 // Returns the device specific data needed for Lacros.
@@ -211,8 +216,9 @@ mojom::DevicePropertiesPtr GetDeviceProperties() {
     const enterprise_management::PolicyData* policy_data =
         ash::DeviceSettingsService::Get()->policy_data();
 
-    if (policy_data && policy_data->has_request_token())
+    if (policy_data && policy_data->has_request_token()) {
       result->device_dm_token = policy_data->request_token();
+    }
 
     if (policy_data && !policy_data->device_affiliation_ids().empty()) {
       const auto& ids = policy_data->device_affiliation_ids();
@@ -252,7 +258,7 @@ constexpr InterfaceVersionEntry MakeInterfaceVersionEntry() {
   return {T::Uuid_, T::Version_};
 }
 
-static_assert(crosapi::mojom::Crosapi::Version_ == 99,
+static_assert(crosapi::mojom::Crosapi::Version_ == 102,
               "If you add a new crosapi, please add it to "
               "kInterfaceVersionEntries below.");
 
@@ -300,6 +306,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::FieldTrialService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FileManager>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FileSystemProviderService>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::FirewallHoleService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ForceInstalledTracker>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FullscreenController>(),
     MakeInterfaceVersionEntry<crosapi::mojom::GeolocationService>(),
@@ -318,7 +325,9 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<
         chromeos::machine_learning::mojom::MachineLearningService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::MessageCenter>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::Metrics>(),
     MakeInterfaceVersionEntry<crosapi::mojom::MetricsReporting>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::MultiCaptureService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::NativeThemeService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::NetworkChange>(),
     MakeInterfaceVersionEntry<crosapi::mojom::NetworkingAttributes>(),
@@ -368,8 +377,10 @@ constexpr bool HasDuplicatedUuid() {
   const size_t size = std::size(kInterfaceVersionEntries);
   for (size_t i = 0; i < size; ++i) {
     for (size_t j = i + 1; j < size; ++j) {
-      if (kInterfaceVersionEntries[i].uuid == kInterfaceVersionEntries[j].uuid)
+      if (kInterfaceVersionEntries[i].uuid ==
+          kInterfaceVersionEntries[j].uuid) {
         return true;
+      }
     }
   }
   return false;
@@ -398,8 +409,9 @@ crosapi::mojom::BrowserInitParams::DeviceType ConvertDeviceType(
 
 crosapi::mojom::BrowserInitParams::LacrosSelection GetLacrosSelection(
     absl::optional<browser_util::LacrosSelection> selection) {
-  if (!selection.has_value())
+  if (!selection.has_value()) {
     return crosapi::mojom::BrowserInitParams::LacrosSelection::kUnspecified;
+  }
 
   switch (selection.value()) {
     case browser_util::LacrosSelection::kRootfs:
@@ -413,8 +425,9 @@ crosapi::mojom::BrowserInitParams::LacrosSelection GetLacrosSelection(
 
 base::flat_map<base::Token, uint32_t> GetInterfaceVersions() {
   base::flat_map<base::Token, uint32_t> versions;
-  for (const auto& entry : kInterfaceVersionEntries)
+  for (const auto& entry : kInterfaceVersionEntries) {
     versions.emplace(entry.uuid, entry.version);
+  }
   return versions;
 }
 
@@ -472,8 +485,9 @@ void InjectBrowserInitParams(
   if (auto* metrics_service = g_browser_process->metrics_service()) {
     // Send metrics service client id to Lacros if it's present.
     std::string client_id = metrics_service->GetClientId();
-    if (!client_id.empty())
+    if (!client_id.empty()) {
       params->metrics_service_client_id = client_id;
+    }
   }
 
   if (auto* metrics_services_manager =
@@ -572,6 +586,8 @@ void InjectBrowserInitParams(
           : crosapi::mojom::BrowserInitParams::GpuSandboxStartMode::kNormal;
 
   params->extension_keep_list = extensions::BuildExtensionKeeplistInitParam();
+
+  params->vc_controls_ui_enabled = ash::features::IsVcControlsUiEnabled();
 }
 
 template <typename BrowserParams>
@@ -679,16 +695,19 @@ bool WritePostLoginData(base::PlatformFile fd,
 }
 
 bool IsSigninProfileOrBelongsToAffiliatedUser(Profile* profile) {
-  if (ash::ProfileHelper::IsSigninProfile(profile))
+  if (ash::ProfileHelper::IsSigninProfile(profile)) {
     return true;
+  }
 
-  if (profile->IsOffTheRecord())
+  if (profile->IsOffTheRecord()) {
     return false;
+  }
 
   const user_manager::User* user =
       ash::ProfileHelper::Get()->GetUserByProfile(profile);
-  if (!user)
+  if (!user) {
     return false;
+  }
   return user->IsAffiliated();
 }
 

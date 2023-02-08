@@ -19,7 +19,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
-import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -36,13 +35,10 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStartCallback {
+public class PaymentRequestCanMakePaymentMetricsTest {
     @Rule
     public PaymentRequestTestRule mPaymentRequestTestRule =
-            new PaymentRequestTestRule("payment_request_can_make_payment_metrics_test.html", this);
-
-    @Override
-    public void onMainActivityStarted() throws TimeoutException {}
+            new PaymentRequestTestRule("payment_request_can_make_payment_metrics_test.html");
 
     /**
      * Tests that the CanMakePayment metrics are correctly logged for the case of a merchant
@@ -57,9 +53,9 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     public void testCannotMakePayment_UserAbort() throws TimeoutException {
         // Install the apps so CanMakePayment returns true.
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://bobpay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://bobpay.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://kylepay.com/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://kylepay.test/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         // Initiate a payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -99,9 +95,9 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     public void testCannotMakePayment_Complete() throws TimeoutException {
         // Install the apps so CanMakePayment returns true.
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://bobpay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://bobpay.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://kylepay.com/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://kylepay.test/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         mPaymentRequestTestRule.triggerUIAndWait(
                 "queryShowWithUrlMethods", mPaymentRequestTestRule.getReadyForInput());
@@ -150,9 +146,9 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     testCanMakePayment_MerchantAbort() throws TimeoutException {
         // Install the apps so CanMakePayment returns true.
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://bobpay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://bobpay.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://kylepay.com/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://kylepay.test/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         // Initiate a payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -184,9 +180,9 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     testCanMakePayment_Complete() throws TimeoutException {
         // Install the apps so CanMakePayment returns true.
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://bobpay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://bobpay.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://kylepay.com/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://kylepay.test/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         // Initiate and complete a payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -223,9 +219,9 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
 
         // Install the apps so CanMakePayment returns true if it is enabled.
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://bobpay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://bobpay.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://kylepay.com/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://kylepay.test/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         // Initiate an complete a payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -254,9 +250,9 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     public void testNoQuery_UserAbort() throws TimeoutException {
         // Install the apps so CanMakePayment returns true.
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://bobpay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://bobpay.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://kylepay.com/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://kylepay.test/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         // Initiate a payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -293,9 +289,9 @@ public class PaymentRequestCanMakePaymentMetricsTest implements MainActivityStar
     testNoQuery_Complete() throws TimeoutException {
         // Install the apps so the user can complete the Payment Request.
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://bobpay.com", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://bobpay.test", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         mPaymentRequestTestRule.addPaymentAppFactory(
-                "https://kylepay.com/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
+                "https://kylepay.test/webpay", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         // Initiate a payment request.
         mPaymentRequestTestRule.triggerUIAndWait(

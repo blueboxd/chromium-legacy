@@ -555,11 +555,11 @@ void DesksController::NewDesk(DesksCreationRemovalSource source) {
                       /*set_by_user=*/false);
   }
 
-  // Don't trigger an a11y alert when the source is kLaunchTemplate because
-  // CreateNewDeskForTemplate will trigger an alert instead.
-  // Dont trigger when the source is kSaveAndRecall because the
-  // DESK_TEMPLATES_MODE_ENTERED alert triggered in
-  // OverviewSession::ShowDesksTemplatesGrids should be shown instead.
+  // Don't trigger an a11y alert when the source is `kLaunchTemplate` because
+  // `CreateNewDeskForSavedDesk` will trigger an alert instead.
+  // Dont trigger when the source is `kSaveAndRecall` because the
+  // `DESK_TEMPLATES_MODE_ENTERED` alert triggered in
+  // `OverviewSession::ShowSavedDeskLibrary` should be shown instead.
   if (source != DesksCreationRemovalSource::kLaunchTemplate &&
       source != DesksCreationRemovalSource::kSaveAndRecall &&
       source != DesksCreationRemovalSource::kFloatingWorkspace) {
@@ -1095,18 +1095,18 @@ void DesksController::SendToDeskAtIndex(aura::Window* window, int desk_index) {
                              DesksMoveWindowFromActiveDeskSource::kSendToDesk);
 }
 
-void DesksController::CaptureActiveDeskAsTemplate(
+void DesksController::CaptureActiveDeskAsSavedDesk(
     GetDeskTemplateCallback callback,
     DeskTemplateType template_type,
     aura::Window* root_window_to_show) const {
   DCHECK(current_account_id_.is_valid());
 
-  restore_data_collector_.CaptureActiveDeskAsTemplate(
+  restore_data_collector_.CaptureActiveDeskAsSavedDesk(
       std::move(callback), template_type,
       base::UTF16ToUTF8(active_desk_->name()), root_window_to_show);
 }
 
-const Desk* DesksController::CreateNewDeskForTemplate(
+const Desk* DesksController::CreateNewDeskForSavedDesk(
     DeskTemplateType template_type,
     const std::u16string& customized_desk_name) {
   DCHECK(CanCreateDesks());
@@ -1172,9 +1172,9 @@ const Desk* DesksController::CreateNewDeskForTemplate(
 
     if (auto* session =
             Shell::Get()->overview_controller()->overview_session()) {
-      session->HideDesksTemplatesGrids();
+      session->HideSavedDeskLibrary();
       for (auto& grid : session->grid_list())
-        grid->RemoveAllItemsForDesksTemplatesLaunch();
+        grid->RemoveAllItemsForSavedDeskLaunch();
     }
 
     ActivateDesk(desk, DesksSwitchSource::kLaunchTemplate);
@@ -1184,7 +1184,7 @@ const Desk* DesksController::CreateNewDeskForTemplate(
   return desk;
 }
 
-bool DesksController::OnSingleInstanceAppLaunchingFromTemplate(
+bool DesksController::OnSingleInstanceAppLaunchingFromSavedDesk(
     const std::string& app_id,
     const app_restore::RestoreData::LaunchList& launch_list) {
   // Iterate through the windows on each desk to see if there is an existing app
@@ -1899,8 +1899,6 @@ void DesksController::FinalizeDeskRemoval(RemovedDeskData* removed_desk_data) {
     views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
     DCHECK(widget);
 
-    widget->Close();
-
     // `widget->Close();` calls the underlying `native_widget_->Close()` which
     // will schedule `native_widget_->CloseNow()` as an async task. Only
     // when `native_widget_->CloseNow()` finishes running, the window will
@@ -1925,6 +1923,11 @@ void DesksController::FinalizeDeskRemoval(RemovedDeskData* removed_desk_data) {
           ->GetChildById(kShellWindowId_UnparentedContainer)
           ->AddChild(window);
     }
+
+    // We need to ensure that `widget->Close()` is called after we move the
+    // windows to the unparented container because some windows lose access to
+    // their root window immediately when their widget starts closing.
+    widget->Close();
   }
 
   // Schedules a delayed task to forcefully close all windows that have not

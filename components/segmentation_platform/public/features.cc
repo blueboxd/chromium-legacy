@@ -58,7 +58,7 @@ BASE_FEATURE(kContextualPageActions,
 
 BASE_FEATURE(kContextualPageActionPriceTracking,
              "ContextualPageActionPriceTracking",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kContextualPageActionReaderMode,
              "ContextualPageActionReaderMode",
@@ -67,5 +67,9 @@ BASE_FEATURE(kContextualPageActionReaderMode,
 BASE_FEATURE(kSegmentationPlatformSegmentInfoCache,
              "SegmentationPlatformSegmentInfoCache",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSegmentationDefaultReportingSegments,
+             "SegmentationDefaultReportingSegments",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace segmentation_platform::features

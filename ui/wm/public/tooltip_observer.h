@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/observer_list_types.h"
 #include "ui/wm/public/wm_public_export.h"
 
 namespace aura {
@@ -19,21 +20,24 @@ class Rect;
 
 namespace wm {
 
-class WM_PUBLIC_EXPORT TooltipObserver {
+class WM_PUBLIC_EXPORT TooltipObserver : public base::CheckedObserver {
  public:
-  virtual ~TooltipObserver() = default;
+  ~TooltipObserver() override = default;
 
-  // Called when tooltip whose parent window's toplevel window is `target` is
-  // shown. `bounds` is relative to `target` position.
+  // Called when tooltip is shown.
+  // `target` is a target window of show tooltip. This may be null if the target
+  // window is already destroyed,
+  // `bounds` is relative to the target window position.
   // TODO(crbug.com/1385219): Use tooltip's parent window for `target`.
   virtual void OnTooltipShown(aura::Window* target,
                               const std::u16string& text,
                               const gfx::Rect& bounds) = 0;
 
-  // Called when tooltip whose parent window's toplevel window is `target` is
-  // hidden.
+  // Called when tooltip is hidden.
+  // `target` is a target window of show tooltip. This may be null if the target
+  // window is already destroyed,
   // TODO(crbug.com/1385219): Use tooltip's parent window for `target`.
-  virtual void OnTooltipHidden(aura::Window* window) = 0;
+  virtual void OnTooltipHidden(aura::Window* target) = 0;
 };
 
 }  // namespace wm

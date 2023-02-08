@@ -35,36 +35,6 @@ constexpr uint32_t kMaximumDeviceNumber = 10;
 constexpr std::string_view kDecoderDevicePrefix = "/dev/video-dec";
 constexpr std::string_view kMediaDevicePrefix = "/dev/media-dec";
 
-// Finds first available device of specified type for v4l2
-static base::FilePath FindFirstDeviceOfType(V4L2IoctlShim::DeviceType type) {
-  std::string device_prefix;
-
-  switch (type) {
-    case V4L2IoctlShim::DeviceType::kDecoder:
-      device_prefix = kDecoderDevicePrefix;
-      break;
-    case V4L2IoctlShim::DeviceType::kMedia:
-      device_prefix = kMediaDevicePrefix;
-      break;
-    default:
-      NOTREACHED() << "Invalid device type: " << base::strict_cast<int>(type);
-  }
-
-  for (uint32_t i = 0; i < kMaximumDeviceNumber; ++i) {
-    std::string path = device_prefix + base::NumberToString(i);
-    base::File candidate_device_file_path(open(path.c_str(), O_RDWR, 0));
-
-    if (!candidate_device_file_path.IsValid()) {
-      continue;
-    }
-
-    LOG(INFO) << "Using device: " << path;
-    return base::FilePath(path);
-  }
-  LOG(ERROR) << "Failed to find available device.";
-  return base::FilePath();
-}
-
 // This map maintains a table with pairs of V4L2 request code
 // and corresponding name. New pair has to be added here
 // when new V4L2 request code has to be used.
@@ -82,6 +52,7 @@ static const std::unordered_map<int, std::string>
         V4L2_REQUEST_CODE_AND_STRING(VIDIOC_QBUF),
         V4L2_REQUEST_CODE_AND_STRING(VIDIOC_DQBUF),
         V4L2_REQUEST_CODE_AND_STRING(VIDIOC_STREAMON),
+        V4L2_REQUEST_CODE_AND_STRING(VIDIOC_STREAMOFF),
         V4L2_REQUEST_CODE_AND_STRING(VIDIOC_S_EXT_CTRLS),
         V4L2_REQUEST_CODE_AND_STRING(MEDIA_IOC_REQUEST_ALLOC),
         V4L2_REQUEST_CODE_AND_STRING(MEDIA_REQUEST_IOC_QUEUE),
@@ -172,13 +143,30 @@ scoped_refptr<MmapedBuffer> V4L2Queue::GetBuffer(const size_t index) const {
   return buffers_[index];
 }
 
-V4L2IoctlShim::V4L2IoctlShim()
-    : decode_fd_(FindFirstDeviceOfType(V4L2IoctlShim::DeviceType::kDecoder),
-                 base::File::FLAG_OPEN | base::File::FLAG_READ |
-                     base::File::FLAG_WRITE),
-      media_fd_(FindFirstDeviceOfType(V4L2IoctlShim::DeviceType::kMedia),
-                base::File::FLAG_OPEN | base::File::FLAG_READ |
-                    base::File::FLAG_WRITE) {
+V4L2IoctlShim::V4L2IoctlShim(const uint32_t coded_fourcc) {
+  uint32_t i;
+
+  for (i = 0; i < kMaximumDeviceNumber; ++i) {
+    std::string path =
+        std::string(kDecoderDevicePrefix) + base::NumberToString(i);
+    decode_fd_ = base::File(base::FilePath(path), base::File::FLAG_OPEN |
+                                                      base::File::FLAG_READ |
+                                                      base::File::FLAG_WRITE);
+
+    // Check if the device supports the requested coded format
+    if (QueryFormat(V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE, coded_fourcc))
+      break;
+
+    // Close file descriptor on failure
+    decode_fd_.Close();
+  }
+
+  // TODO(wenst) media devices should be matched by their driver name or bus
+  // info
+  media_fd_ = base::File(
+      base::FilePath(std::string(kMediaDevicePrefix) + base::NumberToString(i)),
+      base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_WRITE);
+
   PCHECK(decode_fd_.IsValid()) << "Failed to find available decode device.";
   PCHECK(media_fd_.IsValid()) << "Failed to find available media device.";
 }
@@ -280,6 +268,7 @@ bool V4L2IoctlShim::Ioctl(int request_code, struct v4l2_buffer* buffer) const {
 template <>
 bool V4L2IoctlShim::Ioctl(int request_code, int* arg) const {
   DCHECK(request_code == static_cast<int>(VIDIOC_STREAMON) ||
+         request_code == static_cast<int>(VIDIOC_STREAMOFF) ||
          request_code == static_cast<int>(MEDIA_IOC_REQUEST_ALLOC));
   LOG_ASSERT(arg != nullptr) << "|arg| check failed.";
 
@@ -414,6 +403,30 @@ bool V4L2IoctlShim::ReqBufs(std::unique_ptr<V4L2Queue>& queue) const {
   return ret;
 }
 
+bool V4L2IoctlShim::ReqBufsWithCount(std::unique_ptr<V4L2Queue>& queue,
+                                     uint32_t count) const {
+  struct v4l2_requestbuffers reqbuf;
+
+  memset(&reqbuf, 0, sizeof(reqbuf));
+  reqbuf.count = count;
+  reqbuf.type = queue->type();
+  reqbuf.memory = queue->memory();
+
+  const bool ret = Ioctl(VIDIOC_REQBUFS, &reqbuf);
+
+  queue->set_num_buffers(reqbuf.count);
+
+  if (count == 0) {
+    LOG(INFO) << "Requested to free all buffers in " << queue->type()
+              << "with a buffer count of 0.";
+  } else {
+    LOG(INFO) << queue->num_buffers() << " buffers requested, " << reqbuf.count
+              << " buffers returned for " << queue->type() << ".";
+  }
+
+  return ret;
+}
+
 bool V4L2IoctlShim::QBuf(const std::unique_ptr<V4L2Queue>& queue,
                          const uint32_t index) const {
   LOG_ASSERT(queue->memory() == V4L2_MEMORY_MMAP)
@@ -512,6 +525,12 @@ bool V4L2IoctlShim::StreamOn(const enum v4l2_buf_type type) const {
   int arg = static_cast<int>(type);
 
   return Ioctl(VIDIOC_STREAMON, &arg);
+}
+
+bool V4L2IoctlShim::StreamOff(const enum v4l2_buf_type type) const {
+  int arg = static_cast<int>(type);
+
+  return Ioctl(VIDIOC_STREAMOFF, &arg);
 }
 
 bool V4L2IoctlShim::SetExtCtrls(const std::unique_ptr<V4L2Queue>& queue,

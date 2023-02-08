@@ -15,6 +15,7 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
+#include "chrome/browser/media/router/providers/cast/cast_media_route_provider_metrics.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_tracker.h"
 #include "components/media_router/browser/logger_impl.h"
 #include "components/media_router/common/media_source.h"
@@ -23,6 +24,7 @@
 #include "components/media_router/common/providers/cast/channel/cast_message_handler.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "media/base/audio_codecs.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
 #include "media/remoting/device_capability_checker.h"
 #include "net/base/url_util.h"
@@ -91,10 +93,20 @@ std::vector<MediaSinkInternal> GetRemotePlaybackMediaSourceCompatibleSinks(
 
   for (const auto& sink : sinks) {
     const std::string& model_name = sink.cast_data().model_name;
-    if (media::remoting::IsVideoCodecCompatible(model_name, video_codec) &&
-        media::remoting::IsAudioCodecCompatible(model_name, audio_codec)) {
+    const bool is_supported_model =
+        media::remoting::IsKnownToSupportRemoting(model_name);
+    const bool is_supported_audio_codec =
+        media::remoting::IsAudioCodecCompatible(model_name, audio_codec);
+    const bool is_supported_video_codec =
+        media::remoting::IsVideoCodecCompatible(model_name, video_codec);
+
+    if (is_supported_model && is_supported_audio_codec &&
+        is_supported_video_codec) {
       compatible_sinks.push_back(sink);
     }
+    RecordSinkRemotingCompatibility(is_supported_model,
+                                    is_supported_audio_codec, audio_codec,
+                                    is_supported_video_codec, video_codec);
   }
   return compatible_sinks;
 }
@@ -346,7 +358,7 @@ void CastMediaRouteProvider::OnSinkQueryUpdated(
                                    sinks, GetOrigins(source_id));
     return;
   }
-  if (!base::FeatureList::IsEnabled(kMediaRemotingWithoutFullscreen)) {
+  if (!base::FeatureList::IsEnabled(media::kMediaRemotingWithoutFullscreen)) {
     return;
   }
 

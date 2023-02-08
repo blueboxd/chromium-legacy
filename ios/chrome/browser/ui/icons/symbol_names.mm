@@ -82,6 +82,7 @@ NSString* const kMicrophoneSymbol = @"mic";
 NSString* const kEllipsisCircleFillSymbol = @"ellipsis.circle.fill";
 NSString* const kPinSymbol = @"pin";
 NSString* const kPinFillSymbol = @"pin.fill";
+NSString* const kPinSlashSymbol = @"pin.slash";
 NSString* const kSettingsSymbol = @"gearshape";
 NSString* const kSettingsFilledSymbol = @"gearshape.fill";
 NSString* const kShareSymbol = @"square.and.arrow.up";
@@ -121,6 +122,7 @@ NSString* const kExternalLinkSymbol = @"arrow.up.forward.square";
 NSString* const kChevronForwardSymbol = @"chevron.forward";
 NSString* const kGlobeAmericasSymbol = @"globe.americas.fill";
 NSString* const kGlobeSymbol = @"globe";
+NSString* const kPersonCropCircleSymbol = @"person.crop.circle";
 
 // Names of the default symbol being non-monochrome by default. When using them,
 // you probably want to set their color to monochrome.

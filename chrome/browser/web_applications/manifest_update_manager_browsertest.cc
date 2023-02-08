@@ -326,7 +326,8 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     // Cannot construct RunLoop in constructor due to threading restrictions.
     shortcut_run_loop_.emplace();
-    test::WaitUntilReady(WebAppProvider::GetForTest(browser()->profile()));
+    test::WaitUntilWebAppProviderAndSubsystemsReady(
+        WebAppProvider::GetForTest(browser()->profile()));
   }
 
   void OnShortcutInfoRetrieved(std::unique_ptr<ShortcutInfo> shortcut_info) {
@@ -955,17 +956,35 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
 
 class ManifestUpdateManagerBrowserTest_ExternalPrefMigration
     : public ManifestUpdateManagerBrowserTest,
-      public testing::WithParamInterface<bool> {
+      public testing::WithParamInterface<test::ExternalPrefMigrationTestCases> {
  public:
   ManifestUpdateManagerBrowserTest_ExternalPrefMigration() {
-    bool enable_migration = GetParam();
-    if (enable_migration) {
-      scoped_feature_list_.InitWithFeatures(
-          {features::kUseWebAppDBInsteadOfExternalPrefs}, {});
-    } else {
-      scoped_feature_list_.InitWithFeatures(
-          {}, {features::kUseWebAppDBInsteadOfExternalPrefs});
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
+
+    switch (GetParam()) {
+      case test::ExternalPrefMigrationTestCases::kDisableMigrationReadPref:
+        disabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
+        disabled_features.push_back(
+            features::kUseWebAppDBInsteadOfExternalPrefs);
+        break;
+      case test::ExternalPrefMigrationTestCases::kDisableMigrationReadDB:
+        disabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
+        enabled_features.push_back(
+            features::kUseWebAppDBInsteadOfExternalPrefs);
+        break;
+      case test::ExternalPrefMigrationTestCases::kEnableMigrationReadPref:
+        enabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
+        disabled_features.push_back(
+            features::kUseWebAppDBInsteadOfExternalPrefs);
+        break;
+      case test::ExternalPrefMigrationTestCases::kEnableMigrationReadDB:
+        enabled_features.push_back(features::kMigrateExternalPrefsToWebAppDB);
+        enabled_features.push_back(
+            features::kUseWebAppDBInsteadOfExternalPrefs);
+        break;
     }
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
  private:
@@ -1056,9 +1075,15 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest_ExternalPrefMigration,
       kUpdateHistogramName, ManifestUpdateResult::kAppIsPlaceholder, 1);
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         ManifestUpdateManagerBrowserTest_ExternalPrefMigration,
-                         ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ManifestUpdateManagerBrowserTest_ExternalPrefMigration,
+    ::testing::Values(
+        test::ExternalPrefMigrationTestCases::kDisableMigrationReadPref,
+        test::ExternalPrefMigrationTestCases::kDisableMigrationReadDB,
+        test::ExternalPrefMigrationTestCases::kEnableMigrationReadPref,
+        test::ExternalPrefMigrationTestCases::kEnableMigrationReadDB),
+    test::GetExternalPrefMigrationTestName);
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                        CheckFindsThemeColorChange) {
@@ -3431,7 +3456,28 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest_UrlHandlers,
 }
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest_UrlHandlers,
+class ManifestUpdateBrowserTestUrlHandlerSynchronize
+    : public ManifestUpdateManagerBrowserTest_UrlHandlers,
+      public ::testing::WithParamInterface<OsIntegrationSubManagersState> {
+ public:
+  ManifestUpdateBrowserTestUrlHandlerSynchronize() {
+    if (GetParam() == OsIntegrationSubManagersState::kEnabled) {
+      scoped_feature_list_.InitWithFeaturesAndParameters(
+          {{features::kOsIntegrationSubManagers, {{"stage", "write_config"}}}},
+          /*disabled_features=*/{});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {}, {features::kOsIntegrationSubManagers});
+    }
+  }
+
+  ~ManifestUpdateBrowserTestUrlHandlerSynchronize() override = default;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(ManifestUpdateBrowserTestUrlHandlerSynchronize,
                        NoHandlersChangeUpdateAssociations) {
   constexpr char kManifestTemplate[] = R"(
     {
@@ -3491,6 +3537,13 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest_UrlHandlers,
   matches = UrlHandlerManagerImpl::GetUrlHandlerMatches(cmd);
   ASSERT_EQ(matches.size(), 0u);
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ManifestUpdateBrowserTestUrlHandlerSynchronize,
+    ::testing::Values(OsIntegrationSubManagersState::kEnabled,
+                      OsIntegrationSubManagersState::kDisabled),
+    test::GetOsIntegrationSubManagersTestName);
 #endif
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,

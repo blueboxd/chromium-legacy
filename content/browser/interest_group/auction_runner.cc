@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "base/types/optional_ref.h"
 #include "content/browser/interest_group/interest_group_auction_reporter.h"
 #include "content/browser/interest_group/interest_group_manager_impl.h"
 #include "content/public/browser/content_browser_client.h"
@@ -42,6 +43,29 @@ auction_worklet::mojom::KAnonymityBidMode DetermineKAnonMode() {
   }
 }
 
+// Returns null if failed to verify.
+blink::AuctionConfig* LookupAuction(
+    blink::AuctionConfig& config,
+    const blink::mojom::AuctionAdConfigAuctionIdPtr& auction) {
+  if (auction->is_main_auction()) {
+    return &config;
+  }
+  uint32_t pos = auction->get_component_auction();
+  if (pos < config.non_shared_params.component_auctions.size()) {
+    return &config.non_shared_params.component_auctions[pos];
+  }
+  return nullptr;
+}
+
+blink::AuctionConfig::MaybePromiseJson FromOptionalString(
+    base::optional_ref<const std::string> maybe_json) {
+  if (maybe_json.has_value()) {
+    return blink::AuctionConfig::MaybePromiseJson::FromJson(*maybe_json);
+  } else {
+    return blink::AuctionConfig::MaybePromiseJson::FromNothing();
+  }
+}
+
 }  // namespace
 
 std::unique_ptr<AuctionRunner> AuctionRunner::CreateAndStart(
@@ -57,14 +81,54 @@ std::unique_ptr<AuctionRunner> AuctionRunner::CreateAndStart(
       std::move(auction_config), std::move(client_security_state),
       std::move(is_interest_group_api_allowed_callback),
       std::move(abort_receiver), std::move(callback)));
-  instance->StartAuction();
+  instance->StartAuctionIfReady();
   return instance;
 }
 
 AuctionRunner::~AuctionRunner() = default;
 
+void AuctionRunner::ResolvedPromiseParam(
+    blink::mojom::AuctionAdConfigAuctionIdPtr auction,
+    blink::mojom::AuctionAdConfigField field,
+    const absl::optional<std::string>& json_value) {
+  if (state_ == State::kFailed) {
+    return;
+  }
+
+  blink::AuctionConfig* config = LookupAuction(*owned_auction_config_, auction);
+  if (!config) {
+    mojo::ReportBadMessage("Invalid auction ID in ResolvedPromiseParam");
+    return;
+  }
+
+  blink::AuctionConfig::MaybePromiseJson new_val =
+      FromOptionalString(json_value);
+
+  switch (field) {
+    case blink::mojom::AuctionAdConfigField::kAuctionSignals:
+      if (!config->non_shared_params.auction_signals.is_promise()) {
+        mojo::ReportBadMessage("ResolvedPromiseParam updating non-promise");
+        return;
+      }
+      config->non_shared_params.auction_signals = std::move(new_val);
+      --promise_fields_in_auction_config_;
+      break;
+
+    case blink::mojom::AuctionAdConfigField::kSellerSignals:
+      if (!config->non_shared_params.seller_signals.is_promise()) {
+        mojo::ReportBadMessage("ResolvedPromiseParam updating non-promise");
+        return;
+      }
+      config->non_shared_params.seller_signals = std::move(new_val);
+      --promise_fields_in_auction_config_;
+      break;
+  }
+  StartAuctionIfReady();
+}
+
 void AuctionRunner::Abort() {
-  // Don't abort if the auction already finished (either as success or failure).
+  // Don't abort if the auction already finished (either as success or failure;
+  // this includes the case of multiple promise arguments rejecting).
   if (state_ != State::kFailed && state_ != State::kSucceeded) {
     FailAuction(/*manually_aborted=*/true);
   }
@@ -86,47 +150,16 @@ void AuctionRunner::FailAuction(
 
   UpdateInterestGroupsPostAuction();
 
-  // Most kinds of failures here mean that the auction could not complete at
-  // all (such as seller worklet process crashing, page getting unloaded, etc.),
-  // but there plain not being a winner gets reported as a failure, too. In
-  // that case, however, it's possible that there would be a winner with or
-  // without k-anon enforcement (depending on the kanon_mode) that needs to be
-  // reported to the client.
-  absl::optional<InterestGroupAuction::AuctionResult> result =
-      auction_.final_auction_result();
-  bool may_have_valid_kanon_info =
-      result &&
-      (*result == InterestGroupAuction::AuctionResult::kAllBidsRejected ||
-       *result == InterestGroupAuction::AuctionResult::kNoBids);
-
-  bool report_kanon_enforce =
-      !manually_aborted && may_have_valid_kanon_info &&
-      (kanon_mode_ == auction_worklet::mojom::KAnonymityBidMode::kEnforce);
-  bool report_kanon_sim =
-      !manually_aborted && may_have_valid_kanon_info &&
-      (kanon_mode_ == auction_worklet::mojom::KAnonymityBidMode::kSimulate);
   std::move(callback_).Run(
       this, manually_aborted,
       /*winning_group_key=*/absl::nullopt,
       /*render_url=*/absl::nullopt,
       /*ad_component_urls=*/{},
       /*winning_group_ad_metadata=*/std::string(),
-      /*report_urls=*/{}, std::move(debug_loss_report_urls),
-      std::move(debug_win_report_urls),
-      /*ad_beacon_map=*/{}, auction_.TakePrivateAggregationRequests(),
-      std::move(interest_groups_that_bid),
-      /*render_url_without_kanon_enforced=*/
-      report_kanon_enforce ? auction_.TakeRenderUrlWithoutKAnonEnforced()
-                           : absl::nullopt,
-      /*ad_component_urls_without_kanon_enforced=*/
-      report_kanon_enforce ? auction_.TakeComponentUrlsWithoutKAnonEnforced()
-                           : std::vector<GURL>(),
-      /*render_url_with_kanon_simulated=*/
-      report_kanon_sim ? auction_.TakeSimulatedKAnonRenderUrl() : absl::nullopt,
-      /*ad_component_urls_with_kanon_simulated=*/
-      report_kanon_sim ? auction_.TakeSimulatedKAnonComponentUrls()
-                       : std::vector<GURL>(),
-      auction_.TakeErrors());
+      std::move(debug_loss_report_urls), std::move(debug_win_report_urls),
+      auction_.TakePrivateAggregationRequests(),
+      std::move(interest_groups_that_bid), auction_.GetKAnonKeysToJoin(),
+      auction_.TakeErrors(), /*reporter=*/nullptr);
 }
 
 AuctionRunner::AuctionRunner(
@@ -144,16 +177,22 @@ AuctionRunner::AuctionRunner(
           is_interest_group_api_allowed_callback),
       abort_receiver_(this, std::move(abort_receiver)),
       kanon_mode_(kanon_mode),
-      owned_auction_config_(auction_config),
+      owned_auction_config_(
+          std::make_unique<blink::AuctionConfig>(auction_config)),
       callback_(std::move(callback)),
+      promise_fields_in_auction_config_(
+          owned_auction_config_->non_shared_params.NumPromises()),
       auction_(kanon_mode_,
-               &owned_auction_config_,
+               owned_auction_config_.get(),
                /*parent=*/nullptr,
                auction_worklet_manager,
                interest_group_manager,
                /*auction_start_time=*/base::Time::Now()) {}
 
-void AuctionRunner::StartAuction() {
+void AuctionRunner::StartAuctionIfReady() {
+  if (promise_fields_in_auction_config_ > 0) {
+    return;
+  }
   auction_.StartLoadInterestGroupsPhase(
       is_interest_group_api_allowed_callback_,
       base::BindOnce(&AuctionRunner::OnLoadInterestGroupsComplete,
@@ -174,6 +213,8 @@ void AuctionRunner::OnLoadInterestGroupsComplete(bool success) {
 }
 
 void AuctionRunner::OnBidsGeneratedAndScored(bool success) {
+  DCHECK(callback_);
+
   blink::InterestGroupSet interest_groups_that_bid;
   auction_.GetInterestGroupsThatBid(interest_groups_that_bid);
   if (!success) {
@@ -181,27 +222,6 @@ void AuctionRunner::OnBidsGeneratedAndScored(bool success) {
                 std::move(interest_groups_that_bid));
     return;
   }
-  // If the auction is ongoing, RecordInterestGroupBids is deferred until
-  // completion, so that bids don't get recorded if it gets aborted.
-
-  state_ = State::kReportingPhase;
-  auction_.StartReportingPhase(
-      /*top_seller_signals=*/absl::nullopt,
-      base::BindOnce(&AuctionRunner::OnReportingPhaseComplete,
-                     base::Unretained(this),
-                     std::move(interest_groups_that_bid)));
-}
-
-void AuctionRunner::OnReportingPhaseComplete(
-    blink::InterestGroupSet interest_groups_that_bid,
-    bool success) {
-  if (!success) {
-    FailAuction(/*manually_aborted=*/false,
-                std::move(interest_groups_that_bid));
-    return;
-  }
-
-  DCHECK(callback_);
 
   std::string winning_group_ad_metadata;
   if (auction_.top_bid()->bid->bid_ad->metadata) {
@@ -222,57 +242,29 @@ void AuctionRunner::OnReportingPhaseComplete(
   blink::InterestGroupKey winning_group_key(
       {winning_group.owner, winning_group.name});
 
-  // TODO(https://crbug.com/1396068): Only do this if/when the winning ad is
-  // loaded in a frame.
-  interest_group_manager_->RegisterAdAsWon(
-      *auction_.top_bid()->bid->interest_group,
-      *auction_.top_bid()->bid->bid_ad);
-
   std::vector<GURL> debug_win_report_urls;
   std::vector<GURL> debug_loss_report_urls;
   auction_.TakeDebugReportUrls(debug_win_report_urls, debug_loss_report_urls);
 
   UpdateInterestGroupsPostAuction();
 
+  auto errors = auction_.TakeErrors();
+
   std::unique_ptr<InterestGroupAuctionReporter> reporter =
-      auction_.TakeReporter();
+      auction_.CreateReporter(std::move(owned_auction_config_));
   DCHECK(reporter);
 
-  auto errors = auction_.TakeErrors();
-  errors.insert(errors.end(), reporter->errors().begin(),
-                reporter->errors().end());
-
-  auto ad_beacon_map = reporter->TakeAdBeaconMap();
-  auto report_urls = reporter->TakeReportUrls();
-  auto private_aggregation_requests =
-      reporter->TakePrivateAggregationRequests();
-  reporter.reset();
-
   state_ = State::kSucceeded;
-  bool in_kanon_enforce =
-      (kanon_mode_ == auction_worklet::mojom::KAnonymityBidMode::kEnforce);
-  bool in_kanon_sim =
-      (kanon_mode_ == auction_worklet::mojom::KAnonymityBidMode::kSimulate);
   std::move(callback_).Run(
       this, /*manually_aborted=*/false, std::move(winning_group_key),
       auction_.top_bid()->bid->render_url,
       auction_.top_bid()->bid->ad_components,
-      std::move(winning_group_ad_metadata), std::move(report_urls),
-      std::move(debug_loss_report_urls), std::move(debug_win_report_urls),
-      std::move(ad_beacon_map), std::move(private_aggregation_requests),
-      std::move(interest_groups_that_bid),
-      /*render_url_without_kanon_enforced=*/
-      in_kanon_enforce ? auction_.TakeRenderUrlWithoutKAnonEnforced()
-                       : absl::nullopt,
-      /*ad_component_urls_without_kanon_enforced=*/
-      in_kanon_enforce ? auction_.TakeComponentUrlsWithoutKAnonEnforced()
-                       : std::vector<GURL>(),
-      /*render_url_with_kanon_simulated=*/
-      in_kanon_sim ? auction_.TakeSimulatedKAnonRenderUrl() : absl::nullopt,
-      /*ad_component_urls_with_kanon_simulated=*/
-      in_kanon_sim ? auction_.TakeSimulatedKAnonComponentUrls()
-                   : std::vector<GURL>(),
-      std::move(errors));
+      std::move(winning_group_ad_metadata), std::move(debug_loss_report_urls),
+      std::move(debug_win_report_urls),
+      // In this case, the reporter has all the private aggregation requests.
+      std::map<url::Origin, PrivateAggregationRequests>(),
+      std::move(interest_groups_that_bid), auction_.GetKAnonKeysToJoin(),
+      std::move(errors), std::move(reporter));
 }
 
 void AuctionRunner::UpdateInterestGroupsPostAuction() {

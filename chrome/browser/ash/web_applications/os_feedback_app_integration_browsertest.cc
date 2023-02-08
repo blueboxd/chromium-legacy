@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_P(OSFeedbackAppIntegrationTest, FeedbackAppAttributes) {
   // Check the correct attributes for Feedback App.
   auto* system_app =
       GetManager().GetSystemApp(ash::SystemWebAppType::OS_FEEDBACK);
-  EXPECT_TRUE(system_app->ShouldShowInLauncher());
+  EXPECT_FALSE(system_app->ShouldShowInLauncher());
   EXPECT_TRUE(system_app->ShouldShowInSearch());
   EXPECT_FALSE(system_app->ShouldShowNewWindowMenuOption());
   EXPECT_TRUE(system_app->ShouldAllowScriptsToCloseWindows());

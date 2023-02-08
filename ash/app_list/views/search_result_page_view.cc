@@ -10,13 +10,14 @@
 #include <utility>
 
 #include "ash/app_list/app_list_util.h"
-#include "ash/app_list/views/app_list_search_view.h"
 #include "ash/app_list/views/contents_view.h"
+#include "ash/app_list/views/productivity_launcher_search_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_page_anchored_dialog.h"
 #include "ash/public/cpp/app_list/app_list_color_provider.h"
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/search_box/search_box_constants.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/system_shadow.h"
 #include "base/bind.h"
 #include "base/time/time.h"
@@ -121,10 +122,10 @@ void SearchResultPageView::InitializeContainers(
   // to keep the position of dialogs consistent.
   dialog_controller_ =
       std::make_unique<SearchResultPageDialogController>(search_box_view);
-  std::unique_ptr<AppListSearchView> search_view_ptr =
-      std::make_unique<AppListSearchView>(
+  std::unique_ptr<ProductivityLauncherSearchView> search_view_ptr =
+      std::make_unique<ProductivityLauncherSearchView>(
           view_delegate, dialog_controller_.get(), search_box_view);
-  search_view_ = search_view_ptr.get();
+  productivity_launcher_search_view_ = search_view_ptr.get();
   root_view_->AddChildView(
       std::make_unique<SearchCardView>(std::move(search_view_ptr)));
 }
@@ -134,11 +135,11 @@ const char* SearchResultPageView::GetClassName() const {
 }
 
 gfx::Size SearchResultPageView::CalculatePreferredSize() const {
-  int adjusted_height =
-      std::min(std::max(kMinHeight, search_view_->TabletModePreferredHeight() +
-                                        kActiveSearchBoxHeight +
-                                        kExpandedSearchBoxCornerRadius),
-               contents_view()->height());
+  int adjusted_height = std::min(
+      std::max(kMinHeight,
+               productivity_launcher_search_view_->TabletModePreferredHeight() +
+                   kActiveSearchBoxHeight + kExpandedSearchBoxCornerRadius),
+      contents_view()->height());
   return gfx::Size(kWidth, adjusted_height);
 }
 
@@ -164,13 +165,15 @@ void SearchResultPageView::OnThemeChanged() {
   GetBackground()->SetNativeControlColor(
       ColorProvider::Get()->GetBaseLayerColor(
           ColorProvider::BaseLayerType::kTransparent80));
+
   // SchedulePaint() marks the entire SearchResultPageView's bounds as dirty.
   SchedulePaint();
   AppListPage::OnThemeChanged();
 }
 
 void SearchResultPageView::UpdateForNewSearch() {
-  search_view_->UpdateForNewSearch(ShouldShowSearchResultView());
+  productivity_launcher_search_view_->UpdateForNewSearch(
+      ShouldShowSearchResultView());
 }
 
 void SearchResultPageView::UpdateResultContainersVisibility() {
@@ -363,18 +366,7 @@ bool SearchResultPageView::CanSelectSearchResults() const {
   if (!GetVisible())
     return false;
 
-  return search_view_->CanSelectSearchResults();
-}
-
-SkColor SearchResultPageView::GetBackgroundColorForState(
-    AppListState state) const {
-  const auto* app_list_widget = GetWidget();
-  if (state == AppListState::kStateSearchResults) {
-    return AppListColorProvider::Get()->GetSearchBoxCardBackgroundColor(
-        app_list_widget);
-  }
-  return AppListColorProvider::Get()->GetSearchBoxBackgroundColor(
-      app_list_widget);
+  return productivity_launcher_search_view_->CanSelectSearchResults();
 }
 
 bool SearchResultPageView::ShouldShowSearchResultView() const {
@@ -470,23 +462,6 @@ void SearchResultPageView::OnAnimationStarted(AppListState from_state,
   }
 
   AnimateToSearchResultsState(to_result_state);
-}
-
-void SearchResultPageView::OnAnimationUpdated(double progress,
-                                              AppListState from_state,
-                                              AppListState to_state) {
-  if (from_state != AppListState::kStateSearchResults &&
-      to_state != AppListState::kStateSearchResults) {
-    return;
-  }
-  const SkColor color = gfx::Tween::ColorValueBetween(
-      progress, GetBackgroundColorForState(from_state),
-      GetBackgroundColorForState(to_state));
-
-  if (color != background()->get_color()) {
-    background()->SetNativeControlColor(color);
-    SchedulePaint();
-  }
 }
 
 gfx::Size SearchResultPageView::GetPreferredSearchBoxSize() const {

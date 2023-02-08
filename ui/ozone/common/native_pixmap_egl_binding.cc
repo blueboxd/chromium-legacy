@@ -22,11 +22,9 @@ std::unique_ptr<NativePixmapGLBinding> NativePixmapEGLBinding::Create(
     const gfx::ColorSpace& color_space,
     GLenum target,
     GLuint texture_id) {
-  auto gl_image = base::MakeRefCounted<gl::GLImageNativePixmap>(
-      plane_size, plane_format, plane);
-  if (color_space.IsValid())
-    gl_image->SetColorSpace(color_space);
-  if (!gl_image->Initialize(std::move(pixmap))) {
+  auto gl_image = gl::GLImageNativePixmap::CreateForPlane(
+      plane_size, plane_format, plane, std::move(pixmap), color_space);
+  if (!gl_image) {
     LOG(ERROR) << "Unable to initialize GL image from pixmap";
     return nullptr;
   }

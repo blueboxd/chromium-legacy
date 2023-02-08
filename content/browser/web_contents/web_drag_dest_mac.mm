@@ -8,6 +8,7 @@
 #import <Carbon/Carbon.h>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/sys_string_conversions.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -22,12 +23,10 @@
 #include "content/public/common/drop_data.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
-#import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
-#import "ui/base/dragdrop/cocoa_dnd_util.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/point.h"
 
@@ -412,10 +411,14 @@ void PopulateDropDataFromPasteboard(content::DropData* data,
 
   // Get URL if possible. To avoid exposing file system paths to web content,
   // filenames in the drag are not converted to file URLs.
-  ui::PopulateURLAndTitleFromPasteboard(&data->url,
-                                        &data->url_title,
-                                        pboard,
-                                        NO);
+
+  NSArray<NSString*>* urls;
+  NSArray<NSString*>* titles;
+  if (ui::ClipboardUtil::URLsAndTitlesFromPasteboard(
+          pboard, /*include_files=*/false, &urls, &titles)) {
+    data->url = GURL(base::SysNSStringToUTF8(urls.firstObject));
+    data->url_title = base::SysNSStringToUTF16(titles.firstObject);
+  }
 
   // Get plain text.
   if ([types containsObject:NSPasteboardTypeString]) {
@@ -436,23 +439,9 @@ void PopulateDropDataFromPasteboard(content::DropData* data,
   }
 
   // Get files.
-  if ([types containsObject:NSFilenamesPboardType]) {
-    NSArray* files = [pboard propertyListForType:NSFilenamesPboardType];
-    if ([files isKindOfClass:[NSArray class]] && [files count]) {
-      for (NSUInteger i = 0; i < [files count]; i++) {
-        NSString* filename = [files objectAtIndex:i];
-        BOOL exists = [[NSFileManager defaultManager]
-                           fileExistsAtPath:filename];
-        if (exists) {
-          data->filenames.emplace_back(
-              base::FilePath::FromUTF8Unsafe(base::SysNSStringToUTF8(filename)),
-              base::FilePath());
-        }
-      }
-    }
-  }
-
-  // TODO(pinkerton): Get file contents. http://crbug.com/34661
+  std::vector<ui::FileInfo> files =
+      ui::ClipboardUtil::FilesFromPasteboard(pboard);
+  base::ranges::move(files, std::back_inserter(data->filenames));
 
   // Get custom MIME data.
   if ([types containsObject:ui::kUTTypeChromiumWebCustomData]) {

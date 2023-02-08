@@ -1444,6 +1444,49 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   EXPECT_NE(second_host_id, RenderFrameHost::kNoFrameTreeNodeId);
 }
 
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, RetriggerPrerenderAfterRemoval) {
+  // Navigate to an initial page.
+  const GURL kInitialUrl = GetUrl("/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  // Start prerendering.
+  const GURL kPrerenderingUrl = GetUrl("/title2.html");
+  {
+    test::PrerenderHostRegistryObserver registry_observer(*web_contents_impl());
+    ASSERT_TRUE(ExecJs(web_contents_impl()->GetPrimaryMainFrame(),
+                       JsReplace(
+                           R"(
+                          let sc = document.createElement('script');
+                          sc.type = 'speculationrules';
+                          sc.textContent = JSON.stringify({
+                            prerender: [
+                              {source: "list", urls: [$1]}
+                            ]
+                          });
+                          document.head.appendChild(sc);
+                          )",
+                           kPrerenderingUrl)));
+    registry_observer.WaitForTrigger(kPrerenderingUrl);
+    int host_id = GetHostForUrl(kPrerenderingUrl);
+    ASSERT_NE(host_id, RenderFrameHost::kNoFrameTreeNodeId);
+    test::PrerenderHostObserver host_observer(*web_contents_impl(), host_id);
+
+    // Remove the rules and check that the prerender is cancelled with an
+    // appropriate final status.
+    ASSERT_TRUE(ExecJs(
+        web_contents_impl()->GetPrimaryMainFrame(),
+        "document.querySelector('script[type=speculationrules]').remove()"));
+    host_observer.WaitForDestroyed();
+    EXPECT_EQ(GetHostForUrl(kPrerenderingUrl),
+              RenderFrameHost::kNoFrameTreeNodeId);
+  }
+  {
+    AddPrerender(kPrerenderingUrl);
+    int host_id = GetHostForUrl(kPrerenderingUrl);
+    EXPECT_NE(host_id, RenderFrameHost::kNoFrameTreeNodeId);
+  }
+}
+
 // Tests that prerendering triggered by prerendered pages is deferred until
 // activation.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderChain) {
@@ -3023,6 +3066,261 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MojoCapabilityControl_LoosenMode) {
   SetBrowserClientForTesting(old_browser_client);
 }
 
+// Test that a PrerenderHost triggered by speculation rules is canceled when
+// it times out in the background.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, CancelPrerenderWhenTimeout) {
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderUrl = GetUrl("/empty.html?prerender");
+
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  int host_id = AddPrerender(kPrerenderUrl);
+  test::PrerenderHostObserver prerender_observer(*web_contents_impl(), host_id);
+
+  PrerenderHostRegistry* registry =
+      web_contents_impl()->GetPrerenderHostRegistry();
+
+  // The timers should not start yet when the prerendered page is in the
+  // foreground.
+  ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
+  ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+
+  // Inject mock time task runner.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  registry->SetTaskRunnerForTesting(task_runner);
+
+  // Changing the visibility state to HIDDEN will not stop prerendering
+  // immediately, but start the timers.
+  web_contents()->WasHidden();
+  ASSERT_TRUE(registry->GetEmbedderTimerForTesting()->IsRunning());
+  ASSERT_TRUE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+
+  task_runner->FastForwardBy(
+      PrerenderHostRegistry::kTimeToLiveInBackgroundForSpeculationRules);
+
+  prerender_observer.WaitForDestroyed();
+  ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
+  ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+  histogram_tester().ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
+      PrerenderFinalStatus::kTimeoutBackgrounded, 1);
+}
+
+// Test that multiple PrerenderHosts triggered by speculation rules are canceled
+// when it times out in the background.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       CancelMultiplePrerendersWhenTimeout) {
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderUrl1 = GetUrl("/empty.html?prerender1");
+  const GURL kPrerenderUrl2 = GetUrl("/empty.html?prerender2");
+
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  AddPrerender(kPrerenderUrl1);
+  AddPrerender(kPrerenderUrl2);
+
+  test::PrerenderHostObserver prerender_observer(*web_contents_impl(),
+                                                 kPrerenderUrl1);
+
+  PrerenderHostRegistry* registry =
+      web_contents_impl()->GetPrerenderHostRegistry();
+
+  // The timers should not start yet when the prerendered page is in the
+  // foreground.
+  ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
+  ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+
+  // Inject mock time task runner.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  registry->SetTaskRunnerForTesting(task_runner);
+
+  // Changing the visibility state to HIDDEN will not stop prerendering
+  // immediately, but start the timers.
+  web_contents()->WasHidden();
+  ASSERT_TRUE(registry->GetEmbedderTimerForTesting()->IsRunning());
+  ASSERT_TRUE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+
+  task_runner->FastForwardBy(
+      PrerenderHostRegistry::kTimeToLiveInBackgroundForSpeculationRules);
+
+  prerender_observer.WaitForDestroyed();
+  ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
+  ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+  histogram_tester().ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
+      PrerenderFinalStatus::kTimeoutBackgrounded, 2);
+}
+
+// Test that a PrerenderHost triggered by embedder is canceled when it times out
+// in the background.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       CancelOnlyEmbedderTriggeredPrerenderWhenTimeout) {
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderUrl1 = GetUrl("/empty.html?prerender1");
+  const GURL kPrerenderUrl2 = GetUrl("/empty.html?prerender2");
+
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  // Start prerendering by speculation rules.
+  AddPrerender(kPrerenderUrl1);
+
+  test::PrerenderHostObserver host_observer(*web_contents_impl(),
+                                            kPrerenderUrl2);
+  // Start prerendering by embedder.
+  std::unique_ptr<PrerenderHandle> prerender_handle =
+      web_contents_impl()->StartPrerendering(
+          kPrerenderUrl2, PrerenderTriggerType::kEmbedder,
+          "EmbedderSuffixForTest",
+          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+          nullptr);
+
+  PrerenderHostRegistry* registry =
+      web_contents_impl()->GetPrerenderHostRegistry();
+
+  // The timers should not start yet when the prerendered page is in the
+  // foreground.
+  ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
+  ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+
+  // Inject mock time task runner.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  registry->SetTaskRunnerForTesting(task_runner);
+
+  // Changing the visibility state to HIDDEN will not stop prerendering
+  // immediately, but start the timers.
+  web_contents()->WasHidden();
+  ASSERT_TRUE(registry->GetEmbedderTimerForTesting()->IsRunning());
+  ASSERT_TRUE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+
+  // PrerenderHost triggered by embedder should be destroyed and PrerenderHost
+  // triggered by speculation rules should be alive, since the timeout value
+  // differs depending on the trigger type.
+  ASSERT_GT(PrerenderHostRegistry::kTimeToLiveInBackgroundForSpeculationRules,
+            PrerenderHostRegistry::kTimeToLiveInBackgroundForEmbedder);
+  task_runner->FastForwardBy(
+      PrerenderHostRegistry::kTimeToLiveInBackgroundForEmbedder);
+
+  host_observer.WaitForDestroyed();
+
+  // The timer for speculation rules is still running and PrerenderHost for
+  // speculation rules is alive.
+  ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
+  ASSERT_TRUE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+  EXPECT_NE(GetHostForUrl(kPrerenderUrl1), RenderFrameHost::kNoFrameTreeNodeId);
+
+  histogram_tester().ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
+      "EmbedderSuffixForTest",
+      PrerenderFinalStatus::kTimeoutBackgrounded, 1);
+  histogram_tester().ExpectBucketCount(
+      "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
+      PrerenderFinalStatus::kTimeoutBackgrounded, 0);
+}
+
+// Test that the timers for PrerenderHost timeout is reset when the tab gets
+// visible.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       TimerResetWhenHiddenPageGoBackToForeground) {
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderUrl = GetUrl("/empty.html?prerender");
+
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+  AddPrerender(kPrerenderUrl);
+
+  PrerenderHostRegistry* registry =
+      web_contents_impl()->GetPrerenderHostRegistry();
+
+  // The timers should not start yet when the prerendered page is in the
+  // foreground.
+  ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
+  ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+
+  // Changing the visibility state to HIDDEN will not stop prerendering
+  // immediately, but start the timers.
+  web_contents()->WasHidden();
+  ASSERT_TRUE(registry->GetEmbedderTimerForTesting()->IsRunning());
+  ASSERT_TRUE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+
+  // The timers should be reset when the hidden page goes back to the
+  // foreground.
+  web_contents()->WasShown();
+  ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
+  ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+
+  // Activate the prerendered page.
+  test::PrerenderHostObserver prerender_observer(*web_contents(),
+                                                 GetHostForUrl(kPrerenderUrl));
+  NavigatePrimaryPage(kPrerenderUrl);
+  prerender_observer.WaitForActivation();
+  EXPECT_EQ(web_contents()->GetLastCommittedURL(), kPrerenderUrl);
+  histogram_tester().ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
+      PrerenderFinalStatus::kActivated, 1);
+}
+
+// Test that a PrerenderHost in a triggered by speculation rules with
+// "target=_blank" are canceled when it times out in the background.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       CancelPrerenderWithTargetBlankWhenTimeout) {
+  const GURL kInitialUrl = GetUrl("/simple_links.html");
+  const GURL kPrerenderUrl = GetUrl("/title2.html");
+
+  // Navigate to an initial page which has a link to `kPrerenderUrl`.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  // Start prerendering `kPrerenderUrl`.
+  TestNavigationObserver nav_observer(kPrerenderUrl);
+  nav_observer.StartWatchingNewWebContents();
+  AddPrerenderWithTargetHintAsync(kPrerenderUrl, "_blank");
+  nav_observer.WaitForNavigationFinished();
+  EXPECT_EQ(nav_observer.last_navigation_url(), kPrerenderUrl);
+
+  PrerenderHost* prerender_host =
+      web_contents_impl()->GetPrerenderHostRegistry()->FindHostByUrlForTesting(
+          kPrerenderUrl);
+  ASSERT_TRUE(prerender_host);
+  auto* prerender_web_contents = WebContentsImpl::FromFrameTreeNode(
+      prerender_host->GetPrerenderFrameTree().root());
+  ASSERT_NE(prerender_web_contents, web_contents_impl());
+  ExpectWebContentsIsForNewTabPrerendering(*prerender_web_contents);
+
+  PrerenderHostRegistry* registry =
+      web_contents_impl()->GetPrerenderHostRegistry();
+
+  // The timers should not start yet when the prerendered page is in the
+  // foreground.
+  ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
+  ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+
+  // Inject mock time task runner.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  registry->SetTaskRunnerForTesting(task_runner);
+
+  test::PrerenderHostObserver prerender_observer(*web_contents_impl(),
+                                                 kPrerenderUrl);
+
+  // Changing the visibility state to HIDDEN will not stop prerendering
+  // immediately, but start the timers.
+  web_contents()->WasHidden();
+  ASSERT_TRUE(registry->GetEmbedderTimerForTesting()->IsRunning());
+  ASSERT_TRUE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+
+  task_runner->FastForwardBy(
+      PrerenderHostRegistry::kTimeToLiveInBackgroundForSpeculationRules);
+
+  prerender_observer.WaitForDestroyed();
+  ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
+  ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
+  histogram_tester().ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
+      PrerenderFinalStatus::kTimeoutBackgrounded, 1);
+
+  // The navigation occurred in a new WebContents, so the original WebContents
+  // should still be showing the initial trigger page.
+  EXPECT_EQ(web_contents()->GetLastCommittedURL(), kInitialUrl);
+}
+
 enum class SSLPrerenderTestErrorBlockType { kClientCertRequested, kCertError };
 
 std::string SSLPrerenderTestErrorBlockTypeToString(
@@ -3984,7 +4282,8 @@ class PrerenderSequentialPrerenderingBrowserTest : public PrerenderBrowserTest {
     feature_list_.InitWithFeaturesAndParameters(
         {{blink::features::kPrerender2,
           {{"max_num_of_running_speculation_rules",
-            base::NumberToString(MaxNumOfRunningPrerenders())}}},
+            base::NumberToString(MaxNumOfRunningPrerenders())},
+           {"embedder_blocked_hosts", "a.test,b.test,c.test"}}},
          {blink::features::kPrerender2SequentialPrerendering, {}}},
         {});
   }
@@ -4391,6 +4690,37 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
   embedder_observer.WaitForActivation();
   EXPECT_EQ(web_contents()->GetLastCommittedURL(), kEmbedderPrerender);
   EXPECT_TRUE(embedder_observer.was_activated());
+}
+
+// Test that hosts in the embedder blocklist are not prerendered.
+IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
+                       EmbedderHostBlocklisted) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL kInitialUrl = embedded_test_server()->GetURL("/empty.html");
+  // b.test was added to embedder_blocked_hosts in the test setup.
+  const GURL kEmbedderPrerender =
+      embedded_test_server()->GetURL("b.test", "/empty.html?embedder");
+
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+  ASSERT_EQ(shell()->web_contents()->GetLastCommittedURL(), kInitialUrl);
+
+  // Start prerendering by embedder triggered prerendering. This should be
+  // blocked because b.test is in embedder_blocked_hosts.
+  std::unique_ptr<PrerenderHandle> prerender_handle =
+      web_contents_impl()->StartPrerendering(
+          kEmbedderPrerender, PrerenderTriggerType::kEmbedder,
+          "EmbedderSuffixForTest",
+          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+          nullptr);
+
+  EXPECT_FALSE(prerender_handle);
+  EXPECT_EQ(GetHostForUrl(kEmbedderPrerender),
+            RenderFrameHost::kNoFrameTreeNodeId);
+  histogram_tester().ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
+      "EmbedderSuffixForTest",
+      PrerenderFinalStatus::kEmbedderHostDisallowed, 1);
 }
 
 // Tests that if the running prerender is cancelled by
@@ -4866,219 +5196,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderSequentialPrerenderingBrowserTest,
   // The navigation occurred in a new WebContents, so the original WebContents
   // should still be showing the initial trigger page.
   EXPECT_EQ(web_contents()->GetLastCommittedURL(), initial_url);
-}
-
-// TODO(crbug.com/1356907): Remove this and merge it to PrerenderBrowserTest
-// once kPrerender2InBackground is enabled by default.
-class PrerenderHostRegistryInBackgroundTest : public PrerenderBrowserTest {
- public:
-  PrerenderHostRegistryInBackgroundTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {// Enable to run prerenderings in the background.
-         blink::features::kPrerender2InBackground},
-        // Disable the memory requirement of Prerender2 so the test can run on
-        // any bot.
-        {blink::features::kPrerender2MemoryControls});
-  }
-
-  ~PrerenderHostRegistryInBackgroundTest() override = default;
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-// Test that a PrerenderHost triggered by speculation rules is canceled when
-// it times out in the background.
-IN_PROC_BROWSER_TEST_F(PrerenderHostRegistryInBackgroundTest,
-                       CancelPrerenderWhenTimeout) {
-  const GURL kInitialUrl = GetUrl("/empty.html");
-  const GURL kPrerenderUrl = GetUrl("/empty.html?prerender");
-
-  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
-
-  int host_id = AddPrerender(kPrerenderUrl);
-  test::PrerenderHostObserver prerender_observer(*web_contents_impl(), host_id);
-
-  PrerenderHostRegistry* registry =
-      web_contents_impl()->GetPrerenderHostRegistry();
-
-  // The timers should not start yet when the prerendered page is in the
-  // foreground.
-  ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
-  ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
-
-  // Inject mock time task runner.
-  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
-  registry->SetTaskRunnerForTesting(task_runner);
-
-  // Changing the visibility state to HIDDEN will not stop prerendering
-  // immediately, but start the timers.
-  web_contents()->WasHidden();
-  ASSERT_TRUE(registry->GetEmbedderTimerForTesting()->IsRunning());
-  ASSERT_TRUE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
-
-  task_runner->FastForwardBy(
-      PrerenderHostRegistry::kTimeToLiveInBackgroundForSpeculationRules);
-
-  prerender_observer.WaitForDestroyed();
-  ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
-  ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
-  histogram_tester().ExpectUniqueSample(
-      "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
-      PrerenderFinalStatus::kTimeoutBackgrounded, 1);
-}
-
-// Test that multiple PrerenderHosts triggered by speculation rules are canceled
-// when it times out in the background.
-IN_PROC_BROWSER_TEST_F(PrerenderHostRegistryInBackgroundTest,
-                       CancelMultiplePrerendersWhenTimeout) {
-  const GURL kInitialUrl = GetUrl("/empty.html");
-  const GURL kPrerenderUrl1 = GetUrl("/empty.html?prerender1");
-  const GURL kPrerenderUrl2 = GetUrl("/empty.html?prerender2");
-
-  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
-
-  AddPrerender(kPrerenderUrl1);
-  AddPrerender(kPrerenderUrl2);
-
-  test::PrerenderHostObserver prerender_observer(*web_contents_impl(),
-                                                 kPrerenderUrl1);
-
-  PrerenderHostRegistry* registry =
-      web_contents_impl()->GetPrerenderHostRegistry();
-
-  // The timers should not start yet when the prerendered page is in the
-  // foreground.
-  ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
-  ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
-
-  // Inject mock time task runner.
-  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
-  registry->SetTaskRunnerForTesting(task_runner);
-
-  // Changing the visibility state to HIDDEN will not stop prerendering
-  // immediately, but start the timers.
-  web_contents()->WasHidden();
-  ASSERT_TRUE(registry->GetEmbedderTimerForTesting()->IsRunning());
-  ASSERT_TRUE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
-
-  task_runner->FastForwardBy(
-      PrerenderHostRegistry::kTimeToLiveInBackgroundForSpeculationRules);
-
-  prerender_observer.WaitForDestroyed();
-  ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
-  ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
-  histogram_tester().ExpectUniqueSample(
-      "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
-      PrerenderFinalStatus::kTimeoutBackgrounded, 2);
-}
-
-// Test that a PrerenderHost triggered by embedder is canceled when it times out
-// in the background.
-IN_PROC_BROWSER_TEST_F(PrerenderHostRegistryInBackgroundTest,
-                       CancelOnlyEmbedderTriggeredPrerenderWhenTimeout) {
-  const GURL kInitialUrl = GetUrl("/empty.html");
-  const GURL kPrerenderUrl1 = GetUrl("/empty.html?prerender1");
-  const GURL kPrerenderUrl2 = GetUrl("/empty.html?prerender2");
-
-  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
-
-  // Start prerendering by speculation rules.
-  AddPrerender(kPrerenderUrl1);
-
-  test::PrerenderHostObserver host_observer(*web_contents_impl(),
-                                            kPrerenderUrl2);
-  // Start prerendering by embedder.
-  std::unique_ptr<PrerenderHandle> prerender_handle =
-      web_contents_impl()->StartPrerendering(
-          kPrerenderUrl2, PrerenderTriggerType::kEmbedder,
-          "EmbedderSuffixForTest",
-          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
-                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
-          nullptr);
-
-  PrerenderHostRegistry* registry =
-      web_contents_impl()->GetPrerenderHostRegistry();
-
-  // The timers should not start yet when the prerendered page is in the
-  // foreground.
-  ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
-  ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
-
-  // Inject mock time task runner.
-  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
-  registry->SetTaskRunnerForTesting(task_runner);
-
-  // Changing the visibility state to HIDDEN will not stop prerendering
-  // immediately, but start the timers.
-  web_contents()->WasHidden();
-  ASSERT_TRUE(registry->GetEmbedderTimerForTesting()->IsRunning());
-  ASSERT_TRUE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
-
-  // PrerenderHost triggered by embedder should be destroyed and PrerenderHost
-  // triggered by speculation rules should be alive, since the timeout value
-  // differs depending on the trigger type.
-  ASSERT_GT(PrerenderHostRegistry::kTimeToLiveInBackgroundForSpeculationRules,
-            PrerenderHostRegistry::kTimeToLiveInBackgroundForEmbedder);
-  task_runner->FastForwardBy(
-      PrerenderHostRegistry::kTimeToLiveInBackgroundForEmbedder);
-
-  host_observer.WaitForDestroyed();
-
-  // The timer for speculation rules is still running and PrerenderHost for
-  // speculation rules is alive.
-  ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
-  ASSERT_TRUE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
-  EXPECT_NE(GetHostForUrl(kPrerenderUrl1), RenderFrameHost::kNoFrameTreeNodeId);
-
-  histogram_tester().ExpectUniqueSample(
-      "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_"
-      "EmbedderSuffixForTest",
-      PrerenderFinalStatus::kTimeoutBackgrounded, 1);
-  histogram_tester().ExpectBucketCount(
-      "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
-      PrerenderFinalStatus::kTimeoutBackgrounded, 0);
-}
-
-// Test that the timers for PrerenderHost timeout is reset when the tab gets
-// visible.
-IN_PROC_BROWSER_TEST_F(PrerenderHostRegistryInBackgroundTest,
-                       TimerResetWhenHiddenPageGoBackToForeground) {
-  const GURL kInitialUrl = GetUrl("/empty.html");
-  const GURL kPrerenderUrl = GetUrl("/empty.html?prerender");
-
-  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
-  AddPrerender(kPrerenderUrl);
-
-  PrerenderHostRegistry* registry =
-      web_contents_impl()->GetPrerenderHostRegistry();
-
-  // The timers should not start yet when the prerendered page is in the
-  // foreground.
-  ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
-  ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
-
-  // Changing the visibility state to HIDDEN will not stop prerendering
-  // immediately, but start the timers.
-  web_contents()->WasHidden();
-  ASSERT_TRUE(registry->GetEmbedderTimerForTesting()->IsRunning());
-  ASSERT_TRUE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
-
-  // The timers should be reset when the hidden page goes back to the
-  // foreground.
-  web_contents()->WasShown();
-  ASSERT_FALSE(registry->GetEmbedderTimerForTesting()->IsRunning());
-  ASSERT_FALSE(registry->GetSpeculationRulesTimerForTesting()->IsRunning());
-
-  // Activate the prerendered page.
-  test::PrerenderHostObserver prerender_observer(*web_contents(),
-                                                 GetHostForUrl(kPrerenderUrl));
-  NavigatePrimaryPage(kPrerenderUrl);
-  prerender_observer.WaitForActivation();
-  EXPECT_EQ(web_contents()->GetLastCommittedURL(), kPrerenderUrl);
-  histogram_tester().ExpectUniqueSample(
-      "Prerender.Experimental.PrerenderHostFinalStatus.SpeculationRule",
-      PrerenderFinalStatus::kActivated, 1);
 }
 
 // TODO(crbug.com/1356907): Remove this and merge it to
@@ -9321,6 +9438,70 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, FocusChangeInPrerenderedPage) {
 
   // The prerendered page should not update the target url.
   EXPECT_FALSE(delegate.is_updated_target_url());
+}
+
+// Tests that an unused RenderWidgetHost (that is owned by a RenderViewHostImpl)
+// created by a prerendering FrameTree points to the primary frame tree after
+// activation. Regression test for crbug.com/1324149.
+IN_PROC_BROWSER_TEST_F(
+    PrerenderBrowserTest,
+    UnusedRenderWidgetHostFrameTreePointerUpdatedOnActivation) {
+  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+
+  // Navigate to an initial page.
+  const GURL kInitialUrl = GetUrl("/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+  EXPECT_TRUE(AddTestUtilJS(current_frame_host()));
+
+  // Start a prerender.
+  const GURL kPrerenderingUrl = GetUrl("/title2.html");
+  int host_id = AddPrerender(kPrerenderingUrl);
+
+  // Add a cross-origin iframe to the prerendering page.
+  const GURL kCrossOriginSubframeUrl = GetCrossSiteUrl("/title2.html");
+  RenderFrameHostImpl* prerender_rfh = GetPrerenderedMainFrameHost(host_id);
+  EXPECT_TRUE(AddTestUtilJS(prerender_rfh));
+  EXPECT_TRUE(ExecJs(prerender_rfh, JsReplace("add_iframe_async($1)",
+                                              kCrossOriginSubframeUrl)));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(prerender_rfh->child_count(), 1u);
+  FrameTreeNode* iframe = prerender_rfh->child_at(0);
+  // The cross-origin navigation in the iframe will be throttled, but not before
+  // creating a out-of-process speculative RFH (which would also result in an
+  // RVH created for the subframe speculatively).
+  ASSERT_TRUE(iframe->render_manager()->speculative_frame_host());
+  RenderViewHostImpl* render_view_host =
+      iframe->render_manager()->speculative_frame_host()->render_view_host();
+
+  // Activate.
+  NavigatePrimaryPage(kPrerenderingUrl);
+  ASSERT_EQ(web_contents()->GetLastCommittedURL(), kPrerenderingUrl);
+  // Wait for iframe to finish navigating.
+  ASSERT_EQ("LOADED",
+            EvalJs(prerender_rfh, JsReplace("wait_iframe_async($1)",
+                                            kCrossOriginSubframeUrl)));
+  // This asserts that the current RenderViewHost was created before activation
+  // (to make sure we're testing the right thing).
+  EXPECT_EQ(render_view_host, iframe->current_frame_host()->render_view_host());
+
+  // The unused RenderWidgetHost should point to the primary FrameTree now.
+  RenderWidgetHostImpl* render_widget_host = render_view_host->GetWidget();
+  EXPECT_NE(render_widget_host,
+            iframe->current_frame_host()->GetRenderWidgetHost());
+  EXPECT_EQ(render_widget_host->frame_tree(),
+            current_frame_host()->frame_tree());
+
+  // Navigate the primary main frame to the same origin as |iframe|; this
+  // should reuse |render_view_host|, and as a result |render_widget_host| will
+  // be used. If the |render_widget_host| points to the wrong frame_tree, this
+  // will result in a segfault (reproducing crbug.com/1324149) when we try to
+  // focus the new page's view.
+  const GURL kCrossOriginUrl = GetCrossSiteUrl("/title1.html");
+  DisableProactiveBrowsingInstanceSwapFor(current_frame_host());
+  NavigatePrimaryPage(kCrossOriginUrl);
+  ASSERT_EQ(current_frame_host()->render_view_host(), render_view_host);
+  ASSERT_EQ(current_frame_host()->GetRenderWidgetHost(), render_widget_host);
 }
 
 }  // namespace content

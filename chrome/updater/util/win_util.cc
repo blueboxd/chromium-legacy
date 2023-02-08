@@ -45,6 +45,7 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/scoped_localalloc.h"
 #include "base/win/scoped_process_information.h"
 #include "base/win/scoped_variant.h"
 #include "base/win/startup_information.h"
@@ -697,10 +698,13 @@ std::wstring BuildMsiCommandLine(
            ? base::StrCat(
                  {L" ",
                   base::UTF8ToWide(base::ToUpperASCII(kInstallerDataSwitch)),
-                  L"=\"", installer_data_file->value(), L"\""})
+                  L"=",
+                  QuoteForCommandLineToArgvW(installer_data_file->value())})
            : L"",
-       L" REBOOT=ReallySuppress /qn /i \"", msi_installer.value(),
-       L"\" /log \"", msi_installer.value(), L".log\""});
+       L" REBOOT=ReallySuppress /qn /i ",
+       QuoteForCommandLineToArgvW(msi_installer.value()), L" /log ",
+       QuoteForCommandLineToArgvW(
+           msi_installer.AddExtension(L".log").value())});
 }
 
 std::wstring BuildExeCommandLine(
@@ -711,17 +715,17 @@ std::wstring BuildExeCommandLine(
     return std::wstring();
   }
 
-  return base::StrCat({base::CommandLine(exe_installer).GetCommandLineString(),
-                       L" ", arguments, [&installer_data_file]() {
-                         if (!installer_data_file)
-                           return std::wstring();
+  return base::StrCat(
+      {QuoteForCommandLineToArgvW(exe_installer.value()), L" ", arguments,
+       [&installer_data_file]() {
+         if (!installer_data_file)
+           return std::wstring();
 
-                         base::CommandLine installer_data_args(
-                             base::CommandLine::NO_PROGRAM);
-                         installer_data_args.AppendSwitchPath(
-                             kInstallerDataSwitch, *installer_data_file);
-                         return installer_data_args.GetCommandLineString();
-                       }()});
+         base::CommandLine installer_data_args(base::CommandLine::NO_PROGRAM);
+         installer_data_args.AppendSwitchPath(kInstallerDataSwitch,
+                                              *installer_data_file);
+         return base::StrCat({L" ", installer_data_args.GetArgumentsString()});
+       }()});
 }
 
 bool IsServiceRunning(const std::wstring& service_name) {
@@ -904,9 +908,11 @@ bool StopGoogleUpdateProcesses(UpdaterScope scope) {
 
 absl::optional<base::CommandLine> CommandLineForLegacyFormat(
     const std::wstring& cmd_string) {
-  wchar_t** args = nullptr;
   int num_args = 0;
-  args = ::CommandLineToArgvW(cmd_string.c_str(), &num_args);
+  base::win::ScopedLocalAllocTyped<wchar_t*> args(
+      ::CommandLineToArgvW(cmd_string.c_str(), &num_args));
+  if (!args)
+    return absl::nullopt;
 
   auto is_switch = [](const std::wstring& arg) { return arg[0] == L'-'; };
 
@@ -915,23 +921,23 @@ absl::optional<base::CommandLine> CommandLineForLegacyFormat(
   };
 
   // First argument is the program.
-  base::CommandLine command_line(base::FilePath{args[0]});
+  base::CommandLine command_line(base::FilePath{args.get()[0]});
 
   for (int i = 1; i < num_args; ++i) {
-    const std::wstring next_arg = i < num_args - 1 ? args[i + 1] : L"";
+    const std::wstring next_arg = i < num_args - 1 ? args.get()[i + 1] : L"";
 
-    if (is_switch(args[i]) || is_switch(next_arg)) {
+    if (is_switch(args.get()[i]) || is_switch(next_arg)) {
       // Won't parse Chromium-style command line.
       return absl::nullopt;
     }
 
-    if (!is_legacy_switch(args[i])) {
+    if (!is_legacy_switch(args.get()[i])) {
       // This is a bare argument.
-      command_line.AppendArg(base::WideToASCII(args[i]));
+      command_line.AppendArg(base::WideToASCII(args.get()[i]));
       continue;
     }
 
-    const std::string switch_name = base::WideToASCII(&args[i][1]);
+    const std::string switch_name = base::WideToASCII(&args.get()[i][1]);
     if (switch_name.empty()) {
       VLOG(1) << "Empty switch in command line: [" << cmd_string << "]";
       return absl::nullopt;
@@ -972,43 +978,44 @@ base::FilePath GetExecutableRelativePath() {
   return base::FilePath::FromASCII(kExecutableName);
 }
 
+// TODO(crbug.com/1369674): Merge with `base::CommandLine`.
 std::wstring QuoteForCommandLineToArgvW(const std::wstring& input) {
   if (input.empty())
     return L"\"\"";
 
+  constexpr wchar_t kCharactersThatMayNeedEncoding[] = L" \t\\\"";
+  if (input.find_first_of(kCharactersThatMayNeedEncoding) == std::wstring::npos)
+    return input;
+
+  constexpr wchar_t kWhitespaceCharacters[] = L" \t";
+  const bool input_needs_quoting =
+      input.find_first_of(kWhitespaceCharacters) != std::wstring::npos;
+
   std::wstring output;
-  const bool contains_whitespace =
-      input.find_first_of(L" \t") != std::wstring::npos;
-  if (contains_whitespace)
+  if (input_needs_quoting)
     output.push_back(L'"');
 
-  size_t slash_count = 0;
-  for (auto i = input.begin(); i != input.end(); ++i) {
-    if (*i == L'"') {
+  for (size_t i = 0; i < input.size(); ++i) {
+    if (input[i] == L'\\') {
+      size_t end = i + 1;
+      while (end < input.size() && input[end] == L'\\')
+        ++end;
+
       // Before a quote, output 2n backslashes.
-      while (slash_count > 0) {
-        output.append(L"\\\\");
-        --slash_count;
-      }
+      output.append(std::wstring(
+          (end - i) * (1 + ((end == input.size() && input_needs_quoting) ||
+                            input[end] == L'"')),
+          L'\\'));
+
+      i = end - 1;
+    } else if (input[i] == L'"') {
       output.append(L"\\\"");
-    } else if (*i != L'\\' || i + 1 == input.end()) {
-      // At the end of the string, or before a regular character, output queued
-      // slashes.
-      while (slash_count > 0) {
-        output.push_back(L'\\');
-        --slash_count;
-      }
-      // If this is a slash, it's also the last character. Otherwise, it is just
-      // a regular non-quote/non-slash character.
-      output.push_back(*i);
-    } else if (*i == L'\\') {
-      // This is a slash, possibly followed by a quote, not the last character.
-      // Queue it up and output it later.
-      ++slash_count;
+    } else {
+      output.push_back(input[i]);
     }
   }
 
-  if (contains_whitespace)
+  if (input_needs_quoting)
     output.push_back(L'"');
 
   return output;

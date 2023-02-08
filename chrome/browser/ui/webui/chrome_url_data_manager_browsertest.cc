@@ -20,6 +20,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
+#include "components/history_clusters/core/features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/search/ntp_features.h"
 #include "content/public/browser/navigation_details.h"
@@ -159,7 +160,7 @@ class ChromeURLDataManagerWebUITrustedTypesTest
   ChromeURLDataManagerWebUITrustedTypesTest() {
     std::vector<base::test::FeatureRef> enabled_features;
     enabled_features.push_back(features::kChromeWhatsNewUI);
-    enabled_features.push_back(features::kSidePanelJourneys);
+    enabled_features.push_back(history_clusters::kSidePanelJourneys);
     enabled_features.push_back(features::kSupportTool);
     enabled_features.push_back(ntp_features::kCustomizeChromeSidePanel);
     enabled_features.push_back(
@@ -188,15 +189,7 @@ class ChromeURLDataManagerWebUITrustedTypesTest
 
     ASSERT_TRUE(embedded_test_server()->Start());
     ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(url)));
-
-    if (url == "chrome://network-error" || url == "chrome://dino") {
-      // We don't ASSERT_TRUE here because some WebUI pages are
-      // PAGE_TYPE_ERROR by design.
-      content::WaitForLoadStop(content);
-    } else {
-      ASSERT_TRUE(content::WaitForLoadStop(content));
-    }
-
+    ASSERT_TRUE(content::WaitForLoadStop(content));
     EXPECT_TRUE(console_observer.messages().empty());
   }
 
@@ -205,14 +198,7 @@ class ChromeURLDataManagerWebUITrustedTypesTest
         browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(embedded_test_server()->Start());
     ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(url)));
-
-    if (url == "chrome://network-error" || url == "chrome://dino") {
-      // We don't ASSERT_TRUE here because some WebUI pages are
-      // PAGE_TYPE_ERROR by design.
-      content::WaitForLoadStop(content);
-    } else {
-      ASSERT_TRUE(content::WaitForLoadStop(content));
-    }
+    ASSERT_TRUE(content::WaitForLoadStop(content));
 
     const char kIsTrustedTypesEnabled[] =
         "(function isTrustedTypesEnabled() {"
@@ -259,17 +245,11 @@ IN_PROC_BROWSER_TEST_P(ChromeURLDataManagerWebUITrustedTypesTest,
 // Non-exhaustive list of chrome:// URLs to test for
 //  1) TrustedTypes violations (see NoTrustedTypesViolation test).
 //  2) Presence of TrustedTypes checks (see TrustedTypesEnabled test).
-// This list was derived from chrome://about. :)
-//
-// TODO(crbug.com/1098690): For all commented out URLs below, uncomment after
-// enabling TrustedTypes, unless they are commented out for another reason
-// (like flaky failures).
 static constexpr const char* const kChromeUrls[] = {
     "chrome://accessibility",
     "chrome://app-service-internals",
     "chrome://attribution-internals",
     "chrome://autofill-internals",
-    // "chrome://blob-internals",
     "chrome://bookmarks",
     "chrome://bookmarks-side-panel.top-chrome",
     "chrome://chrome-urls",
@@ -280,10 +260,7 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://crashes",
     "chrome://credits",
     "chrome://customize-chrome-side-panel.top-chrome",
-    // TODO(crbug/1396866): Enable when bug is fixed.
-    // "chrome://customize-chrome-side-panel.top-chrome",
     "chrome://device-log",
-    // "chrome://dino",
     // TODO(crbug.com/1113446): Test failure due to excessive output.
     // "chrome://discards",
     "chrome://download-internals",
@@ -315,7 +292,6 @@ static constexpr const char* const kChromeUrls[] = {
     // "chrome://memory-internals",
     "chrome://net-export",
     "chrome://net-internals",
-    // "chrome://network-error",
     "chrome://network-errors",
     "chrome://new-tab-page",
     "chrome://new-tab-page-third-party",
@@ -353,7 +329,6 @@ static constexpr const char* const kChromeUrls[] = {
     // "chrome://tab-strip",
     "chrome://terms",
     "chrome://topics-internals",
-    // "chrome://tracing",
     "chrome://translate-internals",
     "chrome://ukm",
     "chrome://usb-internals",
@@ -380,38 +355,23 @@ static constexpr const char* const kChromeUrls[] = {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    // "chrome://account-manager-error",
-    // "chrome://account-migration-welcome",
-    // "chrome://add-supervision",
+    // TODO(crbug.com/1400799): Add CrOS-only WebUI URLs here as TrustedTypes
+    // are deployed to more WebUIs.
+
     // TODO(crbug.com/1102129): DCHECK failure in
     // ArcGraphicsTracingHandler::ArcGraphicsTracingHandler.
     // "chrome://arc-graphics-tracing",
-    // "chrome://arc-overview-tracing",
-    // "chrome://assistant-optin",
-    // "chrome://bluetooth-pairing",
-    // "chrome://certificate-manager",
-    // "chrome://crostini-credits",
-    // "chrome://crostini-installer",
     "chrome://cryptohome",
     "chrome://drive-internals",
     "chrome://family-link-user-internals",
     "chrome://help-app",
-    // "chrome://internet-config-dialog",
-    // "chrome://internet-detail-dialog",
     "chrome://linux-proxy-config",
-    // "chrome://multidevice-setup",
-    // "chrome://network",
-    // "chrome://os-credits",
-    // "chrome://os-settings",
+    "chrome://multidevice-internals",
+    "chrome://nearby-internals",
     "chrome://power",
     "chrome://projector",
     "chrome://proximity-auth/proximity_auth.html",
-    // "chrome://set-time",
     "chrome://slow",
-    // "chrome://smb-credentials-dialog",
-    // "chrome://smb-share-dialog",
-    // "chrome://sys-internals",
-    // "chrome-untrusted://terminal",
 #endif
 #if !BUILDFLAG(IS_CHROMEOS)
     "chrome://apps",
@@ -447,10 +407,12 @@ static constexpr const char* const kChromeUrls[] = {
     // "chrome://signin-reauth",
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    "chrome://chrome-signin",
+// TODO(crbug.com/1399912): Uncomment when TrustedTypes are enabled.
+// "chrome://chrome-signin",
 #endif
 #if BUILDFLAG(ENABLE_DICE_SUPPORT) && !BUILDFLAG(IS_CHROMEOS_ASH)
-    "chrome://chrome-signin/?reason=5",
+// TODO(crbug.com/1399912): Uncomment when TrustedTypes are enabled.
+// "chrome://chrome-signin/?reason=5",
 #endif
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
     "chrome://webuijserror",

@@ -256,6 +256,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="1553358976309200471">Update Chrome</translation>
 <translation id="1555130319947370107">Blue</translation>
 <translation id="1559447966090556585">Get notifications?</translation>
+<translation id="1559486004335285648">Auto-fill payment info</translation>
 <translation id="1559528461873125649">No such file or directory</translation>
 <translation id="1559572115229829303">&lt;p&gt;A private connection to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> can't be established because your device's date and time (<ph name="DATE_AND_TIME" />) are incorrect.&lt;/p&gt;
 
@@ -363,6 +364,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="1807246157184219062">Light</translation>
 <translation id="1807528111851433570">Start sheet</translation>
 <translation id="181000283860817563">Track prices across multiple sites</translation>
+<translation id="1810391395243432441">Protect passwords with your screen lock</translation>
 <translation id="1812527064848182527">landscape</translation>
 <translation id="1813414402673211292">Clear Browsing Data</translation>
 <translation id="182139138257690338">automatic downloads</translation>
@@ -382,6 +384,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="1871208020102129563">Proxy is set to use fixed proxy servers, not a .pac script URL.</translation>
 <translation id="1871284979644508959">Required field</translation>
 <translation id="1873899211667975540">Rock music</translation>
+<translation id="1874224422119691492">You can change whether you use your screen lock for filling in passwords in <ph name="SETTINGS" /></translation>
 <translation id="1875025161375567525">Photo tray</translation>
 <translation id="1875512691959384712">Google Forms</translation>
 <translation id="187918866476621466">Open startup pages</translation>
@@ -413,7 +416,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="1958218078413065209">Your highest score is <ph name="SCORE" />.</translation>
 <translation id="1959001866257244765">Help improve security on the web for everyone by sending <ph name="BEGIN_WHITEPAPER_LINK" />URLs of some pages that you visit, limited system information, and some page content<ph name="END_WHITEPAPER_LINK" /> to Google. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Privacy policy<ph name="END_PRIVACY_PAGE_LINK" /></translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> Bookmarks</translation>
-<translation id="1971033026002113380">Protect passwords with Touch ID</translation>
 <translation id="1973335181906896915">Serialisation error</translation>
 <translation id="1974060860693918893">Advanced</translation>
 <translation id="1975457531113383421">Input tray</translation>
@@ -745,10 +747,10 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="2876949457278336305"><ph name="MANAGE_SECURITY_SETTINGS_FOCUSED_FRIENDLY_MATCH_TEXT" />; press tab and then Enter to manage your Safe Browsing and more in Chrome settings</translation>
 <translation id="2878197950673342043">Poster fold</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2879694782644540289">use your screen lock for filling in passwords</translation>
 <translation id="2881276955470682203">Save card?</translation>
 <translation id="2882949212241984732">Double-gate fold</translation>
 <translation id="2893773853358652045">Fourth roll</translation>
-<translation id="289834758818479772">If you share this device with others, you can turn on Touch ID to verify that it's you whenever you use a saved password</translation>
 <translation id="2900528713135656174">Create event</translation>
 <translation id="2903493209154104877">Addresses</translation>
 <translation id="290376772003165898">Page is not in <ph name="LANGUAGE" />?</translation>
@@ -1003,6 +1005,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="3532844647053365774"><ph name="HOST" /> wants to use your microphone</translation>
 <translation id="3533328374079021623">Mailbox 5</translation>
 <translation id="3537165859691846083">Letter Plus</translation>
+<translation id="3542628208405253498">Card image</translation>
 <translation id="3542768452570884558">Open link in new window</translation>
 <translation id="3547746132308051926">20 in x 24 in</translation>
 <translation id="3550112004925580947">Hospitality industry</translation>
@@ -1066,7 +1069,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="3678529606614285348">Open page in a new incognito window (Ctrl-Shift-N)</translation>
 <translation id="3681007416295224113">Certificate information</translation>
 <translation id="3693327506115126094">Choose how you'll verify that it's you</translation>
-<translation id="3699374065820972102">TouchID is on for filling passwords</translation>
 <translation id="3701427423622901115">Reset acknowledged.</translation>
 <translation id="3704162925118123524">The network that you are using may require you to visit its log-in page.</translation>
 <translation id="3705189812819839667"><ph name="RESULT_OWNER" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -1094,6 +1096,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="3745099705178523657">Once you confirm, card details from your Google Account will be shared with this site.</translation>
 <translation id="3748148204939282805">Attackers on <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> may trick you into doing something dangerous like installing software or revealing your personal information (for example, passwords, phone numbers or credit cards). <ph name="BEGIN_LEARN_MORE_LINK" />Learn more<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3748912308089554501">Aviation industry</translation>
+<translation id="3752543821772132562">Ignored because <ph name="POLICY_NAME" /> is not set.</translation>
 <translation id="3754210790023674521">Exit picture-in-picture</translation>
 <translation id="3759461132968374835">You have no recently reported crashes.  Crashes that occurred when crash reporting was disabled will not appear here.</translation>
 <translation id="3760561303380396507">Use Windows Hello instead of CVC?</translation>
@@ -1181,7 +1184,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="401170183602135785">Envelope C6</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF document containing {COUNT} page}other{PDF document containing {COUNT} pages}}</translation>
 <translation id="4023431997072828269">Because this form is being submitted using a connection that’s not secure, your information will be visible to others.</translation>
-<translation id="4024923292610332139">turn off TouchID for filling passwords</translation>
 <translation id="4025913568718019429">Manage Google Privacy settings button, press Enter to visit your Google Account privacy settings</translation>
 <translation id="4030383055268325496">&amp;Undo add</translation>
 <translation id="4031179711345676612">Microphone allowed</translation>
@@ -1401,6 +1403,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="4541810033354695636">augmented reality</translation>
 <translation id="4542971377163063093">Tray 6</translation>
 <translation id="455113658016510503">A9</translation>
+<translation id="4556069465387849460">You're using your screen lock for filling in passwords</translation>
 <translation id="4558551763791394412">Try disabling your extensions.</translation>
 <translation id="4566017918361049074">Outdoors</translation>
 <translation id="4567686777917670400">Your administrator can change your browser setup remotely. Activity on this device may also be managed outside of Chromium. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
@@ -1543,7 +1546,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="4900217275619098670">Ninth roll</translation>
 <translation id="4901778704868714008">Save...</translation>
 <translation id="4905659621780993806">Your administrator will restart your device automatically at <ph name="TIME" /> on <ph name="DATE" />. Save any open items before your device restarts.</translation>
-<translation id="4911007278801291296">You can turn TouchID on or off in <ph name="SETTINGS" /></translation>
 <translation id="4913987521957242411">Punch top left</translation>
 <translation id="4918221908152712722">Install <ph name="APP_NAME" /> (no download required)</translation>
 <translation id="4923459931733593730">Payment</translation>
@@ -1757,7 +1759,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="5426179911063097041"><ph name="SITE" /> wants to send you notifications</translation>
 <translation id="5428105026674456456">Spanish</translation>
 <translation id="5430298929874300616">Remove bookmark</translation>
-<translation id="5434423669266814150">turn on Touch ID for filling in passwords</translation>
 <translation id="5443468954631487277">Reverse order face up</translation>
 <translation id="5447765697759493033">This site will not be translated</translation>
 <translation id="5452270690849572955">This <ph name="HOST_NAME" /> page can’t be found</translation>
@@ -2723,6 +2724,7 @@ Additional details:
 <translation id="7942349550061667556">Red</translation>
 <translation id="7943397946612013052">Blocked download</translation>
 <translation id="7943893128817522649">Can ask to automatically download multiple files</translation>
+<translation id="7946724693008564269">Detected Language</translation>
 <translation id="7947285636476623132">Check your expiry year and try again</translation>
 <translation id="7947813448670013867"><ph name="SEE_CHROME_TIPS_FOCUSED_FRIENDLY_MATCH_TEXT" />: press Tab then Enter to learn about Chrome features</translation>
 <translation id="7950027195171824198">Manage your cookie preferences in Chrome settings</translation>
@@ -2895,6 +2897,7 @@ Additional details:
 <translation id="8355270400102541638">Local crash context:</translation>
 <translation id="8363502534493474904">Turning off aeroplane mode</translation>
 <translation id="8364627913115013041">Not set.</translation>
+<translation id="836616551641291797">Learn more about how your browser is managed</translation>
 <translation id="8368001212524806591">Track price</translation>
 <translation id="8368027906805972958">Unknown or unsupported device (<ph name="DEVICE_ID" />)</translation>
 <translation id="8368476060205742148">Google Play services</translation>
@@ -2907,6 +2910,7 @@ Additional details:
 <translation id="8396522675989118466">This is the <ph name="NUMBER_OF_DIGITS" />-digit code on the <ph name="SIDE_OF_CARD" /></translation>
 <translation id="8398790343843005537">Find your phone</translation>
 <translation id="8405579342203358118">Manage what info you sync in Chrome settings</translation>
+<translation id="8406071103346257942">stop using your screen lock for filling in passwords</translation>
 <translation id="8409413588194360210">payment handlers</translation>
 <translation id="8412145213513410671">Crashes (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">You must enter the same passphrase twice.</translation>
@@ -3175,6 +3179,7 @@ Additional details:
 <translation id="9128016270925453879">Policies is loaded</translation>
 <translation id="9128870381267983090">Connect to network</translation>
 <translation id="9131119348384879525">Capture confidential content?</translation>
+<translation id="9133985615769429248">If you share this device with others, you can use your screen lock to verify that it's you whenever you use a saved password</translation>
 <translation id="9136861683332321024">Luxury vehicles</translation>
 <translation id="9137013805542155359">Show original</translation>
 <translation id="9138037198177304356">Notifications allowed</translation>

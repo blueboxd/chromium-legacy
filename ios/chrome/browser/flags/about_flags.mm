@@ -66,6 +66,7 @@
 #import "ios/chrome/app/background_mode_buildflags.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #import "ios/chrome/browser/crash_report/features.h"
+#import "ios/chrome/browser/credential_provider_promo/features.h"
 #import "ios/chrome/browser/flags/chrome_switches.h"
 #import "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #import "ios/chrome/browser/flags/system_flags.h"
@@ -81,7 +82,6 @@
 #import "ios/chrome/browser/ui/autofill/features.h"
 #import "ios/chrome/browser/ui/bubble/bubble_features.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
-#import "ios/chrome/browser/ui/credential_provider_promo/features.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/download/features.h"
 #import "ios/chrome/browser/ui/first_run/field_trial_constants.h"
@@ -790,6 +790,14 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxFocusTriggersSRPZeroSuggestDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(omnibox::kFocusTriggersSRPZeroSuggest)},
+    {"omnibox-report-assisted-query-stats",
+     flag_descriptions::kOmniboxReportAssistedQueryStatsName,
+     flag_descriptions::kOmniboxReportAssistedQueryStatsDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(omnibox::kReportAssistedQueryStats)},
+    {"omnibox-report-searchbox-stats",
+     flag_descriptions::kOmniboxReportSearchboxStatsName,
+     flag_descriptions::kOmniboxReportSearchboxStatsDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(omnibox::kReportSearchboxStats)},
     {"omnibox-fuzzy-url-suggestions",
      flag_descriptions::kOmniboxFuzzyUrlSuggestionsName,
      flag_descriptions::kOmniboxFuzzyUrlSuggestionsDescription,
@@ -1325,6 +1333,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIOSForceTranslateEnabledName,
      flag_descriptions::kIOSForceTranslateEnabledDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(translate::kIOSForceTranslateEnabled)},
+    {"iph-price-notifications-while-browsing",
+     flag_descriptions::kIPHPriceNotificationsWhileBrowsingName,
+     flag_descriptions::kIPHPriceNotificationsWhileBrowsingDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         feature_engagement::kIPHPriceNotificationsWhileBrowsingFeature)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -1379,6 +1393,8 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
       base::SysUTF8ToNSString(policy::key::kSafeBrowsingProtectionLevel) : @2,
 
       base::SysUTF8ToNSString(policy::key::kSearchSuggestEnabled) : @YES,
+
+      base::SysUTF8ToNSString(policy::key::kAppStoreRatingEnabled) : @NO,
     }];
   }
 

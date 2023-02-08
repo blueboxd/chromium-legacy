@@ -125,6 +125,7 @@ Nur Personen, die deine Passphrase kennen, können deine verschlüsselten Daten 
 <translation id="1870148520156231997">Passwort einblenden</translation>
 <translation id="1872096359983322073">Taschenlampe</translation>
 <translation id="1891796056033961979">Auf diesem Bildschirm findest du jetzt beispielsweise gespeicherte Lesezeichen, Passwörter und Einstellungen.</translation>
+<translation id="1894023287452300670">Hier den Preis beobachten</translation>
 <translation id="1911619930368729126">Auf Google Drive hochladen</translation>
 <translation id="1923342640370224680">Letzte Stunde</translation>
 <translation id="1930989359703290198">Deine Organisation lässt die Anmeldung nur mit bestimmten Konten zu. Unzulässige Konten sind ausgeblendet. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
@@ -147,7 +148,9 @@ Nur Personen, die deine Passphrase kennen, können deine verschlüsselten Daten 
 <translation id="2074131957428911366">Du kannst in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> auswählen, was du synchronisieren möchtest.</translation>
 <translation id="2079545284768500474">Rückgängig machen</translation>
 <translation id="2080769225927880590">Mit gültigem Konto anmelden</translation>
+<translation id="2090878303988764231">Melde dich an, um die angezeigten Inhalte zu verwalten</translation>
 <translation id="2103075008456228677">history.google.com öffnen</translation>
+<translation id="21133533946938348">Tab anpinnen</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> Lesezeichen verschoben</translation>
 <translation id="2122754583996902531">Dein Browser wird verwaltet. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="212623074644302906">Fragen, ob Seiten der Leseliste hinzugefügt werden sollen</translation>
@@ -169,7 +172,7 @@ Nur Personen, die deine Passphrase kennen, können deine verschlüsselten Daten 
 <translation id="2271351792809375263">Du kannst in Chrome gespeicherte Passwörter in anderen Apps auf deinem Gerät nutzen</translation>
 <translation id="2273327106802955778">Menü "Mehr"</translation>
 <translation id="2286505070150039482">Markierter Text</translation>
-<translation id="2299218006564889602">Deine Passwörter werden auf deinem Gerät verschlüsselt, bevor sie im Passwortmanager von Google gespeichert werden.</translation>
+<translation id="2299218006564889602">Deine Passwörter werden auf deinem Gerät verschlüsselt, bevor sie im Google Passwortmanager gespeichert werden.</translation>
 <translation id="2302742851632557585">Passwort auf der Website ändern</translation>
 <translation id="2316709634732130529">Vorgeschlagenes Passwort verwenden</translation>
 <translation id="2320166752086256636">Tastatur ausblenden</translation>
@@ -189,6 +192,7 @@ Websites können Cookies nicht verwenden, um deine Browseraktivitäten auf ander
 <translation id="2421044535038393232">Weiter bearbeiten</translation>
 <translation id="2434405374328098816">Du hast für „<ph name="USERNAME" />“ schon ein Passwort bei <ph name="WEBSITE" /> gespeichert</translation>
 <translation id="2435457462613246316">Passwort anzeigen</translation>
+<translation id="2451654228769116489">Tab anpinnen</translation>
 <translation id="2461070143328828326">Passworteinstellungen</translation>
 <translation id="2469960372084740698">Safe Browsing deaktivieren?</translation>
 <translation id="2473876017985765807">Du hast bereits ein Passwort für <ph name="WEBSITE" /> gespeichert</translation>
@@ -211,7 +215,7 @@ Websites können Cookies nicht verwenden, um deine Browseraktivitäten auf ander
 <translation id="2648803196158606475">Gelesene löschen</translation>
 <translation id="2653659639078652383">Senden</translation>
 <translation id="2664621323652615289">Beenden</translation>
-<translation id="2671426118752779020">Du kannst die im Passwortmanager von Google gespeicherten Passwörter in anderen Apps auf deinem iPhone verwenden.</translation>
+<translation id="2671426118752779020">Du kannst die im Google Passwortmanager gespeicherten Passwörter in anderen Apps auf deinem iPhone verwenden.</translation>
 <translation id="2690858294534178585">Kamera wird verwendet</translation>
 <translation id="2691653761409724435">Nicht offline verfügbar</translation>
 <translation id="2695507686909505111">Seite ist übersetzt</translation>
@@ -286,6 +290,7 @@ Informationen zum Löschen deines Suchverlaufs findest du in der Anleitung deine
 <translation id="3130863904455712965">Verlauf und mehr</translation>
 <translation id="3131206671572504478">Alle blockieren</translation>
 <translation id="313283613037595347">Neuen Inkognitotab erstellen.</translation>
+<translation id="3146109040683991651">Chrome als Standardbrowser festlegen</translation>
 <translation id="3153862085237805241">Karte speichern</translation>
 <translation id="3157387275655328056">Zur Leseliste hinzufügen</translation>
 <translation id="3157684681743766797">Alle markieren…</translation>
@@ -673,6 +678,7 @@ Handoff muss auch im Abschnitt "Allgemein" deiner Einstellungen aktiviert sein u
 <translation id="6059830886158432458">Hier kannst du festlegen, welche Meldungen und Aktivitäten dir angezeigt werden</translation>
 <translation id="6064824697233747382">Deine Organisation verlangt, dass du die Synchronisierung deaktivierst.</translation>
 <translation id="6066301408025741299">Zum Abbrechen tippen</translation>
+<translation id="6071409777669089905">Tab loslösen</translation>
 <translation id="60829778314739003">Akzeptieren und fortfahren</translation>
 <translation id="6084848228346514841">Tabs auswählen</translation>
 <translation id="6103540626693881831">Verschlüsselung auf dem Gerät</translation>
@@ -796,7 +802,7 @@ Wenn der Inkognitomodus aktiviert ist, können Websites keine Cookies verwenden,
 <translation id="6801927553864092214">Wenn du privat surfen möchtest, öffne einen Inkognitotab</translation>
 <translation id="6807889908376551050">Alle anzeigen...</translation>
 <translation id="681368974849482173">Element erstellt</translation>
-<translation id="683022620450280906">Du kannst gespeicherte Passwörter auf jedem Gerät nutzen. Sie werden im Passwortmanager von Google für <ph name="EMAIL" /> gespeichert.</translation>
+<translation id="683022620450280906">Du kannst gespeicherte Passwörter auf jedem Gerät nutzen. Sie werden im Google Passwortmanager für <ph name="EMAIL" /> gespeichert.</translation>
 <translation id="6831043979455480757">Übersetzen</translation>
 <translation id="6842136130964845393">Bestätige deine Identität, damit du jederzeit auf deine gespeicherten Passwörter zugreifen kannst</translation>
 <translation id="6851516051005285358">Desktop-Version</translation>
@@ -941,7 +947,7 @@ Websites können Cookies verwenden, um deine Browseraktivitäten auf anderen Web
 <translation id="7978018860671536736">3. Tippe auf „Passwörter automatisch ausfüllen lassen“</translation>
 <translation id="7981908678811807838">Die Preisbeobachtung ist für diese Website nicht verfügbar.</translation>
 <translation id="7982789257301363584">Netzwerk</translation>
-<translation id="7987685713885608670">Für zusätzliche Sicherheit kannst du Passwörter auf deinem Gerät verschlüsseln lassen, bevor sie im Passwortmanager von Google gespeichert werden.</translation>
+<translation id="7987685713885608670">Für zusätzliche Sicherheit kannst du Passwörter auf deinem Gerät verschlüsseln lassen, bevor sie im Google Passwortmanager gespeichert werden.</translation>
 <translation id="7993619969781047893">Funktionen auf manchen Websites funktionieren möglicherweise nicht mehr</translation>
 <translation id="800361585186029508">Öffnet die eingegebenen URLs in Google Chrome.</translation>
 <translation id="8016714545083187120">Immer sichere Verbindungen verwenden</translation>
@@ -973,6 +979,7 @@ Websites können Cookies verwenden, um deine Browseraktivitäten auf anderen Web
 <translation id="8197543752516192074">Seite übersetzen</translation>
 <translation id="8205564605687841303">Abbrechen</translation>
 <translation id="8206354486702514201">Diese Einstellung wird von deinem Administrator erzwungen.</translation>
+<translation id="821809831108207540">Wenn du deinen Discover-Feed und Chrome personalisieren möchtest, melde dich an und aktiviere die Synchronisierung.</translation>
 <translation id="8225985093977202398">Bilder &amp; Dateien im Cache</translation>
 <translation id="8237382152611443140">Öffne die Einstellungen für das automatische Ausfüllen von Passwörtern</translation>
 <translation id="8261506727792406068">Löschen</translation>
@@ -1100,6 +1107,7 @@ Websites können Cookies verwenden, um deine Browseraktivitäten auf anderen Web
 <translation id="9219154867334666734">Auf Tabs suchen…</translation>
 <translation id="9223358826628549784">Absturzbericht wurde gesendet.</translation>
 <translation id="941747855997058526">Passwort auswählen…</translation>
+<translation id="948048872540558976">Neuen Tab erstellen</translation>
 <translation id="952704832371081537">Abbrechen</translation>
 <translation id="953008885340860025">Von Chrome abgemeldet</translation>
 <translation id="959066944189734975">Du folgst „<ph name="CHANNEL_NAME" />“</translation>

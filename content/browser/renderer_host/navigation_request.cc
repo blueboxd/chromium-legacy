@@ -36,6 +36,8 @@
 #include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/attribution_reporting/os_registration.h"
+#include "components/attribution_reporting/os_support.mojom.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -163,7 +165,6 @@
 #include "third_party/blink/public/common/security/address_space_feature.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
-#include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/loader/mixed_content.mojom.h"
 #include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
@@ -477,10 +478,9 @@ void AddAdditionalRequestHeaders(
 
     if (base::FeatureList::IsEnabled(
             blink::features::kAttributionReportingCrossAppWeb)) {
-      bool has_os_support = AttributionManager::GetOsSupport() ==
-                            blink::mojom::AttributionOsSupport::kEnabled;
       headers->SetHeader("Attribution-Reporting-Support",
-                         has_os_support ? "web, os" : "web");
+                         attribution_reporting::GetSupportHeader(
+                             AttributionManager::GetOsSupport()));
     }
   }
 }
@@ -1872,7 +1872,8 @@ NavigationRequest::NavigationRequest(
   navigation_handle_proxy_ = std::make_unique<NavigationHandleProxy>(this);
 #endif
 
-  if (NeedsUrlLoader() && common_params_->url.SchemeIsHTTPOrHTTPS()) {
+  if (base::FeatureList::IsEnabled(features::kNavigationRequestPreconnect) &&
+      NeedsUrlLoader() && common_params_->url.SchemeIsHTTPOrHTTPS()) {
     BrowserContext* browser_context =
         frame_tree_node_->navigator().controller().GetBrowserContext();
     if (GetContentClient()->browser()->ShouldPreconnectNavigation(
@@ -2206,8 +2207,7 @@ FencedFrameURLMapping& NavigationRequest::GetFencedFrameURLMap() {
   // `inner_frame_tree` is true for navigations inside the main frame of a
   // nested fenced frame's `FrameTree`, and false otherwise. This is only the
   // case for the MPArch implementation of fenced frames.
-  bool is_inner_frame_tree =
-      frame_tree_node_->frame_tree().type() == FrameTree::Type::kFencedFrame;
+  bool is_inner_frame_tree = frame_tree_node_->IsInFencedFrameTree();
   FrameTreeNode* node_to_use =
       is_inner_frame_tree
           ? frame_tree_node_->render_manager()->GetOuterDelegateNode()
@@ -3653,18 +3653,21 @@ void NavigationRequest::OnResponseStarted(
     mojo::ScopedDataPipeConsumerHandle response_body,
     GlobalRequestID request_id,
     bool is_download,
-    blink::NavigationDownloadPolicy download_policy,
     net::NetworkAnonymizationKey network_anonymization_key,
     absl::optional<SubresourceLoaderParams> subresource_loader_params,
     EarlyHints early_hints) {
+  if (is_download) {
+    download_policy().RecordHistogram();
+  }
+
   ScopedCrashKeys crash_keys(*this);
 
   // The |loader_|'s job is finished. It must not call the NavigationRequest
   // anymore from now.
   loader_.reset();
   if (is_download)
-    RecordDownloadUseCountersPrePolicyCheck(download_policy);
-  is_download_ = is_download && download_policy.IsDownloadAllowed();
+    RecordDownloadUseCountersPrePolicyCheck();
+  is_download_ = is_download && download_policy().IsDownloadAllowed();
   if (is_download_)
     RecordDownloadUseCountersPostPolicyCheck();
   request_id_ = request_id;
@@ -6006,14 +6009,13 @@ bool NavigationRequest::IsSameDocument() const {
   return NavigationTypeUtils::IsSameDocument(common_params_->navigation_type);
 }
 
-void NavigationRequest::RecordDownloadUseCountersPrePolicyCheck(
-    blink::NavigationDownloadPolicy download_policy) {
+void NavigationRequest::RecordDownloadUseCountersPrePolicyCheck() {
   RenderFrameHost* rfh = frame_tree_node_->current_frame_host();
   GetContentClient()->browser()->LogWebFeatureForCurrentPage(
       rfh, blink::mojom::WebFeature::kDownloadPrePolicyCheck);
 
   // Log UseCounters for opener navigations.
-  if (download_policy.IsType(
+  if (download_policy().IsType(
           blink::NavigationDownloadType::kOpenerCrossOrigin)) {
     rfh->AddMessageToConsole(
         blink::mojom::ConsoleMessageLevel::kError,
@@ -6027,26 +6029,26 @@ void NavigationRequest::RecordDownloadUseCountersPrePolicyCheck(
   }
 
   // Log UseCounters for download in sandbox.
-  if (download_policy.IsType(blink::NavigationDownloadType::kSandbox)) {
+  if (download_policy().IsType(blink::NavigationDownloadType::kSandbox)) {
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         rfh, blink::mojom::WebFeature::kDownloadInSandbox);
   }
 
   // Log UseCounters for download without user activation.
-  if (download_policy.IsType(blink::NavigationDownloadType::kNoGesture)) {
+  if (download_policy().IsType(blink::NavigationDownloadType::kNoGesture)) {
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         rfh, blink::mojom::WebFeature::kDownloadWithoutUserGesture);
   }
 
   // Log UseCounters for download in ad frame without user activation.
-  if (download_policy.IsType(
+  if (download_policy().IsType(
           blink::NavigationDownloadType::kAdFrameNoGesture)) {
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         rfh, blink::mojom::WebFeature::kDownloadInAdFrameWithoutUserGesture);
   }
 
   // Log UseCounters for download in ad frame.
-  if (download_policy.IsType(blink::NavigationDownloadType::kAdFrame)) {
+  if (download_policy().IsType(blink::NavigationDownloadType::kAdFrame)) {
     GetContentClient()->browser()->LogWebFeatureForCurrentPage(
         rfh, blink::mojom::WebFeature::kDownloadInAdFrame);
   }
@@ -8492,12 +8494,9 @@ NavigationRequest::GetRuntimeFeatureStateContext() {
 // fields from the bitfield can be computed from the browser process. This
 // function is a partial attempt at doing it.
 void NavigationRequest::ComputeDownloadPolicy() {
-  blink::NavigationDownloadPolicy& download_policy =
-      common_params_->download_policy;
-
   // [ViewSource]
   if (GetNavigationEntry() && GetNavigationEntry()->IsViewSourceMode()) {
-    download_policy.SetDisallowed(blink::NavigationDownloadType::kViewSource);
+    download_policy().SetDisallowed(blink::NavigationDownloadType::kViewSource);
   }
 
   // [Sandbox]
@@ -8506,7 +8505,7 @@ void NavigationRequest::ComputeDownloadPolicy() {
       (commit_params_->frame_policy.sandbox_flags &
        network::mojom::WebSandboxFlags::kDownloads) ==
           network::mojom::WebSandboxFlags::kDownloads) {
-    download_policy.SetDisallowed(blink::NavigationDownloadType::kSandbox);
+    download_policy().SetDisallowed(blink::NavigationDownloadType::kSandbox);
   }
 
   // TODO(arthursonzogni): Check if the following fields from the

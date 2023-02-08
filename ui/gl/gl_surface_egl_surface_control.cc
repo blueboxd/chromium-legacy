@@ -17,6 +17,8 @@
 #include "cc/base/math_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/overlay_transform_utils.h"
+#include "ui/gl/android/scoped_a_native_window.h"
+#include "ui/gl/android/scoped_java_surface_control.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_features.h"
@@ -57,13 +59,30 @@ base::TimeTicks GetSignalTime(const base::ScopedFD& fence) {
 
 GLSurfaceEGLSurfaceControl::GLSurfaceEGLSurfaceControl(
     GLDisplayEGL* display,
-    ANativeWindow* window,
+    gl::ScopedANativeWindow window,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : GLSurfaceEGL(display),
-      root_surface_name_(BuildSurfaceName(kRootSurfaceName)),
+    : GLSurfaceEGLSurfaceControl(
+          display,
+          base::MakeRefCounted<gfx::SurfaceControl::Surface>(
+              window.a_native_window(),
+              BuildSurfaceName(kRootSurfaceName).c_str()),
+          std::move(task_runner)) {}
+
+GLSurfaceEGLSurfaceControl::GLSurfaceEGLSurfaceControl(
+    GLDisplayEGL* display,
+    gl::ScopedJavaSurfaceControl scoped_java_surface_control,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : GLSurfaceEGLSurfaceControl(display,
+                                 scoped_java_surface_control.MakeSurface(),
+                                 std::move(task_runner)) {}
+
+GLSurfaceEGLSurfaceControl::GLSurfaceEGLSurfaceControl(
+    GLDisplayEGL* display,
+    scoped_refptr<gfx::SurfaceControl::Surface> root_surface,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : Presenter(display, gfx::Size()),
       child_surface_name_(BuildSurfaceName(kChildSurfaceName)),
-      root_surface_(
-          new gfx::SurfaceControl::Surface(window, root_surface_name_.c_str())),
+      root_surface_(std::move(root_surface)),
       transaction_ack_timeout_manager_(task_runner),
       gpu_task_runner_(std::move(task_runner)),
       use_target_deadline_(features::IsAndroidFrameDeadlineEnabled()),

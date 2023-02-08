@@ -29,6 +29,7 @@
 #include "base/threading/sequence_bound.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "components/attribution_reporting/os_support.mojom.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
@@ -68,7 +69,6 @@
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
-#include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -347,7 +347,7 @@ ScopedUseInMemoryStorageForTesting::~ScopedUseInMemoryStorageForTesting() {
 }
 
 ScopedOsSupportForTesting::ScopedOsSupportForTesting(
-    blink::mojom::AttributionOsSupport os_support)
+    attribution_reporting::mojom::OsSupport os_support)
     : previous_(AttributionManagerImpl::g_os_support_) {
   AttributionManagerImpl::SetOsSupportForTesting(os_support);
 }
@@ -357,8 +357,8 @@ ScopedOsSupportForTesting::~ScopedOsSupportForTesting() {
 }
 
 // static
-blink::mojom::AttributionOsSupport AttributionManagerImpl::g_os_support_ =
-    blink::mojom::AttributionOsSupport::kDisabled;
+attribution_reporting::mojom::OsSupport AttributionManagerImpl::g_os_support_ =
+    attribution_reporting::mojom::OsSupport::kDisabled;
 
 // static
 std::unique_ptr<AttributionManagerImpl>
@@ -408,7 +408,7 @@ AttributionManagerImpl::CreateForTesting(
 
 // static
 void AttributionManagerImpl::SetOsSupportForTesting(
-    blink::mojom::AttributionOsSupport os_support) {
+    attribution_reporting::mojom::OsSupport os_support) {
   g_os_support_ = os_support;
 
   for (RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
@@ -586,7 +586,7 @@ void AttributionManagerImpl::ProcessEvents() {
                   trigger.registration();
               return registration.debug_key.has_value() ||
                              registration.debug_reporting
-                         ? &registration.reporting_origin
+                         ? &trigger.reporting_origin()
                          : nullptr;
             },
         },
@@ -654,7 +654,7 @@ void AttributionManagerImpl::ProcessNextEvent(bool is_debug_cookie_set) {
                 this->storage_partition_.get(),
                 ContentBrowserClient::AttributionReportingOperation::kTrigger,
                 /*source_origin=*/nullptr, &*trigger.destination_origin(),
-                &*registration.reporting_origin);
+                &*trigger.reporting_origin());
             RecordRegisterConversionAllowed(allowed);
             if (!allowed) {
               this->OnReportStored(
@@ -1082,7 +1082,7 @@ void AttributionManagerImpl::MaybeSendVerboseDebugReport(
                               kTriggerVerboseDebugReport,
                           /*source_origin=*/nullptr,
                           &*trigger.destination_origin(),
-                          &*trigger.registration().reporting_origin)) {
+                          &*trigger.reporting_origin())) {
     return;
   }
 

@@ -14,6 +14,13 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
+#include "chrome/browser/ash/app_list/app_context_menu_delegate.h"
+#include "chrome/browser/ash/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ash/app_list/app_list_model_updater.h"
+#include "chrome/browser/ash/app_list/app_list_syncable_service.h"
+#include "chrome/browser/ash/app_list/app_list_syncable_service_factory.h"
+#include "chrome/browser/ash/app_list/chrome_app_list_model_updater.h"
+#include "chrome/browser/ash/app_list/extension_app_utils.h"
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
@@ -25,19 +32,11 @@
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
-#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/app_list/app_list_model_updater.h"
-#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
-#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
-#include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
-#include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/ash/shelf/standalone_browser_extension_app_context_menu.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/settings/ash/app_management/app_management_uma.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/app_constants/constants.h"
-#include "components/services/app_service/public/cpp/features.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -277,12 +276,7 @@ void AppServiceContextMenu::ExecuteCommand(int command_id, int event_flags) {
 
         if (app_type_ == apps::AppType::kWeb &&
             command_id == ash::USE_LAUNCH_TYPE_TABBED_WINDOW) {
-          if (base::FeatureList::IsEnabled(apps::kAppServiceWithoutMojom)) {
-            proxy_->SetWindowMode(app_id(), apps::WindowMode::kTabbedWindow);
-          } else {
-            proxy_->SetWindowMode(app_id(),
-                                  apps::mojom::WindowMode::kTabbedWindow);
-          }
+          proxy_->SetWindowMode(app_id(), apps::WindowMode::kTabbedWindow);
           return;
         }
 
@@ -500,13 +494,7 @@ void AppServiceContextMenu::SetLaunchType(int command_id) {
       apps::WindowMode user_window_mode =
           ConvertUseLaunchTypeCommandToWindowMode(command_id);
       if (user_window_mode != apps::WindowMode::kUnknown) {
-        if (base::FeatureList::IsEnabled(apps::kAppServiceWithoutMojom)) {
-          proxy_->SetWindowMode(app_id(), user_window_mode);
-        } else {
-          proxy_->SetWindowMode(
-              app_id(),
-              apps::ConvertWindowModeToMojomWindowMode(user_window_mode));
-        }
+        proxy_->SetWindowMode(app_id(), user_window_mode);
       }
       return;
     }

@@ -51,6 +51,7 @@
 #include "chromeos/crosapi/mojom/field_trial.mojom.h"
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
 #include "chromeos/crosapi/mojom/file_system_provider.mojom.h"
+#include "chromeos/crosapi/mojom/firewall_hole.mojom.h"
 #include "chromeos/crosapi/mojom/force_installed_tracker.mojom.h"
 #include "chromeos/crosapi/mojom/fullscreen_controller.mojom.h"
 #include "chromeos/crosapi/mojom/geolocation.mojom.h"
@@ -66,7 +67,9 @@
 #include "chromeos/crosapi/mojom/login_screen_storage.mojom.h"
 #include "chromeos/crosapi/mojom/login_state.mojom.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
+#include "chromeos/crosapi/mojom/metrics.mojom.h"
 #include "chromeos/crosapi/mojom/metrics_reporting.mojom.h"
+#include "chromeos/crosapi/mojom/multi_capture_service.mojom.h"
 #include "chromeos/crosapi/mojom/network_change.mojom.h"
 #include "chromeos/crosapi/mojom/network_settings_service.mojom.h"
 #include "chromeos/crosapi/mojom/networking_attributes.mojom.h"
@@ -338,6 +341,10 @@ LacrosService::LacrosService()
       &crosapi::mojom::Crosapi::BindFieldTrialService,
       Crosapi::MethodMinVersions::kBindFieldTrialServiceMinVersion>();
   ConstructRemote<
+      crosapi::mojom::FirewallHoleService,
+      &crosapi::mojom::Crosapi::BindFirewallHoleService,
+      Crosapi::MethodMinVersions::kBindFirewallHoleServiceMinVersion>();
+  ConstructRemote<
       crosapi::mojom::ForceInstalledTracker,
       &crosapi::mojom::Crosapi::BindForceInstalledTracker,
       Crosapi::MethodMinVersions::kBindForceInstalledTrackerMinVersion>();
@@ -400,6 +407,13 @@ LacrosService::LacrosService()
   ConstructRemote<crosapi::mojom::MessageCenter,
                   &crosapi::mojom::Crosapi::BindMessageCenter,
                   Crosapi::MethodMinVersions::kBindMessageCenterMinVersion>();
+  ConstructRemote<crosapi::mojom::Metrics,
+                  &crosapi::mojom::Crosapi::BindMetrics,
+                  Crosapi::MethodMinVersions::kBindMetricsMinVersion>();
+  ConstructRemote<
+      crosapi::mojom::MultiCaptureService,
+      &crosapi::mojom::Crosapi::BindMultiCaptureService,
+      Crosapi::MethodMinVersions::kBindMultiCaptureServiceMinVersion>();
   ConstructRemote<
       crosapi::mojom::NativeThemeService,
       &crosapi::mojom::Crosapi::BindNativeThemeService,
@@ -606,6 +620,13 @@ bool LacrosService::IsMetricsReportingAvailable() const {
   return version &&
          version.value() >=
              Crosapi::MethodMinVersions::kBindMetricsReportingMinVersion;
+}
+
+bool LacrosService::IsMultiCaptureServiceAvailable() const {
+  absl::optional<uint32_t> version = CrosapiVersion();
+  return version &&
+         version.value() >=
+             Crosapi::MethodMinVersions::kBindMultiCaptureServiceMinVersion;
 }
 
 bool LacrosService::IsSensorHalClientAvailable() const {

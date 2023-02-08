@@ -4,15 +4,30 @@
 
 #include "ui/base/clipboard/clipboard_util_mac.h"
 
+#include <AppKit/AppKit.h>
+#include <CoreServices/CoreServices.h>                      // pre-macOS 11
+#include <UniformTypeIdentifiers/UniformTypeIdentifiers.h>  // macOS 11
+
+#include <string>
+
+#include "base/files/file_path.h"
 #include "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/notreached.h"
+#include "base/strings/sys_string_conversions.h"
 #include "ui/base/clipboard/clipboard_constants.h"
+#include "ui/base/clipboard/file_info.h"
+#include "ui/base/clipboard/url_file_parser.h"
+#include "url/gurl.h"
 
 namespace ui {
 
+NSString* const kUTTypeURLName = @"public.url-name";
+
 namespace {
+
+NSString* const kWebURLsWithTitlesPboardType = @"WebURLsWithTitlesPboardType";
 
 // It's much more convenient to return an NSString than a
 // base::ScopedCFTypeRef<CFStringRef>, since the methods on NSPasteboardItem
@@ -23,11 +38,14 @@ NSString* UTIFromPboardType(NSString* type) {
       autorelease];
 }
 
+// Reads the "WebKitWebURLsWithTitles" type put onto the pasteboard by Safari
+// and returns the URLs/titles found within. Returns true if this was
+// successful, or false if it was not.
 bool ReadWebURLsWithTitlesPboardType(NSPasteboard* pboard,
                                      NSArray** urls,
                                      NSArray** titles) {
-  NSArray* bookmarkPairs = base::mac::ObjCCast<NSArray>(
-      [pboard propertyListForType:kUTTypeWebKitWebURLsWithTitles]);
+  NSArray* bookmarkPairs = base::mac::ObjCCast<NSArray>([pboard
+      propertyListForType:UTIFromPboardType(kWebURLsWithTitlesPboardType)]);
   if (!bookmarkPairs)
     return false;
 
@@ -124,7 +142,8 @@ base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromUrl(
 
   // Set Safari's URL + title arrays Pboard type.
   NSArray* urlsAndTitles = @[ @[ urlString ], @[ title ] ];
-  [item setPropertyList:urlsAndTitles forType:kUTTypeWebKitWebURLsWithTitles];
+  [item setPropertyList:urlsAndTitles
+                forType:UTIFromPboardType(kWebURLsWithTitlesPboardType)];
 
   // Set NSURLPboardType. The format of the property list is divined from
   // Webkit's function PlatformPasteboard::setStringForType.
@@ -152,7 +171,8 @@ base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromUrls(
 
   // Set Safari's URL + title arrays Pboard type.
   NSArray* urlsAndTitles = @[ urls, titles ];
-  [item setPropertyList:urlsAndTitles forType:kUTTypeWebKitWebURLsWithTitles];
+  [item setPropertyList:urlsAndTitles
+                forType:UTIFromPboardType(kWebURLsWithTitlesPboardType)];
 
   return item;
 }
@@ -176,6 +196,16 @@ NSString* ClipboardUtil::GetURLFromPasteboardURL(NSPasteboard* pboard) {
 }
 
 // static
+NSString* ClipboardUtil::UTIForPasteboardType(NSString* type) {
+  return UTIFromPboardType(type);
+}
+
+// static
+NSString* ClipboardUtil::UTIForWebURLsAndTitles() {
+  return UTIFromPboardType(kWebURLsWithTitlesPboardType);
+}
+
+// static
 void ClipboardUtil::AddDataToPasteboard(NSPasteboard* pboard,
                                         NSPasteboardItem* item) {
   NSSet* oldTypes = [NSSet setWithArray:[pboard types]];
@@ -196,7 +226,7 @@ bool ClipboardUtil::URLsAndTitlesFromPasteboard(NSPasteboard* pboard,
                                                 NSArray** urls,
                                                 NSArray** titles) {
   return ReadWebURLsWithTitlesPboardType(pboard, urls, titles) ||
-         ReadURLItemsWithTitles(pboard, urls, titles);
+         ReadURLItemsWithTitles(pboard, include_files, urls, titles);
 }
 
 // static
@@ -237,5 +267,7 @@ NSString* ClipboardUtil::GetHTMLFromRTFOnPasteboard(NSPasteboard* pboard) {
   return [[[NSString alloc] initWithData:htmlData
                                 encoding:NSUTF8StringEncoding] autorelease];
 }
+
+}  // namespace ClipboardUtil
 
 }  // namespace ui

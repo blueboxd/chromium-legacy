@@ -31,7 +31,7 @@
 #include "fuchsia_web/runners/cast/cast_runner.h"
 #include "fuchsia_web/runners/cast/cast_runner_switches.h"
 #include "fuchsia_web/runners/cast/cast_runner_v1.h"
-#include "fuchsia_web/webinstance_host/web_instance_host.h"
+#include "fuchsia_web/webinstance_host/web_instance_host_v1.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
@@ -41,6 +41,9 @@ constexpr char kHeadlessConfigKey[] = "headless";
 
 // Config-data key to enable the fuchsia.web.FrameHost provider component.
 constexpr char kFrameHostConfigKey[] = "enable-frame-host-component";
+
+// Config-data key for disable dynamic code generation by the web runtime.
+constexpr char kDisableCodeGenConfigKey[] = "disable-codegen";
 
 // Returns the value of |config_key| or false if it is not set.
 bool GetConfigBool(base::StringPiece config_key) {
@@ -135,11 +138,12 @@ int main(int argc, char** argv) {
       resolver_binding(outgoing_directory, &resolver);
 
   // Publish the fuchsia.component.runner.ComponentRunner for Cast apps.
-  WebInstanceHost web_instance_host;
-  const bool enable_headless =
-      command_line->HasSwitch(kForceHeadlessForTestsSwitch) ||
-      GetConfigBool(kHeadlessConfigKey);
-  CastRunner runner(&web_instance_host, enable_headless);
+  WebInstanceHostV1 web_instance_host;
+  CastRunner runner(
+      web_instance_host,
+      {.headless = command_line->HasSwitch(kForceHeadlessForTestsSwitch) ||
+                   GetConfigBool(kHeadlessConfigKey),
+       .disable_codegen = GetConfigBool(kDisableCodeGenConfigKey)});
   const base::ScopedServiceBinding<fuchsia::component::runner::ComponentRunner>
       runner_binding(outgoing_directory, &runner);
 

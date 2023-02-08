@@ -67,14 +67,6 @@ BASE_FEATURE(kAutofillEnableCvcForVcnYellowPath,
              "AutofillEnableCvcForVcnYellowPath",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// When enabled, the GetDetailsForEnrollResponseDetails in the
-// UploadCardResponseDetails will be parsed, which will allow the Virtual Card
-// Enrollment flow to skip making a new GetDetailsForEnroll request. This is an
-// optimization to improve the latency of the Virtual Card Enrollment flow.
-BASE_FEATURE(kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponse,
-             "AutofillEnableGetDetailsForEnrollParsingInUploadCardResponse",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // When enabled, a progress dialog will display while authenticating with FIDO.
 // TODO(crbug.com/1337380): Clean up kAutofillEnableFIDOProgressDialog when it's
 // fully rolled out.
@@ -187,6 +179,12 @@ BASE_FEATURE(kAutofillParseIBANFields,
 BASE_FEATURE(kAutofillParseVcnCardOnFileStandaloneCvcFields,
              "AutofillParseVcnCardOnFileStandaloneCvcFields",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, Expiration and Type titles will be removed from Chrome
+// payment settings page.
+BASE_FEATURE(kAutofillRemoveCardExpirationAndTypeTitles,
+             "AutofillRemoveCardExpirationAndTypeTitles",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, the Save Card infobar will be dismissed by a user initiated
 // navigation other than one caused by submitted form.

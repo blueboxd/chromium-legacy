@@ -17,7 +17,6 @@
 #include "base/containers/queue.h"
 #include "base/containers/stack.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -39,7 +38,7 @@ struct AXLanguageInfo;
 class AXTree;
 
 // This class is used to represent a node in an accessibility tree (`AXTree`).
-class AX_EXPORT AXNode final : public base::SupportsWeakPtr<AXNode> {
+class AX_EXPORT AXNode final {
  public:
   // Replacement character used to represent an embedded (or, additionally for
   // text navigation, an empty) object. Part of the Unicode Standard.
@@ -686,6 +685,16 @@ class AX_EXPORT AXNode final : public base::SupportsWeakPtr<AXNode> {
   // A leaf node should never have children that are focusable or
   // that might send notifications.
   bool IsLeaf() const;
+
+  // Helper to determine if the node is focusable. This does more than just
+  // use HasState(ax::mojom::State::kFocusable) -- it also checks whether the
+  // object is a likely activedescendant.
+  bool IsFocusable() const;
+
+  // Helper to determine whether the node can be an active descendant, and is a
+  // likely candidate to be one. An id and an ARIA role are required, and the
+  // role must be item-like.
+  bool IsLikelyARIAActiveDescendant() const;
 
   // Returns true if this node is a list marker or if it's a descendant
   // of a list marker node. Returns false otherwise.

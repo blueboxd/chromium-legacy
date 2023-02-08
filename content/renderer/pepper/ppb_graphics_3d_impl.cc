@@ -34,6 +34,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/gfx/switches.h"
 
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Graphics3D_API;
@@ -69,12 +70,19 @@ class PPB_Graphics3D_Impl::ColorBuffer {
     if (is_single_buffered_)
       usage |= gpu::SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE;
 
+    // It's possible to create Graphics3D with zero size. To avoid creating
+    // shared image with zero size which will fail, we create 1x1. This matches
+    // legacy behaviour where command decoders would use 1x1 for any empty
+    // `offscreen_framebuffer_size`. Note, that to avoid any size mismatches, we
+    // keep `size_` intact.
+    auto shared_image_size = size.IsEmpty() ? gfx::Size(1, 1) : size;
+
     // Note, that we intentionally don't handle SCANOUT here. While
     // kPepper3DImageChromium is enabled on some CrOS devices, SkiaRenderer
     // don't support overlays for legacy mailboxes. To avoid any problems with
     // overlays, we don't introduce them here.
     mailbox_ = sii_->CreateSharedImage(
-        has_alpha ? viz::RGBA_8888 : viz::RGBX_8888, size,
+        has_alpha ? viz::RGBA_8888 : viz::RGBX_8888, shared_image_size,
         gfx::ColorSpace::CreateSRGB(), kTopLeft_GrSurfaceOrigin,
         kUnpremul_SkAlphaType, usage, gpu::SurfaceHandle());
 
@@ -152,7 +160,9 @@ class PPB_Graphics3D_Impl::ColorBuffer {
 };
 
 PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PP_Instance instance)
-    : PPB_Graphics3D_Shared(instance),
+    : PPB_Graphics3D_Shared(instance,
+                            /*use_shared_images_swapchain=*/features::
+                                UseSharedImagesSwapChainForPPAPI()),
       bound_to_instance_(false),
       commit_pending_(false),
       has_alpha_(false),
@@ -422,8 +432,11 @@ bool PPB_Graphics3D_Impl::InitRaw(
 
   if (shared_state_region)
     *shared_state_region = &command_buffer_->GetSharedStateRegion();
-  if (capabilities)
+  if (capabilities) {
     *capabilities = command_buffer_->GetCapabilities();
+    capabilities->use_shared_images_swapchain_for_ppapi =
+        use_shared_images_swapchain_;
+  }
   if (command_buffer_id)
     *command_buffer_id = command_buffer_->GetCommandBufferID();
 

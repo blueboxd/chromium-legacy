@@ -19,8 +19,6 @@ BASE_DECLARE_FEATURE(kAutofillCreditCardAuthentication);
 BASE_DECLARE_FEATURE(kAutofillEnableCardArtImage);
 BASE_DECLARE_FEATURE(kAutofillEnableCardProductName);
 BASE_DECLARE_FEATURE(kAutofillEnableCvcForVcnYellowPath);
-BASE_DECLARE_FEATURE(
-    kAutofillEnableGetDetailsForEnrollParsingInUploadCardResponse);
 BASE_DECLARE_FEATURE(kAutofillEnableFIDOProgressDialog);
 BASE_DECLARE_FEATURE(kAutofillEnableManualFallbackForVirtualCards);
 BASE_DECLARE_FEATURE(kAutofillEnableMerchantOptOutErrorDialog);
@@ -38,6 +36,7 @@ BASE_DECLARE_FEATURE(kAutofillFillIbanFields);
 BASE_DECLARE_FEATURE(kAutofillFillMerchantPromoCodeFields);
 BASE_DECLARE_FEATURE(kAutofillParseIBANFields);
 BASE_DECLARE_FEATURE(kAutofillParseVcnCardOnFileStandaloneCvcFields);
+BASE_DECLARE_FEATURE(kAutofillRemoveCardExpirationAndTypeTitles);
 BASE_DECLARE_FEATURE(kAutofillSaveCardDismissOnNavigation);
 BASE_DECLARE_FEATURE(kAutofillSaveCardInfobarEditSupport);
 BASE_DECLARE_FEATURE(kAutofillSaveCardUiExperiment);

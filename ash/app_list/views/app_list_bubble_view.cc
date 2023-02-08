@@ -17,10 +17,10 @@
 #include "ash/app_list/views/app_list_bubble_apps_page.h"
 #include "ash/app_list/views/app_list_bubble_search_page.h"
 #include "ash/app_list/views/app_list_folder_view.h"
-#include "ash/app_list/views/app_list_search_view.h"
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/assistant/app_list_bubble_assistant_page.h"
 #include "ash/app_list/views/folder_background_view.h"
+#include "ash/app_list/views/productivity_launcher_search_view.h"
 #include "ash/app_list/views/scrollable_apps_grid_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_page_dialog_controller.h"
@@ -294,7 +294,7 @@ void AppListBubbleView::InitFolderView(
     ApplicationDragAndDropHost* drag_and_drop_host) {
   auto folder_view = std::make_unique<AppListFolderView>(
       this, apps_page_->scrollable_apps_grid_view(), a11y_announcer_.get(),
-      view_delegate_);
+      view_delegate_, /*tablet_mode=*/false);
   folder_view->items_grid_view()->SetDragAndDropHostOfCurrentAppList(
       drag_and_drop_host);
   folder_view->UpdateAppListConfig(GetAppListConfig());

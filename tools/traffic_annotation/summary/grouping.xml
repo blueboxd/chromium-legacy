@@ -56,7 +56,6 @@ after discussions on the right group.
       <annotation id="ambient_client"/>
       <annotation id="ambient_photo_cache"/>
       <annotation id="ambient_photo_controller"/>
-      <annotation id="app_suggestion_get_favicon"/>
       <annotation id="arc_auth_code_fetcher"/>
       <annotation id="calendar_get_events"/>
       <annotation id="chrome_plugin_vm_api"/>
@@ -93,6 +92,7 @@ after discussions on the right group.
       <annotation id="wallpaper_google_photos_albums"/>
       <annotation id="wallpaper_google_photos_enabled"/>
       <annotation id="wallpaper_google_photos_photos"/>
+      <annotation id="wilco_dtc_supportd"/>
       <annotation id="search_and_assistant_enabled_checker"/>
       <annotation id="wallpaper_online_downloader"/>
     </sender>
@@ -270,6 +270,9 @@ after discussions on the right group.
       <annotation id="password_sync_token_fetcher"/>
       <annotation id="nearby_webrtc_connection"/>
       <annotation id="projector_xhr_loader"/>
+      <annotation id="bruschetta_installer_download"/>
+      <annotation id="quick_start_session_auth_requester"/>
+      <annotation id="network_diagnostics_routines"/>
     </sender>
   </group>
   <group name="Admin Features" hidden="true">

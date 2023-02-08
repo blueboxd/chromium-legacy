@@ -139,11 +139,10 @@ TEST(AccessControlListTest, Empty) {
 TEST(AccessControlListTest, ExplicitAccessEntry) {
   constexpr DWORD FakeAccess = 0x12345678U;
   constexpr DWORD FakeInherit = 0x87654321U;
-  auto sid = Sid::FromKnownSid(WellKnownSid::kWorld);
-  ASSERT_TRUE(sid);
-  ExplicitAccessEntry ace(*sid, SecurityAccessMode::kGrant, FakeAccess,
+  Sid sid(WellKnownSid::kWorld);
+  ExplicitAccessEntry ace(sid, SecurityAccessMode::kGrant, FakeAccess,
                           FakeInherit);
-  EXPECT_EQ(*sid, ace.sid());
+  EXPECT_EQ(sid, ace.sid());
   EXPECT_EQ(SecurityAccessMode::kGrant, ace.mode());
   EXPECT_EQ(FakeAccess, ace.access_mask());
   EXPECT_EQ(FakeInherit, ace.inheritance());
@@ -153,6 +152,13 @@ TEST(AccessControlListTest, ExplicitAccessEntry) {
   EXPECT_EQ(ace.mode(), ace_clone.mode());
   EXPECT_EQ(ace.access_mask(), ace_clone.access_mask());
   EXPECT_EQ(ace.inheritance(), ace_clone.inheritance());
+  ExplicitAccessEntry ace_known(WellKnownSid::kSelf,
+                                SecurityAccessMode::kRevoke, ~FakeAccess,
+                                ~FakeInherit);
+  EXPECT_EQ(Sid(WellKnownSid::kSelf), ace_known.sid());
+  EXPECT_EQ(SecurityAccessMode::kRevoke, ace_known.mode());
+  EXPECT_EQ(~FakeAccess, ace_known.access_mask());
+  EXPECT_EQ(~FakeInherit, ace_known.inheritance());
 }
 
 TEST(AccessControlListTest, SetEntries) {
@@ -160,17 +166,17 @@ TEST(AccessControlListTest, SetEntries) {
   std::vector<ExplicitAccessEntry> ace_list;
   EXPECT_TRUE(acl.SetEntries(ace_list));
   EXPECT_EQ(ConvertAclToSddl(acl), L"");
-  ace_list.emplace_back(*Sid::FromKnownSid(WellKnownSid::kWorld),
-                        SecurityAccessMode::kGrant, EVENT_ALL_ACCESS, 0);
+  ace_list.emplace_back(Sid(WellKnownSid::kWorld), SecurityAccessMode::kGrant,
+                        EVENT_ALL_ACCESS, 0);
   EXPECT_TRUE(acl.SetEntries(ace_list));
   EXPECT_EQ(ConvertAclToSddl(acl), kEvent);
-  ace_list.emplace_back(*Sid::FromKnownSid(WellKnownSid::kLocalSystem),
+  ace_list.emplace_back(Sid(WellKnownSid::kLocalSystem),
                         SecurityAccessMode::kDeny, EVENT_MODIFY_STATE,
                         CONTAINER_INHERIT_ACE | OBJECT_INHERIT_ACE);
   EXPECT_TRUE(acl.SetEntries(ace_list));
   EXPECT_EQ(ConvertAclToSddl(acl), kEventWithSystemInherit);
-  ace_list.emplace_back(*Sid::FromKnownSid(WellKnownSid::kWorld),
-                        SecurityAccessMode::kRevoke, EVENT_MODIFY_STATE, 0);
+  ace_list.emplace_back(Sid(WellKnownSid::kWorld), SecurityAccessMode::kRevoke,
+                        EVENT_MODIFY_STATE, 0);
   EXPECT_TRUE(acl.SetEntries(ace_list));
   EXPECT_EQ(ConvertAclToSddl(acl), kEventSystemOnlyInherit);
   AccessControlList acl_clone = acl.Clone();
@@ -180,20 +186,20 @@ TEST(AccessControlListTest, SetEntries) {
 
 TEST(AccessControlListTest, SetEntry) {
   AccessControlList acl;
-  EXPECT_TRUE(acl.SetEntry(*Sid::FromKnownSid(WellKnownSid::kWorld),
+  EXPECT_TRUE(acl.SetEntry(Sid(WellKnownSid::kWorld),
                            SecurityAccessMode::kGrant, READ_CONTROL, 0));
   EXPECT_EQ(ConvertAclToSddl(acl), kEventReadControl);
-  EXPECT_TRUE(acl.SetEntry(*Sid::FromKnownSid(WellKnownSid::kWorld),
+  EXPECT_TRUE(acl.SetEntry(Sid(WellKnownSid::kWorld),
                            SecurityAccessMode::kGrant, EVENT_MODIFY_STATE, 0));
   EXPECT_EQ(ConvertAclToSddl(acl), kEventReadControlModify);
-  EXPECT_TRUE(acl.SetEntry(*Sid::FromKnownSid(WellKnownSid::kWorld),
-                           SecurityAccessMode::kSet, EVENT_ALL_ACCESS, 0));
+  EXPECT_TRUE(acl.SetEntry(Sid(WellKnownSid::kWorld), SecurityAccessMode::kSet,
+                           EVENT_ALL_ACCESS, 0));
   EXPECT_EQ(ConvertAclToSddl(acl), kEvent);
-  EXPECT_TRUE(acl.SetEntry(*Sid::FromKnownSid(WellKnownSid::kLocalSystem),
+  EXPECT_TRUE(acl.SetEntry(Sid(WellKnownSid::kLocalSystem),
                            SecurityAccessMode::kDeny, EVENT_MODIFY_STATE,
                            CONTAINER_INHERIT_ACE | OBJECT_INHERIT_ACE));
   EXPECT_EQ(ConvertAclToSddl(acl), kEventWithSystemInherit);
-  EXPECT_TRUE(acl.SetEntry(*Sid::FromKnownSid(WellKnownSid::kWorld),
+  EXPECT_TRUE(acl.SetEntry(Sid(WellKnownSid::kWorld),
                            SecurityAccessMode::kRevoke, EVENT_ALL_ACCESS, 0));
   EXPECT_EQ(ConvertAclToSddl(acl), kEventSystemOnlyInherit);
 }
@@ -201,8 +207,8 @@ TEST(AccessControlListTest, SetEntry) {
 TEST(AccessControlListTest, SetEntriesError) {
   AccessControlList acl;
   std::vector<ExplicitAccessEntry> ace_list;
-  ace_list.emplace_back(*Sid::FromKnownSid(WellKnownSid::kWorld),
-                        SecurityAccessMode::kGrant, EVENT_ALL_ACCESS, 0);
+  ace_list.emplace_back(Sid(WellKnownSid::kWorld), SecurityAccessMode::kGrant,
+                        EVENT_ALL_ACCESS, 0);
   EXPECT_TRUE(acl.SetEntries(ace_list));
   EXPECT_EQ(ConvertAclToSddl(acl), kEvent);
   // ACL has a maximum capacity of 2^16-1 bytes or 2^16-1 ACEs. Force a fail.
@@ -221,7 +227,7 @@ TEST(AccessControlListTest, SetEntriesError) {
 
 TEST(AccessControlListTest, Clear) {
   AccessControlList acl;
-  EXPECT_TRUE(acl.SetEntry(*Sid::FromKnownSid(WellKnownSid::kWorld),
+  EXPECT_TRUE(acl.SetEntry(Sid(WellKnownSid::kWorld),
                            SecurityAccessMode::kGrant, READ_CONTROL, 0));
   EXPECT_EQ(acl.get()->AceCount, 1);
   acl.Clear();

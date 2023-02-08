@@ -1116,7 +1116,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.AudioCapturerAudioGlitches" enum="AudioGlitchResult"
-    expires_after="2023-04-09">
+    expires_after="2023-06-11">
   <owner>olka@chromium.org</owner>
   <owner>gustaf@chromium.org</owner>
   <owner>webrtc-audio-uma@google.com</owner>
@@ -1481,6 +1481,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Media.AudioSystem.GetDeviceDescription.Result"
+    enum="BooleanSuccess" expires_after="2023-05-13">
+  <owner>toprice@chromium.org</owner>
+  <owner>olka@chromium.org</owner>
+  <summary>
+    Records whether AudioSystemToServiceAdapter::GetDeviceDescriptions calls to
+    the audio service returned successfully, or failed and retured an default
+    empty list due to an audio service crash.
+  </summary>
+</histogram>
+
 <histogram name="Media.AudioThreadStatus" enum="AudioThreadStatus"
     expires_after="never">
 <!-- expires-never: Audio pipeline health metric. -->
@@ -1515,17 +1526,6 @@ chromium-metrics-reviews@google.com.
     indicate that the frame was an overlay (SurfaceView). False counts are for
     Non Overlay frames. This will be deprecated in favor of
     Media.AVDA.FrameInformation in M63.
-  </summary>
-</histogram>
-
-<histogram name="Media.BreakoutBox.OutOfOrderFrameDropped" enum="Boolean"
-    expires_after="2022-11-29">
-  <owner>toprice@chromium.org</owner>
-  <owner>benjaminwagner@chromium.org</owner>
-  <summary>
-    Number of BreakoutBox instances which have encountered an out of order video
-    frame and dropped it. Reported once per MediaStreamTrackProcessor instance,
-    on the first out of order frame.
   </summary>
 </histogram>
 
@@ -2320,7 +2320,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.EME.Widevine.HardwareSecure.CdmInfoStatus"
-    enum="CdmInfoStatus" expires_after="2023-04-11">
+    enum="CdmInfoStatus" expires_after="2023-06-11">
   <owner>xhwang@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -3089,6 +3089,50 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Media.MediaDevices.EnumerateDevices.Latency" units="ms"
+    expires_after="2023-05-01">
+  <owner>toprice@chromium.org</owner>
+  <owner>agpalak@chromium.org</owner>
+  <summary>
+    The latency of calls to the navigator.mediaDevices.enumerateDevices() API
+    which resolve, including both successes and failures. Note very long calls
+    which record a EnumerateDevices.Result of kTimedOut but do eventually
+    resolve will have their latency recorded.
+  </summary>
+</histogram>
+
+<histogram name="Media.MediaDevices.EnumerateDevices.Result"
+    enum="EnumerateDevicesResult" expires_after="2023-05-01">
+  <owner>toprice@chromium.org</owner>
+  <owner>agpalak@chromium.org</owner>
+  <summary>
+    The results of all calls to the navigator.mediaDevices.enumerateDevices()
+    API, including successful promise resolutions, error codes, or kTimedOut, if
+    the promise was still pending after 4 seconds.
+  </summary>
+</histogram>
+
+<histogram name="Media.MediaDevicesManager.VideoDeviceEnumeration.Result"
+    enum="DeviceEnumerationResult" expires_after="2023-05-01">
+  <owner>toprice@chromium.org</owner>
+  <owner>agpalak@chromium.org</owner>
+  <summary>
+    The success or failure code of MediaDevicesManager requests to enumerate
+    video devices (ie cameras) with the camera capture service.
+  </summary>
+</histogram>
+
+<histogram name="Media.MediaDevicesManager.VideoDeviceEnumeration.Start"
+    enum="Boolean" expires_after="2023-05-01">
+  <owner>toprice@chromium.org</owner>
+  <owner>agpalak@chromium.org</owner>
+  <summary>
+    Count of MediaDevicesManager starting enumerating video devices (ie cameras)
+    with the camera capture service, including enumerations which never
+    finished.
+  </summary>
+</histogram>
+
 <histogram name="Media.MediaElement.ContentTypeParseable"
     enum="ContentTypeParseableResult" expires_after="2022-07-03">
   <obsolete>
@@ -3822,6 +3866,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Media.RegionCapture.CropTo.Latency" units="ms"
+    expires_after="2023-05-14">
+  <owner>eladalon@chromium.org</owner>
+  <owner>jophba@chromium.org</owner>
+  <owner>mfoltz@chromium.org</owner>
+  <summary>
+    Duration in milliseconds of the time it takes for a
+    BrowserCaptureMediaStreamTrack.cropTo() call to resolve(either successfully
+    or with an error). Note a call which never resolves won't be counted in this
+    metric.
+  </summary>
+</histogram>
+
 <histogram name="Media.RegionCapture.CropTo.Result" enum="CropToResult"
     expires_after="2023-05-14">
   <owner>eladalon@chromium.org</owner>
@@ -3846,7 +3903,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.RegionCapture.ProduceCropTarget.Promise.Result"
-    enum="ProduceCropTargetPromiseResult" expires_after="2023-04-09">
+    enum="ProduceCropTargetPromiseResult" expires_after="2023-06-11">
   <owner>eladalon@chromium.org</owner>
   <owner>jophba@chromium.org</owner>
   <owner>mfoltz@chromium.org</owner>
@@ -3855,13 +3912,6 @@ chromium-metrics-reviews@google.com.
     HTMLElement, a new Promise is produced. This histogram tracks the result of
     this Promise - whether it was resolved or rejected.
   </summary>
-</histogram>
-
-<histogram name="Media.Remoting.AllowedByPage" enum="BooleanEnabled"
-    expires_after="2023-09-12">
-  <owner>jophba@chromium.org</owner>
-  <owner>openscreen-eng@google.com</owner>
-  <summary>Tracks whether a web page allows content to be remoted.</summary>
 </histogram>
 
 <histogram name="Media.Remoting.AudioBitrate" units="kbps"
@@ -3911,6 +3961,17 @@ chromium-metrics-reviews@google.com.
     Whether the given media is compatible with media remoting. Recorded whenever
     the conditions are met to start remoting (e.g. the media element is the
     dominant page content and is not paused).
+  </summary>
+</histogram>
+
+<histogram name="Media.Remoting.RemotePlaybackEnabledByPage"
+    enum="BooleanEnabled" expires_after="2023-09-12">
+  <owner>jophba@chromium.org</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    Tracks whether a web page allows content to be remoted. Recorded when the
+    media player finishes loading and when the site changes this attribute
+    afterwards.
   </summary>
 </histogram>
 
@@ -4964,6 +5025,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Media.VideoCapture.StartErrorCode" enum="VideoCaptureError"
+    expires_after="2023-05-14">
+  <owner>toprice@chromium.org</owner>
+  <owner>video-cmi-apis@google.com</owner>
+  <summary>
+    Counts detailed outcomes of first starting video capture, as a breakdown of
+    Media.VideoCapture.StartOutcome based on the error codes which caused
+    failures, or kNone if we started successfully. Can also be viewed as the
+    subset of reports to Media.VideoCapture.Error which occur before
+    VideoCaptureImpl first transitions to STARTED.
+  </summary>
+</histogram>
+
 <histogram name="Media.VideoCapture.StartOutcome"
     enum="VideoCaptureStartOutcome" expires_after="2023-04-30">
   <owner>toprice@chromium.org</owner>
@@ -5360,7 +5434,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Media.VTVDA.SessionFailureReason"
-    enum="VTVDASessionFailureType" expires_after="2023-04-09">
+    enum="VTVDASessionFailureType" expires_after="2023-06-11">
   <owner>sandersd@chromium.org</owner>
   <owner>media-dev@chromium.org</owner>
   <summary>
@@ -6096,6 +6170,67 @@ chromium-metrics-reviews@google.com.
     Result of a request to a MediaRouteProvider to terminate a route.
     TerminateRoute.Result (without a suffix) is recorded for the extension or an
     unknown MRP.
+  </summary>
+</histogram>
+
+<histogram name="MediaRouter.RemotePlayback.SinkCapability.SupportedAudioCodec"
+    enum="AudioCodec" expires_after="2023-06-15">
+  <owner>muyaoxu@google.com</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    Recorded when a Cast sink is discovered for a Remote Playback MediaSource
+    and this sink supports the MediaSource's AudioCodec. It is not recorded if
+    the model is not known to support Remoting, in which case the sink's audio
+    capability is unknown.
+  </summary>
+</histogram>
+
+<histogram name="MediaRouter.RemotePlayback.SinkCapability.SupportedVideoCodec"
+    enum="VideoCodec" expires_after="2023-06-15">
+  <owner>muyaoxu@google.com</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    Recorded when a Cast sink is discovered for a Remote Playback MediaSource
+    and this sink supports the MediaSource's VideoCodec. It is not recorded if
+    the model is not known to support Remoting, in which case the sink's video
+    capability is unknown.
+  </summary>
+</histogram>
+
+<histogram
+    name="MediaRouter.RemotePlayback.SinkCapability.UnsupportedAudioCodec"
+    enum="AudioCodec" expires_after="2023-06-15">
+  <owner>muyaoxu@google.com</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    Recorded when a Cast sink is discovered for a Remote Playback MediaSource
+    and this sink does not support the MediaSource's AudioCodec. It is not
+    recorded if the model is not known to support Remoting, in which case the
+    sink's audio capability is unknown.
+  </summary>
+</histogram>
+
+<histogram
+    name="MediaRouter.RemotePlayback.SinkCapability.UnsupportedVideoCodec"
+    enum="VideoCodec" expires_after="2023-06-15">
+  <owner>muyaoxu@google.com</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    Recorded when a Cast sink is discovered for a Remote Playback MediaSource
+    and this sink does not support the MediaSource's VideoCodec. It is not
+    recorded if the model is not known to support Remoting, in which case the
+    sink's video capability is unknown.
+  </summary>
+</histogram>
+
+<histogram name="MediaRouter.RemotePlayback.SinkModelCompatibility"
+    enum="Boolean" expires_after="2023-06-15">
+  <owner>muyaoxu@google.com</owner>
+  <owner>openscreen-eng@google.com</owner>
+  <summary>
+    Records whether the discovered sink is known to support Media Remoting. It
+    is recorded when media sink query results are sent to the
+    CastMediaRouteProvider.
   </summary>
 </histogram>
 

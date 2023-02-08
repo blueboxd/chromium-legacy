@@ -256,6 +256,7 @@
 <translation id="1553358976309200471">‏به‌روزرسانی Chrome</translation>
 <translation id="1555130319947370107">آبی</translation>
 <translation id="1559447966090556585">اعلان‌ها دریافت شود؟</translation>
+<translation id="1559486004335285648">تکمیل خودکار اطلاعات پرداخت</translation>
 <translation id="1559528461873125649">فاقد چنین فایل یا دایرکتوری است</translation>
 <translation id="1559572115229829303">‏&lt;p&gt;اتصال خصوصی به <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> برقرار نشد، زیرا تاریخ و زمان دستگاه شما (<ph name="DATE_AND_TIME" />) نادرست است.&lt;/p&gt;
 
@@ -271,6 +272,7 @@
 <translation id="1586541204584340881">افزونه‌هایی که نصب کرده‌اید</translation>
 <translation id="1588438908519853928">معمولی</translation>
 <translation id="1592005682883173041">دسترسی داده محلی</translation>
+<translation id="1593359183944365958">۲۷۰ درجه</translation>
 <translation id="1594030484168838125">انتخاب</translation>
 <translation id="1596296697375291157">فیلم‌های هیجان‌انگیز، جنایی، و رازآلود</translation>
 <translation id="1599199147673445968">کارت جدیدی دارید؟ <ph name="BEGIN_LINK" />جزئیات کارت را وارد کنید<ph name="END_LINK" /></translation>
@@ -337,6 +339,7 @@
 <translation id="1741613555002899862">‏وقتی DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" /> است، باید مشخص شده باشد و رشته‌ای معتبر باشد</translation>
 <translation id="1745880797583122200">مرورگرتان تحت مدیریت است</translation>
 <translation id="1746113442205726301">‏تغییر جهت تصویر حول محور Y</translation>
+<translation id="1746531169546376413">۰ درجه</translation>
 <translation id="17513872634828108">بازکردن برگه‌ها</translation>
 <translation id="1752021286346845558">صندوق پست ۸</translation>
 <translation id="1753068535428855445">دوستیابی و شخصیت</translation>
@@ -361,6 +364,7 @@
 <translation id="1807246157184219062">روشن</translation>
 <translation id="1807528111851433570">صفحه شروع</translation>
 <translation id="181000283860817563">پیگیری قیمت‌ها در چندین سایت</translation>
+<translation id="1810391395243432441">با قفل صفحه از گذرواژه‌ها محافظت کنید</translation>
 <translation id="1812527064848182527">منظره</translation>
 <translation id="1813414402673211292">پاک کردن داده‌های مرور</translation>
 <translation id="182139138257690338">بارگیری‌های خودکار</translation>
@@ -380,6 +384,7 @@
 <translation id="1871208020102129563">‏تنظیم پروکسی به گونه‌ای است که از سرورهای ثابت پروکسی استفاده کند و از آدرس اسکریپت pac. استفاده نکند.</translation>
 <translation id="1871284979644508959">قسمت الزامی</translation>
 <translation id="1873899211667975540">موسیقی راک</translation>
+<translation id="1874224422119691492">می‌توانید در <ph name="SETTINGS" /> انتخاب کنید از قفل صفحه برای تکمیل گذرواژه‌ها استفاده شود یا نه</translation>
 <translation id="1875025161375567525">سینی عکس</translation>
 <translation id="1875512691959384712">‏فرم‌نگار Google</translation>
 <translation id="187918866476621466">باز کردن صفحه‌های شروع</translation>
@@ -411,7 +416,6 @@
 <translation id="1958218078413065209">بالاترین امتیاز شما <ph name="SCORE" /> است.</translation>
 <translation id="1959001866257244765">‏با ارسال <ph name="BEGIN_WHITEPAPER_LINK" />نشانی وب برخی از صفحه‌هایی که بازدید می‌کنید، اطلاعات محدود سیستم، و بخشی از محتوای صفحه<ph name="END_WHITEPAPER_LINK" /> به Google، به بهبود امنیت وب برای همه کمک کنید. <ph name="BEGIN_PRIVACY_PAGE_LINK" />خط‌مشی رازداری<ph name="END_PRIVACY_PAGE_LINK" /></translation>
 <translation id="1962204205936693436">نشانک‌های <ph name="DOMAIN" /></translation>
-<translation id="1971033026002113380">‏محافظت از گذرواژه‌ها با TouchID</translation>
 <translation id="1973335181906896915">خطای ترتیب</translation>
 <translation id="1974060860693918893">پیشرفته</translation>
 <translation id="1975457531113383421">سینی ورودی</translation>
@@ -743,10 +747,10 @@
 <translation id="2876949457278336305">‏<ph name="MANAGE_SECURITY_SETTINGS_FOCUSED_FRIENDLY_MATCH_TEXT" />؛ برای مدیریت «مرور ایمن» و موارد دیگر در تنظیمات Chrome، کلید «جهش» و سپس «ورود» را فشار دهید</translation>
 <translation id="2878197950673342043">تاخوردگی پوسترمانند</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2879694782644540289">از قفل صفحه برای تکمیل گذرواژه‌ها استفاده کند</translation>
 <translation id="2881276955470682203">کارت ذخیره شود؟</translation>
 <translation id="2882949212241984732">تاخوردگی دروازه‌ای دوتایی</translation>
 <translation id="2893773853358652045">رول چهارم</translation>
-<translation id="289834758818479772">‏اگر این دستگاه را با دیگران هم‌رسانی می‌کنید، می‌توانید TouchID را روشن کنید تا هرگاه از گذرواژه ذخیره‌شده استفاده می‌کنید هویتتان را تأیید کند</translation>
 <translation id="2900528713135656174">ایجاد رویداد</translation>
 <translation id="2903493209154104877">آدرس‌ها</translation>
 <translation id="290376772003165898">صفحه به زبان <ph name="LANGUAGE" /> وجود ندارد؟</translation>
@@ -1001,6 +1005,7 @@
 <translation id="3532844647053365774"><ph name="HOST" /> می‌خواهد از میکروفن شما استفاده کند</translation>
 <translation id="3533328374079021623">صندوق پست ۵</translation>
 <translation id="3537165859691846083">نامه افزوده</translation>
+<translation id="3542628208405253498">تصویر کارت</translation>
 <translation id="3542768452570884558">باز کردن پیوند در پنجره جدید</translation>
 <translation id="3547746132308051926">۲۴ × ۲۰ اینچ</translation>
 <translation id="3550112004925580947">صنعت مهمان‌نوازی</translation>
@@ -1064,7 +1069,6 @@
 <translation id="3678529606614285348">‏صفحه را در پنجره‌ «ناشناس» جدیدی باز کنید (Ctrl-Shift-N)</translation>
 <translation id="3681007416295224113">اطلاعات گواهی</translation>
 <translation id="3693327506115126094">نحوه تأیید هویتتان را انتخاب کنید</translation>
-<translation id="3699374065820972102">‏TouchID برای پر کردن گذرواژه‌ها روشن است</translation>
 <translation id="3701427423622901115">بازنشانی تأیید شد.</translation>
 <translation id="3704162925118123524">شاید شبکه‌ای که استفاده می‌کنید، بازدید از صفحه ورود به سیستم خودش را برای شما ضروری کرده باشد.</translation>
 <translation id="3705189812819839667"><ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -1092,6 +1096,7 @@
 <translation id="3745099705178523657">‏بعد از تأیید کردن، جزئیات کارت از حساب Google شما با این سایت هم‌رسانی می‌شود.</translation>
 <translation id="3748148204939282805">ممکن است مهاجم‌ها در <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> شما را فریب دهند تا اقدام خطرناکی همچون نصب نرم‌افزار یا افشای اطلاعات شخصی (مانند گذرواژه‌ها، پیام‌ها یا کارت‌های اعتباری) انجام دهید. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3748912308089554501">صنعت هوانوردی</translation>
+<translation id="3752543821772132562">نادیده گرفته می‌شود زیرا <ph name="POLICY_NAME" /> تنظیم نشده است.</translation>
 <translation id="3754210790023674521">خروج از تصویردرتصویر</translation>
 <translation id="3759461132968374835">شما اخیراً گزارش خرابی ارسال نکرده‌اید. مشکلاتی که در هنگام غیرفعال بودن ویژگی ارائه گزارش خرابی ایجاد شده است، در اینجا نمایش داده نمی‌شود.</translation>
 <translation id="3760561303380396507">‏به‌جای CVC از Windows Hello استفاده شود؟</translation>
@@ -1179,7 +1184,6 @@
 <translation id="401170183602135785">پاکت سی۶</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{‏سند PDF {COUNT} صفحه دارد}one{‏سند PDF {COUNT} صفحه دارد}other{‏سند PDF {COUNT} صفحه دارد}}</translation>
 <translation id="4023431997072828269">از آنجایی‌که این فرم درحال ارسال ازطریق اتصال ناامنی است، دیگران می‌توانند اطلاعات شما را ببینند.</translation>
-<translation id="4024923292610332139">‏TouchID را برای درج گذرواژه‌ها خاموش کند</translation>
 <translation id="4025913568718019429">‏دکمه «مدیریت تنظیمات حریم خصوصی Google»؛ برای رفتن به تنظیمات حریم خصوصی «حساب Google»، کلید «ورود» را فشار دهید</translation>
 <translation id="4030383055268325496">&amp;واگرد افزودن</translation>
 <translation id="4031179711345676612">میکروفون مجاز است</translation>
@@ -1399,6 +1403,7 @@
 <translation id="4541810033354695636">واقعیت افزوده</translation>
 <translation id="4542971377163063093">سینی ۶</translation>
 <translation id="455113658016510503">A9</translation>
+<translation id="4556069465387849460">از قفل صفحه برای تکمیل گذرواژه‌ها استفاده می‌کنید</translation>
 <translation id="4558551763791394412">افزونه‌ها را غیرفعال کنید.</translation>
 <translation id="4566017918361049074">فعالیت‌های فضای باز</translation>
 <translation id="4567686777917670400">‏سرپرستتان می‌تواند تنظیمات مرورگرتان را ازراه‌دور تغییر دهد. ممکن است فعالیت‌های انجام‌شده در این دستگاه خارج از Chromium هم مدیریت شود. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
@@ -1541,7 +1546,6 @@
 <translation id="4900217275619098670">رول نهم</translation>
 <translation id="4901778704868714008">ذخیره...</translation>
 <translation id="4905659621780993806">سرپرستْ دستگاهتان را ساعت <ph name="TIME" /> روز <ph name="DATE" /> به‌طور خودکار بازراه‌اندازی خواهد کرد. قبل‌از بازراه‌اندازی دستگاه، موارد باز را ذخیره کنید.</translation>
-<translation id="4911007278801291296">‏می‌توانید TouchID را در <ph name="SETTINGS" /> روشن یا خاموش کنید</translation>
 <translation id="4913987521957242411">سوراخ سمت راست بالا</translation>
 <translation id="4918221908152712722">نصب <ph name="APP_NAME" /> (بارگیری لازم نیست)</translation>
 <translation id="4923459931733593730">پرداخت</translation>
@@ -1723,6 +1727,7 @@
 <translation id="5334013548165032829">گزارش دقیق سیستم</translation>
 <translation id="5334145288572353250">نشانی ذخیره شود؟</translation>
 <translation id="5335920952954443287">قلب تپنده</translation>
+<translation id="5337569431717511221">‏دکمه «تنظیم Chrome به‌عنوان مرورگر پیش‌فرض»؛ برای تنظیم Chrome به‌عنوان مرورگر پیش‌فرض سیستم، کلید Enter را فشار دهید</translation>
 <translation id="5340250774223869109">برنامه مسدود شده است</translation>
 <translation id="534295439873310000">‏دستگاه‌های NFC</translation>
 <translation id="5344579389779391559">این صفحه ممکن است تلاش کند از شما پول دریافت کند</translation>
@@ -1754,7 +1759,6 @@
 <translation id="5426179911063097041"><ph name="SITE" /> می‌خواهد برایتان اعلان  ارسال کند</translation>
 <translation id="5428105026674456456">اسپانیایی</translation>
 <translation id="5430298929874300616">حذف نشانک</translation>
-<translation id="5434423669266814150">‏TouchID را برای پر کردن گذرواژه‌ها روشن کند</translation>
 <translation id="5443468954631487277">روبه‌بالا به‌ترتیب معکوس</translation>
 <translation id="5447765697759493033">این سایت ترجمه نخواهد شد</translation>
 <translation id="5452270690849572955">صفحه <ph name="HOST_NAME" /> پیدا نمی‌شود</translation>
@@ -1796,6 +1800,7 @@
 <translation id="5540969246441091044">اسب‌سواری</translation>
 <translation id="5541086400771735334">صندوق پست ۷</translation>
 <translation id="5541546772353173584">افزودن ایمیل</translation>
+<translation id="5543722831081909240">۱۸۰ درجه</translation>
 <translation id="5545756402275714221">مقاله‌هایی برای شما</translation>
 <translation id="5551890439174915351">۲۰۰ × ۱۰۰ میلی‌متر</translation>
 <translation id="5552137475244467770">‏Chrome به‌طور دوره‌ای گذرواژه‌هایتان را با فهرست‌هایی که به‌صورت آنلاین منتشر می‌شود مقایسه می‌کند. هنگام انجام این کار، نام‌های کاربری و گذرواژه‌های شما رمزگذاری می‌شود تا توسط اشخاص دیگر، ازجمله Google خوانده نشود.</translation>
@@ -2184,6 +2189,7 @@
 <translation id="6591833882275308647"><ph name="DEVICE_TYPE" /> شما تحت مدیریت نیست</translation>
 <translation id="6592952801936330159">‏دکمه مدیریت تنظیمات سایت، کلید «ورود» را فشار دهید تا اجازه‌ها و داده‌های ذخیره‌شده در سایت‌ها را در تنظیمات Chrome مدیریت کنید</translation>
 <translation id="6596325263575161958">گزینه‌های رمزگذاری</translation>
+<translation id="6597665340361269064">۹۰ درجه</translation>
 <translation id="6599642189720630047">محصولات پیگیری‌شده</translation>
 <translation id="6611723696964473273">اخبار اقتصادی</translation>
 <translation id="6612010098632894193">ویدیوی آنلاین</translation>
@@ -2264,7 +2270,7 @@
 <translation id="6821175457349035766">فیلم‌های اکشن و ماجراجویی</translation>
 <translation id="6822437859461265552">بیمه عمر</translation>
 <translation id="6823746213313229853">گفتگوی رادیویی</translation>
-<translation id="6825578344716086703">‏تلاش کردید به <ph name="DOMAIN" /> دسترسی داشته باشید، اما گواهینامه ارائه‌شده از سوی سرور با استفاده از یک الگوریتم امضای ضعیف (مانند SHA-1) امضا شده است. یعنی ممکن است اعتبارنامه امنیتی ارائه‌شده از سوی سرور جعلی باشد و ممکن است سرور، سرور موردانتظار شما نباشد (ممکن است با یک مهاجم در ارتباط باشید).</translation>
+<translation id="6825578344716086703">‏تلاش کردید به <ph name="DOMAIN" /> دسترسی داشته باشید، اما گواهینامه ارائه‌شده از سوی سرور با استفاده از یک الگوریتم امضای ضعیف (مانند SHA-1) امضا شده است. یعنی ممکن است اطلاعات اعتباری امنیتی ارائه‌شده از سوی سرور جعلی باشد و ممکن است سرور، سرور موردانتظار شما نباشد (ممکن است با یک مهاجم در ارتباط باشید).</translation>
 <translation id="6826993739343257035">‏AR مجاز باشد؟</translation>
 <translation id="6828866289116430505">وراثت</translation>
 <translation id="6831043979455480757">ترجمه</translation>
@@ -2416,6 +2422,7 @@
 <translation id="7199278868241956094">اداری</translation>
 <translation id="7201591969684833065">سرپرستتان می‌تواند این موارد را ببیند:</translation>
 <translation id="7202217080450895452">‏<ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />؛ برای باز کردن «برگه ناشناس» جدید و مرور کردن به‌صورت خصوصی، کلید Tab و سپس Enter را فشار دهید</translation>
+<translation id="7203375778433816396">‏تنظیم Chrome به‌عنوان مرورگر پیش‌فرض سیستم</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> از استانداردهای امنیتی پیروی نمی‌کند.</translation>
 <translation id="7210993021468939304">‏فعالیت Linux در محتوی و می‌توانید برنامه‌های Linux را در محتوی نصب و اجرا کنید</translation>
 <translation id="721197778055552897">دربارهٔ این مشکل <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" />.</translation>
@@ -2563,6 +2570,7 @@
 <translation id="7537536606612762813">اجباری</translation>
 <translation id="7542403920425041731">بعد از تأیید شما، جزئیات کارتتان با این سایت به اشتراک گذاشته می‌شود.</translation>
 <translation id="7542995811387359312">تکمیل خودکار کارت اعتباری غیر فعال است زیرا این فرم از یک اتصال امن استفاده نمی‌کند.</translation>
+<translation id="7546409722674205727">درحال راه‌اندازی <ph name="APP_NAME" /></translation>
 <translation id="7548892272833184391">رفع خطاهای اتصال</translation>
 <translation id="7549584377607005141">این صفحه وب برای نمایش صحیح به داده‌هایی نیاز دارد که قبلاً وارد کرده‌اید. می‌توانید این داده‌ها را دوباره ارسال کنید، اما با انجام این کار، هر اقدامی که این صفحه قبلاً انجام داده است تکرار می‌شود.</translation>
 <translation id="7550637293666041147">‏نام کاربری شما در دستگاه و Chrome</translation>
@@ -2716,6 +2724,7 @@
 <translation id="7942349550061667556">قرمز</translation>
 <translation id="7943397946612013052">بارگیری مسدود شد</translation>
 <translation id="7943893128817522649">می‌تواند برای بارگیری خودکار چند فایل درخواست دهد</translation>
+<translation id="7946724693008564269">زبان شناسایی‌شده</translation>
 <translation id="7947285636476623132">سال انقضا را بررسی و دوباره امتحان کنید</translation>
 <translation id="7947813448670013867">‏<ph name="SEE_CHROME_TIPS_FOCUSED_FRIENDLY_MATCH_TEXT" />؛ برای اطلاع از ویژگی‌های جدید Chrome، کلید «جهش» و سپس «ورود» را فشار دهید</translation>
 <translation id="7950027195171824198">‏مدیریت اولویت‌های کوکی در تنظیمات Chrome</translation>
@@ -2748,6 +2757,7 @@
 <translation id="8009843239480947060">۱۱ × ۱۰ اینچ</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{این کارت و نشانی صورت‌حساب آن ذخیره می‌شود. وقتی به سیستم <ph name="USER_EMAIL" /> وارد شوید می‌توانید از آن استفاده کنید.}one{این کارت‌ها و نشانی صورت‌حساب آن‌ها ذخیره می‌شود. وقتی به سیستم <ph name="USER_EMAIL" /> وارد شوید می‌توانید از آن‌ها استفاده کنید.}other{این کارت‌ها و نشانی صورت‌حساب آن‌ها ذخیره می‌شود. وقتی به سیستم <ph name="USER_EMAIL" /> وارد شوید می‌توانید از آن‌ها استفاده کنید.}}</translation>
 <translation id="8019861005170389898"><ph name="TRADITIONAL_TEXT" /> (<ph name="ADDITIONAL_TEXT" />)</translation>
+<translation id="8023231537967344568">‏<ph name="SET_CHROME_AS_DEFAULT_BROWSER_FOCUSED_FRIENDLY_MATCH_TEXT" />، برای تنظیم Chrome به‌عنوان مرورگر پیش‌فرض سیستم، کلید جهش و سپس Enter را فشار دهید</translation>
 <translation id="8025119109950072390">مهاجمان در این سایت ممکن است شما را فریب دهند که کارهای خطرناکی مثل نصب نرم‌افزار یا ارائه اطلاعات شخصی‌تان (مثلاً گذرواژه‌ها، شماره تلفن‌ها یا کارت‌های اعتباری) انجام دهید.</translation>
 <translation id="8026334261755873520">پاک کردن داده‌های مرور</translation>
 <translation id="8027077570865220386">سینی ۱۵</translation>
@@ -2887,6 +2897,7 @@
 <translation id="8355270400102541638">بافت خرابی محلی:</translation>
 <translation id="8363502534493474904">خاموش کردن حالت هواپیما</translation>
 <translation id="8364627913115013041">تنظیم نشده.</translation>
+<translation id="836616551641291797">درباره نحوه مدیریت مرورگرتان بیشتر بدانید</translation>
 <translation id="8368001212524806591">پیگیری قیمت</translation>
 <translation id="8368027906805972958">دستگاه ناشناس یا پشتیبانی‌نشده (<ph name="DEVICE_ID" />)</translation>
 <translation id="8368476060205742148">‏خدمات Google Play</translation>
@@ -2899,6 +2910,7 @@
 <translation id="8396522675989118466">این کد <ph name="NUMBER_OF_DIGITS" /> رقمی درج‌شده در <ph name="SIDE_OF_CARD" /> است</translation>
 <translation id="8398790343843005537">یافتن تلفن خودتان</translation>
 <translation id="8405579342203358118">‏مدیریت اطلاعاتی که همگام‌سازی می‌کنید در تنظیمات Chrome</translation>
+<translation id="8406071103346257942">استفاده از قفل صفحه برای تکمیل گذرواژه‌ها را متوقف کند</translation>
 <translation id="8409413588194360210">کنترل‌کننده‌های پرداخت</translation>
 <translation id="8412145213513410671">خرابی‌ها (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">شما باید همان گذرعبارت را دوبار وارد کنید.</translation>
@@ -3167,6 +3179,7 @@
 <translation id="9128016270925453879">خط‌مشی‌ها بار شد</translation>
 <translation id="9128870381267983090">اتصال به شبکه</translation>
 <translation id="9131119348384879525">محتوای محرمانه ضبط شود؟</translation>
+<translation id="9133985615769429248">اگر مشترک با دیگران از این دستگاه استفاده می‌کنید، می‌توانید هنگام استفاده از گذرواژه‌های ذخیره‌شده، از قفل صفحه خود برای تأیید هویتتان استفاده کنید</translation>
 <translation id="9136861683332321024">وسایل نقلیه گران‌قیمت</translation>
 <translation id="9137013805542155359">نمایش مورد اصلی</translation>
 <translation id="9138037198177304356">اعلان‌ها مجاز است</translation>

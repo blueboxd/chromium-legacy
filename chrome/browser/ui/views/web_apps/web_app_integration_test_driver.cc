@@ -1189,7 +1189,9 @@ void WebAppIntegrationTestDriver::LaunchFileExpectDialog(
     FilesOptions files_options,
     AllowDenyOptions allow_deny,
     AskAgainOptions ask_again) {
-  BeforeStateChangeAction(__FUNCTION__);
+  if (!BeforeStateChangeAction(__FUNCTION__)) {
+    return;
+  }
   AppId app_id = GetAppIdBySiteMode(site);
   views::NamedWidgetShownWaiter waiter(views::test::AnyWidgetTestPasskey{},
                                        "FileHandlerLaunchDialogView");
@@ -1229,7 +1231,9 @@ void WebAppIntegrationTestDriver::LaunchFileExpectDialog(
 void WebAppIntegrationTestDriver::LaunchFileExpectNoDialog(
     Site site,
     FilesOptions files_options) {
-  BeforeStateChangeAction(__FUNCTION__);
+  if (!BeforeStateChangeAction(__FUNCTION__)) {
+    return;
+  }
   AppId app_id = GetAppIdBySiteMode(site);
   base::RunLoop run_loop;
 #if BUILDFLAG(IS_MAC)
@@ -1631,7 +1635,12 @@ void WebAppIntegrationTestDriver::NavigatePwa(Site pwa, Site to) {
   if (!BeforeStateChangeAction(__FUNCTION__))
     return;
   app_browser_ = GetAppBrowserForSite(pwa);
+
+  content::TestNavigationObserver url_observer(GetUrlForSite(to));
+  url_observer.StartWatchingNewWebContents();
+  url_observer.WatchExistingWebContents();
   NavigateToURLAndWait(app_browser(), GetUrlForSite(to), false);
+  url_observer.Wait();
   AfterStateChangeAction();
 }
 
@@ -1750,7 +1759,8 @@ void WebAppIntegrationTestDriver::SetOpenInTab(Site site) {
   ;
   // Will need to add feature flag based condition for web app settings page
 #if BUILDFLAG(IS_CHROMEOS)
-  auto& sync_bridge = WebAppProvider::GetForTest(profile())->sync_bridge();
+  auto& sync_bridge =
+      WebAppProvider::GetForTest(profile())->sync_bridge_unsafe();
   sync_bridge.SetAppUserDisplayMode(app_id, UserDisplayMode::kBrowser, true);
   AppWindowModeWaiter(profile(), app_id, apps::WindowMode::kBrowser).Await();
 #else
@@ -1769,7 +1779,8 @@ void WebAppIntegrationTestDriver::SetOpenInWindow(Site site) {
   ;
   // Will need to add feature flag based condition for web app settings page.
 #if BUILDFLAG(IS_CHROMEOS)
-  auto& sync_bridge = WebAppProvider::GetForTest(profile())->sync_bridge();
+  auto& sync_bridge =
+      WebAppProvider::GetForTest(profile())->sync_bridge_unsafe();
   sync_bridge.SetAppUserDisplayMode(app_id, UserDisplayMode::kStandalone, true);
   AppWindowModeWaiter(profile(), app_id, apps::WindowMode::kWindow).Await();
 #else
@@ -1780,7 +1791,9 @@ void WebAppIntegrationTestDriver::SetOpenInWindow(Site site) {
 }
 
 void WebAppIntegrationTestDriver::SwitchIncognitoProfile() {
-  BeforeStateChangeAction(__FUNCTION__);
+  if (!BeforeStateChangeAction(__FUNCTION__)) {
+    return;
+  }
   content::WebContentsAddedObserver nav_observer;
   CHECK(chrome::ExecuteCommand(browser(), IDC_NEW_INCOGNITO_WINDOW));
   ASSERT_EQ(1U, BrowserList::GetIncognitoBrowserCount());
@@ -2062,7 +2075,9 @@ void WebAppIntegrationTestDriver::CheckAppListEmpty() {
 }
 
 void WebAppIntegrationTestDriver::CheckAppInListIconCorrect(Site site) {
-  BeforeStateCheckAction(__FUNCTION__);
+  if (!BeforeStateCheckAction(__FUNCTION__)) {
+    return;
+  }
   GURL icon_url =
       apps::AppIconSource::GetIconURL(active_app_id_, icon_size::k128);
   SkBitmap icon_bitmap;
@@ -2300,13 +2315,17 @@ void WebAppIntegrationTestDriver::CheckAppTitle(Site site, Title title) {
 }
 
 void WebAppIntegrationTestDriver::CheckCreateShortcutNotShown() {
-  BeforeStateCheckAction(__FUNCTION__);
+  if (!BeforeStateCheckAction(__FUNCTION__)) {
+    return;
+  }
   EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, browser()), kDisabled);
   AfterStateCheckAction();
 }
 
 void WebAppIntegrationTestDriver::CheckCreateShortcutShown() {
-  BeforeStateCheckAction(__FUNCTION__);
+  if (!BeforeStateCheckAction(__FUNCTION__)) {
+    return;
+  }
   EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, browser()), kEnabled);
   AfterStateCheckAction();
 }
@@ -3099,14 +3118,18 @@ void WebAppIntegrationTestDriver::NavigateTabbedBrowserToSite(
     const GURL& url,
     NavigationMode mode) {
   DCHECK(browser());
+  content::TestNavigationObserver url_observer(url);
   if (mode == NavigationMode::kNewTab) {
+    url_observer.StartWatchingNewWebContents();
     ASSERT_TRUE(ui_test_utils::NavigateToURLWithDisposition(
         browser(), GURL(url), WindowOpenDisposition::NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
             ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP));
   } else {
+    url_observer.WatchExistingWebContents();
     ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
   }
+  url_observer.Wait();
 }
 
 Browser* WebAppIntegrationTestDriver::GetAppBrowserForSite(
@@ -3225,9 +3248,8 @@ bool WebAppIntegrationTestDriver::IsFileHandledBySite(
   base::FilePath app_path = GetShortcutPath(
       override_registration_->shortcut_override->chrome_apps_folder.GetPath(),
       app_name, app_id);
-  std::vector<base::FilePath> app_paths =
-      shell_integration::GetAllApplicationPathsForURL(test_file_url);
-  is_file_handled = base::Contains(app_paths, app_path);
+  is_file_handled =
+      shell_integration::CanApplicationHandleURL(app_path, test_file_url);
 #elif BUILDFLAG(IS_LINUX)
   AppId app_id = GetAppIdBySiteMode(site);
   for (const LinuxFileRegistration& command :

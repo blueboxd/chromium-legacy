@@ -35,8 +35,8 @@ em::RemoteCommand GenerateSetVolumeCommandProto(base::TimeDelta age_of_command,
   command_proto.set_command_id(kUniqueID);
   command_proto.set_age_of_command(age_of_command.InMilliseconds());
   std::string payload;
-  base::DictionaryValue root_dict;
-  root_dict.SetIntKey(kVolumeFieldName, volume);
+  base::Value::Dict root_dict;
+  root_dict.Set(kVolumeFieldName, volume);
   base::JSONWriter::Write(root_dict, &payload);
   command_proto.set_payload(payload);
   return command_proto;
@@ -86,8 +86,8 @@ void VerifyResults(base::RunLoop* run_loop,
                    int expected_volume,
                    bool expected_muted) {
   EXPECT_EQ(RemoteCommandJob::SUCCEEDED, job->status());
-  int volume = chromeos::CrasAudioHandler::Get()->GetOutputVolumePercent();
-  bool muted = chromeos::CrasAudioHandler::Get()->IsOutputMuted();
+  int volume = ash::CrasAudioHandler::Get()->GetOutputVolumePercent();
+  bool muted = ash::CrasAudioHandler::Get()->IsOutputMuted();
   EXPECT_EQ(expected_volume, volume);
   EXPECT_EQ(expected_muted, muted);
   run_loop->Quit();

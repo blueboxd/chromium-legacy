@@ -16,7 +16,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"
 
 namespace bookmarks {
@@ -146,11 +145,12 @@ bool ReadWebURLsWithTitlesPboardType(
     std::vector<BookmarkNodeData::Element>* elements) {
   NSArray* urls = nil;
   NSArray* titles = nil;
-  if (!ui::ClipboardUtil::URLsAndTitlesFromPasteboard(pb, &urls, &titles))
+  if (!ui::ClipboardUtil::URLsAndTitlesFromPasteboard(
+          pb, /*include_files=*/false, &urls, &titles)) {
     return false;
+  }
 
-  NSUInteger len = [titles count];
-  for (NSUInteger i = 0; i < len; ++i) {
+  for (NSUInteger i = 0; i < titles.count; ++i) {
     std::u16string title = base::SysNSStringToUTF16(titles[i]);
     std::string url = base::SysNSStringToUTF8(urls[i]);
     if (!url.empty()) {
@@ -293,7 +293,8 @@ bool ReadBookmarksFromPasteboard(
 
 bool PasteboardContainsBookmarks(NSPasteboard* pb) {
   NSArray* availableTypes = @[
-    ui::kUTTypeWebKitWebURLsWithTitles, kUTTypeChromiumBookmarkDictionaryList
+    ui::ClipboardUtil::UTIForWebURLsAndTitles(),
+    kUTTypeChromiumBookmarkDictionaryList
   ];
   return [pb availableTypeFromArray:availableTypes] != nil;
 }

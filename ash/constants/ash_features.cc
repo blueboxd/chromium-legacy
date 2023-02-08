@@ -5,6 +5,7 @@
 #include "ash/constants/ash_features.h"
 
 #include "ash/constants/ash_switches.h"
+#include "ash_features.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
@@ -250,7 +251,7 @@ BASE_FEATURE(kAutoScreenBrightness,
 // Enables or disables extended autocomplete results.
 BASE_FEATURE(kAutocompleteExtendedSuggestions,
              "AutocompleteExtendedSuggestions",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables params tuning experiment for autocorrect on ChromeOS.
 BASE_FEATURE(kAutocorrectParamsTuning,
@@ -408,6 +409,12 @@ BASE_FEATURE(kClipboardHistoryNudgeSessionReset,
              "ClipboardHistoryNudgeSessionReset",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables updated UI for the clipboard history menu and new system behavior
+// related to clipboard history.
+BASE_FEATURE(kClipboardHistoryRefresh,
+             "ClipboardHistoryRefresh",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, pasting a clipboard history item will cause that item to move to
 // the top of the history list.
 BASE_FEATURE(kClipboardHistoryReorder,
@@ -500,7 +507,7 @@ BASE_FEATURE(kCaptivePortalErrorPage,
 // the user.
 BASE_FEATURE(kChromadAvailable,
              "ChromadAvailable",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables always using device-activity-status data to filter
 // eligible host phones.
@@ -818,9 +825,7 @@ BASE_FEATURE(kEnableTouchscreensInDiagnosticsApp,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, allows user to request to view PPD for a printer.
-BASE_FEATURE(kEnableViewPpd,
-             "EnableViewPpd",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kEnableViewPpd, "EnableViewPpd", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enforces Ash extension keep-list. Only the extensions/Chrome apps in the
 // keep-list are enabled in Ash.
@@ -1604,6 +1609,20 @@ BASE_FEATURE(kPreferConstantFrameRate,
              "PreferConstantFrameRate",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Set the channel from which the PPD files are loaded.
+BASE_FEATURE(kPrintingPpdChannel,
+             "PrintingPpdChannel",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<PrintingPpdChannel>::Option
+    printing_ppd_channel_options[] = {
+        {PrintingPpdChannel::kProduction, "production"},
+        {PrintingPpdChannel::kStaging, "staging"},
+        {PrintingPpdChannel::kDev, "dev"}};
+const base::FeatureParam<PrintingPpdChannel> kPrintingPpdChannelParam{
+    &kPrintingPpdChannel, "channel", PrintingPpdChannel::kProduction,
+    &printing_ppd_channel_options};
+
 // Enables to allocate more video capture buffers.
 BASE_FEATURE(kMoreVideoCaptureBuffers,
              "MoreVideoCaptureBuffers",
@@ -1997,11 +2016,6 @@ BASE_FEATURE(kTerminalTmuxIntegration,
              "TerminalTmuxIntegration",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enable or disable new touch text editing features on ChromeOS.
-BASE_FEATURE(kTouchTextEditingRedesign,
-             "TouchTextEditingRedesign",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables the TrafficCountersHandler class to auto-reset traffic counters
 // and shows Data Usage in the Celluar Settings UI.
 BASE_FEATURE(kTrafficCountersEnabled,
@@ -2153,6 +2167,18 @@ BASE_FEATURE(kWmMode, "WmMode", base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kDeviceActiveClient,
              "DeviceActiveClient",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables or disables PSM CheckIn for the 28 day active device active pings
+// on ChromeOS.
+BASE_FEATURE(kDeviceActiveClient28DayActiveCheckIn,
+             "DeviceActiveClient28DayActiveCheckIn",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables or disables PSM CheckMembership for 28 day device active pings
+// on ChromeOS.
+BASE_FEATURE(kDeviceActiveClient28DayActiveCheckMembership,
+             "DeviceActiveClient28DayActiveCheckMembership",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables PSM CheckMembership for daily device active pings
 // on ChromeOS.
@@ -2382,6 +2408,10 @@ bool IsChromadAvailableEnabled() {
 
 bool IsClipboardHistoryNudgeSessionResetEnabled() {
   return base::FeatureList::IsEnabled(kClipboardHistoryNudgeSessionReset);
+}
+
+bool IsClipboardHistoryRefreshEnabled() {
+  return base::FeatureList::IsEnabled(kClipboardHistoryRefresh);
 }
 
 bool IsClipboardHistoryReorderEnabled() {

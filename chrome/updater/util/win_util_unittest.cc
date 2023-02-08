@@ -26,6 +26,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/win/atl.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/scoped_localalloc.h"
 #include "chrome/updater/test_scope.h"
 #include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_version.h"
@@ -348,10 +349,28 @@ TEST(WinUtil, StopGoogleUpdateProcesses) {
 
 TEST(WinUtil, QuoteForCommandLineToArgvW) {
   const struct {
+    const wchar_t* input_arg;
+    const wchar_t* expected_output_arg;
+  } test_cases[] = {
+      {L"", L"\"\""},
+      {L"abc = xyz", L"\"abc = xyz\""},
+      {L"C:\\AppData\\Local\\setup.exe", L"C:\\AppData\\Local\\setup.exe"},
+      {L"C:\\Program Files\\setup.exe", L"\"C:\\Program Files\\setup.exe\""},
+      {L"\"C:\\Program Files\\setup.exe\"",
+       L"\"\\\"C:\\Program Files\\setup.exe\\\"\""},
+  };
+
+  for (const auto& test_case : test_cases) {
+    EXPECT_EQ(QuoteForCommandLineToArgvW(test_case.input_arg),
+              test_case.expected_output_arg);
+  }
+}
+
+TEST(WinUtil, QuoteForCommandLineToArgvW_After_CommandLineToArgvW) {
+  const struct {
     std::vector<std::wstring> input_args;
     const wchar_t* expected_output;
   } test_cases[] = {
-      // Unformatted parameters.
       {{L"abc=1"}, L"abc=1"},
       {{L"abc=1", L"xyz=2"}, L"abc=1 xyz=2"},
       {{L"abc=1", L"xyz=2", L"q"}, L"abc=1 xyz=2 q"},
@@ -360,6 +379,7 @@ TEST(WinUtil, QuoteForCommandLineToArgvW) {
       {{L"abc\" = \"1", L"xyz=2"}, L"\"abc = 1\" xyz=2"},
       {{L"\"abc = 1\""}, L"\"abc = 1\""},
       {{L"abc\" = \"1"}, L"\"abc = 1\""},
+      {{L"\\\\", L"\\\\\\\""}, L"\\\\ \\\\\\\""},
   };
 
   for (const auto& test_case : test_cases) {
@@ -367,23 +387,19 @@ TEST(WinUtil, QuoteForCommandLineToArgvW) {
         base::StrCat({L"c:\\test\\process.exe ",
                       base::JoinString(test_case.input_args, L" ")});
     int num_args = 0;
-    ScopedLocalAlloc args(
+    base::win::ScopedLocalAllocTyped<wchar_t*> argv(
         ::CommandLineToArgvW(&input_command_line[0], &num_args));
     ASSERT_EQ(num_args - 1U, test_case.input_args.size());
 
-    const wchar_t** argv = reinterpret_cast<const wchar_t**>(args.get());
     std::wstring recreated_command_line;
     for (int i = 1; i < num_args; ++i) {
-      recreated_command_line.append(QuoteForCommandLineToArgvW(argv[i]));
+      recreated_command_line.append(QuoteForCommandLineToArgvW(argv.get()[i]));
 
       if (i + 1 < num_args)
         recreated_command_line.push_back(L' ');
     }
 
-    EXPECT_EQ(recreated_command_line, test_case.expected_output)
-        << "recreated_command_line '" << recreated_command_line
-        << "' did not match test_case.expected_output '"
-        << test_case.expected_output;
+    EXPECT_EQ(recreated_command_line, test_case.expected_output);
   }
 }
 

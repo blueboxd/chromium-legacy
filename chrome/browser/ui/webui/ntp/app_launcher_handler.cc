@@ -11,7 +11,6 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
@@ -55,6 +54,7 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/web_applications/extension_status_utils.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
@@ -764,14 +764,20 @@ void AppLauncherHandler::HandleGetApps(const base::Value::List& args) {
                                    kForceInstallDialogQueryString, &app_id)) {
       if (extensions::IsExtensionUnsupportedDeprecatedApp(profile, app_id) &&
           extensions::IsExtensionForceInstalled(profile, app_id, nullptr)) {
-        TabDialogs::FromWebContents(web_contents)
-            ->ShowForceInstalledDeprecatedAppsDialog(
-                app_id, web_contents,
-                base::BindOnce(
-                    &AppLauncherHandler::LaunchApp,
-                    weak_ptr_factory_.GetWeakPtr(), app_id,
-                    extension_misc::AppLaunchBucket::APP_LAUNCH_CMD_LINE_APP,
-                    "", WindowOpenDisposition::CURRENT_TAB, true));
+        if (extensions::IsPreinstalledAppId(app_id)) {
+          TabDialogs::FromWebContents(web_contents)
+              ->ShowForceInstalledPreinstalledDeprecatedAppDialog(app_id,
+                                                                  web_contents);
+        } else {
+          TabDialogs::FromWebContents(web_contents)
+              ->ShowForceInstalledDeprecatedAppsDialog(
+                  app_id, web_contents,
+                  base::BindOnce(
+                      &AppLauncherHandler::LaunchApp,
+                      weak_ptr_factory_.GetWeakPtr(), app_id,
+                      extension_misc::AppLaunchBucket::APP_LAUNCH_CMD_LINE_APP,
+                      "", WindowOpenDisposition::CURRENT_TAB, true));
+        }
       }
     }
   }
@@ -816,6 +822,11 @@ void AppLauncherHandler::LaunchApp(
               base::BindOnce(&AppLauncherHandler::LaunchApp,
                              weak_ptr_factory_.GetWeakPtr(), extension_id,
                              launch_bucket, source_value, disposition, true));
+      return;
+    } else if (extensions::IsPreinstalledAppId(extension_id)) {
+      TabDialogs::FromWebContents(web_ui()->GetWebContents())
+          ->ShowForceInstalledPreinstalledDeprecatedAppDialog(
+              extension_id, web_ui()->GetWebContents());
       return;
     } else {
       TabDialogs::FromWebContents(web_ui()->GetWebContents())
@@ -951,7 +962,7 @@ void AppLauncherHandler::HandleSetLaunchType(const base::Value::List& args) {
         break;
     }
 
-    web_app_provider_->sync_bridge().SetAppUserDisplayMode(
+    web_app_provider_->sync_bridge_unsafe().SetAppUserDisplayMode(
         app_id, user_display_mode, /*is_user_action=*/true);
     return;
   }
@@ -1107,8 +1118,10 @@ void AppLauncherHandler::HandleInstallAppLocally(
 
   InstallOsHooks(app_id);
 
-  web_app_provider_->sync_bridge().SetAppIsLocallyInstalled(app_id, true);
-  web_app_provider_->sync_bridge().SetAppInstallTime(app_id, base::Time::Now());
+  web_app_provider_->sync_bridge_unsafe().SetAppIsLocallyInstalled(app_id,
+                                                                   true);
+  web_app_provider_->sync_bridge_unsafe().SetAppInstallTime(app_id,
+                                                            base::Time::Now());
 }
 
 void AppLauncherHandler::HandleShowAppInfo(const base::Value::List& args) {
@@ -1346,6 +1359,8 @@ void AppLauncherHandler::OnOsHooksInstalled(
   // use that to compare with the results, and record if they all were
   // successful, instead of just shortcuts.
   bool error = os_hooks_errors[web_app::OsHookType::kShortcuts];
+  // TODO(b/260863656): Move the metric measurement to
+  // ShortcutHandlingSubManager::Execute()
   base::UmaHistogramBoolean("Apps.Launcher.InstallLocallyShortcutsCreated",
                             !error);
   web_app_provider_->install_manager().NotifyWebAppInstalledWithOsHooks(app_id);
@@ -1447,9 +1462,15 @@ void AppLauncherHandler::InstallOsHooks(const web_app::AppId& app_id) {
   options.os_hooks[web_app::OsHookType::kUrlHandlers] = false;
 #endif
 
+  auto os_hooks_barrier =
+      web_app::OsIntegrationManager::GetBarrierForSynchronize(
+          base::BindOnce(&AppLauncherHandler::OnOsHooksInstalled,
+                         weak_ptr_factory_.GetWeakPtr(), app_id));
+
+  // TODO(crbug.com/1401125): Remove InstallOsHooks() once OS integration
+  // sub managers have been implemented.
   web_app_provider_->os_integration_manager().InstallOsHooks(
-      app_id,
-      base::BindOnce(&AppLauncherHandler::OnOsHooksInstalled,
-                     weak_ptr_factory_.GetWeakPtr(), app_id),
-      /*web_app_info=*/nullptr, std::move(options));
+      app_id, os_hooks_barrier, /*web_app_info=*/nullptr, std::move(options));
+  web_app_provider_->os_integration_manager().Synchronize(
+      app_id, base::BindOnce(os_hooks_barrier, web_app::OsHooksErrors()));
 }

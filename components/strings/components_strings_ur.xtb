@@ -257,6 +257,7 @@
 <translation id="1553358976309200471">‏Chrome کو اپ ڈیٹ کریں</translation>
 <translation id="1555130319947370107">نیلا</translation>
 <translation id="1559447966090556585">اطلاعات حاصل کریں؟</translation>
+<translation id="1559486004335285648">آٹو فل ادائیگی کی معلومات</translation>
 <translation id="1559528461873125649">ایسی کوئی فائل یا ڈائرکٹری نہیں ہے</translation>
 <translation id="1559572115229829303">‏&lt;p&gt;<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> سے ایک نجی کنکشن تشکیل نہیں دیا جا سکتا ہے کیونکہ آپ کے آلے کی تاریخ اور وقت (<ph name="DATE_AND_TIME" />) غلط ہیں۔&lt;‎/p&gt;
 
@@ -272,6 +273,7 @@
 <translation id="1586541204584340881">آپ نے کن ایکسٹینشنز کو انسٹال کیا ہے</translation>
 <translation id="1588438908519853928">حسب معمول</translation>
 <translation id="1592005682883173041">مقامی ڈیٹا تک رسائی</translation>
+<translation id="1593359183944365958">270 ڈگریز</translation>
 <translation id="1594030484168838125">منتخب کریں</translation>
 <translation id="1596296697375291157">ہیجانی، جرم اور پُراسرار فلمیں</translation>
 <translation id="1599199147673445968">نیا کارڈ؟ <ph name="BEGIN_LINK" />کارڈ کی تفصیلات درج کریں<ph name="END_LINK" /></translation>
@@ -338,6 +340,7 @@
 <translation id="1741613555002899862">‏جب DnsOverHttpsMode <ph name="SECURE_DNS_MODE_SECURE" /> میں ہو، تو متعینہ اور درست اسٹرنگ ہونا چاہیے۔</translation>
 <translation id="1745880797583122200">آپ کا براؤزر زیر انتظام ہے</translation>
 <translation id="1746113442205726301">‏تصویر Y شفٹ</translation>
+<translation id="1746531169546376413">0 ڈگریز</translation>
 <translation id="17513872634828108">کھلے ٹیبز</translation>
 <translation id="1752021286346845558">میل باکس 8</translation>
 <translation id="1753068535428855445">ڈیٹنگ اور ذاتیات</translation>
@@ -362,6 +365,7 @@
 <translation id="1807246157184219062">روشنی</translation>
 <translation id="1807528111851433570">ابتدائی شیٹ</translation>
 <translation id="181000283860817563">متعدد سائٹس پر قیمتوں کو ٹریک کریں</translation>
+<translation id="1810391395243432441">اپنے اسکرین لاک سے پاس ورڈز کی حفاظت کریں</translation>
 <translation id="1812527064848182527">لینڈ اسکیپ</translation>
 <translation id="1813414402673211292">براؤزنگ ڈیٹا صاف کریں</translation>
 <translation id="182139138257690338">خودکار ڈاؤن لوڈز</translation>
@@ -381,6 +385,7 @@
 <translation id="1871208020102129563">‏پراکسی ایک ‎.pac اسکرپٹ URL نہیں بلکہ مقررہ پراکسی سرورز استعمال کرنے کیلئے سیٹ ہے۔</translation>
 <translation id="1871284979644508959">مطلوبہ فیلڈ</translation>
 <translation id="1873899211667975540">راک موسیقی</translation>
+<translation id="1874224422119691492">آپ تبدیل کر سکتے ہیں کہ آیا آپ <ph name="SETTINGS" /> میں پاس ورڈز درج کرنے کے لیے اپنا اسکرین لاک استعمال کرتے ہیں</translation>
 <translation id="1875025161375567525">تصویری ٹرے</translation>
 <translation id="1875512691959384712">Google Forms</translation>
 <translation id="187918866476621466">ابتدائی صفحات کھولیں</translation>
@@ -412,7 +417,6 @@
 <translation id="1958218078413065209">آپ کا اعلی ترین اسکور <ph name="SCORE" /> ہے۔</translation>
 <translation id="1959001866257244765">‏<ph name="BEGIN_WHITEPAPER_LINK" />آپ کے ملاحظہ کئے جانے والے چند صفحات کے URLs، سسٹم کی محدود معلومات اور صفحے کا کچھ مواد<ph name="END_WHITEPAPER_LINK" /> Google کو بھیج کر ہر کسی کے لیے ویب پر موجود سیکیورٹی کو بہتر کرنے میں ہماری مدد کریں۔ <ph name="BEGIN_PRIVACY_PAGE_LINK" />رازداری کی پالیسی<ph name="END_PRIVACY_PAGE_LINK" /></translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> بک مارکس</translation>
-<translation id="1971033026002113380">‏ٹچ ID کے ساتھ پاس ورڈز کی حفاظت کریں</translation>
 <translation id="1973335181906896915">ترتیب وار سازی کی خرابی</translation>
 <translation id="1974060860693918893">جدید ترین</translation>
 <translation id="1975457531113383421">ان پٹ ٹرے</translation>
@@ -744,10 +748,10 @@
 <translation id="2876949457278336305">‏<ph name="MANAGE_SECURITY_SETTINGS_FOCUSED_FRIENDLY_MATCH_TEXT" />، Chrome کی ترتیبات میں محفوظ براؤزنگ اور بہت کچھ کا نظم کرنے کے لیے ٹیب پھر Enter دبائیں</translation>
 <translation id="2878197950673342043">پوسٹر جیسے فولڈ</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2879694782644540289">پاس ورڈز درج کرنے کے لیے اپنا اسکرین لاک استعمال کریں</translation>
 <translation id="2881276955470682203">کارڈ محفوظ کریں؟</translation>
 <translation id="2882949212241984732">ڈبل گیٹ فولڈ</translation>
 <translation id="2893773853358652045">چوتھا رول</translation>
-<translation id="289834758818479772">‏اگر آپ اس آلہ کا اشتراک دوسروں کے ساتھ کرتے ہیں تو جب بھی آپ محفوظ کردہ پاس ورڈ استعمال کرتے ہیں تو آپ ٹچ ID کو آن کر سکتے ہیں تاکہ اس بات کی تصدیق ہو کہ یہ آپ ہی ہیں</translation>
 <translation id="2900528713135656174">ایونٹ تخلیق کریں</translation>
 <translation id="2903493209154104877">پتے</translation>
 <translation id="290376772003165898">صفحہ <ph name="LANGUAGE" /> میں نہیں ہے؟</translation>
@@ -1003,6 +1007,7 @@
 <translation id="3532844647053365774"><ph name="HOST" /> آپ کا مائیکروفون استعمال کرنا چاہتا ہے</translation>
 <translation id="3533328374079021623">میل باکس 5</translation>
 <translation id="3537165859691846083">Letter Plus</translation>
+<translation id="3542628208405253498">کارڈ کی تصویر</translation>
 <translation id="3542768452570884558">لنک کو نئی ونڈو میں کھولیں</translation>
 <translation id="3547746132308051926">‏‎20 x 24 انچ</translation>
 <translation id="3550112004925580947">مہمان نوازی کی انڈسٹری</translation>
@@ -1066,7 +1071,6 @@
 <translation id="3678529606614285348">‏صفحہ کو ایک نئی پوشیدگی ونڈو میں کھولیں (Ctrl-Shift-N)</translation>
 <translation id="3681007416295224113">سرٹیفکیٹ کی معلومات</translation>
 <translation id="3693327506115126094">اپنی توثیق کئے جانے کا طریقہ منتخب کریں</translation>
-<translation id="3699374065820972102">‏پاس ورڈز پُر کرنے کے لیے TouchID آن ہے</translation>
 <translation id="3701427423622901115">ری سیٹ کی کاروائی تسلیم کر لی گئی۔</translation>
 <translation id="3704162925118123524">آپ کے زیر استعمال نیٹ ورک آپ سے اپنا لاگ ان صفحہ ملاحظہ کرنے کا تقاضہ کر سکتا ہے۔</translation>
 <translation id="3705189812819839667"><ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -1094,6 +1098,7 @@
 <translation id="3745099705178523657">‏آپ کے توثیق کرنے کے بعد، آپ کے Google اکاؤنٹ سے کارڈ کی تفصیلات کا اس سائٹ کے ساتھ اشتراک کر دیا جائے گا۔</translation>
 <translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> پر موجود حملہ آور کوئی خطرناک کام انجام دینے، جیسے سافٹ ویئر انسٹال کرنے یا آپ کی ذاتی معلومات (مثلاً، پاس ورڈز، فون نمبرز، یا کریڈٹ کارڈز) کو افشاء کرنے میں آپ کو پھنسا سکتے ہیں۔ <ph name="BEGIN_LEARN_MORE_LINK" />مزید جانیں<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3748912308089554501">ہوا بازی کی انڈسٹری</translation>
+<translation id="3752543821772132562">پالیسی کو نظر انداز کیا گیا کیونکہ <ph name="POLICY_NAME" /> سیٹ نہیں ہے۔</translation>
 <translation id="3754210790023674521">تصویر میں تصویر سے باہر نکلیں</translation>
 <translation id="3759461132968374835">آپ کے پاس فی الحال کوئی اطلاع کردہ کریشز نہیں ہیں۔  کریش رپورٹنگ غیر فعال ہونے پر پیش آنے والے کریشز یہاں ظاہر نہیں ہوں گے۔</translation>
 <translation id="3760561303380396507">‏CVC کے بجائے Windows Hello کا استعمال کریں؟</translation>
@@ -1181,7 +1186,6 @@
 <translation id="401170183602135785">‏C6 لفافہ</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{‏{COUNT} صفحہ پر مشتمل PDF دستاویز}other{‏{COUNT} صفحات پر مشتمل PDF دستاویز}}</translation>
 <translation id="4023431997072828269">چونکہ یہ فارم ایک ایسے کنکشن کا استعمال کر کے جمع کیا جا رہا ہے جو محفوظ نہیں ہے آپ کی معلومات دوسروں کو دکھائی دیں گی۔</translation>
-<translation id="4024923292610332139">‏پاس ورڈز پُر کرنے کے لیے TouchID کو آف کریں</translation>
 <translation id="4025913568718019429">‏Google کی رازداری کی ترتیبات کے بٹن کا نظم کریں، اپنی Google اکاؤنٹ کی رازداری کی ترتیبات ملاحظہ کرنے کیلئے اینٹر دبائیں</translation>
 <translation id="4030383055268325496">شامل کریں کو &amp;کالعدم کریں</translation>
 <translation id="4031179711345676612">مائیکروفون اجازت یافتہ ہے</translation>
@@ -1401,6 +1405,7 @@
 <translation id="4541810033354695636">افزودہ حقیقت</translation>
 <translation id="4542971377163063093">ٹرے 6</translation>
 <translation id="455113658016510503">A9</translation>
+<translation id="4556069465387849460">آپ پاس ورڈز درج کرنے کے لیے اپنا اسکرین لاک استعمال کر رہے ہیں</translation>
 <translation id="4558551763791394412">اپنے ایکسٹینشنز کو غیر فعال کرنے کی کوشش کریں۔</translation>
 <translation id="4566017918361049074">آؤٹ ڈورز</translation>
 <translation id="4567686777917670400">‏آپ کا منتظم دور سے آپ کے براؤزر کا سیٹ اپ تبدیل کر سکتا ہے۔ اس آلے پر ہونے والی سرگرمی کا نظم Chromium سے باہر بھی کیا جا سکتا ہے۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
@@ -1543,7 +1548,6 @@
 <translation id="4900217275619098670">نواں ٹرے</translation>
 <translation id="4901778704868714008">محفوظ کریں...</translation>
 <translation id="4905659621780993806"><ph name="DATE" /> کو <ph name="TIME" /> پر آپ کا منتظم خودکار طور پر آپ کے آلے کو ری اسٹارٹ کرے گا۔ اپنے آلے کے ری اسٹارٹ ہونے سے پہلے کسی بھی کھلے آئٹم کو محفوظ کریں۔</translation>
-<translation id="4911007278801291296">‏آپ <ph name="SETTINGS" /> میں TouchID کو آن یا آف کر سکتے ہیں</translation>
 <translation id="4913987521957242411">اوپر بائیں طرف فولڈ</translation>
 <translation id="4918221908152712722"><ph name="APP_NAME" /> انسٹال کریں (ڈاؤن لوڈ درکار نہیں ہے)</translation>
 <translation id="4923459931733593730">ادائیگی</translation>
@@ -1757,7 +1761,6 @@
 <translation id="5426179911063097041"><ph name="SITE" /> آپ کو اطلاعات بھیجنا چاہتی ہے</translation>
 <translation id="5428105026674456456">ہسپانوی</translation>
 <translation id="5430298929874300616">بُک مارک کو ہٹائیں</translation>
-<translation id="5434423669266814150">‏پاس ورڈز پُر کرنے کے لیے ٹچ ID آن کریں</translation>
 <translation id="5443468954631487277">اُلٹ ترتیب میں، صفحات کا رُخ اوپر کی جانب</translation>
 <translation id="5447765697759493033">اس سائٹ کا ترجمہ نہیں ہوگا</translation>
 <translation id="5452270690849572955">یہ <ph name="HOST_NAME" /> صفحہ تلاش نہیں کیا جا سکتا ہے</translation>
@@ -1799,6 +1802,7 @@
 <translation id="5540969246441091044">گھڑ سواری سے متعلق</translation>
 <translation id="5541086400771735334">میل باکس 7</translation>
 <translation id="5541546772353173584">ای میل شامل کریں</translation>
+<translation id="5543722831081909240">180 ڈگریز</translation>
 <translation id="5545756402275714221">آپ کیلئے مضامین</translation>
 <translation id="5551890439174915351">‏‎100 x 200 ملی میٹر</translation>
 <translation id="5552137475244467770">‏Chrome وقفے وقفے سے ان فہرستوں کے خلاف پاس ورڈز چیک کرتا ہے جو آن لائن شائع ہوئی ہیں۔ ایسا کرتے وقت، آپ کے پاس ورڈز اور صارف نام مرموزکردہ ہو جاتے ہیں، تاکہ وہ Google سمیت کسی بھی شخص کے ذریعے نہ پڑھے جا سکیں۔</translation>
@@ -2188,6 +2192,7 @@
 <translation id="6591833882275308647">آپ کا <ph name="DEVICE_TYPE" /> زیر انتظام نہیں ہے</translation>
 <translation id="6592952801936330159">‏سائٹ کی ترتیبات کے بٹن کا نظم کریں، Chrome کی ترتیبات میں موجود تمام سائٹس پر اسٹور کردہ اجازتوں اور ڈیٹا کا نظم کرنے کے لیے اینٹر دبائیں</translation>
 <translation id="6596325263575161958">مرموزکاری کے اختیارات</translation>
+<translation id="6597665340361269064">90 ڈگریز</translation>
 <translation id="6599642189720630047">ٹریک کردہ پروڈکٹس</translation>
 <translation id="6611723696964473273">معیشت کی خبریں</translation>
 <translation id="6612010098632894193">آن لائن ویڈیو</translation>
@@ -2722,6 +2727,7 @@
 <translation id="7942349550061667556">سرخ</translation>
 <translation id="7943397946612013052">ڈاؤن لوڈ کرنا مسدود ہے</translation>
 <translation id="7943893128817522649">سائٹ خودکار طور پر متعدد فائلز ڈاؤن لوڈ کرنے کیلئے پوچھ سکتی ہے</translation>
+<translation id="7946724693008564269">شناخت کردہ زبان</translation>
 <translation id="7947285636476623132">اپنا اختتامی سال چیک کریں اور دوبارہ کوشش کریں</translation>
 <translation id="7947813448670013867">‏<ph name="SEE_CHROME_TIPS_FOCUSED_FRIENDLY_MATCH_TEXT" />، Chrome کی خصوصیات کے بارے میں جاننے کیلئے Tab، پھر Enter دبائیں</translation>
 <translation id="7950027195171824198">‏Chrome ترتیبات میں اپنی کوکی کی ترجیحات کا نظم کریں</translation>
@@ -2894,6 +2900,7 @@
 <translation id="8355270400102541638">مقامی ناکامی کا سیاق و سباق:</translation>
 <translation id="8363502534493474904">ہوائی جہاز وض‏ع کو آف کیا جا رہا ہے</translation>
 <translation id="8364627913115013041">سیٹ نہیں ہے۔</translation>
+<translation id="836616551641291797">آپ کا براؤزر کیسے نظم کیا جاتا ہے اس کے بارے میں مزید جانیں</translation>
 <translation id="8368001212524806591">قیمت ٹریک کریں</translation>
 <translation id="8368027906805972958">نا معلوم یا غیر تعاون یافتہ آلہ (<ph name="DEVICE_ID" />)</translation>
 <translation id="8368476060205742148">‏Google Play سروسز</translation>
@@ -2906,6 +2913,7 @@
 <translation id="8396522675989118466">یہ <ph name="SIDE_OF_CARD" /> پر <ph name="NUMBER_OF_DIGITS" /> ہندسوں کا کوڈ ہے</translation>
 <translation id="8398790343843005537">اپنا فون تلاش کریں</translation>
 <translation id="8405579342203358118">‏آپ Chrome ترتیبات میں کن معلومات کو مطابقت پذیر بناتے ہیں ان کا نظم کریں</translation>
+<translation id="8406071103346257942">پاس ورڈز درج کرنے کے لیے اپنا اسکرین لاک استعمال کرنا بند کریں</translation>
 <translation id="8409413588194360210">ادائیگی کے ہینڈلرز</translation>
 <translation id="8412145213513410671">کریشز (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">آپ کو وہی پاس فریز دوبار درج کرنا ضروری ہے۔</translation>
@@ -3175,6 +3183,7 @@
 <translation id="9128016270925453879">پالیسیاں لوڈ ہو گئی ہیں</translation>
 <translation id="9128870381267983090">نیٹ ورک سے منسلک ہوں</translation>
 <translation id="9131119348384879525">رازدارانہ مواد کو کیپچر کریں؟</translation>
+<translation id="9133985615769429248">اگر آپ اس آلے کا دوسروں کے ساتھ اشتراک کرتے ہیں تو جب بھی آپ محفوظ کردہ پاس ورڈ کا استعمال کرتے ہیں تو آپ اس بات کی تصدیق کرنے کے لیے کہ یہ آپ ہی ہیں اپنے اسکرین لاک کا استعمال کر سکتے ہیں</translation>
 <translation id="9136861683332321024">پُر تعیش گاڑیاں</translation>
 <translation id="9137013805542155359">اصل دکھائیں</translation>
 <translation id="9138037198177304356">اطلاعات کی اجازت ہے</translation>

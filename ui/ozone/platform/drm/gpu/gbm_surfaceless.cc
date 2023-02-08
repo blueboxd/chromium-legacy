@@ -41,7 +41,7 @@ GbmSurfaceless::GbmSurfaceless(GbmSurfaceFactory* surface_factory,
                                gl::GLDisplayEGL* display,
                                std::unique_ptr<DrmWindowProxy> window,
                                gfx::AcceleratedWidget widget)
-    : SurfacelessEGL(display, gfx::Size()),
+    : Presenter(display, gfx::Size()),
       surface_factory_(surface_factory),
       window_(std::move(window)),
       widget_(widget),
@@ -185,7 +185,7 @@ void GbmSurfaceless::PostSubBufferAsync(
     gl::FrameData data) {
   // The actual sub buffer handling is handled at higher layers.
   SwapBuffersAsync(std::move(completion_callback),
-                   std::move(presentation_callback), std::move(data));
+                   std::move(presentation_callback), data);
 }
 
 EGLConfig GbmSurfaceless::GetConfig() {

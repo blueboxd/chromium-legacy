@@ -14,6 +14,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/dips/dips_database.h"
 #include "chrome/browser/dips/dips_state.h"
+#include "chrome/browser/dips/dips_utils.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 class GURL;
 
@@ -29,8 +31,10 @@ class DIPSStorage {
 
   void RemoveEvents(base::Time delete_begin,
                     base::Time delete_end,
-                    const UrlPredicate& predicate,
+                    network::mojom::ClearDataFilterPtr filter,
                     const DIPSEventRemovalType type);
+
+  void RemoveRows(const std::vector<std::string>& sites);
 
   // DIPS Helper Method Impls --------------------------------------------------
 
@@ -38,34 +42,33 @@ class DIPSStorage {
   void RecordStorage(const GURL& url, base::Time time, DIPSCookieMode mode);
   // Record that the user interacted on |url|.
   void RecordInteraction(const GURL& url, base::Time time, DIPSCookieMode mode);
-  // Record that |url| redirected the user while also writing to storage.
-  void RecordStatefulBounce(const GURL& url, base::Time time);
-  // Record that |url| redirected the user without writing to storage.
-  void RecordStatelessBounce(const GURL& url, base::Time time);
+  // Record that |url| redirected the user and whether it was |stateful|,
+  // meaning that |url| wrote to storage while redirecting.
+  void RecordBounce(const GURL& url, base::Time time, bool stateful);
 
-  // Storage querying Methods
-  // -----------------------------------------------------------
-  // Returns all sites that did a bounce after |range_start| with their last
-  // user interaction occurring before |last_interaction|.
-  std::vector<std::string> GetSitesThatBounced(
-      base::Time range_start,
-      base::Time last_interaction) const;
+  // Storage querying Methods --------------------------------------------------
+  // Returns all sites that did a bounce that aren't protected from DIPS.
+  std::vector<std::string> GetSitesThatBounced() const;
 
-  // Returns all sites that did a stateful bounce after |range_start| with their
-  // last user interaction occurring before |last_interaction|.
-  std::vector<std::string> GetSitesThatBouncedWithState(
-      base::Time range_start,
-      base::Time last_interaction) const;
+  // Returns all sites that did a stateful bounce that aren't protected from
+  // DIPS.
+  std::vector<std::string> GetSitesThatBouncedWithState() const;
 
-  // Returns all sites which use storage after |range_start| with their last
-  // user interaction occurring before |last_interaction|.
-  std::vector<std::string> GetSitesThatUsedStorage(
-      base::Time range_start,
-      base::Time last_interaction) const;
+  // Returns all sites which use storage that aren't protected from DIPS.
+  std::vector<std::string> GetSitesThatUsedStorage() const;
+
+  // Queries the DIPS database for sites whose state DIPS should clear.
+  // If DIPS deletion isn't enabled, this just logs UMA about how many sites
+  // would've been cleared by DIPS.
+  void DeleteDIPSEligibleState(DIPSCookieMode mode);
 
   // Utility Methods -----------------------------------------------------------
 
   static size_t SetPrepopulateChunkSizeForTesting(size_t size);
+  void SetClockForTesting(base::Clock* clock) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    db_->SetClockForTesting(clock);
+  }
 
   // For each site in |sites|, set the interaction and storage timestamps to
   // |time|. Note this may run asynchronously -- the DB is not guaranteed to be

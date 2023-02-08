@@ -11,10 +11,10 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/test/task_environment.h"
 #include "base/token.h"
 #include "chrome/browser/policy/messaging_layer/util/test_request_payload.h"
-#include "components/reporting/resources/memory_resource_impl.h"
-#include "components/reporting/resources/resource_interface.h"
+#include "components/reporting/resources/resource_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -96,8 +96,8 @@ class RecordUploadRequestBuilderTest : public ::testing::TestWithParam<bool> {
   }
 
   void SetUp() override {
-    memory_resource_ = base::MakeRefCounted<MemoryResourceImpl>(
-        4u * 1024LLu * 1024LLu);  // 4 MiB
+    memory_resource_ =
+        base::MakeRefCounted<ResourceManager>(4u * 1024LLu * 1024LLu);  // 4 MiB
   }
 
   void TearDown() override {
@@ -106,7 +106,8 @@ class RecordUploadRequestBuilderTest : public ::testing::TestWithParam<bool> {
 
   bool need_encryption_key() const { return GetParam(); }
 
-  scoped_refptr<ResourceInterface> memory_resource_;
+  base::test::TaskEnvironment task_environment_;
+  scoped_refptr<ResourceManager> memory_resource_;
 };
 
 TEST_P(RecordUploadRequestBuilderTest, AcceptEncryptedRecordsList) {

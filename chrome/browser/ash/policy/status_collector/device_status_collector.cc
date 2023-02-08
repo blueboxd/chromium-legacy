@@ -79,11 +79,11 @@
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/components/settings/timezone_settings.h"
+#include "chromeos/ash/components/system/statistics_provider.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
-#include "chromeos/system/statistics_provider.h"
 #include "chromeos/version/version_loader.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -2390,7 +2390,6 @@ bool DeviceStatusCollector::GetNetworkStatus(
       {shill::kStateNoConnectivity, em::NetworkState::PORTAL},
       {shill::kStateRedirectFound, em::NetworkState::PORTAL},
       {shill::kStatePortalSuspected, em::NetworkState::PORTAL},
-      {shill::kStateOffline, em::NetworkState::OFFLINE},
       {shill::kStateOnline, em::NetworkState::ONLINE},
       {shill::kStateDisconnect, em::NetworkState::DISCONNECT},
       {shill::kStateFailure, em::NetworkState::FAILURE},
@@ -2514,7 +2513,7 @@ bool DeviceStatusCollector::GetCPUInfo(em::DeviceStatusReportRequest* status) {
 
 bool DeviceStatusCollector::GetAudioStatus(
     em::DeviceStatusReportRequest* status) {
-  chromeos::CrasAudioHandler* audio_handler = chromeos::CrasAudioHandler::Get();
+  ash::CrasAudioHandler* audio_handler = ash::CrasAudioHandler::Get();
   status->set_sound_volume(audio_handler->GetOutputVolumePercent());
   return true;
 }

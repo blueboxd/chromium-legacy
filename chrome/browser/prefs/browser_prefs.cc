@@ -296,9 +296,9 @@
 #include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
 #include "chrome/browser/ui/webui/certificates_handler.h"
 #include "chromeos/ui/wm/fullscreen/pref_names.h"
-#if defined(USE_CUPS)
+#if BUILDFLAG(USE_CUPS)
 #include "chrome/browser/extensions/api/printing/printing_api_handler.h"
-#endif  // defined(USE_CUPS)
+#endif  // BUILDFLAG(USE_CUPS)
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -310,6 +310,7 @@
 #include "chrome/browser/apps/app_service/webapk/webapk_prefs.h"
 #include "chrome/browser/ash/account_manager/account_apps_availability.h"
 #include "chrome/browser/ash/account_manager/account_manager_edu_coexistence_controller.h"
+#include "chrome/browser/ash/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
@@ -397,7 +398,6 @@
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
-#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/webui/ash/login/enable_debugging_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/signin_screen_handler.h"
@@ -436,6 +436,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
+#include "chrome/browser/enterprise/platform_auth/platform_auth_policy_observer.h"
 #include "chrome/browser/font_prewarmer_tab_helper.h"
 #include "chrome/browser/media/cdm_pref_service_helper.h"
 #include "chrome/browser/media/media_foundation_service_monitor.h"
@@ -1305,6 +1306,10 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   screen_ai::RegisterLocalStatePrefs(registry);
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
+#if BUILDFLAG(IS_WIN)
+  PlatformAuthPolicyObserver::RegisterPrefs(registry);
+#endif  // BUILDFLAG(IS_WIN)
+
   // This is intentionally last.
   RegisterLocalStatePrefsForMigration(registry);
 }
@@ -1522,9 +1527,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   registry->RegisterListPref(
       chromeos::prefs::kKeepFullscreenWithoutNotificationUrlAllowList,
       PrefRegistry::PUBLIC);
-#if defined(USE_CUPS)
+#if BUILDFLAG(USE_CUPS)
   extensions::PrintingAPIHandler::RegisterProfilePrefs(registry);
-#endif  // defined(USE_CUPS)
+#endif  // BUILDFLAG(USE_CUPS)
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

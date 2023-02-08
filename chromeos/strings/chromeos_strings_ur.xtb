@@ -140,7 +140,6 @@
 <translation id="2161394479394250669">پرنٹ جاب منسوخ کریں</translation>
 <translation id="2163937499206714165">تاریک وضع آن کریں</translation>
 <translation id="2180197493692062006">کچھ غلط ہوگیا۔ ایپ کو دوبار کھولنے کی کوشش کریں۔</translation>
-<translation id="2184005227776731758">APN</translation>
 <translation id="2209788852729124853">ٹریفک کاؤنٹرز ری سیٹ کریں</translation>
 <translation id="2212733584906323460">ریزولیوشن کا نام دیں</translation>
 <translation id="2217935453350629363">موجودہ رفتار</translation>
@@ -187,6 +186,7 @@
 <translation id="2570743873672969996"><ph name="TEST_NAME" /> ٹیسٹ چل رہا ہے...</translation>
 <translation id="2584559707064218956">سیٹ اپ کرنے کیلئے، ترتیبات پر جائیں</translation>
 <translation id="2597774443162333062">‏ڈیبگ کرنے کیلئے فائلز Google کو بھیج دی جائے گی</translation>
+<translation id="2599691907981599502">{NUMBER_OF_PAGES,plural, =1{اسکیننگ مکمل ہو گئی۔ 1 صفحہ اسکین ہو گیا}other{اسکیننگ مکمل ہو گئی۔ {NUMBER_OF_PAGES} صفحات اسکین ہو گئے}}</translation>
 <translation id="2619761439309613843">روزانہ ریفریش کریں</translation>
 <translation id="2620436844016719705">سسٹم</translation>
 <translation id="2638662041295312666">سائن ان کی تصویر</translation>
@@ -393,6 +393,7 @@
 <translation id="4793710386569335688">مزید مدد کے لیے، <ph name="BEGIN_LINK" />مرکز امداد<ph name="END_LINK" /> پر جائیں۔</translation>
 <translation id="4793756956024303490">کمپریشن الگورتھم</translation>
 <translation id="4794140124556169553">‏CPU ٹیسٹ چلانے سے آپ کے سسٹم کی کارکردگی متاثر ہو سکتی ہے</translation>
+<translation id="4798078634453489142">‏نیا APN شامل کرنے کے لیے ایک APN ہٹائیں</translation>
 <translation id="4800589996161293643">‏Chromebook کمیونٹی</translation>
 <translation id="4803391892369051319">IPv4</translation>
 <translation id="4808449224298348341"><ph name="DOCUMENT_TITLE" /> پرنٹ جاب منسوخ کر دی گئی</translation>
@@ -491,6 +492,7 @@
 <translation id="5519195206574732858">LTE</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5559898619118303662">غروب آفتاب کے وقت خود کار طور پر گہری تھیم پر سوئچ کریں</translation>
+<translation id="5571714952674387371">تفصیلات دیکھیں اور ان میں ترمیم کریں</translation>
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">دوبارہ اسکین کریں</translation>
 <translation id="5583640892426849032">بیک اسپیس</translation>
@@ -688,7 +690,6 @@
 <translation id="741244894080940828">تبدیلی</translation>
 <translation id="7415801143053185905">‏بہت زیادہ HTTPS تاخیر</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
-<translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{اسکیننگ مکمل ہو گئی۔ 1 صفحہ اسکین ہو گیا}other{اسکیننگ مکمل ہو گئی۔ {NUMBER_OF_PAGES} صفحات اسکین ہو گئے}}</translation>
 <translation id="7458970041932198923">براہ کرم کسی نیٹ ورک سے منسلک ہوں اور اوتار دیکھنے اور سیٹ کرنے کے لیے صفحہ کو دوبارہ لوڈ کریں۔</translation>
 <translation id="7469648432129124067">پورٹل کا پتہ چلا</translation>
 <translation id="7481312909269577407">فارورڈ کریں</translation>
@@ -795,6 +796,7 @@
 <translation id="8498220429738806196">ٹریفک کاؤنٹرز</translation>
 <translation id="8503813439785031346">صارف کا نام</translation>
 <translation id="8503836310948963452">صرف چند مزید منٹ...</translation>
+<translation id="8508640263392900755">‏APN کی تفصیلات</translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8575298406870537639">آپ کے کیریئر کو اپنے نیٹ ورک سے منسلک ہونے کیلئے اس اختیار کی ضرورت پڑ سکتی ہے۔ تفصیلات کیلئے اپنے کیریئر سے رابطہ کریں۔</translation>
 <translation id="8576249514688522074">شروع نہیں کیا گیا</translation>
@@ -870,6 +872,7 @@
 <translation id="9173638680043580060">ایک منٹ سے کم باقی ہے</translation>
 <translation id="917720651393141712">ٹیسٹ</translation>
 <translation id="9188992814426075118">آپ کا کی بورڈ خودکار طور پر آپ کے وال پیپر سے مماثل ہو سکتا ہے</translation>
+<translation id="9193744392140377127">APN*</translation>
 <translation id="9204237731135241582">‏Android ایپس سے گیٹ وے رابطے کو منسلک نہیں کیا جا سکتا</translation>
 <translation id="9211490828691860325">تمام ڈیسکس</translation>
 <translation id="932327136139879170">ھوم</translation>

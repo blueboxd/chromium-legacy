@@ -100,7 +100,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/system_sounds_delegate.h"
 #include "ash/public/cpp/tab_cluster/tab_cluster_ui_controller.h"
-#include "ash/public/cpp/views_text_services_context_menu_impl.h"
+#include "ash/public/cpp/views_text_services_context_menu_ash.h"
 #include "ash/quick_pair/keyed_service/quick_pair_mediator.h"
 #include "ash/rgb_keyboard/rgb_keyboard_manager.h"
 #include "ash/root_window_controller.h"
@@ -212,10 +212,10 @@
 #include "chromeos/ash/components/dbus/usb/usbguard_client.h"
 #include "chromeos/ash/components/fwupd/firmware_update_manager.h"
 #include "chromeos/ash/components/peripheral_notification/peripheral_notification_manager.h"
+#include "chromeos/ash/components/system/devicemode.h"
 #include "chromeos/ash/services/assistant/public/cpp/features.h"
 #include "chromeos/dbus/init/initialize_dbus_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
-#include "chromeos/system/devicemode.h"
 #include "chromeos/ui/wm/features.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -231,6 +231,7 @@
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/user_activity/user_activity_detector.h"
+#include "ui/chromeos/events/keyboard_capability.h"
 #include "ui/chromeos/user_activity_power_manager_notifier.h"
 #include "ui/color/color_provider_manager.h"
 #include "ui/compositor/layer.h"
@@ -985,6 +986,8 @@ Shell::~Shell() {
 
   usb_peripheral_notification_controller_.reset();
 
+  keyboard_capability_.reset();
+
   message_center_ash_impl_.reset();
 
   // Destroys the MessageCenter singleton, so must happen late.
@@ -1042,6 +1045,9 @@ void Shell::Init(
   message_center_controller_ = std::make_unique<MessageCenterController>();
 
   message_center_ash_impl_ = std::make_unique<MessageCenterAshImpl>();
+
+  // Initialized early since it is used by some other objects.
+  keyboard_capability_ = std::make_unique<ui::KeyboardCapability>();
 
   // These controllers call Shell::Get() in their constructors, so they cannot
   // be in the member initialization list.
@@ -1335,7 +1341,7 @@ void Shell::Init(
   partial_magnifier_controller_ =
       std::make_unique<PartialMagnifierController>();
   highlighter_controller_ = std::make_unique<HighlighterController>();
-  if (base::FeatureList::IsEnabled(features::kTouchTextEditingRedesign)) {
+  if (::features::IsTouchTextEditingRedesignEnabled()) {
     touch_selection_magnifier_runner_ash_ =
         std::make_unique<TouchSelectionMagnifierRunnerAsh>();
   }
@@ -1530,8 +1536,8 @@ void Shell::Init(
       base::BindRepeating(
           [](ui::SimpleMenuModel* menu_model, views::Textfield* textfield)
               -> std::unique_ptr<views::ViewsTextServicesContextMenu> {
-            return std::make_unique<ViewsTextServicesContextMenuImpl>(
-                menu_model, textfield);
+            return std::make_unique<ViewsTextServicesContextMenuAsh>(menu_model,
+                                                                     textfield);
           }));
 
   for (auto& observer : shell_observers_)

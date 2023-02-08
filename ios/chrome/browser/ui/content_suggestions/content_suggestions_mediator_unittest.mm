@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#import "ios/chrome/browser/reading_list/reading_list_test_utils.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
@@ -35,6 +36,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
+#import "ios/chrome/test/testing_application_context.h"
 #import "ios/web/public/test/fakes/fake_navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/test/web_task_environment.h"
@@ -45,20 +47,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-
-std::unique_ptr<KeyedService> BuildReadingListModel(
-    web::BrowserState* context) {
-  ChromeBrowserState* browser_state =
-      ChromeBrowserState::FromBrowserState(context);
-  std::unique_ptr<ReadingListModelImpl> reading_list_model(
-      new ReadingListModelImpl(nullptr, browser_state->GetPrefs(),
-                               base::DefaultClock::GetInstance()));
-  return reading_list_model;
-}
-
-}  // namespace
 
 @protocol ContentSuggestionsMediatorDispatcher <BrowserCoordinatorCommands,
                                                 SnackbarCommands>
@@ -86,6 +74,7 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
     dispatcher_ =
         OCMProtocolMock(@protocol(ContentSuggestionsMediatorDispatcher));
     consumer_ = OCMProtocolMock(@protocol(ContentSuggestionsConsumer));
+    TestingApplicationContext::GetGlobal()->SetLocalState(local_state_.Get());
 
     favicon::LargeIconService* largeIconService =
         IOSChromeLargeIconServiceFactory::GetForBrowserState(
@@ -137,7 +126,8 @@ class ContentSuggestionsMediatorTest : public PlatformTest {
     fake_web_state_->SetBrowserState(chrome_browser_state_.get());
     ReadingListModelFactory::GetInstance()->SetTestingFactoryAndUse(
         chrome_browser_state_.get(),
-        base::BindRepeating(&BuildReadingListModel));
+        base::BindRepeating(&BuildReadingListModelWithFakeStorage,
+                            std::vector<ReadingListEntry>()));
   }
 
   web::WebTaskEnvironment task_environment_;
@@ -305,6 +295,7 @@ TEST_F(ContentSuggestionsMediatorTest, TestOpenWhatsNew) {
   histogram_tester_->ExpectUniqueSample(
       "IOS.ContentSuggestions.ActionOnNTP",
       IOSContentSuggestionsActionType::kShortcuts, 0);
+
   // Action.
   ContentSuggestionsMostVisitedActionItem* whatsNew = WhatsNewActionItem();
   [mediator_ openMostVisitedItem:whatsNew atIndex:1];

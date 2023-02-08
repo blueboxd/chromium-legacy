@@ -83,6 +83,9 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ref {
 #if BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
       std::is_same_v<Impl, internal::AsanBackupRefPtrImpl> ||
 #endif  // BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
+#if BUILDFLAG(USE_ASAN_UNOWNED_PTR)
+      std::is_same_v<Impl, internal::AsanUnownedPtrImpl> ||
+#endif  // BUILDFLAG(USE_ASAN_UNOWNED_PTR)
       std::is_same_v<Impl, internal::RawPtrNoOpImpl>;
 
  public:
@@ -178,6 +181,14 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ref {
   PA_ALWAYS_INLINE T* operator->() const PA_ATTRIBUTE_RETURNS_NONNULL {
     PA_RAW_PTR_CHECK(inner_.get());  // Catch use-after-move.
     return inner_.operator->();
+  }
+
+  // This is used to verify callbacks are not invoked with dangling references.
+  // If the `raw_ref` references a deleted object, it will trigger an error.
+  // Depending on the PartitionAllocUnretainedDanglingPtr feature, this is
+  // either a DumpWithoutCrashing, a crash, or ignored.
+  PA_ALWAYS_INLINE void ReportIfDangling() const noexcept {
+    inner_.ReportIfDangling();
   }
 
   friend PA_ALWAYS_INLINE void swap(raw_ref& lhs, raw_ref& rhs) noexcept {

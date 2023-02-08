@@ -102,9 +102,11 @@ NGContainingBlock<PhysicalOffset> PhysicalContainingBlock(
   return NGContainingBlock<PhysicalOffset>(
       containing_block.Offset().ConvertToPhysical(
           builder->Style().GetWritingDirection(), outer_size, inner_size),
-      containing_block.RelativeOffset().ConvertToPhysical(
-          builder->Style().GetWritingDirection(), outer_size, inner_size),
-      containing_block.Fragment(), containing_block.IsInsideColumnSpanner(),
+      RelativeInsetToPhysical(containing_block.RelativeOffset(),
+                              builder->Style().GetWritingDirection()),
+      containing_block.Fragment(),
+      containing_block.ClippedContainerBlockOffset(),
+      containing_block.IsInsideColumnSpanner(),
       containing_block.RequiresContentBeforeBreaking());
 }
 
@@ -157,7 +159,8 @@ const NGPhysicalBoxFragment* NGPhysicalBoxFragment::Create(
             writing_direction);
     NGLayoutOverflowCalculator calculator(
         To<NGBlockNode>(builder->node_),
-        /* is_css_box */ !builder->IsFragmentainerBoxType(), borders, scrollbar,
+        /* is_css_box */ !builder->IsFragmentainerBoxType(),
+        builder->ConstraintSpace().HasBlockFragmentation(), borders, scrollbar,
         padding, physical_size, writing_direction);
 
     if (NGFragmentItemsBuilder* items_builder = builder->ItemsBuilder()) {

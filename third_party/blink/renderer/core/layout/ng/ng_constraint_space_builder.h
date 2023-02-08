@@ -175,6 +175,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     space_.EnsureRareData()->is_inside_repeatable_content = b;
   }
 
+  void DisableFurtherFragmentation() { space_.DisableFurtherFragmentation(); }
+
   void SetIsFixedInlineSize(bool b) {
     if (LIKELY(is_in_parallel_flow_))
       space_.bitfields_.is_fixed_inline_size = b;
@@ -439,17 +441,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     }
   }
 
-  void SetIsTableCellWithEffectiveRowspan(bool has_effective_rowspan) {
-#if DCHECK_IS_ON()
-    DCHECK(!is_table_cell_with_effective_rowspan_set_);
-    is_table_cell_with_effective_rowspan_set_ = true;
-#endif
-    if (has_effective_rowspan) {
-      space_.EnsureRareData()->SetIsTableCellWithEffectiveRowspan(
-          has_effective_rowspan);
-    }
-  }
-
   void SetIsTableCellChild(bool b) {
     space_.bitfields_.is_table_cell_child = b;
   }
@@ -598,7 +589,6 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   bool is_table_cell_column_index_set_ = false;
   bool is_table_cell_hidden_for_paint_set_ = false;
   bool is_table_cell_with_collapsed_borders_set_ = false;
-  bool is_table_cell_with_effective_rowspan_set_ = false;
   bool is_custom_layout_data_set_ = false;
   bool is_lines_until_clamp_set_ = false;
   bool is_table_row_data_set_ = false;

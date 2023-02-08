@@ -87,7 +87,7 @@ OncParsedCertificatesForPkcs12File(
   onc_certificate.SetKey("GUID", base::Value(guid));
   onc_certificate.SetKey("Type", base::Value("Client"));
   onc_certificate.SetKey("PKCS12", base::Value(pkcs12_base64_encoded));
-  base::Value onc_certificates(base::Value::Type::LIST);
+  base::Value::List onc_certificates;
   onc_certificates.Append(std::move(onc_certificate));
   return std::make_unique<chromeos::onc::OncParsedCertificates>(
       onc_certificates);
@@ -650,7 +650,7 @@ TEST_F(ClientCertResolverTest, ExpiringCertificate) {
   // notified its observers with |network_properties_changed| = true.
   network_properties_changed_count_ = 0;
   test_clock_->SetNow(base::Time::Max());
-  SetWifiState(shill::kStateOffline);
+  SetWifiState(shill::kStateIdle);
   task_environment_.RunUntilIdle();
   GetServiceProperty(shill::kEapCertIdProperty, &pkcs11_id);
   EXPECT_EQ(std::string(), pkcs11_id);
@@ -687,7 +687,7 @@ TEST_F(ClientCertResolverTest, SameCertAfterNetworkConnectionStateChanged) {
   // certificate doesn't change and ClientCertResolver does not notify its
   // observers with |network_properties_changed| = true.
   network_properties_changed_count_ = 0;
-  SetWifiState(shill::kStateOffline);
+  SetWifiState(shill::kStateIdle);
   task_environment_.RunUntilIdle();
   GetServiceProperty(shill::kEapCertIdProperty, &pkcs11_id);
   EXPECT_EQ(test_cert_id_, pkcs11_id);

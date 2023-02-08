@@ -29,8 +29,12 @@ export async function initializeData(
 export async function initializeDynamicColorData(
     provider: ThemeProviderInterface,
     store: PersonalizationStore): Promise<void> {
+  store.beginBatchUpdate();
   const {staticColor} = await provider.getStaticColor();
   store.dispatch(setStaticColorAction(staticColor));
+  const {colorScheme} = await provider.getColorScheme();
+  store.dispatch(setColorSchemeAction(colorScheme));
+  store.endBatchUpdate();
 }
 
 // Disables or enables dark color mode.
@@ -63,4 +67,5 @@ export function setStaticColorPref(
     store: PersonalizationStore) {
   provider.setStaticColor(staticColor);
   store.dispatch(setStaticColorAction(staticColor));
+  store.dispatch(setColorSchemeAction(ColorScheme.kStatic));
 }

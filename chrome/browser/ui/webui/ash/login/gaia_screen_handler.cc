@@ -149,8 +149,9 @@ absl::optional<SyncTrustedVaultKeys> GetSyncTrustedVaultKeysForUserContext(
   }
 
   SyncTrustedVaultKeys parsed_keys = SyncTrustedVaultKeys::FromJs(js_object);
-  if (parsed_keys.gaia_id() != gaia_id)
+  if (parsed_keys.gaia_id() != gaia_id) {
     return absl::nullopt;
+  }
 
   return absl::make_optional(std::move(parsed_keys));
 }
@@ -250,8 +251,9 @@ void UpdateAuthParams(base::Value::Dict& params) {
 }
 
 bool ShouldCheckUserTypeBeforeAllowing() {
-  if (!features::IsFamilyLinkOnSchoolDeviceEnabled())
+  if (!features::IsFamilyLinkOnSchoolDeviceEnabled()) {
     return false;
+  }
 
   CrosSettings* cros_settings = CrosSettings::Get();
   bool family_link_allowed = false;
@@ -272,8 +274,9 @@ void GetVersionAndConsent(std::string* out_version, bool* out_consent) {
 }
 
 user_manager::UserType CalculateUserType(const AccountId& account_id) {
-  if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY)
+  if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY) {
     return user_manager::USER_TYPE_ACTIVE_DIRECTORY;
+  }
 
   return user_manager::USER_TYPE_REGULAR;
 }
@@ -682,8 +685,9 @@ void GaiaScreenHandler::RegisterMessages() {
 void GaiaScreenHandler::HandleIdentifierEntered(const std::string& user_email) {
   // We cannot tell a user type from the identifier, so we delay checking if
   // the account should be allowed.
-  if (ShouldCheckUserTypeBeforeAllowing())
+  if (ShouldCheckUserTypeBeforeAllowing()) {
     return;
+  }
 
   user_manager::KnownUser known_user(g_browser_process->local_state());
   if (LoginDisplayHost::default_host() &&
@@ -701,13 +705,6 @@ void GaiaScreenHandler::HandleAuthExtensionLoaded() {
   // used during the current sign-in attempt.
   extension_provided_client_cert_usage_observer_ =
       std::make_unique<LoginClientCertUsageObserver>();
-
-  // Clear old storage partitions after a new sign-in page is loaded. All
-  // reference to the old storage partitions should be cleared.
-  login::SigninPartitionManager* signin_partition_manager =
-      login::SigninPartitionManager::Factory::GetForBrowserContext(
-          Profile::FromWebUI(web_ui()));
-  signin_partition_manager->DisposeOldStoragePartitions();
 }
 
 void GaiaScreenHandler::HandleWebviewLoadAborted(int error_code) {
@@ -770,8 +767,9 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
     bool services_provided,
     const base::Value::Dict& password_attributes,
     const base::Value::Dict& sync_trusted_vault_keys) {
-  if (!LoginDisplayHost::default_host())
+  if (!LoginDisplayHost::default_host()) {
     return;
+  }
 
   DCHECK(!email.empty());
   DCHECK(!gaia_id.empty());

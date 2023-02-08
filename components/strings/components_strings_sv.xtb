@@ -256,6 +256,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="1553358976309200471">Uppdatera Chrome</translation>
 <translation id="1555130319947370107">Blå</translation>
 <translation id="1559447966090556585">Vill du få aviseringar?</translation>
+<translation id="1559486004335285648">Autofyll betalningsuppgifter</translation>
 <translation id="1559528461873125649">Filen eller katalogen finns inte</translation>
 <translation id="1559572115229829303">&lt;p&gt;Det gick inte att upprätta en privat anslutning till <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> eftersom enhetens datum och tid (<ph name="DATE_AND_TIME" />) inte stämmer.&lt;/p&gt;
 
@@ -271,6 +272,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="1586541204584340881">Vilka tillägg du har installerat</translation>
 <translation id="1588438908519853928">Normal</translation>
 <translation id="1592005682883173041">Lokal dataåtkomst</translation>
+<translation id="1593359183944365958">270 grader</translation>
 <translation id="1594030484168838125">Välj</translation>
 <translation id="1596296697375291157">Thriller, polis och kriminalgåtor, film</translation>
 <translation id="1599199147673445968">Har du ett nytt kort? <ph name="BEGIN_LINK" />Ange kortuppgifter<ph name="END_LINK" /></translation>
@@ -337,6 +339,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="1741613555002899862">Måste anges och vara en giltig sträng när DnsOverHttpsMode är <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="1745880797583122200">Din webbläsare hanteras</translation>
 <translation id="1746113442205726301">Bild Y – byte</translation>
+<translation id="1746531169546376413">0 grader</translation>
 <translation id="17513872634828108">Öppna flikar</translation>
 <translation id="1752021286346845558">Postfack 8</translation>
 <translation id="1753068535428855445">Dating och personligt</translation>
@@ -361,6 +364,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="1807246157184219062">Ljus</translation>
 <translation id="1807528111851433570">Första ark</translation>
 <translation id="181000283860817563">Bevaka priser på flera webbplatser</translation>
+<translation id="1810391395243432441">Skydda dina lösenord med skärmlåset</translation>
 <translation id="1812527064848182527">liggande</translation>
 <translation id="1813414402673211292">Rensa webbinformation</translation>
 <translation id="182139138257690338">automatiska nedladdningar</translation>
@@ -380,6 +384,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="1871208020102129563">Proxyn är inställd på att använda fasta proxyservrar, inte en webbadress med PAC-skript.</translation>
 <translation id="1871284979644508959">Obligatoriskt fält</translation>
 <translation id="1873899211667975540">Rockmusik</translation>
+<translation id="1874224422119691492">Du kan ändra om du vill använda skärmlåset för att fylla i lösenord eller inte i <ph name="SETTINGS" /></translation>
 <translation id="1875025161375567525">Fotofack</translation>
 <translation id="1875512691959384712">Google Formulär</translation>
 <translation id="187918866476621466">Öppna startsidorna</translation>
@@ -411,7 +416,6 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="1958218078413065209">Ditt rekord är <ph name="SCORE" />.</translation>
 <translation id="1959001866257244765">Hjälp oss att göra webben säkrare för alla genom att skicka <ph name="BEGIN_WHITEPAPER_LINK" />webbadresser till vissa sidor som du besöker, vissa systemuppgifter och visst sidinnehåll<ph name="END_WHITEPAPER_LINK" /> till Google <ph name="BEGIN_PRIVACY_PAGE_LINK" />Integritetspolicy<ph name="END_PRIVACY_PAGE_LINK" /></translation>
 <translation id="1962204205936693436">Bokmärken på <ph name="DOMAIN" /></translation>
-<translation id="1971033026002113380">Skydda dina lösenord med TouchID</translation>
 <translation id="1973335181906896915">Serieproduktionsfel</translation>
 <translation id="1974060860693918893">Avancerat</translation>
 <translation id="1975457531113383421">Inmatningsfack</translation>
@@ -743,10 +747,10 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="2876949457278336305"><ph name="MANAGE_SECURITY_SETTINGS_FOCUSED_FRIENDLY_MATCH_TEXT" />: tryck på Tabb och sedan på Retur om du vill hantera Säker webbsökning med mera i inställningarna för Chrome</translation>
 <translation id="2878197950673342043">Korsfalsning</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2879694782644540289">fylla i lösenord med skärmlåset.</translation>
 <translation id="2881276955470682203">Vill du spara kortet?</translation>
 <translation id="2882949212241984732">Altarskåpsfalsning</translation>
 <translation id="2893773853358652045">Fjärde rullen</translation>
-<translation id="289834758818479772">Om du delar enheten med andra kan du aktivera TouchID för att verifiera din identitet när du använder ett sparat lösenord</translation>
 <translation id="2900528713135656174">Skapa händelse</translation>
 <translation id="2903493209154104877">Adresser</translation>
 <translation id="290376772003165898">Är sidan inte på <ph name="LANGUAGE" />?</translation>
@@ -1001,6 +1005,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="3532844647053365774"><ph name="HOST" /> vill använda din mikrofon</translation>
 <translation id="3533328374079021623">Postfack 5</translation>
 <translation id="3537165859691846083">Letter Plus</translation>
+<translation id="3542628208405253498">Kortbild</translation>
 <translation id="3542768452570884558">Öppna länk i nytt fönster</translation>
 <translation id="3547746132308051926">20 x 24 tum</translation>
 <translation id="3550112004925580947">Hotellbranschen</translation>
@@ -1064,7 +1069,6 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="3678529606614285348">Öppna sidan i ett nytt inkognitofönster (Ctrl-Skift-N)</translation>
 <translation id="3681007416295224113">Certifikatinformation</translation>
 <translation id="3693327506115126094">Välj hur du vill verifiera din identitet</translation>
-<translation id="3699374065820972102">TouchID är aktiverat för att fylla i lösenord</translation>
 <translation id="3701427423622901115">Återställning bekräftad.</translation>
 <translation id="3704162925118123524">Nätverket du använder kanske kräver att du besöker dess inloggningssida.</translation>
 <translation id="3705189812819839667"><ph name="RESULT_OWNER" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -1092,6 +1096,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="3745099705178523657">När du bekräftar delas kortuppgifter från ditt Google-konto med webbplatsen.</translation>
 <translation id="3748148204939282805">Angripare på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kan försöka lura dig att göra något riskfyllt, som att installera programvara eller avslöja personliga uppgifter (t.ex. lösenord, telefonnummer eller kreditkortsuppgifter). <ph name="BEGIN_LEARN_MORE_LINK" />Läs mer<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3748912308089554501">Luftfartsindustri</translation>
+<translation id="3752543821772132562">Ignoreras eftersom <ph name="POLICY_NAME" /> inte har angetts.</translation>
 <translation id="3754210790023674521">Avsluta bild-i-bild-läge</translation>
 <translation id="3759461132968374835">Inga krascher har rapporterats nyligen. Krascher som uppstod när kraschrapporteringen var inaktiverad visas inte här.</translation>
 <translation id="3760561303380396507">Vill du använda Windows Hello i stället för CVC?</translation>
@@ -1179,7 +1184,6 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="401170183602135785">C6-kuvert</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF-dokument som innehåller {COUNT} sida}other{PDF-dokument som innehåller {COUNT} sidor}}</translation>
 <translation id="4023431997072828269">Din information blir synlig för andra eftersom anslutningen som används för att skicka formuläret inte är säker.</translation>
-<translation id="4024923292610332139">inaktivera TouchID för att fylla i lösenord</translation>
 <translation id="4025913568718019429">Knappen Hantera Googles integritetsinställningar: tryck på Retur om du vill öppna Google-kontots integritetsinställningar</translation>
 <translation id="4030383055268325496">&amp;Ångra Lägg till</translation>
 <translation id="4031179711345676612">Mikrofon är tillåten</translation>
@@ -1399,6 +1403,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="4541810033354695636">förstärkt verklighet</translation>
 <translation id="4542971377163063093">Fack 6</translation>
 <translation id="455113658016510503">A9</translation>
+<translation id="4556069465387849460">Du använder skärmlåset för att fylla i lösenord</translation>
 <translation id="4558551763791394412">Testa att inaktivera tilläggen.</translation>
 <translation id="4566017918361049074">Utomhusaktiviteter</translation>
 <translation id="4567686777917670400">Administratören kan ändra webbläsarinställningarna på distans. Aktivitet på den här enheten kan hanteras även utanför Chromium. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
@@ -1541,7 +1546,6 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="4900217275619098670">Nionde rullen</translation>
 <translation id="4901778704868714008">Spara …</translation>
 <translation id="4905659621780993806">Administratören startar om enheten automatiskt kl. <ph name="TIME" /> den <ph name="DATE" />. Spara det som du har öppet innan enheten startas om.</translation>
-<translation id="4911007278801291296">Du kan aktivera eller inaktivera TouchID i <ph name="SETTINGS" /></translation>
 <translation id="4913987521957242411">Häfta uppe till vänster</translation>
 <translation id="4918221908152712722">Installera <ph name="APP_NAME" /> (ingen nedladdning krävs)</translation>
 <translation id="4923459931733593730">Betalning</translation>
@@ -1723,6 +1727,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="5334013548165032829">Detaljerade systemloggar</translation>
 <translation id="5334145288572353250">Vill du spara adressen?</translation>
 <translation id="5335920952954443287">Hjärta som slår</translation>
+<translation id="5337569431717511221">Knappen Ställ in Chrome som standardwebbläsare: tryck på Retur om du vill ställa in Chrome som standardwebbläsare</translation>
 <translation id="5340250774223869109">Appen blockeras</translation>
 <translation id="534295439873310000">NFC-enheter</translation>
 <translation id="5344579389779391559">Den här sidan kan försöka debitera dig</translation>
@@ -1754,7 +1759,6 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="5426179911063097041"><ph name="SITE" /> vill skicka aviseringar</translation>
 <translation id="5428105026674456456">spanska</translation>
 <translation id="5430298929874300616">Ta bort bokmärke</translation>
-<translation id="5434423669266814150">aktivera TouchID för att fylla i lösenord</translation>
 <translation id="5443468954631487277">Omvänd ordning – framsidan uppåt</translation>
 <translation id="5447765697759493033">Den här webbplatsen översätts inte</translation>
 <translation id="5452270690849572955">Sidan på <ph name="HOST_NAME" /> kan inte hittas</translation>
@@ -1796,6 +1800,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="5540969246441091044">Ridsport</translation>
 <translation id="5541086400771735334">Postfack 7</translation>
 <translation id="5541546772353173584">Lägg till e-postadress</translation>
+<translation id="5543722831081909240">180 grader</translation>
 <translation id="5545756402275714221">Artiklar för dig</translation>
 <translation id="5551890439174915351">100 x 200 mm</translation>
 <translation id="5552137475244467770">Chrome kontrollerar regelbundet om dina lösenord finns med på listor som har publicerats online. Under kontrollen krypteras dina lösenord och användarnamn så att varken Google eller någon annan kan läsa dem.</translation>
@@ -2184,6 +2189,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="6591833882275308647"><ph name="DEVICE_TYPE" /> hanteras inte</translation>
 <translation id="6592952801936330159">Knappen Hantera webbplatsinställningar, tryck på Retur om du vill hantera behörigheter och data som lagras på olika webbplatser i inställningarna för Chrome</translation>
 <translation id="6596325263575161958">Krypteringsalternativ</translation>
+<translation id="6597665340361269064">90 grader</translation>
 <translation id="6599642189720630047">Bevakade produkter</translation>
 <translation id="6611723696964473273">Ekonominyheter</translation>
 <translation id="6612010098632894193">Onlinevideo</translation>
@@ -2416,6 +2422,7 @@ Annars blockeras detta av integritetsinställningarna. Om du tillåter detta kan
 <translation id="7199278868241956094">Oficio</translation>
 <translation id="7201591969684833065">Administratören kan se</translation>
 <translation id="7202217080450895452"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />. Tryck på Tabb och sedan på Retur om du vill öppna en ny inkognitoflik och surfa privat</translation>
+<translation id="7203375778433816396">Ställ in Chrome som standardwebbläsare</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> följer inte säkerhetsstandarderna.</translation>
 <translation id="7210993021468939304">Linux-aktivitet i behållaren och kan installera och köra Linux-appar i behållaren</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /> om problemet.</translation>
@@ -2563,6 +2570,7 @@ Mer information.
 <translation id="7537536606612762813">Obligatorisk</translation>
 <translation id="7542403920425041731">När du bekräftar delas kortuppgifterna med den här webbplatsen.</translation>
 <translation id="7542995811387359312">Automatisk ifyllning av kreditkort har inaktiverats eftersom formulärets anslutning inte är säker.</translation>
+<translation id="7546409722674205727">Startar <ph name="APP_NAME" /></translation>
 <translation id="7548892272833184391">Åtgärda anslutningsproblem</translation>
 <translation id="7549584377607005141">Den här webbsidan kräver uppgifter som du har angett tidigare för att kunna visas korrekt. Du kan skicka uppgifterna igen, men om du gör det upprepas de åtgärder som har utförts av sidan tidigare.</translation>
 <translation id="7550637293666041147">Ditt användarnamn på enheten och användarnamn i Chrome</translation>
@@ -2716,6 +2724,7 @@ Mer information.
 <translation id="7942349550061667556">Röd</translation>
 <translation id="7943397946612013052">Nedladdning blockeras</translation>
 <translation id="7943893128817522649">Får begära tillstånd att ladda ned flera filer automatiskt</translation>
+<translation id="7946724693008564269">Upptäckt språk</translation>
 <translation id="7947285636476623132">Kontrollera utgångsår och försök igen</translation>
 <translation id="7947813448670013867"><ph name="SEE_CHROME_TIPS_FOCUSED_FRIENDLY_MATCH_TEXT" />: tryck på Tabb och sedan på Retur om du vill läsa mer om funktioner i Chrome</translation>
 <translation id="7950027195171824198">Hantera cookies i inställningarna för Chrome</translation>
@@ -2748,6 +2757,7 @@ Mer information.
 <translation id="8009843239480947060">10 x 11 tum</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{Det här kortet och dess faktureringsadress sparas. Du kan använda det när du är inloggad som <ph name="USER_EMAIL" />.}other{De här korten och deras faktureringsadresser sparas. Du kan använda dem när du är inloggad som <ph name="USER_EMAIL" />.}}</translation>
 <translation id="8019861005170389898"><ph name="TRADITIONAL_TEXT" /> (<ph name="ADDITIONAL_TEXT" />)</translation>
+<translation id="8023231537967344568"><ph name="SET_CHROME_AS_DEFAULT_BROWSER_FOCUSED_FRIENDLY_MATCH_TEXT" />: tryck på Tabb och sedan på Retur om du vill ställa in Chrome som standardwebbläsare</translation>
 <translation id="8025119109950072390">Angripare på den här webbplatsen kan lura dig att göra något farligt, till exempel installera programvara eller lämna ut personliga uppgifter (som lösenord, telefonnummer eller kreditkortsuppgifter).</translation>
 <translation id="8026334261755873520">Rensa webbinformation</translation>
 <translation id="8027077570865220386">Fack 15</translation>
@@ -2887,6 +2897,7 @@ Mer information.
 <translation id="8355270400102541638">Kontext för lokal krasch:</translation>
 <translation id="8363502534493474904">inaktivera flygplansläget</translation>
 <translation id="8364627913115013041">Inte angiven.</translation>
+<translation id="836616551641291797">Läs mer om hur webbläsaren hanteras</translation>
 <translation id="8368001212524806591">Bevaka pris</translation>
 <translation id="8368027906805972958">Enheten är okänd eller stöds inte (<ph name="DEVICE_ID" />)</translation>
 <translation id="8368476060205742148">Google Play-tjänster</translation>
@@ -2899,6 +2910,7 @@ Mer information.
 <translation id="8396522675989118466">Det här är den <ph name="NUMBER_OF_DIGITS" />-siffriga koden på <ph name="SIDE_OF_CARD" /></translation>
 <translation id="8398790343843005537">Sök efter mobilen</translation>
 <translation id="8405579342203358118">Hantera vilken information som synkroniseras i inställningarna för Chrome</translation>
+<translation id="8406071103346257942">sluta använda skärmlåset för att fylla i lösenord.</translation>
 <translation id="8409413588194360210">betalningshanterare</translation>
 <translation id="8412145213513410671">Krascher (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Du måste ange samma lösenfras två gånger.</translation>
@@ -3168,6 +3180,7 @@ Mer information:
 <translation id="9128016270925453879">Policyer har lästs in</translation>
 <translation id="9128870381267983090">Anslut till ett nätverk</translation>
 <translation id="9131119348384879525">Vill du ta en skärmbild/skärminspelning av konfidentiellt innehåll?</translation>
+<translation id="9133985615769429248">Om du delar enheten med andra kan du använda skärmlåset för att verifiera din identitet när du använder ett sparat lösenord</translation>
 <translation id="9136861683332321024">Lyxfordon</translation>
 <translation id="9137013805542155359">Visa original</translation>
 <translation id="9138037198177304356">Aviseringar tillåts</translation>

@@ -125,6 +125,7 @@ Bare personer som har passordfrasen din, kan lese de krypterte dataene. Passordf
 <translation id="1870148520156231997">Vis passordet</translation>
 <translation id="1872096359983322073">Lommelykt</translation>
 <translation id="1891796056033961979">Lagrede bokmerker, passord, innstillinger med mer er tilgjengelig på denne skjermen.</translation>
+<translation id="1894023287452300670">Spor prisen her</translation>
 <translation id="1911619930368729126">Last opp til Google Disk</translation>
 <translation id="1923342640370224680">Den siste timen</translation>
 <translation id="1930989359703290198">Organisasjonen din lar deg kun logge på med visse kontoer. Kontoer som ikke tillates, er skjult. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
@@ -147,7 +148,9 @@ Bare personer som har passordfrasen din, kan lese de krypterte dataene. Passordf
 <translation id="2074131957428911366">Du kan når som helst velge hva du vil synkronisere, i <ph name="BEGIN_LINK" />innstillingene<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Angre</translation>
 <translation id="2080769225927880590">Logg på med en gyldig konto</translation>
+<translation id="2090878303988764231">Logg på for å administrere innholdet du ser</translation>
 <translation id="2103075008456228677">Åpne history.google.com</translation>
+<translation id="21133533946938348">Fest fanen</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementer er flyttet</translation>
 <translation id="2122754583996902531">Nettleseren din administreres. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="212623074644302906">Spør om å legge til på leselisten</translation>
@@ -189,6 +192,7 @@ Nettsteder kan ikke bruke informasjonskapsler til å se nettleseraktiviteten din
 <translation id="2421044535038393232">Fortsett redigeringen</translation>
 <translation id="2434405374328098816">Du har allerede lagret et passord for «<ph name="USERNAME" />» på <ph name="WEBSITE" /></translation>
 <translation id="2435457462613246316">Vis passord</translation>
+<translation id="2451654228769116489">Fest fanen</translation>
 <translation id="2461070143328828326">Passordinnstillinger</translation>
 <translation id="2469960372084740698">Vil du slå av Safe Browsing?</translation>
 <translation id="2473876017985765807">Du har allerede lagret et passord for <ph name="WEBSITE" /></translation>
@@ -286,6 +290,7 @@ Se eventuelt instruksjonene fra den aktuelle søkemotoren om hvordan du sletter 
 <translation id="3130863904455712965">Logg med mer</translation>
 <translation id="3131206671572504478">Blokkér alle</translation>
 <translation id="313283613037595347">Åpne ny inkognitofane.</translation>
+<translation id="3146109040683991651">Angi Chrome som standardnettleser</translation>
 <translation id="3153862085237805241">Lagre kortet</translation>
 <translation id="3157387275655328056">Legg til i leselisten</translation>
 <translation id="3157684681743766797">Merk alle…</translation>
@@ -673,6 +678,7 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="6059830886158432458">Styr nyhetssakene dine og aktiviteten din her</translation>
 <translation id="6064824697233747382">Organisasjonen din krever at du slår av synkronisering.</translation>
 <translation id="6066301408025741299">Trykk for å avbryte.</translation>
+<translation id="6071409777669089905">Løsne fanen</translation>
 <translation id="60829778314739003">Godta og fortsett</translation>
 <translation id="6084848228346514841">Velg faner</translation>
 <translation id="6103540626693881831">Kryptering på enheten</translation>
@@ -791,7 +797,7 @@ Når du er i Inkognito, kan ikke nettsteder bruke informasjonskapsler til å se 
 <translation id="6762812039470893796">Velg bort alle</translation>
 <translation id="6780034285637185932">Postnummer</translation>
 <translation id="6781260999953472352">Vil du slå på synkronisering?</translation>
-<translation id="6785453220513215166">Sender programstopprapport …</translation>
+<translation id="6785453220513215166">Sender krasjrapport …</translation>
 <translation id="6797885426782475225">Talesøk</translation>
 <translation id="6801927553864092214">For å surfe privat på nettet, åpne en inkognitofane</translation>
 <translation id="6807889908376551050">Vis alle</translation>
@@ -973,6 +979,7 @@ Nettsteder kan bruke informasjonskapsler til å se nettleseraktiviteten din på 
 <translation id="8197543752516192074">Oversett siden</translation>
 <translation id="8205564605687841303">Avbryt</translation>
 <translation id="8206354486702514201">Denne innstillingen håndheves av administratoren din.</translation>
+<translation id="821809831108207540">For å gi Discover-feeden og Chrome et personlig preg, logg på og slå på synkronisering.</translation>
 <translation id="8225985093977202398">Bufrede bilder og filer</translation>
 <translation id="8237382152611443140">Åpne innstillinger for autofylling av passord</translation>
 <translation id="8261506727792406068">Slett</translation>
@@ -1100,6 +1107,7 @@ Nettsteder kan bruke informasjonskapsler til å se nettleseraktiviteten din på 
 <translation id="9219154867334666734">Søk etter faner…</translation>
 <translation id="9223358826628549784">Programstopprapporten er sendt.</translation>
 <translation id="941747855997058526">Velg passord…</translation>
+<translation id="948048872540558976">Åpne en ny fane</translation>
 <translation id="952704832371081537">Avbryt</translation>
 <translation id="953008885340860025">Chrome er logget av</translation>
 <translation id="959066944189734975">Du følger <ph name="CHANNEL_NAME" /></translation>

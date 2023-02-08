@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/css/css_grid_auto_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_initial_value.h"
+#include "third_party/blink/renderer/core/css/css_math_function_value.h"
 #include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value_mappings.h"
 #include "third_party/blink/renderer/core/css/css_quad_value.h"
@@ -30,6 +31,7 @@
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
+#include "third_party/blink/renderer/core/css/css_view_value.h"
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_color_value.h"
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_keyword_value.h"
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_unit_value.h"
@@ -509,10 +511,13 @@ CSSValue* ComputedStyleUtils::ValueForReflection(
 
   CSSPrimitiveValue* offset = nullptr;
   // TODO(alancutter): Make this work correctly for calc lengths.
-  if (reflection->Offset().IsPercentOrCalc()) {
+  if (reflection->Offset().IsPercent()) {
     offset = CSSNumericLiteralValue::Create(
         reflection->Offset().Percent(),
         CSSPrimitiveValue::UnitType::kPercentage);
+  } else if (reflection->Offset().IsCalculated()) {
+    offset = CSSMathFunctionValue::Create(reflection->Offset(),
+                                          style.EffectiveZoom());
   } else {
     offset = ZoomAdjustedPixelValue(reflection->Offset().Value(), style);
   }
@@ -2054,6 +2059,13 @@ CSSValue* ComputedStyleUtils::ValueForAnimationTimeline(
       return MakeGarbageCollected<CSSStringValue>(name);
     }
     return MakeGarbageCollected<CSSCustomIdentValue>(name);
+  }
+  if (timeline.IsView()) {
+    const StyleTimeline::ViewData& view_data = timeline.GetView();
+    CSSValue* axis = view_data.HasDefaultAxis()
+                         ? nullptr
+                         : CSSIdentifierValue::Create(view_data.GetAxis());
+    return MakeGarbageCollected<cssvalue::CSSViewValue>(axis);
   }
   DCHECK(timeline.IsScroll());
   const StyleTimeline::ScrollData& scroll_data = timeline.GetScroll();

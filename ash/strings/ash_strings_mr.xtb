@@ -7,6 +7,7 @@
 <translation id="1024364763893396229">तुमचे <ph name="NAME" /> सेव्ह करा</translation>
 <translation id="1032891413405719768">स्टायलस बॅटरी कमी आहे</translation>
 <translation id="1036073649888683237">सूचना व्यवस्थापित करण्यासाठी, सेटिंग्ज वर जा</translation>
+<translation id="1036348656032585052">बंद करा</translation>
 <translation id="1036672894875463507">मी Google Assistant आहे, तुम्हाला संपूर्ण दिवसभर मदत करण्यासाठी येथे आहे!
 सुरुवात करण्यासाठी, तुम्ही करून पाहू शकता अशा गोष्टी या आहेत.</translation>
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> जोडले</translation>
@@ -36,6 +37,7 @@
 <translation id="1175572348579024023">स्क्रोल करा</translation>
 <translation id="1178581264944972037">विराम द्या</translation>
 <translation id="1181037720776840403">काढून टाका</translation>
+<translation id="1182225749592316782">हे कॅमेरा आणि मायक्रोफोन परवानग्यांसह सर्व अ‍ॅप्स आणि वेबसाइट अ‍ॅक्सेस करण्यास अनुमती देते</translation>
 <translation id="1183863904939664422">या सूचनेमध्ये स्वारस्य नाही</translation>
 <translation id="118437560755358292">आणखी सुरक्षिततेसाठी पासवर्ड किंवा पिन एंटर करा</translation>
 <translation id="118532027333893379">फुल स्क्रीन कॅप्चर करण्यासाठी कुठेही टॅप करा</translation>
@@ -100,6 +102,7 @@
 <translation id="1447641497144572814">स्क्रीन सेव्हर सुरू होत आहे</translation>
 <translation id="1455242230282523554">भाषा सेटिंग्ज दर्शवा</translation>
 <translation id="1460620680449458626">व्हॉल्यूम म्यूट केलेला आहे.</translation>
+<translation id="14648076227129703">हे कॅमेरा परवानगी असलेल्या <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> आणि सर्व अ‍ॅप्स व वेबसाइटना कॅमेराच्या अ‍ॅक्सेसची अनुमती देते</translation>
 <translation id="1467432559032391204">डावे</translation>
 <translation id="146902737843070955">तुमच्या अ‍ॅडमिनिस्ट्रेटरने या बदलाची विनंती केली आहे</translation>
 <translation id="147310119694673958">फोनची बॅटरी <ph name="BATTERY_PERCENTAGE" />%</translation>
@@ -118,6 +121,7 @@
 <translation id="15373452373711364">मोठा माउस कर्सर</translation>
 <translation id="1546492247443594934">डेस्‍क २</translation>
 <translation id="1546930421365146760">तुमच्या अ‍ॅडमिनिस्ट्रेटरला हे डिव्हाइस Google ॲडमिन कन्सोलमध्ये सेट करण्यास सांगा</translation>
+<translation id="1550406609415860283">डिव्हाइस उपलब्ध</translation>
 <translation id="1550523713251050646">अधिक पर्यायांसाठी क्लिक करा</translation>
 <translation id="1555130319947370107">निळा</translation>
 <translation id="1589090746204042747">या सेशनमध्ये तुमची सर्व अ‍ॅक्टिव्हिटी अ‍ॅक्सेस करा</translation>
@@ -125,6 +129,7 @@
 <translation id="1611993646327628135">सुरू करा</translation>
 <translation id="1620510694547887537">कॅमेरा</translation>
 <translation id="1632985212731562677">सेटिंग्ज &gt; अ‍ॅक्सेसिबिलिटी मध्ये स्विच अ‍ॅक्सेस बंद केले जाऊ शकते.</translation>
+<translation id="163517899691012366">व्यत्यय आणू नका सुरू असते, तेव्हा सूचना म्यूट केल्या जातात</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> डिव्हाइस</translation>
 <translation id="1639239467298939599">लोड करत आहे</translation>
 <translation id="1654477262762802994">व्हॉइस क्वेरी सुरू करा</translation>
@@ -159,6 +164,7 @@
 <translation id="1797271123677381264">पासवर्ड विसरलात</translation>
 <translation id="181103072419391116">सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />, तुमच्या अ‍ॅडमिनिस्ट्रेटरने व्यवस्थापित केलेले</translation>
 <translation id="1812997170047690955">माझ्या स्क्रीनवर काय आहे?</translation>
+<translation id="1816896987747843206">हे कॅमेरा परवानगी असलेल्या सर्व अ‍ॅप्स आणि वेबसाइटना कॅमेराच्या अ‍ॅक्सेसची अनुमती देते</translation>
 <translation id="1823280932251546115">स्टेटस ट्रे, वेळ <ph name="TIME" />,
         <ph name="BATTERY" />
         <ph name="CHANNEL" />
@@ -172,10 +178,10 @@
 <translation id="1830308660060964064"><ph name="ITEM_TITLE" /> अनपिन केला गेला</translation>
 <translation id="1836215606488044471">साहाय्यक (लोड होत आहे...)</translation>
 <translation id="1838895407229022812">रात्रीचा प्रकाश बंद आहे.</translation>
+<translation id="1854180393107901205">कास्ट करणे थांबवा</translation>
 <translation id="1862380676329487333">अपडेट करून साइन आउट करा</translation>
 <translation id="1864454756846565995">USB-C डिव्‍हाइस (मागील बाजूचे पोर्ट)</translation>
 <translation id="1869497990620230175">झटपट फाइल</translation>
-<translation id="1871703283152909317">दोन्ही अ‍ॅक्सेस सुरू करा</translation>
 <translation id="1879018240766558464">गुप्त विंडोना सध्या सपोर्ट नाही. इतर ॲप्स सेव्ह केली जातील.</translation>
 <translation id="1882814835921407042">मोबाइल नेटवर्क नाही</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> वर मिरर करत आहे</translation>
@@ -213,7 +219,6 @@
 <translation id="2064048859448024834">कॅमेराचे पूर्वावलोकन सुरू आहे</translation>
 <translation id="2067602449040652523">कीबोर्डची चमक</translation>
 <translation id="2078034614700056995">पुढील डेस्कवर स्विच करण्यासाठी चार बोटांनी उजवीकडे स्‍वाइप करा</translation>
-<translation id="2079504693865562705">शेल्फमधील अ‍ॅप्स लपवा</translation>
 <translation id="2079545284768500474">पहिल्यासारखे करा</translation>
 <translation id="2083190527011054446">शुभ रात्री <ph name="GIVEN_NAME" />,</translation>
 <translation id="2088116547584365419">गेम</translation>
@@ -373,6 +378,7 @@
 <translation id="3047761520276763270">हे म्हणून पहा:</translation>
 <translation id="3051189971848907985">प्रोफाइलचे नाव बदलत आहे. काही मिनिटे प्रतीक्षा करा.</translation>
 <translation id="3055162170959710888">तुम्ही हे डिव्हाइस आज <ph name="USED_TIME" /> साठी वापरले</translation>
+<translation id="3062298103034426069">सपोर्ट करत नाही</translation>
 <translation id="3068711042108640621">शेल्फ डावीकडे आहे</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">मेनूचा विस्तार करा</translation>
@@ -407,6 +413,7 @@
 <translation id="3249513730522716925">विंडो <ph name="WINDOW_TITLE" /> डेस्क <ph name="ACTIVE_DESK" /> वरून डेस्क <ph name="TARGET_DESK" /> वर हलवली</translation>
 <translation id="3252573918265662711">सेटअप</translation>
 <translation id="3255483164551725916">तुला काय करता येते?</translation>
+<translation id="3260969790895726815">स्पीचवर स्थानिकरीत्या प्रक्रिया केली जाते आणि डिक्टेशन ऑफलाइन काम करते, पण काही व्हॉइस कमांड काम करणार नाहीत.</translation>
 <translation id="3269597722229482060">राइट क्लिक</translation>
 <translation id="3289544412142055976">Linux ॲप्सना सध्या सपोर्ट नाही</translation>
 <translation id="3289674678944039601">अडॅप्टर वापरून चार्ज करत आहे</translation>
@@ -454,9 +461,12 @@
 <translation id="3513798432020909783">खाते <ph name="MANAGER_EMAIL" /> ने व्‍यवस्‍थापित केले आहे</translation>
 <translation id="352245152354538528">{0,plural, =1{डिव्हाइस एका मिनिटाच्या आत अपडेट करा}other{डिव्हाइस # मिनिटांच्या आत अपडेट करा}}</translation>
 <translation id="353086728817903341"><ph name="NUM_DEVICES" /> डिव्हाइसशी कनेक्ट केले</translation>
+<translation id="3533126039236445965">शेल्फमधील अ‍ॅप्स</translation>
 <translation id="3542066395059568317">तुम्हाला शिफारशी दिसतील, जेणेकरून तुम्ही जिथे सोडले होते तेथून सुरू ठेवू शकता. तुम्ही शिफारशी काढून टाकण्यासाठी राइट-क्लिक करू शकता.</translation>
 <translation id="3552189655002856821">वाय-फाय बंद केले आहे</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> पिन केला गेला</translation>
+<translation id="3558768885091059911">कॅमेरा आणि मायक्रोफोनचा अ‍ॅक्सेस सुरू करायचा का?</translation>
+<translation id="3560174576767922131">व्हिडिओ रेकॉर्ड करा</translation>
 <translation id="3563775809269155755">हॉटस्पॉट सुरू करा</translation>
 <translation id="3566240529365775567">आताच उघडलेली</translation>
 <translation id="3571734092741541777">सेट अप</translation>
@@ -598,6 +608,7 @@
 <translation id="4316910396681052118">सर्व अ‍ॅप्स</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4322742403972824594">Ctrl + Alt + Up Arrow कीबोर्ड शॉर्टकट बदलला आहे. होम की वापरण्यासाठी, <ph name="LAUNCHER_KEY_NAME" /> की + लेफ्ट अ‍ॅरो दाबा.</translation>
+<translation id="4324840740119394760">हे कॅमेरा परवानगी असलेल्या <ph name="APP_NAME" /> आणि सर्व अ‍ॅप्स व वेबसाइटना कॅमेराच्या अ‍ॅक्सेसची अनुमती देते</translation>
 <translation id="4333628967105022692">एकाहून अधिक वापरकर्त्यांनी साइन इन केले असेल तेव्हा Lacros सपोर्ट करत नाही.</translation>
 <translation id="4338109981321384717">भिंग</translation>
 <translation id="4351433414020964307">साहाय्यक लोड होत आहे...</translation>
@@ -648,6 +659,7 @@
 <translation id="4577274620589681794">वेळ संपली · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">पूर्वावलोकने दाखवा</translation>
 <translation id="4578906031062871102">सेटिंग्ज मेनू उघडला आहे</translation>
+<translation id="458210817642223147">GIF रेकॉर्ड करा</translation>
 <translation id="4585337515783392668">एखाद्या अज्ञात मिळवणाऱ्यावर कास्ट करणे थांबवा</translation>
 <translation id="4596144739579517758">गडद थीम बंद आहे</translation>
 <translation id="4611292653554630842">लॉग इन करा</translation>
@@ -664,13 +676,13 @@
 <ph name="QUERY" /></translation>
 <translation id="4659419629803378708">ChromeVox सुरू केले</translation>
 <translation id="4665114317261903604">व्यत्यय आणू नका टॉगल करा. <ph name="STATE_TEXT" /></translation>
-<translation id="4666082839192943839">सर्व कॅमेरा कायमस्वरूपी ब्लॉक करण्यासाठी या डिव्हाइसवर कॅमेराचा अ‍ॅक्सेस बंद करा.</translation>
 <translation id="4666911709726371538">आणखी अ‍ॅप्‍स</translation>
 <translation id="4667099493359681081"><ph name="FILENAME" /> डाउनलोड करत आहे</translation>
 <translation id="468293128311738995">तुमच्या फोनवरील अ‍ॅप्स</translation>
 <translation id="4690510401873698237">शेल्फ तळाशी आहे</translation>
 <translation id="4696813013609194136">पालक कोडने डिव्हाइस अनलॉक करा</translation>
 <translation id="4702647871202761252">गोपनीयता स्क्रीन बंद आहे</translation>
+<translation id="4706121060329443414">नंतर डाउनलोड करण्याचा प्रयत्न केला जाईल. सध्या प्रक्रिया करण्यासाठी स्पीच Google ला पाठवली जाईल.</translation>
 <translation id="470644585772471629">कलर इन्व्हर्जन</translation>
 <translation id="4717575069099566988">तुमची USB-C केबल ही USB4 ला सपोर्ट करत नाही. डिव्हाइसचा परफॉर्मन्स मर्यादित असू शकतो.</translation>
 <translation id="4730374152663651037">वारंवार वापरलेले</translation>
@@ -696,7 +708,6 @@
 <translation id="485592688953820832">कृती नाही (थांबवा)</translation>
 <translation id="485634149294284819">कीबोर्ड एंटर करण्याचा मेनू</translation>
 <translation id="4860284199500934869"><ph name="FILENAME" /> डाउनलोड करण्यासाठी तुमचे नेटवर्क कनेक्शन तपासा</translation>
-<translation id="486056901304535126">नंतर डाउनलोड करण्याचा प्रयत्न केला जाईल. डाउनलोड पूर्ण होईपर्यंत प्रक्रिया करण्यासाठी स्पीच Google ला पाठवली जाईल.</translation>
 <translation id="4864369630010738180">साइन इन करत आहे...</translation>
 <translation id="4864648187878336334">डेस्‍क १५</translation>
 <translation id="4868492592575313542">अ‍ॅक्टिव्हेट केले आहे</translation>
@@ -728,6 +739,7 @@
         <ph name="NUM_OTHER_NOTIFICATION" /></translation>
 <translation id="4987738733603015246">डेस्‍क १६</translation>
 <translation id="5003993274120026347">पुढील वाक्य</translation>
+<translation id="5004607513195820459">नेटवर्क व्यवस्थापित केले आहे</translation>
 <translation id="5016558321564993266">मार्कर टॉगल करा. <ph name="STATE_TEXT" /></translation>
 <translation id="5029356738310729434">डिव्हाइसच्या मायक्रोफोनचा अ‍ॅक्सेस सुरू आहे</translation>
 <translation id="5030687792513154421">वेळ संपली</translation>
@@ -787,10 +799,13 @@
 <translation id="5331975486040154427">USB-C डिव्‍हाइस (डाव्या बाजूचे मागील पोर्ट)</translation>
 <translation id="533282197239610265">कास्‍ट डिव्‍हाइस दाखवा</translation>
 <translation id="5344128444027639014"><ph name="BATTERY_PERCENTAGE" />% (उजवे)</translation>
+<translation id="5351427059191534258">कॅमेराचा ॲक्सेस बंद करायचा आहे का?</translation>
 <translation id="5352250171825660495">गडद थीम सुरू आहे</translation>
 <translation id="5356963482258194581">गडद आणि फिकट थीमदरम्यान स्विच करा. डेस्कटॉपवर राइट-क्लिक करा आणि वॉलपेपर आणि स्टाइल निवडा.</translation>
 <translation id="536019650977002321">तुमचा अ‍ॅडमिनिस्ट्रेटर ऑडिओ कॅप्चरला अनुमती देत नाही. अधिक माहितीसाठी तुमच्या अ‍ॅडमिनिस्ट्रेटरशी संपर्क साधा.</translation>
+<translation id="5361524080961918551"><ph name="LANGUAGE" /> स्पीच फाइल अंशतः डाउनलोड केल्या</translation>
 <translation id="5363163447017455357"><ph name="DELIMITER" /> या टॅबवर जा</translation>
+<translation id="5377367976106153749">कॅमेराचा अ‍ॅक्सेस सुरू करायचा आहे का?</translation>
 <translation id="5379115545237091094">खूप जास्त प्रयत्न</translation>
 <translation id="5391307769715781764">सेव्ह केलेले डेस्क बदलायचे आहे का?</translation>
 <translation id="5393156353051693207">तुमची ॲप्स पुन्हा क्रमाने लावण्यासाठी कुठेही स्पर्श करा आणि धरून ठेवा</translation>
@@ -861,6 +876,7 @@
 <translation id="5763928712329149804">शेल्फ पार्टी बंद आहे.</translation>
 <translation id="576453121877257266">रात्रीचा प्रकाश सुरू आहे.</translation>
 <translation id="5769373120130404283">गोपनीयता स्क्रीन</translation>
+<translation id="5773950591113557721">हे <ph name="APP_NAME" /> आणि कॅमेरा व मायक्रोफोन परवानग्यांसह सर्व अ‍ॅप्स आणि वेबसाइट अ‍ॅक्सेस करण्यास अनुमती देते</translation>
 <translation id="5777841717266010279">स्क्रीन सामायिकरण थांबवायचे?</translation>
 <translation id="5779721926447984944">पिन केलेल्या फाइल</translation>
 <translation id="5788127256798019331">Play फाइल</translation>
@@ -898,6 +914,7 @@
 <translation id="5980301590375426705">अतिथी निर्गमन करा</translation>
 <translation id="598407983968395253">टेंप्लेट वापरा</translation>
 <translation id="598882571027504733">अपडेट करण्यासाठी, संलग्न केलेल्या कीबोर्डसह तुमचे Chromebook रीस्टार्ट करा.</translation>
+<translation id="6002179289567220515">तुम्ही एक कॅमेरा बंद करण्यासाठी प्रत्यक्ष स्विच वापरले. तुम्ही सर्व कॅमेराचा अ‍ॅक्सेसदेखील बंद करू शकता.</translation>
 <translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" /> पैकी <ph name="SELECTED_PAGE" /> पेज</translation>
 <translation id="6018164090099858612">मिरर मोडमधून बाहेर पडत आहे</translation>
 <translation id="602001110135236999">डावीकडे स्‍क्रोल करा</translation>
@@ -922,7 +939,6 @@
 <translation id="6095008505822982596">स्पीच रेट</translation>
 <translation id="6099678161144790572">मागील महिन्यात संपादित केलेली</translation>
 <translation id="6103838137565245112">सिस्टीम</translation>
-<translation id="6107292179555508368">या डिव्हाइसवर मायक्रोफोन आणि कॅमेरा अ‍ॅक्सेस बंद आहेत</translation>
 <translation id="6114505516289286752"><ph name="LANGUAGE" /> च्या स्पीच फाइल डाउनलोड केल्या आहेत</translation>
 <translation id="6119360623251949462"><ph name="CHARGING_STATE" />. <ph name="BATTERY_SAVER_STATE" /></translation>
 <translation id="6121838516699723042"><ph name="FILENAME" /> डाउनलोड करण्याची खात्री करा</translation>
@@ -939,9 +955,11 @@
 <translation id="619279033188484792">तुमच्या <ph name="DEVICE_TYPE" /> वर तुमच्या फोनमधील अलीकडील फोटो, मीडिया आणि सूचना पहा</translation>
 <translation id="619335566042889110">आता पूर्णपणे चार्ज करा</translation>
 <translation id="6193431488227440296">डेव्हलपर</translation>
+<translation id="6200515304866777730">अ‍ॅप सपोर्ट करत नाही</translation>
 <translation id="6210042900243040400">याआधी <ph name="EMAIL" /> मध्ये सेव्ह केलेले <ph name="NAME" /> कनेक्ट करा</translation>
 <translation id="6220928844947387476">तुम्ही आता एकाच वेळी स्वतःला आणि तुमची स्क्रीन रेकॉर्ड करू शकता</translation>
 <translation id="622484624075952240">Down</translation>
+<translation id="623116199192908855">तुमची स्क्रीन तुमच्या Chromebook वरून कास्ट करा</translation>
 <translation id="6231419273573514727">पेरिफेरल परफॉर्मन्स मर्यादित असू शकतो</translation>
 <translation id="6232891689835436217"><ph name="APP_NAME" /> हे सध्या तुमचा कॅमेरा आणि मायक्रोफोन वापरत आहे</translation>
 <translation id="6237231532760393653">१X</translation>
@@ -949,7 +967,6 @@
 <translation id="6259254695169772643">निवडण्यासाठी तुमचे स्टायलस वापरा</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: सक्रिय करत आहे...</translation>
 <translation id="6274202259872570803">Screencast</translation>
-<translation id="6282694724099204652">या डिव्‍हाइसवर मायक्रोफोन आणि कॅमेरा वापरण्‍याच्‍या परवानगीसह अ‍ॅप्स आणि वेबपेजना अनुमती देण्‍यासाठी अ‍ॅक्सेस सुरू करा.</translation>
 <translation id="6283712521836204486">व्यत्यय आणू नका बंद आहे.</translation>
 <translation id="6284232397434400372">रीझोल्युशन बदलले</translation>
 <translation id="6288235558961782912">पालकाच्या परवानगीने <ph name="USER_EMAIL_ADDRESS" /> नंतर पुन्हा जोडता येईल.</translation>
@@ -984,8 +1001,10 @@
 <translation id="6491071886865974820"><ph name="MANAGER" /> ला तुम्ही तुमचे <ph name="DEVICE_TYPE" /> डिव्हाइस डेडलाइनच्या आधी अपडेट करणे आवश्यक आहे</translation>
 <translation id="649452524636452238">स्मार्ट कार्डाचा पिन</translation>
 <translation id="6495400115277918834">चित्रात-चित्र सुरू केले आहे, फोकस करण्यासाठी Alt+Shift+V दाबा</translation>
+<translation id="6497418457565568043">व्यत्यय आणू नका सुरू आहे</translation>
 <translation id="6500896621837555595">अपडेट करा</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" /> वर स्क्रीन कास्ट करीत आहे</translation>
+<translation id="6508923215158854599">तुमचे Chromebook आणि Chromecast डिव्हाइस एकाच वाय-फाय नेटवर्कवर असल्याची खात्री करा.</translation>
 <translation id="6515727200518652613">कॅमेरा डिस्कनेक्ट झाला, पुन्हा कनेक्ट करण्याचा प्रयत्न करत आहे.</translation>
 <translation id="6520517963145875092">कॅप्चर करण्यासाठी विंडो निवडा</translation>
 <translation id="652139407789908527">तुमची स्क्रीन या अपडेटदरम्यान नेहमीपेक्षा (एका मिनिटापर्यंत) जास्त वेळ बंद राहील. कृपया अपडेट सुरू असताना पॉवर बटण दाबू नका.</translation>
@@ -1045,6 +1064,7 @@
 <translation id="6787595647772650851">शेवटचे सेशन रिस्टोअर करा</translation>
 <translation id="6790428901817661496">प्ले करा</translation>
 <translation id="6801878137098616817">अलीकडे संपादित केलेली</translation>
+<translation id="6802687695197837794">हे <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> आणि कॅमेरा व मायक्रोफोन परवानग्यांसह सर्व अ‍ॅप्स आणि वेबसाइट अ‍ॅक्सेस करण्यास अनुमती देते</translation>
 <translation id="6803622936009808957">सपोर्ट असलेली रिजोल्युशन न आढळल्यामुळे डिस्प्ले मिरर करता आले नाहीत. त्याऐवजी विस्तारित डेस्कटॉप एंटर केला.</translation>
 <translation id="6812232930908427253">डेस्क सेव्ह करता आले नाही. खूप जास्त विंडो किंवा टॅब आहेत.</translation>
 <translation id="6818242057446442178">एक शब्द मागे जा</translation>
@@ -1067,6 +1087,7 @@
 <translation id="6901883536534621389">नेव्हिगेट करण्यासाठी जेश्चर वापरून पहा</translation>
 <translation id="6919251195245069855">तुमचे स्मार्ट कार्ड ओळखू शकलो नाही. पुन्हा प्रयत्न करा.</translation>
 <translation id="6931576957638141829">येथे सेव्ह करा</translation>
+<translation id="6942518653766415536">रेकॉर्डिंग फॉरमॅट मेनू</translation>
 <translation id="6945221475159498467">निवडा</translation>
 <translation id="6960565108681981554">अ‍ॅक्टिव्हेट केलेले नाही. तुमच्या वाहकाशी संपर्क साधा.</translation>
 <translation id="6961121602502368900">कार्य प्रोफाइलवर सायलन्स फोन उपलब्ध नाही</translation>
@@ -1076,6 +1097,7 @@
 <translation id="6965382102122355670">ठीक आहे</translation>
 <translation id="6972754398087986839">सुरू करा</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6981291220124935078">अ‍ॅक्सेस सुरू करा</translation>
 <translation id="6981982820502123353">ॲक्सेसिबिलिटी</translation>
 <translation id="698231206551913481">एकदा हा वापरकर्ता काढल्यानंतर या वापरकर्त्याशी संबद्ध सर्व फाइल आणि स्थानिक डेटा कायमचा हटवला जाईल.</translation>
 <translation id="7005239792648594238">सुरुवात करण्यासाठी अ‍ॅप उघडा</translation>
@@ -1177,7 +1199,6 @@
 <translation id="7557816257942363084"><ph name="APP_NAME" /> हे सध्या तुमचा मायक्रोफोन वापरत आहे</translation>
 <translation id="7561982940498449837">मेनू बंद करा</translation>
 <translation id="7564874036684306347">दुसऱ्या डेस्कटॉपवर विंडो हलवण्याने अनपेक्षित वर्तन घडू शकते. नंतर येणाऱ्या सूचना, विंडो आणि डायलॉग हे डेस्कटॉपच्या दरम्यान विभाजित केले जाऊ शकतात.</translation>
-<translation id="7567076708801803118">तुम्हाला या डिव्हाइसवर कॅमेराचा अ‍ॅक्सेस बंद करायचा आहे का?</translation>
 <translation id="7569509451529460200">ब्रेल आणि ChromeVox सुरू केलेले आहेत</translation>
 <translation id="7573585051776738856">अ‍ॅक्टिव्ह विंडो उजवीकडे डॉक केली आहे.</translation>
 <translation id="7579778809502851308">स्‍क्रीन कॅप्‍चर</translation>
@@ -1190,7 +1211,6 @@
 <translation id="761736749114493194">कॅमेरा फ्रेमिंग टॉगल करा. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° फॅ</translation>
 <translation id="7634648064048557203">कॅमेरा सर्वात खालच्या उजव्या कोपऱ्यात स्नॅप केला आहे</translation>
-<translation id="7641938616688887143">रेकॉर्ड करा</translation>
 <translation id="7642106959537987271">कलर इन्व्हर्जन मोड</translation>
 <translation id="7642647758716480637"><ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /> साठी सेटिंग्ज उघडा</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (मालक)</translation>
@@ -1213,7 +1233,6 @@
 <translation id="7723389094756330927">{NUM_NOTIFICATIONS,plural, =1{एक सूचना}other{# सूचना}}</translation>
 <translation id="7724603315864178912">कट करा</translation>
 <translation id="7742327441377685481">सूचना नाहीत</translation>
-<translation id="7745560842763881396">शेल्फमधील अ‍ॅप्स दाखवा</translation>
 <translation id="7749443890790263709">डेस्कची कमाल मर्यादा गाठली आहे.</translation>
 <translation id="776344839111254542">अपडेट तपशील पाहण्यासाठी क्लिक करा</translation>
 <translation id="7768784765476638775">बोलण्यासाठी निवडा</translation>
@@ -1253,6 +1272,7 @@
 <translation id="79341161159229895">खाते <ph name="FIRST_PARENT_EMAIL" /> आणि <ph name="SECOND_PARENT_EMAIL" /> ने व्‍यवस्‍थापित केले आहे</translation>
 <translation id="793716872548410480">तुमचा क्लिपबोर्ड पाहण्यासाठी <ph name="SHORTCUT_KEY_NAME" /> + V दाबा. तुम्ही कॉपी केलेल्या शेवटच्या पाच गोष्टी तुमच्या क्लिपबोर्डवर सेव्ह केल्या आहेत.</translation>
 <translation id="7942349550061667556">लाल</translation>
+<translation id="7963992254934562106"><ph name="PHONE_NAME" /> कडून</translation>
 <translation id="7968693143708939792">फोल्डर निवडा…</translation>
 <translation id="7977927628060636163">मोबाइल नेटवर्क शोधत आहे...</translation>
 <translation id="7982789257301363584">नेटवर्क</translation>
@@ -1492,6 +1512,7 @@
 <translation id="954052413789300507"><ph name="FILENAME" /> साठी पुरेशी जागा नाही. जागा मोकळी करा.</translation>
 <translation id="974545358917229949"><ph name="QUERY" /> साठी <ph name="RESULT_COUNT" /> परिणाम दाखवत आहे</translation>
 <translation id="98515147261107953">लँडस्केप</translation>
+<translation id="989374776391122812">कॅमेरा आणि ऑडिओ नियंत्रणे</translation>
 <translation id="990277280839877440"><ph name="WINDOW_TITILE" /> विंडो बंद केली आहे.</translation>
 <translation id="994354411665877646"><ph name="NETWORK_NAME" />, <ph name="SUBTEXT" /></translation>
 <translation id="996204416024568215">नवीनतम वैशिष्ट्ये आणि सुरक्षेशी संबंधित सुधारणा मिळवा. अपडेट बॅकग्राउंडमध्ये होतात.</translation>

@@ -3250,6 +3250,39 @@ TEST_P(AppsGridViewClamshellAndTabletTest,
   EXPECT_TRUE(apps_grid_view_->IsSelectedView(new_folder));
 }
 
+TEST_P(AppsGridViewClamshellAndTabletTest,
+       MoveLastItemFromFolderToRightDoesNotCrash) {
+  ui::test::EventGenerator* const event_generator = GetEventGenerator();
+
+  // Create a folder with two items in it.
+  model_->CreateAndPopulateFolderWithApps(2);
+  AppListItemView* folder_view = test_api_->GetViewAtIndex(GridIndex(0, 0));
+
+  // Open the folder.
+  folder_view->RequestFocus();
+  event_generator->PressAndReleaseKey(ui::VKEY_RETURN);
+  EXPECT_TRUE(GetAppListTestHelper()->IsInFolderView());
+
+  // An item inside the folder should be in focus. Move it to the left to put it
+  // before the folder icon.
+  event_generator->PressAndReleaseKey(ui::VKEY_LEFT,
+                                      ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  EXPECT_FALSE(GetAppListTestHelper()->IsInFolderView());
+  EXPECT_TRUE(test_api_->GetViewAtIndex(GridIndex(0, 0))->HasFocus());
+
+  // Open the folder again.
+  folder_view->RequestFocus();
+  event_generator->PressAndReleaseKey(ui::VKEY_RETURN);
+  EXPECT_TRUE(GetAppListTestHelper()->IsInFolderView());
+
+  // An item inside the folder should be in focus. Move it to the right to put
+  // it after/instead the folder icon. No crash happens.
+  event_generator->PressAndReleaseKey(ui::VKEY_RIGHT,
+                                      ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  EXPECT_FALSE(GetAppListTestHelper()->IsInFolderView());
+  EXPECT_TRUE(test_api_->GetViewAtIndex(GridIndex(0, 1))->HasFocus());
+}
+
 TEST_P(AppsGridViewTabletTest, TouchDragFlipToNextPage) {
   ASSERT_TRUE(paged_apps_grid_view_);
 
@@ -5202,7 +5235,7 @@ TEST_P(AppsGridViewClamshellTest,
   // that contains the options to sort is verified to be shown in apps grid
   // view. The menu option selecting is also simulated to ensure the sorting is
   // called. The actual sort algorithm is tested in
-  // chrome/browser/ui/app_list/app_list_sort_browsertest.cc.
+  // chrome/browser/ash/app_list/app_list_sort_browsertest.cc.
 
   model_->PopulateApps(1);
 
@@ -5373,7 +5406,7 @@ TEST_P(AppsGridViewClamshellAndTabletTest, ContextMenuOnFolderItemSortAllApps) {
   // that contains the options to sort is verified to be shown on folder app
   // list item view. The menu option selecting is also simulated to ensure the
   // sorting is called. The actual sort algorithm is tested in
-  // chrome/browser/ui/app_list/app_list_sort_browsertest.cc.
+  // chrome/browser/ash/app_list/app_list_sort_browsertest.cc.
 
   // Create a folder item and update the layout.
   model_->CreateAndPopulateFolderWithApps(2);

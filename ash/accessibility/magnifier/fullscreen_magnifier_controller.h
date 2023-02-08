@@ -10,7 +10,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/accessibility_controller_enums.h"
-#include "base/timer/timer.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/event_handler.h"
@@ -225,17 +224,16 @@ class ASH_EXPORT FullscreenMagnifierController
   bool ProcessGestures();
 
   // Moves the viewport when |point| is located within
-  // |x_panning_margin| and |y_panning_margin| to the edge of the visible
+  // |x_margin| and |y_margin| to the edge of the visible
   // window region. The viewport will be moved so that the |point| will be
-  // moved to the point where it has |x_target_margin| and |y_target_margin|
-  // to the edge of the visible region. If |reduce_bottom_margin| is true,
-  // then a reduced value will be used as the |y_panning_margin| and
+  // moved to the point where it has |x_margin| and |y_margin|
+  // to the edge of the visible region if possible (less if the mouse is closer
+  // to the edge of the screen). If |reduce_bottom_margin| is true,
+  // then a reduced value will be used as the |y_margin| and
   // |y_target_margin| for the bottom edge.
   void MoveMagnifierWindowFollowPoint(const gfx::Point& point,
-                                      int x_panning_margin,
-                                      int y_panning_margin,
-                                      int x_target_margin,
-                                      int y_target_margin,
+                                      int x_margin,
+                                      int y_margin,
                                       bool reduce_bottom_margin);
 
   // Moves the viewport to center |point| in magnifier screen.
@@ -245,10 +243,6 @@ class ASH_EXPORT FullscreenMagnifierController
   // than the viewport horizontally or vertically, the viewport will be moved
   // to center the |rect| in that dimension.
   void MoveMagnifierWindowFollowRect(const gfx::Rect& rect);
-
-  // Invoked when |move_magnifier_timer_| fires to move the magnifier window to
-  // follow the caret.
-  void OnMoveMagnifierTimer();
 
   // Target root window. This must not be NULL.
   aura::Window* root_window_;
@@ -305,9 +299,6 @@ class ASH_EXPORT FullscreenMagnifierController
   // cannot be used for gesture detection as they are changed if the controller
   // reacts to gestures.
   std::unique_ptr<ui::GestureProviderAura> gesture_provider_;
-
-  // Timer for moving magnifier window when it fires.
-  base::OneShotTimer move_magnifier_timer_;
 
   // Most recent caret position in |root_window_| coordinates.
   gfx::Point caret_point_;

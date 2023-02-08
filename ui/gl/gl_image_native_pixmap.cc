@@ -126,6 +126,40 @@ gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format) {
 
 }  // namespace
 
+scoped_refptr<GLImageNativePixmap> GLImageNativePixmap::Create(
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    scoped_refptr<gfx::NativePixmap> pixmap) {
+  return CreateForPlane(size, format, gfx::BufferPlane::DEFAULT,
+                        std::move(pixmap), gfx::ColorSpace());
+}
+
+scoped_refptr<GLImageNativePixmap> GLImageNativePixmap::CreateForPlane(
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    gfx::BufferPlane plane,
+    scoped_refptr<gfx::NativePixmap> pixmap,
+    const gfx::ColorSpace& color_space) {
+  auto image =
+      base::WrapRefCounted(new GLImageNativePixmap(size, format, plane));
+  if (!image->Initialize(std::move(pixmap), color_space)) {
+    return nullptr;
+  }
+  return image;
+}
+
+scoped_refptr<GLImageNativePixmap> GLImageNativePixmap::CreateFromTexture(
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    uint32_t texture_id) {
+  auto image = base::WrapRefCounted(
+      new GLImageNativePixmap(size, format, gfx::BufferPlane::DEFAULT));
+  if (!image->InitializeFromTexture(texture_id)) {
+    return nullptr;
+  }
+  return image;
+}
+
 GLImageNativePixmap::GLImageNativePixmap(const gfx::Size& size,
                                          gfx::BufferFormat format,
                                          gfx::BufferPlane plane)
@@ -137,7 +171,8 @@ GLImageNativePixmap::GLImageNativePixmap(const gfx::Size& size,
 
 GLImageNativePixmap::~GLImageNativePixmap() {}
 
-bool GLImageNativePixmap::Initialize(scoped_refptr<gfx::NativePixmap> pixmap) {
+bool GLImageNativePixmap::Initialize(scoped_refptr<gfx::NativePixmap> pixmap,
+                                     const gfx::ColorSpace& color_space) {
   DCHECK(!pixmap_);
   if (GLInternalFormat(format_) == GL_NONE) {
     LOG(ERROR) << "Unsupported format: " << gfx::BufferFormatToString(format_);
@@ -172,7 +207,7 @@ bool GLImageNativePixmap::Initialize(scoped_refptr<gfx::NativePixmap> pixmap) {
       // promoted to overlays). We'll need to revisit this once we plumb the
       // color space and range to DRM/KMS.
       attrs.push_back(EGL_YUV_COLOR_SPACE_HINT_EXT);
-      switch (color_space_.GetMatrixID()) {
+      switch (color_space.GetMatrixID()) {
         case gfx::ColorSpace::MatrixID::BT2020_NCL:
           attrs.push_back(EGL_ITU_REC2020_EXT);
           break;
@@ -181,7 +216,7 @@ bool GLImageNativePixmap::Initialize(scoped_refptr<gfx::NativePixmap> pixmap) {
       }
 
       attrs.push_back(EGL_SAMPLE_RANGE_HINT_EXT);
-      switch (color_space_.GetRangeID()) {
+      switch (color_space.GetRangeID()) {
         case gfx::ColorSpace::RangeID::FULL:
           attrs.push_back(EGL_YUV_FULL_RANGE_EXT);
           break;
@@ -238,7 +273,6 @@ bool GLImageNativePixmap::Initialize(scoped_refptr<gfx::NativePixmap> pixmap) {
                                 &attrs[0])) {
       return false;
     }
-    did_initialize_ = true;
   }
 
   pixmap_ = pixmap;
@@ -265,7 +299,6 @@ bool GLImageNativePixmap::InitializeFromTexture(uint32_t texture_id) {
                               nullptr)) {
     return false;
   }
-  did_initialize_ = true;
   return true;
 }
 
@@ -361,12 +394,10 @@ unsigned GLImageNativePixmap::GetDataType() {
 }
 
 bool GLImageNativePixmap::BindTexImage(unsigned target) {
-  DCHECK(did_initialize_);
   return GLImageEGL::BindTexImage(target);
 }
 
 bool GLImageNativePixmap::CopyTexImage(unsigned target) {
-  DCHECK(did_initialize_);
   if (egl_image_ != EGL_NO_IMAGE_KHR)
     return false;
 

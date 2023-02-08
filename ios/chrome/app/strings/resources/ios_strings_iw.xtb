@@ -125,6 +125,7 @@
 <translation id="1870148520156231997">הצגת הסיסמה</translation>
 <translation id="1872096359983322073">פנס</translation>
 <translation id="1891796056033961979">הסימניות, הסיסמאות, ההגדרות ונתונים נוספים זמינים במסך הזה.</translation>
+<translation id="1894023287452300670">כאן ניתן לעקוב אחר המחיר</translation>
 <translation id="1911619930368729126">‏העלאה אל Google Drive</translation>
 <translation id="1923342640370224680">בשעה האחרונה</translation>
 <translation id="1930989359703290198">הארגון מאפשר לך להיכנס לדפדפן רק באמצעות חשבונות מסוימים. החשבונות שאינם מותרים מוסתרים. <ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /></translation>
@@ -147,7 +148,9 @@
 <translation id="2074131957428911366">אפשר לבחור מה לסנכרן בכל שלב דרך <ph name="BEGIN_LINK" />ההגדרות<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">ביטול הפעולה</translation>
 <translation id="2080769225927880590">עליך להיכנס באמצעות חשבון תקין</translation>
+<translation id="2090878303988764231">כדי לנהל את התוכן המוצג, צריך להיכנס לחשבון</translation>
 <translation id="2103075008456228677">‏פתיחת history.google.com</translation>
+<translation id="21133533946938348">הצמדת כרטיסייה</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> פריטים הועברו</translation>
 <translation id="2122754583996902531">הדפדפן שלך מנוהל. <ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /></translation>
 <translation id="212623074644302906">יש לשאול אם להוסיף לרשימת הקריאה</translation>
@@ -189,6 +192,7 @@
 <translation id="2421044535038393232">המשך העריכה</translation>
 <translation id="2434405374328098816">כבר שמרת סיסמה עבור המשתמש "<ph name="USERNAME" />" לאתר <ph name="WEBSITE" /></translation>
 <translation id="2435457462613246316">הצגת סיסמה</translation>
+<translation id="2451654228769116489">הצמדת הכרטיסייה</translation>
 <translation id="2461070143328828326">הגדרות סיסמה</translation>
 <translation id="2469960372084740698">להשבית את 'גלישה בטוחה'?</translation>
 <translation id="2473876017985765807">כבר שמרת סיסמה לאתר <ph name="WEBSITE" /></translation>
@@ -286,6 +290,7 @@
 <translation id="3130863904455712965">היסטוריה ועוד</translation>
 <translation id="3131206671572504478">‏חסימת כל קובצי ה-cookie</translation>
 <translation id="313283613037595347">יצירת כרטיסיית מצב אנונימי חדשה.</translation>
+<translation id="3146109040683991651">‏הגדרת Chrome כדפדפן ברירת המחדל</translation>
 <translation id="3153862085237805241">שמירת כרטיס</translation>
 <translation id="3157387275655328056">הוספה לרשימת הקריאה</translation>
 <translation id="3157684681743766797">סימון הכול…</translation>
@@ -673,6 +678,7 @@
 <translation id="6059830886158432458">כאן אפשר לנהל את הסטוריז והפעילות שלך</translation>
 <translation id="6064824697233747382">לפי דרישת הארגון שלך, עליך להשבית את הסנכרון.</translation>
 <translation id="6066301408025741299">יש להקיש כדי לבטל.</translation>
+<translation id="6071409777669089905">ביטול הצמדת הכרטיסייה</translation>
 <translation id="60829778314739003">אישור והמשך</translation>
 <translation id="6084848228346514841">בחירת כרטיסיות</translation>
 <translation id="6103540626693881831">הצפנה במכשיר</translation>
@@ -973,6 +979,7 @@
 <translation id="8197543752516192074">תרגום הדף</translation>
 <translation id="8205564605687841303">ביטול</translation>
 <translation id="8206354486702514201">הגדרה זו נאכפת על ידי מנהל המערכת שלך.</translation>
+<translation id="821809831108207540">‏כדי להתאים אישית את הפיד ב-Discover ואת Chrome, צריך להיכנס לחשבון ולהפעיל את הסנכרון.</translation>
 <translation id="8225985093977202398">תמונות וקבצים במטמון</translation>
 <translation id="8237382152611443140">פותחים את הגדרות המילוי האוטומטי של סיסמאות</translation>
 <translation id="8261506727792406068">מחיקה</translation>
@@ -1100,6 +1107,7 @@
 <translation id="9219154867334666734">חיפוש כרטיסיות…</translation>
 <translation id="9223358826628549784">דוח הקריסה נשלח.</translation>
 <translation id="941747855997058526">בחירת סיסמה…</translation>
+<translation id="948048872540558976">יצירת כרטיסייה חדשה</translation>
 <translation id="952704832371081537">ביטול</translation>
 <translation id="953008885340860025">‏יצאת מהחשבון ב-Chrome</translation>
 <translation id="959066944189734975">בחרת לעקוב אחר <ph name="CHANNEL_NAME" /></translation>

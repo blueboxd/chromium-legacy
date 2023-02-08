@@ -255,6 +255,7 @@
 <translation id="1553358976309200471">Chrome ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ</translation>
 <translation id="1555130319947370107">ನೀಲಿ</translation>
 <translation id="1559447966090556585">ಅಧಿಸೂಚನೆಗಳನ್ನು ಪಡೆಯುವುದೇ?</translation>
+<translation id="1559486004335285648">ಪಾವತಿ ಮಾಹಿತಿಯನ್ನು ಆಟೋಫಿಲ್ ಮಾಡಿ</translation>
 <translation id="1559528461873125649">ಆ ರೀತಿಯ ಯಾವುದೇ ಫೈಲ್ ಅಥವಾ ಡೈರೆಕ್ಟರಿ ಇಲ್ಲ</translation>
 <translation id="1559572115229829303">&lt;p&gt;ನಿಮ್ಮ ಸಾಧನದ ದಿನಾಂಕ ಮತ್ತು ಸಮಯ (<ph name="DATE_AND_TIME" />) ತಪ್ಪಾಗಿರುವ ಕಾರಣ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ಗೆ ಖಾಸಗಿ ಸಂಪರ್ಕವನ್ನು ಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ.&lt;/p&gt;
 
@@ -362,6 +363,7 @@
 <translation id="1807246157184219062">ತಿಳಿ</translation>
 <translation id="1807528111851433570">ಪ್ರಾರಂಭಿಕ ಶೀಟ್</translation>
 <translation id="181000283860817563">ಹಲವು ಸೈಟ್‌ಗಳಲ್ಲಿ ಬೆಲೆಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ</translation>
+<translation id="1810391395243432441">ನಿಮ್ಮ ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಮೂಲಕ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ರಕ್ಷಿಸಿ</translation>
 <translation id="1812527064848182527">ಲ್ಯಾಂಡ್‌ಸ್ಕೇಪ್</translation>
 <translation id="1813414402673211292">ಬ್ರೌಸ್ ಆಗುತ್ತಿರುವ ಡಾಟಾವನ್ನು ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="182139138257690338">ಸ್ವಯಂಚಾಲಿತ ಡೌನ್‌ಲೋಡ್‌ಗಳು</translation>
@@ -381,6 +383,7 @@
 <translation id="1871208020102129563">.pac ಸ್ಕ್ರಿಪ್ಟ್ URL ಅಲ್ಲದೆ, ನಿಗಧಿತ ಪ್ರಾಕ್ಸಿ ಸರ್ವರ್‌ಗಳನ್ನು ಬಳಸಲು ಪ್ರಾಕ್ಸಿಯನ್ನು ಹೊಂದಿಸಲಾಗಿದೆ.</translation>
 <translation id="1871284979644508959">ಅಗತ್ಯವಿರುವ ಕ್ಷೇತ್ರ</translation>
 <translation id="1873899211667975540">ರಾಕ್ ಸಂಗೀತ</translation>
+<translation id="1874224422119691492"><ph name="SETTINGS" /> ನಲ್ಲಿ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಭರ್ತಿ ಮಾಡಲು ನಿಮ್ಮ ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಅನ್ನು ನೀವು ಬಳಸುತ್ತೀರಾ ಇಲ್ಲವೆ ಎಂಬುದನ್ನು ನೀವು ಬದಲಾಯಿಸಬಹುದು</translation>
 <translation id="1875025161375567525">ಫೋಟೋ ಟ್ರೇ</translation>
 <translation id="1875512691959384712">Google Forms</translation>
 <translation id="187918866476621466">ಆರಂಭಿಕ ಪುಟಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
@@ -412,7 +415,6 @@
 <translation id="1958218078413065209">ನಿಮ್ಮ ಅತಿ ಹೆಚ್ಚು ಸ್ಕೋರ್ <ph name="SCORE" /> ಆಗಿದೆ.</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />ನೀವು ಭೇಟಿ ನೀಡುವ ಕೆಲವೊಂದು ಪುಟಗಳ URL ಗಳು, ಸಿಸ್ಟಂಗೆ ಸಂಬಂಧಿಸಿದ ಸೀಮಿತ ಮಾಹಿತಿ ಹಾಗೂ ಪುಟದಲ್ಲಿನ ಕೆಲವು ವಿಷಯ<ph name="END_WHITEPAPER_LINK" /> ಮುಂತಾದವುಗಳನ್ನು Google ಗೆ ಕಳುಹಿಸುವ ಮೂಲಕ ಎಲ್ಲರಿಗಾಗಿ ವೆಬ್‌ನ ಸುರಕ್ಷತೆಯನ್ನು ಸುಧಾರಿಸಲು ಸಹಾಯ ಮಾಡಿ. <ph name="BEGIN_PRIVACY_PAGE_LINK" />ಗೌಪ್ಯತೆ ನೀತಿ<ph name="END_PRIVACY_PAGE_LINK" /></translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು</translation>
-<translation id="1971033026002113380">TouchID ಮೂಲಕ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ರಕ್ಷಿಸಿ</translation>
 <translation id="1973335181906896915">ಅನುಕ್ರಮಗೊಳಿಸುವಿಕೆಯ ದೋಷ</translation>
 <translation id="1974060860693918893">ಸುಧಾರಿತ</translation>
 <translation id="1975457531113383421">ಇನ್‌ಪುಟ್ ಟ್ರೇ</translation>
@@ -744,10 +746,10 @@
 <translation id="2876949457278336305"><ph name="MANAGE_SECURITY_SETTINGS_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನಿಮ್ಮ ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್ ಮತ್ತು ಇನ್ನಷ್ಟನ್ನು ನಿರ್ವಹಿಸಲು Tab ಒತ್ತಿ, ನಂತರ Enter ಒತ್ತಿರಿ</translation>
 <translation id="2878197950673342043">ಪೋಸ್ಟರ್ ಮಾದರಿಯಲ್ಲಿ ಮಡಿಸಿ</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2879694782644540289">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಭರ್ತಿ ಮಾಡಲು ನಿಮ್ಮ ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಅನ್ನು ಬಳಸಿ</translation>
 <translation id="2881276955470682203">ಕಾರ್ಡ್‌ ಉಳಿಸುವುದೇ?</translation>
 <translation id="2882949212241984732">ಡಬಲ್-ಗೇಟ್ ಮಾದರಿಯಲ್ಲಿ ಮಡಿಸಿ</translation>
 <translation id="2893773853358652045">ನಾಲ್ಕನೇ ರೋಲ್</translation>
-<translation id="289834758818479772">ನೀವು ಈ ಸಾಧನವನ್ನು ಇತರರೊಂದಿಗೆ ಹಂಚಿಕೊಂಡರೆ, ನೀವು ಉಳಿಸಿದ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಬಳಸಿದಾಗಲೆಲ್ಲಾ ಇದು ನೀವೇ ಎಂದು ದೃಢೀಕರಿಸಲು ನೀವು TouchID ಅನ್ನು ಆನ್ ಮಾಡಬಹುದು</translation>
 <translation id="2900528713135656174">ಈವೆಂಟ್ ರಚಿಸು</translation>
 <translation id="2903493209154104877">ವಿಳಾಸಗಳು</translation>
 <translation id="290376772003165898"><ph name="LANGUAGE" /> ನಲ್ಲಿನ ಪುಟ ಇಲ್ಲವೇ?</translation>
@@ -1000,6 +1002,7 @@
 <translation id="3532844647053365774"><ph name="HOST" /> ನಿಮ್ಮ ಮೈಕ್ರೊಫೋನ್ ಅನ್ನು ಬಳಸಲು ಬಯಸುತ್ತದೆ</translation>
 <translation id="3533328374079021623">ಮೇಲ್‌ಬಾಕ್ಸ್ 5</translation>
 <translation id="3537165859691846083">Letter Plus</translation>
+<translation id="3542628208405253498">ಕಾರ್ಡ್ ಚಿತ್ರ</translation>
 <translation id="3542768452570884558">ಹೊಸ ವಿಂಡೋದಲ್ಲಿ ಲಿಂಕ್ ತೆರೆಯಿರಿ</translation>
 <translation id="3547746132308051926">20 x 24 ಇಂಚು</translation>
 <translation id="3550112004925580947">ಹಾಸ್ಪಿಟಾಲಿಟಿ ಉದ್ಯಮ</translation>
@@ -1062,7 +1065,6 @@
 <translation id="3678529606614285348">ಪುಟವನ್ನು ಹೊಸ ಅದೃಶ್ಯ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ (Ctrl-Shift-N)</translation>
 <translation id="3681007416295224113">ಪ್ರಮಾಣಪತ್ರ ಮಾಹಿತಿ</translation>
 <translation id="3693327506115126094">ಯಾವ ರೀತಿಯಲ್ಲಿ ಇದು ನೀವೇ ಎಂಬುದನ್ನು ದೃಢೀಕರಿಸಲು ನೀವು ಬಯಸುತ್ತೀರಿ ಎಂಬುದನ್ನು ಆರಿಸಿ</translation>
-<translation id="3699374065820972102">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಭರ್ತಿ ಮಾಡುವುದಕ್ಕಾಗಿ TouchID ಆನ್ ಆಗಿದೆ</translation>
 <translation id="3701427423622901115">ಮರುಹೊಂದಿಸುವಿಕೆಯನ್ನು ಅಂಗೀಕರಿಸಲಾಗಿದೆ.</translation>
 <translation id="3704162925118123524">ನೀವು ಬಳಸುತ್ತಿರುವ ನೆಟ್‌ವರ್ಕ್‌ನ ಲಾಗಿನ್ ಪುಟಕ್ಕೆ ಭೇಟಿ ನೀಡಬೇಕಾದ ಅಗತ್ಯವಿದೆ.</translation>
 <translation id="3705189812819839667"><ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -1090,6 +1092,7 @@
 <translation id="3745099705178523657">ನೀವು ಖಚಿತಪಡಿಸಿದ ನಂತರ, ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿನ ಕಾರ್ಡ್ ವಿವರಗಳನ್ನು ಈ ಸೈಟ್ ಜೊತೆಗೆ ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತದೆ.</translation>
 <translation id="3748148204939282805"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ನಲ್ಲಿನ ಆಕ್ರಮಣಕಾರರು ಸಾಫ್ಟ್‌ವೇರ್ ಸ್ಥಾಪಿಸುವಿಕೆ ಅಥವಾ ನಿಮ್ಮ ವೈಯಕ್ತಿಕ ಮಾಹಿತಿಯನ್ನು ಬಹಿರಂಗ ಪಡಿಸುವಂತಹ ಅಪಾಯಕಾರಿಯಾಗಿ ಏನಾದರೂ ಮಾಡುವಂತಹ ಮೋಸವನ್ನು ಮಾಡಬಹುದು (ಉದಾಹರಣೆಗೆ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು, ಫೋನ್‌ ಸಂಖ್ಯೆಗಳು ಅಥವಾ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್‌ಗಳು). <ph name="BEGIN_LEARN_MORE_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3748912308089554501">ವಿಮಾನಯಾನ ಉದ್ಯಮ</translation>
+<translation id="3752543821772132562"><ph name="POLICY_NAME" /> ಅನ್ನು ಸೆಟ್ ಮಾಡಿಲ್ಲದ ಕಾರಣ ನಿರ್ಲಕ್ಷಿಸಲಾಗಿದೆ.</translation>
 <translation id="3754210790023674521">ಚಿತ್ರದಲ್ಲಿ ಚಿತ್ರ ಮೋಡ್‌ನಿಂದ ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="3759461132968374835">ಇತ್ತೀಚೆಗೆ ನೀವು ಯಾವುದೇ ಕ್ರ‍್ಯಾಶ್‌ಗಳನ್ನು ವರದಿ ಮಾಡಿಲ್ಲ. ಕ್ರ‍್ಯಾಶ್‌‌ ಅನ್ನು ವರದಿಮಾಡುವಿಕೆಯನ್ನು ಉಂಟಾಗಿರುವ  ಕ್ರ‍್ಯಾಶ್‌ಗಳು ಇಲ್ಲಿ ಗೋಚರಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="3760561303380396507">CVC ಬದಲಿಗೆ Windows Hello ಬಳಸುವಿರಾ?</translation>
@@ -1177,7 +1180,6 @@
 <translation id="401170183602135785">ಎನ್ವಲಪ್ C6</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF ಡಾಕ್ಯುಮೆಂಟ್, {COUNT} ಪುಟವನ್ನು ಒಳಗೊಂಡಿದೆ}one{PDF ಡಾಕ್ಯುಮೆಂಟ್, {COUNT} ಪುಟಗಳನ್ನು ಒಳಗೊಂಡಿದೆ}other{PDF ಡಾಕ್ಯುಮೆಂಟ್, {COUNT} ಪುಟಗಳನ್ನು ಒಳಗೊಂಡಿದೆ}}</translation>
 <translation id="4023431997072828269">ಸುರಕ್ಷಿತವಲ್ಲದ ಕನೆಕ್ಷನ್ ಅನ್ನು ಬಳಸಿ ಈ ಫಾರ್ಮ್ ಅನ್ನು ಸಲ್ಲಿಸುತ್ತಿರುವುದರಿಂದ, ನಿಮ್ಮ ಮಾಹಿತಿಯು ಇತರರಿಗೆ ಗೋಚರಿಸುತ್ತದೆ.</translation>
-<translation id="4024923292610332139">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಭರ್ತಿ ಮಾಡುವುದಕ್ಕಾಗಿ TouchID ಅನ್ನು ಆಫ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ</translation>
 <translation id="4025913568718019429">Google ನ ಗೌಪ್ಯತೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ, ನಿಮ್ಮ Google ಖಾತೆಯ ಗೌಪ್ಯತೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ಭೇಟಿ ನೀಡಲು Enter ಒತ್ತಿ</translation>
 <translation id="4030383055268325496">&amp;ಸೇರಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="4031179711345676612">ಮೈಕ್ರೊಫೋನ್ ಅನುಮತಿಸಲಾಗಿದೆ</translation>
@@ -1397,6 +1399,7 @@
 <translation id="4541810033354695636">ಆಗ್‌ಮೆಂಟೆಡ್ ರಿಯಾಲಿಟಿ</translation>
 <translation id="4542971377163063093">ಟ್ರೇ 6</translation>
 <translation id="455113658016510503">A9</translation>
+<translation id="4556069465387849460">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಭರ್ತಿ ಮಾಡಲು ನಿಮ್ಮ ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಬಳಸುತ್ತಿದ್ದೀರಿ</translation>
 <translation id="4558551763791394412">ನಿಮ್ಮ ವಿಸ್ತರಣೆಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="4566017918361049074">ಹೊರಾಂಗಣ</translation>
 <translation id="4567686777917670400">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿಮ್ಮ ಬ್ರೌಸರ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ದೂರದಿಂದಲೇ ಬದಲಾಯಿಸಬಹುದು. ಈ ಸಾಧನದಲ್ಲಿನ ಚಟುವಟಿಕೆಯನ್ನು Chromium ನ ಹೊರಗೆ ಸಹ ನಿರ್ವಹಿಸಬಹುದು. <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" /></translation>
@@ -1539,7 +1542,6 @@
 <translation id="4900217275619098670">ಒಂಭತ್ತನೇ ರೋಲ್</translation>
 <translation id="4901778704868714008">ಉಳಿಸಿ...</translation>
 <translation id="4905659621780993806">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು <ph name="DATE" /> ರಂದು <ph name="TIME" /> ಸಮಯಕ್ಕೆ ನಿಮ್ಮ ಸಾಧನವನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಮರುಪ್ರಾರಂಭಿಸುತ್ತಾರೆ. ನಿಮ್ಮ ಸಾಧನ ಮರುಪ್ರಾರಂಭವಾಗುವ ಮೊದಲು ಯಾವುದೇ ತೆರೆದಿರುವ ಐಟಂಗಳನ್ನು ಉಳಿಸಿ.</translation>
-<translation id="4911007278801291296">ನೀವು <ph name="SETTINGS" /> ನಲ್ಲಿ TouchID ಅನ್ನು ಆನ್ ಅಥವಾ ಆಫ್ ಮಾಡಬಹುದು</translation>
 <translation id="4913987521957242411">ಮೇಲಿನ ಎಡಭಾಗದಲ್ಲಿ ತೂತು ಮಾಡಿ</translation>
 <translation id="4918221908152712722"><ph name="APP_NAME" /> ಆ್ಯಪ್ ಅನ್ನು ಇನ್‌ಸ್ಟಾಲ್‌ ಮಾಡಿ (ಡೌನ್‌ಲೋಡ್‌ ಮಾಡುವ ಅಗತ್ಯವಿಲ್ಲ)</translation>
 <translation id="4923459931733593730">ಪಾವತಿ</translation>
@@ -1721,6 +1723,7 @@
 <translation id="5334013548165032829">ವಿವರವಾದ ಸಿಸ್ಟಂ ಲಾಗ್‌ಗಳು</translation>
 <translation id="5334145288572353250">ವಿಳಾಸವನ್ನು ಉಳಿಸಬೇಕೆ?</translation>
 <translation id="5335920952954443287">ಹೃದಯ ಬಡಿತ</translation>
+<translation id="5337569431717511221">Chrome ಅನ್ನು ಡೀಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಬಟನ್ ಆಗಿ ಸೆಟ್ ಮಾಡಿ ಮತ್ತು Chrome ಅನ್ನು ಸಿಸ್ಟಂನ ಡೀಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿ ಸೆಟ್ ಮಾಡಲು Enter ಒತ್ತಿರಿ</translation>
 <translation id="5340250774223869109">ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="534295439873310000">NFC ಸಾಧನಗಳು</translation>
 <translation id="5344579389779391559">ಈ ಪುಟವು ನಿಮಗೆ ಶುಲ್ಕ ವಿಧಿಸಲು ಪ್ರಯತ್ನಿಸಬಹುದು</translation>
@@ -1752,7 +1755,6 @@
 <translation id="5426179911063097041">ನಿಮಗೆ ಅಧಿಸೂಚನೆಗಳನ್ನು ಕಳುಹಿಸಲು <ph name="SITE" /> ಬಯಸುತ್ತದೆ</translation>
 <translation id="5428105026674456456">ಸ್ಪ್ಯಾನಿಶ್</translation>
 <translation id="5430298929874300616">ಬುಕ್‌ಮಾರ್ಕ್‌ ತೆಗೆದುಹಾಕಿ</translation>
-<translation id="5434423669266814150">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಭರ್ತಿ ಮಾಡುವುದಕ್ಕಾಗಿ TouchID ಅನ್ನು ಆನ್ ಮಾಡಿ</translation>
 <translation id="5443468954631487277">ಹಿಮ್ಮುಖ ಆರ್ಡರ್ ಮುಖ ಮೇಲಕ್ಕೆ</translation>
 <translation id="5447765697759493033">ಈ ಸೈಟ್ ಅನ್ನು ಅನುವಾದಿಸಲಾಗುವುದಿಲ್ಲ</translation>
 <translation id="5452270690849572955">ಈ <ph name="HOST_NAME" /> ಪುಟ ಕಂಡುಬರುವುದಿಲ್ಲ</translation>
@@ -2415,6 +2417,7 @@
 <translation id="7199278868241956094">Oficio</translation>
 <translation id="7201591969684833065">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಇವುಗಳನ್ನು ನೋಡಬಹುದು:</translation>
 <translation id="7202217080450895452"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, ಖಾಸಗಿಯಾಗಿ ಬ್ರೌಸ್ ಮಾಡಲು ಹೊಸ ಅಜ್ಞಾತ ಟ್ಯಾಬ್ ಒಂದನ್ನು ತೆರೆಯಲು, Tab ಒತ್ತಿರಿ, ನಂತರ Enter ಒತ್ತಿರಿ</translation>
+<translation id="7203375778433816396">Chrome ಅನ್ನು ಸಿಸ್ಟಂನ ಡೀಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿ ಸೆಟ್ ಮಾಡಿ</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> ಭದ್ರತೆ ಮಾನದಂಡಗಳನ್ನು ಅನುಸರಿಸುತ್ತಿಲ್ಲ.</translation>
 <translation id="7210993021468939304">ಕಂಟೇನರ್‌ನಲ್ಲಿ Linux ಚಟುವಟಿಕೆ ಮತ್ತು ಕಂಟೇನರ್‌ನಲ್ಲಿ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಬಹುದಾದ ಮತ್ತು ರನ್ ಮಾಡಬಹುದಾದ Linux ಆ್ಯಪ್‌ಗಳು</translation>
 <translation id="721197778055552897">ಈ ತೊಂದರೆಯ ಬಗ್ಗೆ <ph name="BEGIN_LINK" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK" />.</translation>
@@ -2561,6 +2564,7 @@
 <translation id="7537536606612762813">ಕಡ್ಡಾಯ</translation>
 <translation id="7542403920425041731">ನೀವು ಒಮ್ಮೆ ಖಚಿತಪಡಿಸಿದರೆ, ನಿಮ್ಮ ಕಾರ್ಡ್ ವಿವರಗಳನ್ನು ಈ ಸೈಟ್ ಜೊತೆಗೆ ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತದೆ.</translation>
 <translation id="7542995811387359312">ಈ ಫಾರ್ಮ್ ಸುರಕ್ಷಿತವಾದ ಸಂಪರ್ಕವನ್ನು ಬಳಸುತ್ತಿಲ್ಲವಾದ ಕಾರಣ ಸ್ವಯಂಚಾಲಿತ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಭರ್ತಿ ಮಾಡುವಿಕೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
+<translation id="7546409722674205727"><ph name="APP_NAME" /> ಪ್ರಾರಂಭವಾಗುತ್ತಿದೆ</translation>
 <translation id="7548892272833184391">ಸಂಪರ್ಕ ದೋಷಗಳನ್ನು ಸರಿಪಡಿಸಿ</translation>
 <translation id="7549584377607005141">ಈ ವೆಬ್‌ಪುಟವು ಸರಿಯಾಗಿ ಪ್ರದರ್ಶನಗೊಳ್ಳಲು ಈ ಮೊದಲು ನೀವು ನಮೂದಿಸಿದ ಡೇಟಾದ ಅಗತ್ಯವಿದೆ. ನೀವು ಈ ಡೇಟಾವನ್ನು ಮತ್ತೆ ಕಳುಹಿಸಬಹುದು, ಆದರೆ ಹಾಗೆ ಮಾಡುವುದರಿಂದ ಈ ಪುಟವು ಈ ಮೊದಲು ಪೂರೈಸಿದ ಯಾವುದೇ ಕ್ರಿಯೆಯನ್ನು ನೀವು ಪುನರಾವರ್ತಿಸುತ್ತೀರಿ.</translation>
 <translation id="7550637293666041147">ನಿಮ್ಮ ಸಾಧನದ ಬಳಕೆದಾರರ ಹೆಸರು ಮತ್ತು Chrome ಬಳಕೆದಾರರ ಹೆಸರು</translation>
@@ -2714,6 +2718,7 @@
 <translation id="7942349550061667556">ಕೆಂಪು</translation>
 <translation id="7943397946612013052">ಡೌನ್‌ಲೋಡ್ ಮಾಡುವುದನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
 <translation id="7943893128817522649">ಹಲವಾರು ಫೈಲ್‌ಗಳನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ಕೇಳಬಹುದು</translation>
+<translation id="7946724693008564269">ಪತ್ತೆಯಾದ ಭಾಷೆ</translation>
 <translation id="7947285636476623132">ನಿಮ್ಮ ಮುಕ್ತಾಯ ವರ್ಷವನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ</translation>
 <translation id="7947813448670013867"><ph name="SEE_CHROME_TIPS_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome ಫೀಚರ್‌ಗಳ ಕುರಿತು ತಿಳಿಯಲು Tab ಒತ್ತಿ, ನಂತರ Enter ಒತ್ತಿ</translation>
 <translation id="7950027195171824198">Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನಿಮ್ಮ ಕುಕೀ ಆದ್ಯತೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ</translation>
@@ -2746,6 +2751,7 @@
 <translation id="8009843239480947060">10 x 11 ಇಂಚು</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{ಈ ಕಾರ್ಡ್ ಮತ್ತು ಅದರ ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸವನ್ನು ಉಳಿಸಲಾಗುತ್ತದೆ. ನೀವು <ph name="USER_EMAIL" /> ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿದಾಗ ಅದನ್ನು ಬಳಸಲು ನಿಮಗೆ ಸಾಧ್ಯವಾಗುತ್ತದೆ.}one{ಈ ಕಾರ್ಡ್‌ಗಳು ಮತ್ತು ಅವುಗಳ ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸಗಳನ್ನು ಉಳಿಸಲಾಗುತ್ತದೆ. ನೀವು <ph name="USER_EMAIL" /> ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿದಾಗ ಅವುಗಳನ್ನು ಬಳಸಲು ನಿಮಗೆ ಸಾಧ್ಯವಾಗುತ್ತದೆ.}other{ಈ ಕಾರ್ಡ್‌ಗಳು ಮತ್ತು ಅವುಗಳ ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸಗಳನ್ನು ಉಳಿಸಲಾಗುತ್ತದೆ. ನೀವು <ph name="USER_EMAIL" /> ಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿದಾಗ ಅವುಗಳನ್ನು ಬಳಸಲು ನಿಮಗೆ ಸಾಧ್ಯವಾಗುತ್ತದೆ.}}</translation>
 <translation id="8019861005170389898"><ph name="TRADITIONAL_TEXT" /> (<ph name="ADDITIONAL_TEXT" />)</translation>
+<translation id="8023231537967344568"><ph name="SET_CHROME_AS_DEFAULT_BROWSER_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome ಅನ್ನು ಸಿಸ್ಟಂನ ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿ ಸೆಟ್ ಮಾಡಲು ಟ್ಯಾಬ್ ಒತ್ತಿ ನಂತರ Enter ಬಟನ್ ಒತ್ತಿರಿ</translation>
 <translation id="8025119109950072390">ಈ ಸೈಟ್‌ನಲ್ಲಿನ ಆಕ್ರಮಣಕಾರರು ಸಾಫ್ಟ್‌ವೇರ್ ಸ್ಥಾಪಿಸುವಿಕೆ ಅಥವಾ ನಿಮ್ಮ ವೈಯಕ್ತಿಕ ಮಾಹಿತಿಯನ್ನು ಬಹಿರಂಗ ಪಡಿಸುವಂತಹ ಅಪಾಯಕಾರಿಯಾಗಿ ಏನಾದರೂ ಮಾಡುವಂತಹ ಮೋಸವನ್ನು ಮಾಡಬಹುದು (ಉದಾಹರಣೆಗೆ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು, ಫೋನ್‌ ಸಂಖ್ಯೆಗಳು ಅಥವಾ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್‌ಗಳು).</translation>
 <translation id="8026334261755873520">ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="8027077570865220386">ಟ್ರೇ 15</translation>
@@ -2885,6 +2891,7 @@
 <translation id="8355270400102541638">ಸ್ಥಳೀಯ ಕ್ರ್ಯಾಶ್‌ನ ಸಂದರ್ಭ:</translation>
 <translation id="8363502534493474904">ಏರ್‌ಪ್ಲೇನ್ ಮೋಡ್ ಆಫ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="8364627913115013041">ಹೊಂದಿಸಿಲ್ಲ.</translation>
+<translation id="836616551641291797">ನಿಮ್ಮ ಬ್ರೌಸರ್ ಅನ್ನು ಹೇಗೆ ನಿರ್ವಹಿಸಲಾಗುತ್ತದೆ ಎಂಬುದರ ಕುರಿತು ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>
 <translation id="8368001212524806591">ಬೆಲೆ ಟ್ರ್ಯಾಕ್ ಮಾಡಿ</translation>
 <translation id="8368027906805972958">ಅಪರಿಚಿತ ಅಥವಾ ಬೆಂಬಲಿತವಲ್ಲದ ಸಾಧನ (<ph name="DEVICE_ID" />)</translation>
 <translation id="8368476060205742148">Google Play ಸೇವೆಗಳು</translation>
@@ -2897,6 +2904,7 @@
 <translation id="8396522675989118466">ಇದು <ph name="SIDE_OF_CARD" /> <ph name="NUMBER_OF_DIGITS" /> ಅಂಕಿಯ ಕೋಡ್ ಆಗಿದೆ</translation>
 <translation id="8398790343843005537">ನಿಮ್ಮ ಫೋನ್‌ ಹುಡುಕಿ</translation>
 <translation id="8405579342203358118">Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನೀವು ಯಾವ ಮಾಹಿತಿಯನ್ನು ಸಿಂಕ್ ಮಾಡುತ್ತೀರಿ ಎಂಬುದನ್ನು ನಿರ್ವಹಿಸಿ</translation>
+<translation id="8406071103346257942">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಭರ್ತಿ ಮಾಡಲು ನಿಮ್ಮ ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಬಳಸುವುದನ್ನು ನಿಲ್ಲಿಸಿ</translation>
 <translation id="8409413588194360210">ಪಾವತಿ ಹ್ಯಾಂಡ್‌ಲರ್‌ಗಳು</translation>
 <translation id="8412145213513410671">(<ph name="CRASH_COUNT" />) ಕ್ರ‍್ಯಾಶ್‌ಗಳು </translation>
 <translation id="8412392972487953978">ನೀವು ಒಂದೇ ರೀತಿಯ ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ಎರಡು ಬಾರಿ ನಮೂದಿಸಬೇಕು.</translation>
@@ -3166,6 +3174,7 @@
 <translation id="9128016270925453879">ನೀತಿಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="9128870381267983090">ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸು</translation>
 <translation id="9131119348384879525">ಗೌಪ್ಯ ವಿಷಯವನ್ನು ಕ್ಯಾಪ್ಚರ್ ಮಾಡಬೇಕೇ?</translation>
+<translation id="9133985615769429248">ನೀವು ಈ ಸಾಧನವನ್ನು ಇತರರ ಜೊತೆಗೆ ಹಂಚಿಕೊಂಡರೆ, ನೀವು ಉಳಿಸಿದ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಬಳಸಿದಾಗಲೆಲ್ಲಾ ಇದು ನೀವೇ ಎಂದು ಪರಿಶೀಲಿಸಲು ನಿಮ್ಮ ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಅನ್ನು ನೀವು ಬಳಸಬಹುದು</translation>
 <translation id="9136861683332321024">ಐಷಾರಾಮಿ ವಾಹನಗಳು</translation>
 <translation id="9137013805542155359">ಮೂಲವನ್ನು ತೋರಿಸಿ</translation>
 <translation id="9138037198177304356">ಅಧಿಸೂಚನೆಗಳನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ</translation>

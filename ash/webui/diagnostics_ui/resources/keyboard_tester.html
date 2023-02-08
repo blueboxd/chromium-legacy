@@ -1,13 +1,13 @@
 <style include="diagnostics-shared">
   @media (min-width: 600px) {
     :host {
-      --cr-dialog-width: 416px;
+      --cr-dialog-width: 504px;
     }
   }
 
   @media (min-width: 768px) {
     :host {
-      --cr-dialog-width: 512px;
+      --cr-dialog-width: 636px;
     }
   }
 
@@ -55,7 +55,7 @@
   }
 
   #diagram-border {
-    border: 1px solid var(--cros-icon-color-prominent);
+    border: 1px solid var(--cros-text-color-selection);
     border-radius: 8px;
     padding: 6px;
   }
@@ -80,7 +80,7 @@
   }
 
   cr-toast iron-icon {
-    --iron-icon-fill-color: var(--cros-text-color-prominent);
+    --iron-icon-fill-color: var(--cros-color-prominent-inverted);
     margin-inline-end: 12px;
   }
 
@@ -95,9 +95,9 @@
 
   #shortcutKeyAlt,
   #shortcutKeyEsc {
-    border: 1px solid var(--cros-color-prominent);
+    border: 1px solid var(--cros-text-color-selection);
     border-radius: 10px;
-    color: var(--cros-button-label-color-secondary);
+    color: var(--cros-text-color-selection);
     font-family: var(--diagnostics-roboto-font-family);
     font-size: 13px;
     font-weight: var(--diagnostics-medium-font-weight);

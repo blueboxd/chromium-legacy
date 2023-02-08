@@ -85,12 +85,12 @@
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/components/settings/timezone_settings.h"
+#include "chromeos/ash/components/system/fake_statistics_provider.h"
 #include "chromeos/ash/services/cros_healthd/public/cpp/fake_cros_healthd.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
-#include "chromeos/system/fake_statistics_provider.h"
 #include "components/account_id/account_id.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -894,7 +894,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     // Use FakeUpdateEngineClient.
     update_engine_client_ = ash::UpdateEngineClient::InitializeFakeForTest();
 
-    chromeos::CrasAudioHandler::InitializeForTesting();
+    ash::CrasAudioHandler::InitializeForTesting();
     ash::UserDataAuthClient::InitializeFake();
     chromeos::PowerManagerClient::InitializeFake();
     ash::AttestationClient::InitializeFake();
@@ -923,7 +923,7 @@ class DeviceStatusCollectorTest : public testing::Test {
     ash::AttestationClient::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
     ash::UserDataAuthClient::Shutdown();
-    chromeos::CrasAudioHandler::Shutdown();
+    ash::CrasAudioHandler::Shutdown();
     ash::UpdateEngineClient::Shutdown();
     ash::KioskAppManager::Shutdown();
     ash::cros_healthd::FakeCrosHealthd::Shutdown();
@@ -2913,7 +2913,7 @@ TEST_F(DeviceStatusCollectorTest, TestSoundVolume) {
   const int kCustomVolume = 42;
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       ash::kReportDeviceAudioStatus, true);
-  chromeos::CrasAudioHandler::Get()->SetOutputVolumePercent(kCustomVolume);
+  ash::CrasAudioHandler::Get()->SetOutputVolumePercent(kCustomVolume);
   GetStatus();
   EXPECT_EQ(kCustomVolume, device_status_.sound_volume());
 }
@@ -3834,8 +3834,6 @@ struct FakeNetworkState {
 // by convention shill will not report a signal strength of 0 for a visible
 // network, so we use 1 below.
 static const FakeNetworkState kFakeNetworks[] = {
-    {"offline", "/device/wifi", shill::kTypeWifi, 35, -72, shill::kStateOffline,
-     em::NetworkState::OFFLINE, "", "", true},
     {"ethernet", "/device/ethernet", shill::kTypeEthernet, 0, 0,
      shill::kStateOnline, em::NetworkState::ONLINE, "192.168.0.1", "8.8.8.8",
      true},
@@ -3864,8 +3862,8 @@ static const FakeNetworkState kUnconfiguredNetwork = {"unconfigured",
                                                       shill::kTypeWifi,
                                                       35,
                                                       -85,
-                                                      shill::kStateOffline,
-                                                      em::NetworkState::OFFLINE,
+                                                      shill::kStateIdle,
+                                                      em::NetworkState::IDLE,
                                                       "",
                                                       ""};
 

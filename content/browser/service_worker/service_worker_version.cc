@@ -1094,6 +1094,11 @@ void ServiceWorkerVersion::Doom() {
       stop_when_devtools_detached_ = true;
     }
   }
+
+  // If we abort before transferring |main_script_load_params_| to the remote
+  // worker service, we need to release it to avoid creating a reference loop
+  // between ServiceWorker(New|Updated)ScriptLoader and this class.
+  main_script_load_params_.reset();
 }
 
 void ServiceWorkerVersion::InitializeGlobalScope() {
@@ -1483,6 +1488,12 @@ void ServiceWorkerVersion::GetClient(const std::string& client_uuid,
 
 void ServiceWorkerVersion::GetClientInternal(const std::string& client_uuid,
                                              GetClientCallback callback) {
+  if (!context_) {
+    // It is shutting down, so resolve the promise to undefined in this case.
+    std::move(callback).Run(nullptr);
+    return;
+  }
+
   ServiceWorkerContainerHost* container_host =
       context_->GetContainerHostByClientID(client_uuid);
   if (!container_host || !container_host->is_execution_ready()) {

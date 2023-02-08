@@ -128,6 +128,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="3140883423282498090">Vos modifications seront appliquées au prochain redémarrage de Google Chrome.</translation>
 <translation id="3149510190863420837">Applications Chrome</translation>
 <translation id="3169523567916669830">Pendant les essais, vous pouvez voir et retirer les sujets d'intérêt que les sites utilisent pour vous montrer des annonces. Chrome estime vos centres d'intérêt en fonction de votre historique de navigation récent.</translation>
+<translation id="3211604354460514046">{NUM_DEVICES,plural, =1{Google Chrome est connecté à un appareil HID}one{Google Chrome est connecté à un appareil HID}other{Google Chrome est connecté à des appareils HID}}</translation>
 <translation id="3245429137663807393">Si vous partagez aussi les rapports d'utilisation de Chrome, ceux-ci incluent les URL que vous consultez</translation>
 <translation id="3282568296779691940">Connexion à Chrome</translation>
 <translation id="3286538390144397061">Redémarrer maintenant</translation>
@@ -277,7 +278,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="6412673304250309937">Il vérifie les URL en fonction d'une liste de sites non sécuritaires stockée dans Chrome. Si un site tente de voler votre mot de passe ou si vous téléchargez un fichier dangereux, Chrome peut également envoyer les URL concernées, y compris des extraits du contenu de pages, à la navigation sécurisée.</translation>
 <translation id="6418662306461808273">Passer au profil Chrome existant?</translation>
 <translation id="6506909944137591434">Chrome requiert l'autorisation d'accéder à l'appareil photo pour créer une carte 3D de votre environnement</translation>
-<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome pour les concepteurs</translation>
+<translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome pour les développeurs</translation>
 <translation id="659498884637196217">Dans le gestionnaire de mots de passe Google sur cet appareil</translation>
 <translation id="6632473616050862500">Chrome OS Flex fonctionne grâce à d'autres <ph name="BEGIN_LINK_CROS_OSS" />logiciels libres<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="6676384891291319759">Accéder à Internet</translation>

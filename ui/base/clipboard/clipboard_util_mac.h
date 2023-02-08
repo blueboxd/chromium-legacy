@@ -7,12 +7,19 @@
 
 #import <AppKit/AppKit.h>
 
+#include <vector>
+
 #include "base/component_export.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
+#include "ui/base/clipboard/file_info.h"
 
 namespace ui {
+
+// A publicly-used UTI for the name of a URL. It really should be in a system
+// header but isn't.
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD) extern NSString* const kUTTypeURLName;
 
 class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) UniquePasteboard
     : public base::RefCounted<UniquePasteboard> {
@@ -50,6 +57,10 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardUtil {
   // url NSPasteboardItem.
   static NSString* GetTitleFromPasteboardURL(NSPasteboard* pboard);
   static NSString* GetURLFromPasteboardURL(NSPasteboard* pboard);
+
+  // Returns the UTI of a pasteboard type.
+  static NSString* UTIForPasteboardType(NSString* type);
+  static NSString* UTIForWebURLsAndTitles();
 
   // For each pasteboard type in |item| that is not in |pboard|, add the type
   // and its associated data.

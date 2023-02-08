@@ -201,7 +201,17 @@ enum class VideoCaptureError {
   kScreenCaptureKitFailedStopCapture = 134,
   kScreenCaptureKitStreamError = 135,
   kScreenCaptureKitFailedToFindSCDisplay = 136,
-  kMaxValue = 136
+  kVideoCaptureControllerUnsupportedPixelFormat = 137,
+  kVideoCaptureControllerInvalid = 138,
+  kVideoCaptureDeviceFactoryChromeOSCreateDeviceFailed = 139,
+  kVideoCaptureDeviceAlreadyReleased = 140,
+  kVideoCaptureSystemDeviceIdNotFound = 141,
+  kVideoCaptureDeviceFactoryWinUnknownError = 142,
+  kWinMediaFoundationDeviceInitializationFailed = 143,
+  kWinMediaFoundationSourceCreationFailed = 144,
+  kWinDirectShowDeviceFilterCreationFailed = 145,
+  kWinDirectShowDeviceInitializationFailed = 146,
+  kMaxValue = 146
 };
 
 // WARNING: Do not change the values assigned to the entries. They are used for
@@ -294,6 +304,8 @@ struct CAPTURE_EXPORT VideoCaptureParams {
     gfx::Size max_frame_size;
     bool fixed_aspect_ratio;
 
+    std::string ToString() const;
+
     bool operator==(const SuggestedConstraints& other) const {
       return min_frame_size == other.min_frame_size &&
              max_frame_size == other.max_frame_size &&
@@ -335,6 +347,10 @@ struct CAPTURE_EXPORT VideoCaptureParams {
   // Android platform with Camera2 driver support.
   bool enable_face_detection;
 };
+
+CAPTURE_EXPORT std::ostream& operator<<(
+    std::ostream& os,
+    const VideoCaptureParams::SuggestedConstraints& constraints);
 
 }  // namespace media
 

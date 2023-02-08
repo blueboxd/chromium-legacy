@@ -42,12 +42,15 @@ async function install(method = DEFAULT_METHOD_NAME) {
 
 /**
  * Uninstalls the payment handler.
+ * @param {string} swSrcUrlOverride - Optional service worker JavaScript file
+ * URL.
  * @return {Promise<string>} - 'success' or error message on failure.
  */
-async function uninstall() {
+async function uninstall(swSrcUrlOverride) {
+  let swSrcUrl =
+      (swSrcUrlOverride !== undefined) ? swSrcUrlOverride : SW_SRC_URL;
   try {
-    let registration =
-        await navigator.serviceWorker.getRegistration(SW_SRC_URL);
+    let registration = await navigator.serviceWorker.getRegistration(swSrcUrl);
     if (!registration) {
       return 'The Payment handler has not been installed yet.';
     }
@@ -87,11 +90,14 @@ async function enableDelegations(delegations) {
 
 /**
  * Launches the payment handler.
+ * @param {string} methodNameOverride - Optional payment method identifier.
  * @return {Promise<string>} - 'success' or error message on failure.
  */
-async function launch() {
+async function launch(methodNameOverride) {
+  let method =
+      (methodNameOverride !== undefined) ? methodNameOverride : methodName;
   try {
-    const request = new PaymentRequest([{supportedMethods: methodName}], {
+    const request = new PaymentRequest([{supportedMethods: method}], {
       total: {label: 'Total', amount: {currency: 'USD', value: '0.01'}},
     });
     const response = await request.show();
@@ -140,15 +146,16 @@ var paymentOptions = null;
 /**
  * Creates a payment request with required information and calls request.show()
  * to invoke payment sheet UI. To ensure that UI gets shown two payment methods
- * are supported: One url-based and one 'basic-card'.
- * @param {Object} options The list of requested paymentOptions.
- * @return {string} The 'success' or error message.
+ * are supported: One URL-based and one 'basic-card'.
+ * @param {Object} options - The list of requested paymentOptions.
+ * @param {string} paymentMethod - A URL-based payment method identifier.
+ * @return {string} - The 'success' or error message.
  */
-function paymentRequestWithOptions(options) {
+function paymentRequestWithOptions(options, paymentMethod = methodName) {
   paymentOptions = options;
   try {
     const request = new PaymentRequest([{
-          supportedMethods: methodName,
+          supportedMethods: paymentMethod,
         },
         {
           supportedMethods: 'basic-card',

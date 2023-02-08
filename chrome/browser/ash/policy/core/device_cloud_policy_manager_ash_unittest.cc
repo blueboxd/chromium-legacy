@@ -43,8 +43,8 @@
 #include "chromeos/ash/components/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_install_attributes_client.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
-#include "chromeos/system/fake_statistics_provider.h"
-#include "chromeos/system/statistics_provider.h"
+#include "chromeos/ash/components/system/fake_statistics_provider.h"
+#include "chromeos/ash/components/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
@@ -225,7 +225,7 @@ class DeviceCloudPolicyManagerAshTest
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
 
     // SystemSaltGetter is used in DeviceOAuth2TokenService.
-    chromeos::SystemSaltGetter::Initialize();
+    ash::SystemSaltGetter::Initialize();
     DeviceOAuth2TokenServiceFactory::Initialize(
         test_url_loader_factory_.GetSafeWeakWrapper(), &local_state_);
 
@@ -246,7 +246,7 @@ class DeviceCloudPolicyManagerAshTest
     install_attributes_.reset();
 
     DeviceOAuth2TokenServiceFactory::Shutdown();
-    chromeos::SystemSaltGetter::Shutdown();
+    ash::SystemSaltGetter::Shutdown();
     ash::InstallAttributesClient::Shutdown();
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
 

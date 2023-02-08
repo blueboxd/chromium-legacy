@@ -29,6 +29,9 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
       chrome::kChromeUICustomizeChromeSidePanelHost);
 
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"classicChrome", IDS_NTP_CUSTOMIZE_NO_BACKGROUND_LABEL},
+      {"colorsContainerLabel", IDS_NTP_THEMES_CONTAINER_LABEL},
+      {"colorPickerLabel", IDS_NTP_CUSTOMIZE_COLOR_PICKER_LABEL},
       {"customizeThisPage", IDS_NTP_CUSTOM_BG_CUSTOMIZE_NTP_LABEL},
       {"appearanceHeader", IDS_NTP_CUSTOMIZE_APPEARANCE_LABEL},
       {"defaultColorName", IDS_NTP_CUSTOMIZE_DEFAULT_LABEL},
@@ -39,6 +42,7 @@ CustomizeChromeUI::CustomizeChromeUI(content::WebUI* web_ui)
       {"shortcutsSuggested", IDS_NTP_CUSTOMIZE_MOST_VISITED_DESC},
       {"showShortcutsToggle", IDS_NTP_CUSTOMIZE_SHOW_SHORTCUTS_LABEL},
       {"title", IDS_SIDE_PANEL_CUSTOMIZE_CHROME_TITLE},
+      {"uploadedImage", IDS_NTP_CUSTOMIZE_UPLOADED_IMAGE_LABEL},
   };
   source->AddLocalizedStrings(kLocalizedStrings);
 

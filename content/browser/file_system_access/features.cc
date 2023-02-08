@@ -8,6 +8,14 @@
 
 namespace content::features {
 
+// TODO(crbug.com/1370433): Remove this flag eventually.
+// When enabled, drag-and-dropped files and directories will be checked against
+// the File System Access blocklist. This feature was disabled since it broke
+// some applications.
+BASE_FEATURE(kFileSystemAccessDragAndDropCheckBlocklist,
+             "FileSystemAccessDragAndDropCheckBlocklist",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // TODO(crbug.com/1381621): Remove this flag eventually.
 // When enabled, move() will result in a promise rejection when the specified
 // destination to move to exists. This feature was disabled since it does not
@@ -16,6 +24,13 @@ namespace content::features {
 BASE_FEATURE(kFileSystemAccessDoNotOverwriteOnMove,
              "FileSystemAccessDoNotOverwriteOnMove",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// TODO(crbug.com/1114923): Remove this flag eventually.
+// When enabled, the remove() method is enabled. Otherwise, throws a
+// NotSupportedError DomException.
+BASE_FEATURE(kFileSystemAccessRemove,
+             "FileSystemAccessRemove",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // TODO(crbug.com/1254078): Remove this flag eventually.
 // When enabled, removeEntry() acquires an exclusive lock (as opposed to a

@@ -28,6 +28,9 @@ namespace chromeos {
 
 namespace {
 
+// TODO(https://crbug.com/1164001): remove after migrating to ash.
+using ::ash::InstallAttributes;
+
 const char kErrorWindowAlreadyExists[] =
     "Login screen extension UI already in use.";
 const char kErrorNoExistingWindow[] = "No open window to close.";
@@ -165,7 +168,7 @@ void UiHandler::OnWindowClosed(const std::string& extension_id) {
 
 void UiHandler::ResetWindowAndHide() {
   ash::LoginScreen::Get()->GetModel()->NotifyOobeDialogState(
-      ash::OobeDialogState::HIDDEN);
+      ash::OobeDialogState::EXTENSION_LOGIN_CLOSED);
 
   current_window_.reset(nullptr);
 }

@@ -176,7 +176,7 @@ class WebTransport::Stream final {
 
   ~Stream() {
     auto* stream = incoming_ ? incoming_.get() : outgoing_.get();
-    if (!stream) {
+    if (!stream || transport_->closing_ || transport_->torn_down_) {
       return;
     }
     stream->MaybeResetDueToStreamObjectGone();
@@ -217,7 +217,7 @@ class WebTransport::Stream final {
 
   void Send() {
     MaySendFin();
-    while (outgoing_ && outgoing_->CanWrite()) {
+    while (readable_ && outgoing_ && outgoing_->CanWrite()) {
       const void* data = nullptr;
       uint32_t available = 0;
       MojoResult result = readable_->BeginReadData(
@@ -250,7 +250,7 @@ class WebTransport::Stream final {
   }
 
   void MaySendFin() {
-    if (!outgoing_) {
+    if (!readable_ || !outgoing_) {
       return;
     }
     if (!has_seen_end_of_pipe_for_readable_ || !has_received_fin_from_client_) {
@@ -398,7 +398,10 @@ WebTransport::WebTransport(
   transport_->Connect();
 }
 
-WebTransport::~WebTransport() = default;
+WebTransport::~WebTransport() {
+  // Ensure that we ignore all callbacks while mid-destruction.
+  torn_down_ = true;
+}
 
 void WebTransport::SendDatagram(base::span<const uint8_t> data,
                                 base::OnceCallback<void(bool)> callback) {

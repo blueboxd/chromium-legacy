@@ -102,12 +102,11 @@ void WebApps::LoadIcon(const std::string& app_id,
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 void WebApps::GetCompressedIconData(const std::string& app_id,
-                                    apps::IconType icon_type,
                                     int32_t size_in_dip,
                                     ui::ResourceScaleFactor scale_factor,
                                     apps::LoadIconCallback callback) {
-  publisher_helper().GetCompressedIconData(app_id, icon_type, size_in_dip,
-                                           scale_factor, std::move(callback));
+  publisher_helper().GetCompressedIconData(app_id, size_in_dip, scale_factor,
+                                           std::move(callback));
 }
 #endif
 
@@ -256,12 +255,6 @@ void WebApps::Connect(
 
 void WebApps::OpenNativeSettings(const std::string& app_id) {
   publisher_helper().OpenNativeSettings(app_id);
-}
-
-void WebApps::SetWindowMode(const std::string& app_id,
-                            apps::mojom::WindowMode window_mode) {
-  publisher_helper().SetWindowMode(
-      app_id, apps::ConvertMojomWindowModeToWindowMode(window_mode));
 }
 
 void WebApps::PublishWebApps(std::vector<apps::AppPtr> apps) {

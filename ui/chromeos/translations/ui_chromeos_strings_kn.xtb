@@ -128,6 +128,7 @@
 <translation id="2084108471225856927">ಸಾಧನ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="2084809735218147718">ಧನ್ಯವಾದಗಳು ಎಂದು ಹಸ್ತಾಕ್ಷರ ಮಾಡುತ್ತಿರುವ ವ್ಯಕ್ತಿ</translation>
 <translation id="2088690981887365033">VPN ನೆಟ್‌ವರ್ಕ್</translation>
+<translation id="2114191879048183086"><ph name="NUMBER_OF_ITEMS" /> ಐಟಂಗಳನ್ನು ಅಳಿಸಲಾಗುತ್ತದೆ ಮತ್ತು ಅವುಗಳನ್ನು ಮರುಸ್ಥಾಪಿಸಲು ನಿಮಗೆ ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="2122305276694332719">ಮರೆ ಮಾಡಿರುವ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸಂಪರ್ಕಗೊಳ್ಳುವುದರಿಂದ ಇತರರು ನಿಮ್ಮ ಸಾಧನ ಮತ್ತು ಕೆಲವು ನೆಟ್‌ವರ್ಕ್‌ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ನೋಡಲು ಅನುಮತಿಸುತ್ತದೆ, ಆದ್ದರಿಂದ ಇದನ್ನು ಬಳಸಲು ಶಿಫಾರಸು ಮಾಡುವುದಿಲ್ಲ.</translation>
 <translation id="2125607626296734455">ಖ್ಮೇರ್</translation>
 <translation id="2139545522194199494"><ph name="NETWORK_COUNT" /> ರಲ್ಲಿ <ph name="NETWORK_INDEX" /> ನೆಟ್‌ವರ್ಕ್, <ph name="NETWORK_NAME" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" />%, ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿರ್ವಹಿಸಿದ್ದಾರೆ, ಕನೆಕ್ಟ್</translation>
@@ -395,6 +396,7 @@
 <translation id="4398096759193130964">ಐಟಂಗಳನ್ನು ಮರುಸ್ಥಾಪಿಸಿ ಅಥವಾ ಅವುಗಳನ್ನು ಅನುಪಯುಕ್ತದ ಹೊರಗಿನ ಹೊಸ ಫೋಲ್ಡರ್‌ಗೆ ಡ್ರ್ಯಾಗ್ ಮಾಡಿ</translation>
 <translation id="4401287888955153199">ಎಲ್ಲವನ್ನೂ ಸಂಗ್ರಹಿಸಿ</translation>
 <translation id="4410695710508688828">ಬೇರ್ಪಡಿಸುವಿಕೆ ಕಾರ್ಯಾಚರಣೆ ವಿಫಲವಾಗಿದೆ. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="4414834425328380570">"<ph name="FILE_NAME" />" ಅನ್ನು ಅಳಿಸಲಾಗುತ್ತದೆ ಮತ್ತು ಅದನ್ನು ಮರುಸ್ಥಾಪಿಸಲು ನಿಮಗೆ ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="4418686080762064601">ನಿಮ್ಮ ಫೈಲ್‌ಗಳಿಗಾಗಿ ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ರಚಿಸಿ</translation>
 <translation id="4425149324548788773">ನನ್ನ ಡ್ರೈವ್</translation>
 <translation id="4439427728133035643"><ph name="NETWORK_COUNT" /> ರಲ್ಲಿ <ph name="NETWORK_INDEX" /> ನೆಟ್‌ವರ್ಕ್, <ph name="NETWORK_NAME" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" />%, ಕನೆಕ್ಟ್</translation>
@@ -412,7 +414,6 @@
 <translation id="4552759165874948005"><ph name="NETWORK_TYPE" /> ನೆಟ್‌ವರ್ಕ್, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" />%</translation>
 <translation id="4559767610552730302">ಬೊಕೆ</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ಫೈಲ್</translation>
-<translation id="457386861538956877">ಇನ್ನಷ್ಟು...</translation>
 <translation id="4579744207439506346">ಆಯ್ಕೆಗೆ <ph name="ENTRY_NAME" /> ಅನ್ನು ಸೇರಿಸಲಾಗಿದೆ.</translation>
 <translation id="4583436353463424810">ಯಾವುದೇ ಇತ್ತೀಚಿನ ಡಾಕ್ಯುಮೆಂಟ್‌ಗಳಿಲ್ಲ</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> ಗಾಗಿ ಫಲಿತಾಂಶಗಳನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ.</translation>
@@ -563,6 +564,7 @@
 <translation id="5580591966435005537">ವರ್ಚುವಲ್ ಮಷೀನ್</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5583664733673201137">ವಿರಾಮಚಿಹ್ನೆಯ ವಿಸ್ತಾರವು ಪೂರ್ಣವಾಗಿದೆ</translation>
+<translation id="5596627076506792578">ಇನ್ನಷ್ಟು ಆಯ್ಕೆಗಳು</translation>
 <translation id="5602622065581044566">ಫೋನೆಟಿಕ್ ಕೀಬೋರ್ಡ್‌ನಲ್ಲಿ ಬಲ್ಗೇರಿಯನ್</translation>
 <translation id="5605830556594064952">US ಡ್ವೋರಕ್</translation>
 <translation id="5618330573454123917">Macintosh ಸಾಫ್ಟ್‌ವೇರ್ ಬಳಸುವ ಕಂಪ್ಯೂಟರ್‌ಗಾಗಿ ಈ ಫೈಲ್ ವಿನ್ಯಾಸಗೊಳಿಸಲಾಗಿದೆ. ChromeOS ನಲ್ಲಿ ರನ್ ಆಗುವ ನಿಮ್ಮ ಸಾಧನದ ಜೊತೆಗೆ ಇದು ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ. ChromeOS ನಲ್ಲಿ ಫೈಲ್‌ನಲ್ಲಿ ತೆರೆಯುವ ಕುರಿತು <ph name="BEGIN_LINK_HELP" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="END_LINK_HELP" />.</translation>
@@ -927,6 +929,7 @@
 <translation id="8560515948038859357">ಕ್ಯಾಂಟೋನೀಸ್</translation>
 <translation id="8561206103590473338">ಆನೆ</translation>
 <translation id="8566466896628108558"><ph name="NETWORK_COUNT" /> ರಲ್ಲಿ <ph name="NETWORK_INDEX" /> ನೆಟ್‌ವರ್ಕ್,<ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, ಸಿಗ್ನಲ್ ಸಾಮರ್ಥ್ಯ <ph name="SIGNAL_STRENGTH" />%, ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿರ್ಬಂಧಿಸಿದ್ದಾರೆ, ವಿವರಗಳು</translation>
+<translation id="8568374623837201676">ಈ ಫೈಲ್ ಅನ್ನು ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಬೇಕೆ?</translation>
 <translation id="8569764466147087991">ತೆರೆಯಲು ಫೈಲ್‌ವೊಂದನ್ನು ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="8577897833047451336">ಕ್ರೋಯೇಶಿಯನ್</translation>
 <translation id="8578308463707544055">ಇಂಡೋನೇಷಿಯನ್</translation>

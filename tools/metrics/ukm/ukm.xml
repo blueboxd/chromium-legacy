@@ -149,6 +149,33 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Accessibility.PageZoom">
+  <owner>aldietz@google.com</owner>
+  <owner>mschillaci@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Tracks usage of Page Zoom on Chrome for Android. Recorded each time the
+    slider is dismissed if the user changed the zoom level on this page before
+    dismissal.
+  </summary>
+  <metric name="SliderZoomValue">
+    <summary>
+      For users who changed the individual zoom level on this page, tracks what
+      zoom level has been set on the page at slider dismissal. There may be
+      multiple instances where the slider is opened on the same page, so there
+      may be multiple values logged per page. The value will be an integer
+      between 25 and 500, inclusive, bucketed in intervals of 5.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="Accessibility.Renderer">
   <owner>aleventhal@chromium.org</owner>
   <owner>nektar@chromium.org</owner>
@@ -3280,6 +3307,12 @@ be describing additional metrics about the same event.
       Paint, in microseconds.
     </summary>
   </metric>
+  <metric name="VisualUpdateDelay">
+    <summary>
+      Time elapsed, in microseconds, between when an animation update is first
+      scheduled and when the resulting BeginMainFrame starts.
+    </summary>
+  </metric>
   <metric name="WaitForCommit">
     <summary>
       The time spent waiting for the compositor thread to begin processing a
@@ -4626,6 +4659,18 @@ be describing additional metrics about the same event.
       sampled frame, in microseconds.
     </summary>
   </metric>
+  <metric name="VisualUpdateDelay">
+    <summary>
+      Time elapsed between when an animation update is first scheduled and when
+      the resulting BeginMainFrame starts.
+    </summary>
+  </metric>
+  <metric name="VisualUpdateDelayBeginMainFrame">
+    <summary>
+      Time elapsed between when an animation update is first scheduled and when
+      the resulting BeginMainFrame starts.
+    </summary>
+  </metric>
   <metric name="WaitForCommit">
     <summary>
       The time spent waiting for the compositor thread to begin processing a
@@ -5055,6 +5100,26 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="ChromeOS.DeviceManagement">
+  <owner>siakabaro@google.com</owner>
+  <summary>
+    Records the ChromeOS device management state. This event is recorded once
+    per UKM report and is not associated with a source URL.
+  </summary>
+  <metric name="EnrollmentStatus" enum="EnrollmentStatus">
+    <summary>
+      An enum value representing the enrollment status of a ChromeOS device.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="ChromeOS.WebsiteUsageTime">
   <owner>nancylingwang@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
@@ -5106,6 +5171,9 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="UrlContent" enum="URLContent">
+    <obsolete>
+      Deprecated as of 01/2023.
+    </obsolete>
     <summary>
       The url content, e.g. full url, scope.
     </summary>
@@ -17831,6 +17899,18 @@ be describing additional metrics about the same event.
       resource has a 'Cache-control: no-store' response header. Recorded only
       for main frame request.
     </summary>
+  </metric>
+  <metric name="PageEndReason" enum="PageEndReason">
+    <summary>
+      The |page_load_metrics::PageEndReason| for the prerender's activation.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="Timing.ActivationToFirstContentfulPaint">
     <summary>

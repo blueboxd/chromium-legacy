@@ -44,6 +44,7 @@
 #include "remoting/protocol/input_filter.h"
 #include "remoting/protocol/input_stub.h"
 #include "remoting/protocol/mouse_input_filter.h"
+#include "remoting/protocol/observing_input_filter.h"
 #include "remoting/protocol/pairing_registry.h"
 #include "remoting/protocol/video_stream.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_metadata.h"
@@ -257,6 +258,13 @@ class ClientSession : public protocol::HostStub,
   // display).
   bool IsValidDisplayIndex(webrtc::ScreenId index) const;
 
+  // Boosts the framerate using |capture_interval| for |boost_duration| based on
+  // the type of input |event| received.
+  void BoostFramerateOnInput(base::TimeDelta capture_interval,
+                             base::TimeDelta boost_duration,
+                             bool& mouse_button_down,
+                             protocol::ObservingInputFilter::Event event);
+
   raw_ptr<EventHandler> event_handler_;
 
   // Used to create a DesktopEnvironment instance for this session.
@@ -279,6 +287,9 @@ class ClientSession : public protocol::HostStub,
 
   // Filter used to clamp mouse events to the current display dimensions.
   protocol::MouseInputFilter mouse_clamping_filter_;
+
+  // Filter used to notify listeners when remote input events are received.
+  protocol::ObservingInputFilter observing_input_filter_;
 
   // Filter used to detect transitions into and out of client-side pointer lock,
   // and to monitor local input to determine whether or not to include the mouse
@@ -371,10 +382,8 @@ class ClientSession : public protocol::HostStub,
   // Set to true after all data channels have been connected.
   bool channels_connected_ = false;
 
-  // Used to store video channel pause & lossless parameters.
+  // Used to store video channel pause parameter.
   bool pause_video_ = false;
-  bool lossless_video_encode_ = false;
-  bool lossless_video_color_ = false;
 
   // VideoLayout is sent only after the control channel is connected. Until
   // then it's stored in |pending_video_layout_message_|.

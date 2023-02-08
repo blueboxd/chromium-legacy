@@ -8,18 +8,14 @@
 #include <stdint.h>
 
 #include <iosfwd>
-#include <limits>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/containers/flat_set.h"
 #include "base/guid.h"
-#include "base/memory/raw_ptr.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "base/run_loop.h"
-#include "base/task/sequenced_task_runner.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "components/aggregation_service/aggregation_service.mojom.h"
@@ -36,7 +32,6 @@
 #include "components/attribution_reporting/test_utils.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
-#include "content/browser/attribution_reporting/attribution_data_host_manager.h"
 #include "content/browser/attribution_reporting/attribution_host.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_input_event.h"
@@ -53,7 +48,6 @@
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/attribution_reporting/stored_source.h"
 #include "content/public/browser/attribution_config.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/test/test_content_browser_client.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -61,7 +55,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/navigation/impression.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
-#include "url/origin.h"
 
 namespace mojo {
 
@@ -70,8 +63,13 @@ class PendingReceiver;
 
 }  // namespace mojo
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace content {
 
+class AttributionDataHostManager;
 class AttributionObserver;
 class AttributionTrigger;
 
@@ -153,6 +151,7 @@ class MockDataHost : public blink::mojom::AttributionDataHost {
       attribution_reporting::SuitableOrigin reporting_origin,
       attribution_reporting::SourceRegistration) override;
   void TriggerDataAvailable(
+      attribution_reporting::SuitableOrigin reporting_origin,
       attribution_reporting::TriggerRegistration) override;
 
   size_t min_source_data_count_ = 0;
@@ -165,55 +164,7 @@ class MockDataHost : public blink::mojom::AttributionDataHost {
   mojo::Receiver<blink::mojom::AttributionDataHost> receiver_{this};
 };
 
-class MockDataHostManager : public AttributionDataHostManager {
- public:
-  MockDataHostManager();
-  ~MockDataHostManager() override;
-
-  MOCK_METHOD(
-      void,
-      RegisterDataHost,
-      (mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
-       attribution_reporting::SuitableOrigin context_origin,
-       bool is_within_fenced_frame,
-       blink::mojom::AttributionRegistrationType),
-      (override));
-
-  MOCK_METHOD(
-      bool,
-      RegisterNavigationDataHost,
-      (mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
-       const blink::AttributionSrcToken& attribution_src_token,
-       AttributionInputEvent input_event,
-       blink::mojom::AttributionNavigationType),
-      (override));
-
-  MOCK_METHOD(void,
-              NotifyNavigationRedirectRegistration,
-              (const blink::AttributionSrcToken& attribution_src_token,
-               std::string header_value,
-               attribution_reporting::SuitableOrigin reporting_origin,
-               const attribution_reporting::SuitableOrigin& source_origin,
-               AttributionInputEvent input_event,
-               blink::mojom::AttributionNavigationType),
-              (override));
-
-  MOCK_METHOD(void,
-              NotifyNavigationForDataHost,
-              (const blink::AttributionSrcToken& attribution_src_token,
-               const attribution_reporting::SuitableOrigin& source_origin,
-               blink::mojom::AttributionNavigationType),
-              (override));
-
-  MOCK_METHOD(void,
-              NotifyNavigationFailure,
-              (const blink::AttributionSrcToken& attribution_src_token),
-              (override));
-};
-
 base::GUID DefaultExternalReportID();
-
-std::vector<base::GUID> DefaultExternalReportIDs(size_t size);
 
 class ConfigurableStorageDelegate : public AttributionStorageDelegate {
  public:
@@ -461,21 +412,12 @@ class SourceBuilder {
 
   SourceBuilder& SetSourceEventId(uint64_t source_event_id);
 
-  // TODO(crbug.com/1383580): Remove this method.
-  SourceBuilder& SetSourceOrigin(url::Origin origin);
-
   SourceBuilder& SetSourceOrigin(attribution_reporting::SuitableOrigin);
-
-  // TODO(crbug.com/1383580): Remove this method.
-  SourceBuilder& SetDestinationOrigin(url::Origin origin);
 
   SourceBuilder& SetDestinationOrigin(attribution_reporting::SuitableOrigin);
 
   SourceBuilder& SetDestinationOrigins(
       base::flat_set<attribution_reporting::SuitableOrigin>);
-
-  // TODO(crbug.com/1383580): Remove this method.
-  SourceBuilder& SetReportingOrigin(url::Origin origin);
 
   SourceBuilder& SetReportingOrigin(attribution_reporting::SuitableOrigin);
 
@@ -564,13 +506,7 @@ class TriggerBuilder {
 
   TriggerBuilder& SetEventSourceTriggerData(uint64_t event_source_trigger_data);
 
-  // TODO(crbug.com/1383580): Remove this method.
-  TriggerBuilder& SetDestinationOrigin(url::Origin destination_origin);
-
   TriggerBuilder& SetDestinationOrigin(attribution_reporting::SuitableOrigin);
-
-  // TODO(crbug.com/1383580): Remove this method.
-  TriggerBuilder& SetReportingOrigin(url::Origin reporting_origin);
 
   TriggerBuilder& SetReportingOrigin(attribution_reporting::SuitableOrigin);
 
@@ -996,8 +932,6 @@ constexpr auto EventTriggerDataListMatches =
                        attribution_reporting::kMaxEventTriggerData>;
 
 struct TriggerRegistrationMatcherConfig {
-  ::testing::Matcher<const attribution_reporting::SuitableOrigin&>
-      reporting_origin = ::testing::_;
   ::testing::Matcher<const attribution_reporting::Filters&> filters =
       ::testing::_;
   ::testing::Matcher<const attribution_reporting::Filters&> not_filters =
@@ -1017,8 +951,6 @@ struct TriggerRegistrationMatcherConfig {
 
   TriggerRegistrationMatcherConfig() = delete;
   explicit TriggerRegistrationMatcherConfig(
-      ::testing::Matcher<const attribution_reporting::SuitableOrigin&>
-          reporting_origin = ::testing::_,
       ::testing::Matcher<const attribution_reporting::Filters&> filters =
           ::testing::_,
       ::testing::Matcher<const attribution_reporting::Filters&> not_filters =
@@ -1043,6 +975,8 @@ struct TriggerRegistrationMatcherConfig {
 TriggerRegistrationMatches(const TriggerRegistrationMatcherConfig&);
 
 struct AttributionTriggerMatcherConfig {
+  ::testing::Matcher<const attribution_reporting::SuitableOrigin&>
+      reporting_origin = ::testing::_;
   ::testing::Matcher<const attribution_reporting::TriggerRegistration&>
       registration = ::testing::_;
   ::testing::Matcher<const attribution_reporting::SuitableOrigin&>
@@ -1052,6 +986,8 @@ struct AttributionTriggerMatcherConfig {
 
   AttributionTriggerMatcherConfig() = delete;
   explicit AttributionTriggerMatcherConfig(
+      ::testing::Matcher<const attribution_reporting::SuitableOrigin&>
+          reporting_origin = ::testing::_,
       ::testing::Matcher<const attribution_reporting::TriggerRegistration&>
           registration = ::testing::_,
       ::testing::Matcher<const attribution_reporting::SuitableOrigin&>

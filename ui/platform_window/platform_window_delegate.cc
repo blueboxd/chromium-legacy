@@ -42,12 +42,22 @@ absl::optional<MenuType> PlatformWindowDelegate::GetMenuType() {
 void PlatformWindowDelegate::OnOcclusionStateChanged(
     PlatformWindowOcclusionState occlusion_state) {}
 
+int64_t PlatformWindowDelegate::InsertSequencePoint() {
+  NOTREACHED();
+  return -1;
+}
+
 absl::optional<OwnedWindowAnchor>
 PlatformWindowDelegate::GetOwnedWindowAnchorAndRectInDIP() {
   return absl::nullopt;
 }
 
 void PlatformWindowDelegate::SetFrameRateThrottleEnabled(bool enabled) {}
+
+void PlatformWindowDelegate::OnTooltipShownOnServer(const std::u16string& text,
+                                                    const gfx::Rect& bounds) {}
+
+void PlatformWindowDelegate::OnTooltipHiddenOnServer() {}
 
 gfx::Rect PlatformWindowDelegate::ConvertRectToPixels(
     const gfx::Rect& rect_in_dip) const {

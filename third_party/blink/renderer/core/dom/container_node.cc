@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/radio_node_list.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
+#include "third_party/blink/renderer/core/html/html_dialog_element.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/html_tag_collection.h"
@@ -867,6 +868,7 @@ void ContainerNode::RemoveChildren(SubtreeModificationAction action) {
     TreeOrderedMap::RemoveScope tree_remove_scope;
     StyleEngine& engine = GetDocument().GetStyleEngine();
     StyleEngine::DetachLayoutTreeScope detach_scope(engine);
+    bool has_element_child = false;
     {
       SlotAssignmentRecalcForbiddenScope forbid_slot_recalc(GetDocument());
       StyleEngine::DOMRemovalScope style_scope(engine);
@@ -874,6 +876,9 @@ void ContainerNode::RemoveChildren(SubtreeModificationAction action) {
       ScriptForbiddenScope forbid_script;
 
       while (Node* child = first_child_) {
+        if (child->IsElementNode()) {
+          has_element_child = true;
+        }
         RemoveBetween(nullptr, child->nextSibling(), *child);
         NotifyNodeRemoved(*child);
         if (children_changed)
@@ -883,6 +888,9 @@ void ContainerNode::RemoveChildren(SubtreeModificationAction action) {
 
     ChildrenChange change = {ChildrenChangeType::kAllChildrenRemoved,
                              ChildrenChangeSource::kAPI,
+                             has_element_child
+                                 ? ChildrenChangeAffectsElements::kYes
+                                 : ChildrenChangeAffectsElements::kNo,
                              nullptr,
                              nullptr,
                              nullptr,
@@ -1536,6 +1544,11 @@ void ContainerNode::InvalidateNodeListCachesInAncestors(
     }
   }
 
+  // This is a performance optimization, NodeList cache invalidation is
+  // not necessary for non-element nodes.
+  if (change && change->affects_elements == ChildrenChangeAffectsElements::kNo)
+    return;
+
   // Modifications to attributes that are not associated with an Element can't
   // invalidate NodeList caches.
   if (attr_name && !attribute_owner_element)
@@ -1628,18 +1641,28 @@ NodeListsNodeData& ContainerNode::EnsureNodeLists() {
 
 // https://html.spec.whatwg.org/C/#autofocus-delegate
 Element* ContainerNode::GetAutofocusDelegate() const {
-  for (Node& node : NodeTraversal::DescendantsOf(*this)) {
-    auto* element = DynamicTo<Element>(node);
-    if (!element)
-      continue;
+  Element* element = ElementTraversal::Next(*this, this);
+  while (element) {
+    // TODO(jarhar): Add this to the HTML spec as a followup to the popover PR
+    if (auto* html_element = DynamicTo<HTMLElement>(element)) {
+      if (DynamicTo<HTMLDialogElement>(html_element) ||
+          html_element->HasPopoverAttribute()) {
+        element = ElementTraversal::NextSkippingChildren(*element, this);
+        continue;
+      }
+    }
 
-    if (!element->IsAutofocusable())
+    if (!element->IsAutofocusable()) {
+      element = ElementTraversal::Next(*element, this);
       continue;
+    }
 
     Element* focusable_area =
         element->IsFocusable() ? element : element->GetFocusableArea();
-    if (!focusable_area)
+    if (!focusable_area) {
+      element = ElementTraversal::Next(*element, this);
       continue;
+    }
 
     // The spec says to continue instead of returning focusable_area if
     // focusable_area is not click-focusable and the call was initiated by the

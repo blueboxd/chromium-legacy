@@ -1013,6 +1013,14 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
     EARL_GREY_TEST_SKIPPED(@"New Search is only available in phone layout.");
   }
 
+  // Disable Discover Feed Top Sync promo because it causes the NTP content
+  // offset to be wrong in EG tests.
+  // TODO(crbug.com/1403077): Reenable the discover feed sync promo feature
+  AppLaunchConfiguration config = [self appConfigurationForTestCase];
+  config.relaunch_policy = ForceRelaunchByCleanShutdown;
+  config.features_disabled.push_back(kEnableDiscoverFeedTopSyncPromo);
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
+
   [ChromeEarlGreyUI openNewTabMenu];
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
@@ -1188,6 +1196,8 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   AppLaunchConfiguration config = [self appConfigurationForTestCase];
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
   config.features_disabled.push_back(kTrendingQueriesModule);
+  // TODO(crbug.com/1403077): Reenable the discover feed sync promo feature
+  config.features_disabled.push_back(kEnableDiscoverFeedTopSyncPromo);
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
   [self
@@ -1206,9 +1216,9 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   FakeSystemIdentity* identity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:identity];
 
-  NSDictionary* capabilities = @{
-    @(kIsSubjectToParentalControlsCapabilityName) : [NSNumber
-        numberWithInt:(int)ios::ChromeIdentityCapabilityResult::kTrue],
+  ios::CapabilitiesDict* capabilities = @{
+    @(kIsSubjectToParentalControlsCapabilityName) :
+        @(static_cast<int>(ios::ChromeIdentityCapabilityResult::kTrue))
   };
   [SigninEarlGrey setCapabilities:capabilities forIdentity:identity];
 

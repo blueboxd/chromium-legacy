@@ -8,6 +8,8 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/mojom/speculation_rules/speculation_rules.mojom.h"
+
 #include "url/gurl.h"
 
 namespace content {
@@ -107,6 +109,18 @@ base::TimeDelta PrefetchCanaryCheckTimeout();
 // The number of retries to allow for canary checks.
 int PrefetchCanaryCheckRetries();
 
+// Whether or not to use |PrefetchStreamingURLLoader| to fetch and serve
+// prefetches.
+bool PrefetchUseStreamingURLLoader();
+
+// Whether or not |PrefetchService| should block until the head of a prefetch
+// request is received when considering to serve a prefetch for a navigation.
+bool PrefetchShouldBlockUntilHead(
+    blink::mojom::SpeculationEagerness prefetch_eagerness);
+
+// Returns whether the client is involved in the Holdback Finch
+// experiment group.
+bool IsContentPrefetchHoldback();
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_PRELOADING_PREFETCH_PREFETCH_PARAMS_H_

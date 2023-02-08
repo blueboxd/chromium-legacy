@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
-<translation id="1016498331642356377">Søg hurtigt med din stemme. Hold fingeren nede for at redigere denne genvej.</translation>
+<translation id="1016498331642356377">Søg hurtigt med din stemme. Hold fingeren på genvejen for at redigere.</translation>
 <translation id="1028699632127661925">Sender til <ph name="DEVICE_NAME" />...</translation>
 <translation id="103269572468856066">Vil du rydde data fra disse websites og apps?</translation>
 <translation id="1034259925032978114">Et vindue er åbent</translation>
@@ -12,7 +12,6 @@
 <translation id="1062628064301375934">Hjælp os med at skabe et mere privat internet</translation>
 <translation id="107147699690128016">Hvis du ændrer filtypen, åbnes filen muligvis i en anden app og kan være skadelig for din enhed.</translation>
 <translation id="1089606299949659462">Gennemgangen er fuldført</translation>
-<translation id="1091604859693995976">Opdater for at se</translation>
 <translation id="1095761715416917775">Sørg for, at du altid kan få adgang til dine synkroniserede data</translation>
 <translation id="1100066534610197918">Åbn i en ny fane i en gruppe</translation>
 <translation id="1103142993930332957">Vil du hjælpe med at forbedre Chrome?</translation>
@@ -519,6 +518,7 @@ Private state tokens forbedrer beskyttelsen af personlige oplysninger på nettet
 <translation id="3830886834687455630">Opdater Google Play-tjenester for at tjekke dine adgangskoder</translation>
 <translation id="3845098929839618392">Åbn i inkognitofane</translation>
 <translation id="3856096718352044181">Bekræft, at dette er en gyldig udbyder, eller prøv igen senere</translation>
+<translation id="3858127568696903256">Se indhold, du følger, her</translation>
 <translation id="3858860766373142691">Navn</translation>
 <translation id="3861633093716975811">Populære videoer</translation>
 <translation id="3874520961715512166">Websitet er fjernet</translation>
@@ -761,6 +761,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="510275257476243843">1 time tilbage</translation>
 <translation id="5115811374190515607">til <ph name="PRODUCT_NAME" /></translation>
 <translation id="5118713593561876160">Interesser</translation>
+<translation id="5122378528687922675">Spørg en af dine forældre, (<ph name="PARENT_NAME_1" /> eller <ph name="PARENT_NAME_2" />), hvis du har brug for hjælp</translation>
 <translation id="5123685120097942451">Inkognitofane</translation>
 <translation id="5126510351761255129">Bekræft dit kort</translation>
 <translation id="5132942445612118989">Synkroniser dine adgangskoder, din historik og meget mere på alle enheder</translation>
@@ -1070,7 +1071,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6737612727720318154">Tillad en interesse eller et website, hvis du mener, at annoncer, der er relateret til interessen, ville være nyttige for dig</translation>
 <translation id="6738516213925468394">Dine data blev krypteret med din <ph name="BEGIN_LINK" />adgangssætning til synkronisering<ph name="END_LINK" /> <ph name="TIME" />. Indtast adgangssætningen for at starte synkroniseringen.</translation>
 <translation id="6738867403308150051">Downloader…</translation>
-<translation id="6751521182688001123">Åbn hurtigt en ny fane. Hold fingeren nede for at redigere denne genvej.</translation>
+<translation id="6751521182688001123">Åbn hurtigt en ny fane. Hold fingeren på genvejen for at redigere.</translation>
 <translation id="6756507620369789050">Del feedback</translation>
 <translation id="6767294960381293877">Åben liste i halv højde over enheder, der skal deles en fane med.</translation>
 <translation id="6770042910635026163">De websites, du besøger, som definerer dine interesser</translation>
@@ -1080,7 +1081,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6802555630140434547">Vinduet lukkes</translation>
 <translation id="6811034713472274749">Siden kan nu ses</translation>
 <translation id="6813446258015311409">Log ind i Chrome, åben.</translation>
-<translation id="6817747507826986771">Del hurtigt denne side. Hold fingeren nede for at redigere denne genvej.</translation>
+<translation id="6817747507826986771">Del hurtigt denne side. Hold fingeren på genvejen for at redigere.</translation>
 <translation id="6819199143469632133">Log ind for at få adgang til dine Google-ting på alle enheder</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6824899148643461612"><ph name="TAB_TITLE" />, fane, valgt</translation>
@@ -1106,7 +1107,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6903907808598579934">Aktivér synkronisering</translation>
 <translation id="6908998565271542516">Mulighed for at godkende eller ikke godkende et website – åbnet i fuld højde</translation>
 <translation id="6909589135458168665">Forudindlæs sider</translation>
-<translation id="692924882724759447">Se de websites, du følger, her</translation>
 <translation id="6942665639005891494">Du kan til enhver tid ændre standardplaceringen for downloads via menuen Indstillinger</translation>
 <translation id="694267552845942083">Du er i øjeblikket ved at tilpasse dine indstillinger for Synkronisering. Afslut aktiveringen af Synkronisering ved at trykke på knappen Bekræft nederst på skærmen. Gå op</translation>
 <translation id="6945221475159498467">Vælg</translation>
@@ -1148,6 +1148,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7177466738963138057">Du kan ændre dette senere i Indstillinger</translation>
 <translation id="7177873915659574692">QR-koden kan ikke oprettes. Webadressen indeholder mere end <ph name="CHARACTER_LIMIT" /> tegn.</translation>
 <translation id="7177959540995930968">Du kan få flere oplysninger om disse funktioner i Chrome-indstillingerne.</translation>
+<translation id="7180611975245234373">Opdater</translation>
 <translation id="718226107353899806">Du kan tilføje op til <ph name="MAX_NUM_REACTIONS" /> reaktioner</translation>
 <translation id="7183693674623539380">Fanegruppe – <ph name="TITLE_OF_GROUP" /></translation>
 <translation id="7187993566681480880">Beskytter dig i Chrome og kan bruges til at forbedre din sikkerhed i andre Google-apps, når du er logget ind.</translation>
@@ -1331,6 +1332,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8084285576995584326">Administrer dine Google-kontodata</translation>
 <translation id="808747664143081553">Der er oprettet forbindelse til enheden</translation>
 <translation id="8088176524274673045">Du kan dele med brugere i nærheden ved at få dem til at scanne denne QR-kode</translation>
+<translation id="8090732854597034573">Spørg din forælder, hvis du har brug for hjælp</translation>
 <translation id="8100969750121413114">Log ind for at tilpasse Chrome</translation>
 <translation id="8103578431304235997">Inkognitofane</translation>
 <translation id="8105613260829665809">Ved at fortsætte accepterer du <ph name="BEGIN_TOS_LINK" />servicevilkårene<ph name="END_TOS_LINK" />.\nChrome sender data om brug og nedbrud til Google for at hjælpe med at forbedre appen. <ph name="BEGIN_UMA_LINK" />Administrer<ph name="END_UMA_LINK" /></translation>
@@ -1339,6 +1341,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8109613176066109935">Aktivér synkronisering for at få vist dine bogmærker på alle dine enheder</translation>
 <translation id="8110024788458304985">Vær med til at forbedre funktioner og ydeevne i Chrome</translation>
 <translation id="8110087112193408731">Vil du se din Chrome-aktivitet i Digital balance?</translation>
+<translation id="8118117428362942925">Spørg din forælder (<ph name="PARENT_NAME" />), hvis du har brug for hjælp</translation>
 <translation id="8127542551745560481">Rediger startside</translation>
 <translation id="8130309322784422030">Dine gemte loginoplysninger kan være forældede</translation>
 <translation id="813082847718468539">Se websiteoplysninger</translation>

@@ -20,9 +20,8 @@ gpu::GpuMemoryBufferManager* g_gpu_buffer_manager = nullptr;
 }  // namespace
 
 VideoCaptureDeviceFactoryChromeOS::VideoCaptureDeviceFactoryChromeOS(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_screen_observer)
-    : task_runner_for_screen_observer_(task_runner_for_screen_observer),
-      initialized_(Init()) {}
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    : ui_task_runner_(ui_task_runner), initialized_(Init()) {}
 
 VideoCaptureDeviceFactoryChromeOS::~VideoCaptureDeviceFactoryChromeOS() {
   CameraAppDeviceBridgeImpl::GetInstance()->UnsetCameraInfoGetter();
@@ -43,13 +42,12 @@ VideoCaptureErrorOrDevice VideoCaptureDeviceFactoryChromeOS::CreateDevice(
         VideoCaptureError::
             kCrosHalV3DeviceDelegateFailedToInitializeCameraDevice);
   }
-  auto device = camera_hal_delegate_->CreateDevice(
-      task_runner_for_screen_observer_, device_descriptor);
-  return device
-             ? VideoCaptureErrorOrDevice(std::move(device))
-             : VideoCaptureErrorOrDevice(
-                   VideoCaptureError::
-                       kVideoCaptureControllerInvalidOrUnsupportedVideoCaptureParametersRequested);
+  auto device =
+      camera_hal_delegate_->CreateDevice(ui_task_runner_, device_descriptor);
+  return device ? VideoCaptureErrorOrDevice(std::move(device))
+                : VideoCaptureErrorOrDevice(
+                      VideoCaptureError::
+                          kVideoCaptureDeviceFactoryChromeOSCreateDeviceFailed);
 }
 
 void VideoCaptureDeviceFactoryChromeOS::GetDevicesInfo(
@@ -81,7 +79,7 @@ bool VideoCaptureDeviceFactoryChromeOS::Init() {
     return false;
   }
 
-  camera_hal_delegate_ = std::make_unique<CameraHalDelegate>();
+  camera_hal_delegate_ = std::make_unique<CameraHalDelegate>(ui_task_runner_);
 
   if (!camera_hal_delegate_->Init()) {
     LOG(ERROR) << "Failed to initialize CameraHalDelegate";

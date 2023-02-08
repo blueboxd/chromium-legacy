@@ -25,6 +25,7 @@
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_id.h"
 #include "base/bind.h"
 #include "base/dcheck_is_on.h"
 #include "base/time/time.h"
@@ -68,7 +69,7 @@ constexpr int kAnswerCardMaxResults = 1;
 
 // Show animations for search result views and titles have a translation
 // distance of 'kAnimatedOffsetMultiplier' * i where i is the position of the
-// view in the 'AppListSearchView'.
+// view in the 'ProductivityLauncherSearchView'.
 constexpr int kAnimatedOffsetMultiplier = 4;
 
 // Maps 'AppListSearchResultCategory' to 'SearchResultListType'.
@@ -119,6 +120,8 @@ SearchResultListView::SearchResultListView(
   title_label_ = AddChildView(std::make_unique<views::Label>(
       u"", CONTEXT_SEARCH_RESULT_CATEGORY_LABEL, STYLE_PRODUCTIVITY_LAUNCHER));
   title_label_->SetBackgroundColor(SK_ColorTRANSPARENT);
+  title_label_->SetAutoColorReadabilityEnabled(false);
+  title_label_->SetEnabledColorId(kColorAshTextColorSecondary);
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
       kPreferredTitleTopMargins, kPreferredTitleHorizontalMargins,
@@ -469,12 +472,6 @@ void SearchResultListView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 int SearchResultListView::GetHeightForWidth(int w) const {
   return results_container_->GetHeightForWidth(w);
-}
-
-void SearchResultListView::OnThemeChanged() {
-  SearchResultContainerView::OnThemeChanged();
-  title_label_->SetEnabledColor(
-      AppListColorProvider::Get()->GetSearchBoxSecondaryTextColor(GetWidget()));
 }
 
 void SearchResultListView::SearchResultActivated(SearchResultView* view,

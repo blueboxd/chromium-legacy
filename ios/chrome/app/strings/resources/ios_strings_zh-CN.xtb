@@ -125,6 +125,7 @@
 <translation id="1870148520156231997">显示密码</translation>
 <translation id="1872096359983322073">闪光灯</translation>
 <translation id="1891796056033961979">此屏幕中会显示您已保存的书签、密码、设置等信息。</translation>
+<translation id="1894023287452300670">在此处跟踪价格</translation>
 <translation id="1911619930368729126">上传到Google云端硬盘</translation>
 <translation id="1923342640370224680">过去 1 小时</translation>
 <translation id="1930989359703290198">根据贵单位的要求，您只能使用特定帐号登录。不允许使用的帐号会处于隐藏状态。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
@@ -147,7 +148,9 @@
 <translation id="2074131957428911366">您始终可在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中选择要同步的内容。</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="2080769225927880590">请使用一个有效的帐号登录</translation>
+<translation id="2090878303988764231">登录帐号即可管理您看到的内容</translation>
 <translation id="2103075008456228677">打开 history.google.com</translation>
+<translation id="21133533946938348">固定标签页</translation>
 <translation id="2116625576999540962">移动了<ph name="NUMBER_OF_SELECTED_BOOKMARKS" />项</translation>
 <translation id="2122754583996902531">您的浏览器处于受管理状态。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="212623074644302906">请求添加到阅读清单</translation>
@@ -189,6 +192,7 @@
 <translation id="2421044535038393232">继续修改</translation>
 <translation id="2434405374328098816">您已经在 <ph name="WEBSITE" /> 上保存了“<ph name="USERNAME" />”的密码</translation>
 <translation id="2435457462613246316">显示密码</translation>
+<translation id="2451654228769116489">固定标签页</translation>
 <translation id="2461070143328828326">密码设置</translation>
 <translation id="2469960372084740698">关闭“安全浏览”功能？</translation>
 <translation id="2473876017985765807">您已经保存了在 <ph name="WEBSITE" /> 上使用的密码</translation>
@@ -271,7 +275,7 @@
 <translation id="2982481275546140226">清除数据</translation>
 <translation id="298306318844797842">添加付款方式…</translation>
 <translation id="2989805286512600854">在新标签页中打开</translation>
-<translation id="3020183492814296499">快捷键</translation>
+<translation id="3020183492814296499">快捷方式</translation>
 <translation id="3037605927509011580">喔唷，崩溃啦！</translation>
 <translation id="3039722182465315531">不登录</translation>
 <translation id="3076846064362030967">您不会因此而退出自己的 Google 帐号。当您登录后，系统可能会将<ph name="BEGIN_LINK" />其他形式的活动记录<ph name="END_LINK" />保存在您的 Google 帐号中。您可以随时删除这些记录。
@@ -286,6 +290,7 @@
 <translation id="3130863904455712965">历史记录和其他内容</translation>
 <translation id="3131206671572504478">阻止所有 Cookie</translation>
 <translation id="313283613037595347">创建新的无痕式标签页。</translation>
+<translation id="3146109040683991651">将 Chrome 浏览器设为默认浏览器</translation>
 <translation id="3153862085237805241">保存卡片</translation>
 <translation id="3157387275655328056">添加到阅读清单</translation>
 <translation id="3157684681743766797">全部标为…</translation>
@@ -342,7 +347,7 @@
 <translation id="3530206579861815432">跨您的各部已同步的设备快速找到当前打开的和最近关闭的标签页。</translation>
 <translation id="3533202363250687977">关闭所有无痕式标签页</translation>
 <translation id="3533436815740441613">打开新的标签页</translation>
-<translation id="3540141921715814660">添加到“书签”</translation>
+<translation id="3540141921715814660">添加到书签</translation>
 <translation id="3551320343578183772">关闭标签页</translation>
 <translation id="3565207542107370586">清除浏览数据…</translation>
 <translation id="3575234738189584619">使用智能镜头搜索</translation>
@@ -673,6 +678,7 @@
 <translation id="6059830886158432458">在此处控制您的报道和活动</translation>
 <translation id="6064824697233747382">贵单位要求您关闭同步功能。</translation>
 <translation id="6066301408025741299">点按可取消。</translation>
+<translation id="6071409777669089905">取消固定标签页</translation>
 <translation id="60829778314739003">接受并继续</translation>
 <translation id="6084848228346514841">选择标签页</translation>
 <translation id="6103540626693881831">设备上加密</translation>
@@ -704,7 +710,7 @@
 <translation id="6284652193729350524">主动询问是否翻译<ph name="LANGUAGE" />内容</translation>
 <translation id="6289501276895392862">已取消关注“<ph name="CHANNEL_NAME" />”</translation>
 <translation id="6293101329759844770">如需开启“安全浏览”功能，请打开 <ph name="BEGIN_LINK" />Google 服务<ph name="END_LINK" />，然后点按“安全浏览”。</translation>
-<translation id="6321526113093607004">添加到“书签”</translation>
+<translation id="6321526113093607004">添加到书签</translation>
 <translation id="6324669097367352121">登录设置</translation>
 <translation id="6337234675334993532">加密</translation>
 <translation id="633809752005859102">出错了，我们马上处理。</translation>
@@ -973,6 +979,7 @@
 <translation id="8197543752516192074">翻译网页</translation>
 <translation id="8205564605687841303">取消</translation>
 <translation id="8206354486702514201">此设置是由您的管理员执行的。</translation>
+<translation id="821809831108207540">如要对“探索”信息流和 Chrome 进行个性化设置，请登录帐号并开启同步功能。</translation>
 <translation id="8225985093977202398">缓存的图片和文件</translation>
 <translation id="8237382152611443140">打开用于自动填充密码的设置</translation>
 <translation id="8261506727792406068">删除</translation>
@@ -1100,6 +1107,7 @@
 <translation id="9219154867334666734">搜索标签页…</translation>
 <translation id="9223358826628549784">已发送崩溃报告。</translation>
 <translation id="941747855997058526">选择密码…</translation>
+<translation id="948048872540558976">创建新标签页</translation>
 <translation id="952704832371081537">取消</translation>
 <translation id="953008885340860025">已退出 Chrome</translation>
 <translation id="959066944189734975">您已关注“<ph name="CHANNEL_NAME" />”</translation>

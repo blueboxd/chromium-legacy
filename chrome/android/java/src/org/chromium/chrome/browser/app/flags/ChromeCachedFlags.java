@@ -78,10 +78,12 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.sAnonymousUpdateChecks);
                 add(ChromeFeatureList.sAppMenuMobileSiteOption);
                 add(ChromeFeatureList.sBackGestureRefactorAndroid);
+                add(ChromeFeatureList.sCctAutoTranslate);
                 add(ChromeFeatureList.sCctBrandTransparency);
                 add(ChromeFeatureList.sCctFeatureUsage);
                 add(ChromeFeatureList.sCctIncognito);
                 add(ChromeFeatureList.sCctIncognitoAvailableToThirdParty);
+                add(ChromeFeatureList.sCctIntentFeatureOverrides);
                 add(ChromeFeatureList.sCctRemoveRemoteViewIds);
                 add(ChromeFeatureList.sCctResizable90MaximumHeight);
                 add(ChromeFeatureList.sCctResizableAllowResizeByUserGesture);
@@ -148,6 +150,7 @@ public class ChromeCachedFlags {
                         add(BrandingController.BRANDING_CADENCE_MS);
                         add(BrandingController.MAX_BLANK_TOOLBAR_TIMEOUT_MS);
                         add(BrandingController.USE_TEMPORARY_STORAGE);
+                        add(BrandingController.ANIMATE_TOOLBAR_ICON_TRANSITION);
                         add(ChimeFeatures.ALWAYS_REGISTER);
                         add(StartSurfaceConfiguration.BEHAVIOURAL_TARGETING);
                         add(ConditionalTabStripUtils.CONDITIONAL_TAB_STRIP_INFOBAR_LIMIT);
@@ -162,6 +165,8 @@ public class ChromeCachedFlags {
                         add(PageAnnotationsServiceConfig.PAGE_ANNOTATIONS_BASE_URL);
                         add(PartialCustomTabHeightStrategy.LOG_IMMERSIVE_MODE_CONFIRMATIONS);
                         add(ReturnToChromeUtil.TAB_SWITCHER_ON_RETURN_MS);
+                        add(CustomTabIntentDataProvider.AUTO_TRANSLATE_ALLOW_ALL_FIRST_PARTIES);
+                        add(CustomTabIntentDataProvider.AUTO_TRANSLATE_PACKAGE_NAME_ALLOWLIST);
                         add(CustomTabIntentDataProvider.THIRD_PARTIES_DEFAULT_POLICY);
                         add(CustomTabIntentDataProvider.DENYLIST_ENTRIES);
                         add(CustomTabIntentDataProvider.ALLOWLIST_ENTRIES);
@@ -188,8 +193,6 @@ public class ChromeCachedFlags {
                         add(TabUiFeatureUtilities.ENABLE_LAUNCH_BUG_FIX);
                         add(TabUiFeatureUtilities.ENABLE_LAUNCH_POLISH);
                         add(TabUiFeatureUtilities.DELAY_GTS_CREATION);
-                        add(TabUiFeatureUtilities.ENABLE_SEARCH_CHIP);
-                        add(TabUiFeatureUtilities.ENABLE_SEARCH_CHIP_ADAPTIVE);
                         add(TabUiFeatureUtilities.ENABLE_TAB_GROUP_AUTO_CREATION);
                         add(TabUiFeatureUtilities.SHOW_OPEN_IN_TAB_GROUP_MENU_ITEM_FIRST);
                         add(TabUiFeatureUtilities.ENABLE_TAB_GROUP_SHARING);

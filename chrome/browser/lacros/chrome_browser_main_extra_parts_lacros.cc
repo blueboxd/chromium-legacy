@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/reporting/metric_reporting_manager_lacros.h"
 #include "chrome/browser/chromeos/tablet_mode/tablet_mode_page_behavior.h"
+#include "chrome/browser/chromeos/video_conference/video_conference_manager_client.h"
 #include "chrome/browser/lacros/app_mode/chrome_kiosk_launch_controller_lacros.h"
 #include "chrome/browser/lacros/app_mode/device_local_account_extension_installer_lacros.h"
 #include "chrome/browser/lacros/app_mode/kiosk_session_service_lacros.h"
@@ -33,6 +34,7 @@
 #include "chrome/browser/lacros/sync/sync_crosapi_manager_lacros.h"
 #include "chrome/browser/lacros/task_manager_lacros.h"
 #include "chrome/browser/lacros/ui_metric_recorder_lacros.h"
+#include "chrome/browser/lacros/views_text_services_context_menu_lacros.h"
 #include "chrome/browser/lacros/vpn_extension_tracker_lacros.h"
 #include "chrome/browser/lacros/web_app_provider_bridge_lacros.h"
 #include "chrome/browser/lacros/web_page_info_lacros.h"
@@ -48,6 +50,7 @@
 #include "chromeos/startup/browser_params_proxy.h"
 #include "components/arc/common/intent_helper/arc_icon_cache_delegate.h"
 #include "extensions/common/features/feature_session_type.h"
+#include "ui/views/controls/views_text_services_context_menu_chromeos.h"
 
 namespace {
 
@@ -195,6 +198,13 @@ void ChromeBrowserMainExtraPartsLacros::PostBrowserStart() {
   }
 
   ui_metric_recorder_ = std::make_unique<UiMetricRecorderLacros>();
+
+  if (chromeos::BrowserParamsProxy::Get()->VcControlsUiEnabled() &&
+      chromeos::LacrosService::Get()
+          ->IsAvailable<crosapi::mojom::VideoConferenceManager>()) {
+    video_conference_manager_client_ =
+        std::make_unique<video_conference::VideoConferenceManagerClientImpl>();
+  }
 }
 
 void ChromeBrowserMainExtraPartsLacros::PostProfileInit(
@@ -223,4 +233,13 @@ void ChromeBrowserMainExtraPartsLacros::PostProfileInit(
     chrome_kiosk_launch_controller_ =
         std::make_unique<ChromeKioskLaunchControllerLacros>(*profile);
   }
+
+  views::ViewsTextServicesContextMenuChromeos::SetImplFactory(
+      base::BindRepeating(
+          [](ui::SimpleMenuModel* menu_model, views::Textfield* textfield)
+              -> std::unique_ptr<views::ViewsTextServicesContextMenu> {
+            return std::make_unique<
+                crosapi::ViewsTextServicesContextMenuLacros>(menu_model,
+                                                             textfield);
+          }));
 }

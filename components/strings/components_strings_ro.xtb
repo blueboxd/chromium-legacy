@@ -256,6 +256,7 @@
 <translation id="1553358976309200471">Actualizează Chrome</translation>
 <translation id="1555130319947370107">Albastru</translation>
 <translation id="1559447966090556585">Primești notificări?</translation>
+<translation id="1559486004335285648">Completează automat informațiile de plată</translation>
 <translation id="1559528461873125649">Nu există un astfel de fișier sau director</translation>
 <translation id="1559572115229829303">&lt;p&gt;O conexiune privată la <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nu poate fi stabilită, deoarece data și ora dispozitivului (<ph name="DATE_AND_TIME" />) sunt incorecte.&lt;/p&gt;
 
@@ -363,6 +364,7 @@
 <translation id="1807246157184219062">Luminos</translation>
 <translation id="1807528111851433570">Foaia inițială</translation>
 <translation id="181000283860817563">Urmărește prețurile de pe mai multe site-uri</translation>
+<translation id="1810391395243432441">Protejează-ți parolele cu blocarea ecranului</translation>
 <translation id="1812527064848182527">peisaj</translation>
 <translation id="1813414402673211292">Ștergeți datele de navigare</translation>
 <translation id="182139138257690338">Descărcări automate</translation>
@@ -382,6 +384,7 @@
 <translation id="1871208020102129563">Configurația proxy este setată să utilizeze servere proxy fixe, și nu o adresă URL pentru scripturi .pac.</translation>
 <translation id="1871284979644508959">Câmp obligatoriu</translation>
 <translation id="1873899211667975540">Muzică rock</translation>
+<translation id="1874224422119691492">Poți modifica dacă folosești blocarea ecranului pentru completarea parolelor în <ph name="SETTINGS" /></translation>
 <translation id="1875025161375567525">Tava foto</translation>
 <translation id="1875512691959384712">Formulare Google</translation>
 <translation id="187918866476621466">Deschide paginile de pornire</translation>
@@ -413,7 +416,6 @@
 <translation id="1958218078413065209">Cel mai mare scor al tău este de <ph name="SCORE" />.</translation>
 <translation id="1959001866257244765">Contribuie la îmbunătățirea securității pe web pentru toată lumea trimițând la Google <ph name="BEGIN_WHITEPAPER_LINK" />adresele URL ale unor pagini pe care le accesezi, informații de sistem limitate și părți din conținutul paginilor<ph name="END_WHITEPAPER_LINK" />. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Politică de confidențialitate<ph name="END_PRIVACY_PAGE_LINK" /></translation>
 <translation id="1962204205936693436">Marcaje <ph name="DOMAIN" /></translation>
-<translation id="1971033026002113380">Protejează-ți parolele cu Touch ID</translation>
 <translation id="1973335181906896915">Eroare de serializare</translation>
 <translation id="1974060860693918893">Avansate</translation>
 <translation id="1975457531113383421">Tava de intrare</translation>
@@ -691,7 +693,7 @@
 <translation id="2692131511336778528">Științifico-fantastic și fantasy</translation>
 <translation id="2699302886720511147">Carduri acceptate</translation>
 <translation id="2701514975700770343">Cu fața în jos</translation>
-<translation id="2702801445560668637">Listă de lectură</translation>
+<translation id="2702801445560668637">Listă de lecturi</translation>
 <translation id="2704283930420550640">Valoarea nu se potrivește cu formatul.</translation>
 <translation id="2704606927547763573">Copiat</translation>
 <translation id="2705137772291741111">Copia salvată (în memoria cache) a acestui site nu a putut fi citită.</translation>
@@ -745,10 +747,10 @@
 <translation id="2876949457278336305"><ph name="MANAGE_SECURITY_SETTINGS_FOCUSED_FRIENDLY_MATCH_TEXT" />, apasă pe Tab, apoi pe Enter pentru a gestiona Navigarea sigură și alte opțiuni din setările Chrome</translation>
 <translation id="2878197950673342043">Îndoire de tip afiș</translation>
 <translation id="2878424575911748999">A1</translation>
+<translation id="2879694782644540289">folosește blocarea ecranului pentru completarea parolelor</translation>
 <translation id="2881276955470682203">Salvezi cardul?</translation>
 <translation id="2882949212241984732">Îndoire tip fereastră dublă</translation>
 <translation id="2893773853358652045">A patra rolă</translation>
-<translation id="289834758818479772">Dacă folosești dispozitivul în comun cu alte persoane, poți activa Touch ID pentru a-ți confirma identitatea atunci când utilizezi o parolă salvată</translation>
 <translation id="2900528713135656174">Creează un eveniment</translation>
 <translation id="2903493209154104877">Adrese</translation>
 <translation id="290376772003165898">Pagina nu este în <ph name="LANGUAGE" />?</translation>
@@ -1003,6 +1005,7 @@
 <translation id="3532844647053365774"><ph name="HOST" /> dorește să utilizeze microfonul</translation>
 <translation id="3533328374079021623">Căsuța de e-mail 5</translation>
 <translation id="3537165859691846083">Letter Plus</translation>
+<translation id="3542628208405253498">Imaginea cardului</translation>
 <translation id="3542768452570884558">Deschide linkul într-o fereastră nouă</translation>
 <translation id="3547746132308051926">20 x 24 in</translation>
 <translation id="3550112004925580947">Industria ospitalității</translation>
@@ -1066,7 +1069,6 @@
 <translation id="3678529606614285348">Deschide pagina într-o fereastră incognito nouă (Ctrl-Shift-N)</translation>
 <translation id="3681007416295224113">Informații despre certificat</translation>
 <translation id="3693327506115126094">Alege cum să-ți confirmi identitatea</translation>
-<translation id="3699374065820972102">TouchID este activat pentru completarea parolelor</translation>
 <translation id="3701427423622901115">Resetare confirmată.</translation>
 <translation id="3704162925118123524">Rețeaua pe care o folosești poate solicita accesarea paginii de conectare.</translation>
 <translation id="3705189812819839667"><ph name="RESULT_OWNER" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
@@ -1094,6 +1096,7 @@
 <translation id="3745099705178523657">După ce confirmi, acest site va avea acces la detaliile cardului tău din Contul Google.</translation>
 <translation id="3748148204939282805">Atacatorii de pe <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> te pot înșela, determinându-te să faci ceva periculos, cum ar fi să instalezi software sau să îți dezvălui informațiile cu caracter personal (de exemplu, parole, numere de telefon sau date despre cardurile de credit). <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3748912308089554501">Domeniul aviației</translation>
+<translation id="3752543821772132562">S-a ignorat deoarece <ph name="POLICY_NAME" /> nu este setat.</translation>
 <translation id="3754210790023674521">Ieși din modul picture-in-picture</translation>
 <translation id="3759461132968374835">Nu există blocări raportate recent. Blocările care au avut loc când raportarea blocărilor era dezactivată nu vor apărea aici.</translation>
 <translation id="3760561303380396507">Folosești Windows Hello în loc de CVC?</translation>
@@ -1181,7 +1184,6 @@
 <translation id="401170183602135785">Plic C6</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Document PDF cu {COUNT} pagină}few{Document PDF cu {COUNT} pagini}other{Document PDF cu {COUNT} de pagini}}</translation>
 <translation id="4023431997072828269">Întrucât formularul este trimis printr-o conexiune care nu este securizată, informațiile tale vor vizibile pentru alte persoane.</translation>
-<translation id="4024923292610332139">dezactiveze Touch ID pentru completarea parolelor</translation>
 <translation id="4025913568718019429">Butonul Gestionează setările de confidențialitate Google, apasă pe Enter pentru a accesa setările de confidențialitate ale Contului Google</translation>
 <translation id="4030383055268325496">&amp;Anulați adăugarea</translation>
 <translation id="4031179711345676612">Microfonul este permis</translation>
@@ -1401,6 +1403,7 @@
 <translation id="4541810033354695636">Realitate augmentată</translation>
 <translation id="4542971377163063093">Tava 6</translation>
 <translation id="455113658016510503">A9</translation>
+<translation id="4556069465387849460">Folosești blocarea ecranului pentru a completa parolele</translation>
 <translation id="4558551763791394412">Dezactivează extensiile.</translation>
 <translation id="4566017918361049074">În aer liber</translation>
 <translation id="4567686777917670400">Administratorul poate schimba configurația browserului de la distanță. Este posibil ca activitatea de pe acest dispozitiv să fie gestionată și din afara Chromium. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
@@ -1543,7 +1546,6 @@
 <translation id="4900217275619098670">A noua rolă</translation>
 <translation id="4901778704868714008">Salvează...</translation>
 <translation id="4905659621780993806">Administratorul îți va reporni dispozitivul automat la ora <ph name="TIME" />, pe <ph name="DATE" />. Salvează elementele deschise înainte ca dispozitivul să repornească.</translation>
-<translation id="4911007278801291296">Poți activa sau dezactiva TouchID în <ph name="SETTINGS" /></translation>
 <translation id="4913987521957242411">Perforare în stânga sus</translation>
 <translation id="4918221908152712722">Instalează <ph name="APP_NAME" /> (nu necesită descărcare)</translation>
 <translation id="4923459931733593730">Plată</translation>
@@ -1757,7 +1759,6 @@
 <translation id="5426179911063097041"><ph name="SITE" /> dorește să îți trimită notificări</translation>
 <translation id="5428105026674456456">Spaniolă</translation>
 <translation id="5430298929874300616">Elimină marcajul</translation>
-<translation id="5434423669266814150">activează Touch ID pentru completarea parolelor</translation>
 <translation id="5443468954631487277">În ordine inversă, cu fața în sus</translation>
 <translation id="5447765697759493033">Acest site nu va fi tradus</translation>
 <translation id="5452270690849572955">Această pagină de pe <ph name="HOST_NAME" /> nu poate fi găsită</translation>
@@ -2723,6 +2724,7 @@ Detalii suplimentare:
 <translation id="7942349550061667556">Roșu</translation>
 <translation id="7943397946612013052">Descărcare blocată</translation>
 <translation id="7943893128817522649">Poate solicita permisiunea de a descărca automat mai multe fișiere</translation>
+<translation id="7946724693008564269">Limba detectată</translation>
 <translation id="7947285636476623132">Verifică anul în care expiră și încearcă din nou</translation>
 <translation id="7947813448670013867"><ph name="SEE_CHROME_TIPS_FOCUSED_FRIENDLY_MATCH_TEXT" />, apasă pe Tab, apoi pe Enter pentru a afla despre funcțiile Chrome</translation>
 <translation id="7950027195171824198">Gestionează-ți preferințele privind cookie-urile din setările Chrome</translation>
@@ -2895,6 +2897,7 @@ Detalii suplimentare:
 <translation id="8355270400102541638">Contextul local al blocării:</translation>
 <translation id="8363502534493474904">să dezactivezi modul Avion;</translation>
 <translation id="8364627913115013041">Nesetată.</translation>
+<translation id="836616551641291797">Află mai multe despre gestionarea browserului</translation>
 <translation id="8368001212524806591">Urmărește prețul</translation>
 <translation id="8368027906805972958">Dispozitiv necunoscut sau neacceptat (<ph name="DEVICE_ID" />)</translation>
 <translation id="8368476060205742148">Servicii Google Play</translation>
@@ -2907,6 +2910,7 @@ Detalii suplimentare:
 <translation id="8396522675989118466">Acesta este codul alcătuit din <ph name="NUMBER_OF_DIGITS" /> cifre din <ph name="SIDE_OF_CARD" /></translation>
 <translation id="8398790343843005537">Găsește telefonul</translation>
 <translation id="8405579342203358118">Gestionează informațiile de sincronizat din setările Chrome</translation>
+<translation id="8406071103346257942">nu mai folosi blocarea ecranului pentru completarea parolelor</translation>
 <translation id="8409413588194360210">Handlere pentru plăți</translation>
 <translation id="8412145213513410671">Blocări (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Trebuie să introduci aceeași expresie de acces de două ori.</translation>
@@ -3176,6 +3180,7 @@ Detalii suplimentare:
 <translation id="9128016270925453879">Politicile s-au încărcat</translation>
 <translation id="9128870381267983090">Conectați-vă la rețea</translation>
 <translation id="9131119348384879525">Capturezi conținut confidențial?</translation>
+<translation id="9133985615769429248">Dacă folosești dispozitivul în comun cu alte persoane, poți folosi blocarea ecranului pentru a-ți confirma identitatea când utilizezi o parolă salvată</translation>
 <translation id="9136861683332321024">Vehicule de lux</translation>
 <translation id="9137013805542155359">Afișează originalul</translation>
 <translation id="9138037198177304356">Notificările sunt permise</translation>

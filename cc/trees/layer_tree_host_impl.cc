@@ -1110,6 +1110,11 @@ void LayerTreeHostImpl::StartPageScaleAnimation(const gfx::Point& target_offset,
   gfx::SizeF viewport_size(
       active_tree_->InnerViewportScrollNode()->container_bounds);
 
+  if (viewport_size.IsEmpty()) {
+    // Avoid divide by zero. Besides nothing should see the animation anyway.
+    return;
+  }
+
   // TODO(miletus) : Pass in ScrollOffset.
   page_scale_animation_ = PageScaleAnimation::Create(
       scroll_total, active_tree_->current_page_scale_factor(), viewport_size,
@@ -4164,8 +4169,7 @@ void LayerTreeHostImpl::CollectScrollbarUpdatesForCommit(
     CompositorCommitData* commit_data) const {
   commit_data->scrollbars.reserve(scrollbar_animation_controllers_.size());
   for (auto& pair : scrollbar_animation_controllers_) {
-    if (pair.second->visibility_changed() ||
-        !settings_.enable_scroll_update_optimizations) {
+    if (pair.second->visibility_changed()) {
       commit_data->scrollbars.push_back(
           {pair.first, pair.second->ScrollbarsHidden()});
       pair.second->ClearVisibilityChanged();

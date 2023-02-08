@@ -8,11 +8,13 @@
 #include <xdg-decoration-unstable-v1-client-protocol.h>
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/ozone/common/features.h"
+#include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/shell_surface_wrapper.h"
 #include "ui/ozone/platform/wayland/host/shell_toplevel_wrapper.h"
@@ -562,6 +564,58 @@ void XDGToplevelWrapperImpl::UnSetFloat() {
   if (aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
                             ZAURA_TOPLEVEL_UNSET_FLOAT_SINCE_VERSION) {
     zaura_toplevel_unset_float(aura_toplevel_.get());
+  }
+}
+
+void XDGToplevelWrapperImpl::CommitSnap(
+    WaylandWindowSnapDirection snap_direction,
+    float snap_ratio) {
+  if (!aura_toplevel_) {
+    return;
+  }
+
+  if (aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
+                            ZAURA_TOPLEVEL_UNSET_SNAP_SINCE_VERSION) {
+    zaura_toplevel_unset_snap(aura_toplevel_.get());
+    return;
+  }
+
+  if (aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
+                            ZAURA_TOPLEVEL_SET_SNAP_PRIMARY_SINCE_VERSION) {
+    uint32_t value = *reinterpret_cast<uint32_t*>(&snap_ratio);
+    switch (snap_direction) {
+      case WaylandWindowSnapDirection::kPrimary:
+        zaura_toplevel_set_snap_primary(aura_toplevel_.get(), value);
+        return;
+      case WaylandWindowSnapDirection::kSecondary:
+        zaura_toplevel_set_snap_secondary(aura_toplevel_.get(), value);
+        return;
+      case WaylandWindowSnapDirection::kNone:
+        NOTREACHED() << "Toplevel does not support UnsetSnap yet";
+        return;
+    }
+  }
+}
+
+void XDGToplevelWrapperImpl::ShowSnapPreview(
+    WaylandWindowSnapDirection snap_direction,
+    bool allow_haptic_feedback) {
+  if (aura_toplevel_ && zaura_toplevel_get_version(aura_toplevel_.get()) >=
+                            ZAURA_TOPLEVEL_INTENT_TO_SNAP_SINCE_VERSION) {
+    uint32_t zaura_shell_snap_direction = ZAURA_TOPLEVEL_SNAP_DIRECTION_NONE;
+    switch (snap_direction) {
+      case WaylandWindowSnapDirection::kPrimary:
+        zaura_shell_snap_direction = ZAURA_TOPLEVEL_SNAP_DIRECTION_PRIMARY;
+        break;
+      case WaylandWindowSnapDirection::kSecondary:
+        zaura_shell_snap_direction = ZAURA_TOPLEVEL_SNAP_DIRECTION_SECONDARY;
+        break;
+      case WaylandWindowSnapDirection::kNone:
+        break;
+    }
+    zaura_toplevel_intent_to_snap(aura_toplevel_.get(),
+                                  zaura_shell_snap_direction);
+    return;
   }
 }
 

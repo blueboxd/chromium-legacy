@@ -51,7 +51,7 @@ Sadece parolanıza sahip olan kişiler şifrelenmiş verilerinizi okuyabilir. Pa
 <translation id="1281818060020671000">Veri Yönetimi</translation>
 <translation id="1282311502488501110">Oturum Açma</translation>
 <translation id="1283524564873030414">Son 24 Saat</translation>
-<translation id="1285320974508926690">Bu siteyi hiçbir zaman çevirme</translation>
+<translation id="1285320974508926690">Bu siteyi asla çevirme</translation>
 <translation id="1291506870746876680">Bu siteden ayrıldığınızda <ph name="BEGIN_BOLD" />"<ph name="SITE_NAME" />"<ph name="END_BOLD" /> izinleri kapalı ayarına sıfırlanır.</translation>
 <translation id="1312721752506309252">Gelişmiş Koruma açık</translation>
 <translation id="1321993286294231467">Resim kaydetme hatası.</translation>
@@ -125,6 +125,7 @@ Sadece parolanıza sahip olan kişiler şifrelenmiş verilerinizi okuyabilir. Pa
 <translation id="1870148520156231997">Şifreyi Göster</translation>
 <translation id="1872096359983322073">Flaş</translation>
 <translation id="1891796056033961979">Kayıtlı yer işaretleriniz, şifreleriniz, ayarlarınız ve daha fazlasına bu ekrandan erişebilirsiniz.</translation>
+<translation id="1894023287452300670">Fiyatı buradan takip edin</translation>
 <translation id="1911619930368729126">Google Drive'a yükle</translation>
 <translation id="1923342640370224680">Son Bir Saat</translation>
 <translation id="1930989359703290198">Kuruluşunuz yalnızca belirli hesaplarla oturum açmanıza izin vermektedir. İzin verilmeyen hesaplar gösterilmez. <ph name="BEGIN_LINK" />Daha Fazla Bilgi<ph name="END_LINK" /></translation>
@@ -147,7 +148,9 @@ Sadece parolanıza sahip olan kişiler şifrelenmiş verilerinizi okuyabilir. Pa
 <translation id="2074131957428911366">Neyin senkronize edileceğini istediğiniz zaman <ph name="BEGIN_LINK" />ayarlardan<ph name="END_LINK" /> seçebilirsiniz.</translation>
 <translation id="2079545284768500474">Geri al</translation>
 <translation id="2080769225927880590">Geçerli Bir Hesapla Oturum Açın</translation>
+<translation id="2090878303988764231">Gördüğünüz içeriği yönetmek için oturum açın</translation>
 <translation id="2103075008456228677">history.google.com'u aç</translation>
+<translation id="21133533946938348">Sekmeyi İğnele</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> öğe taşındı</translation>
 <translation id="2122754583996902531">Tarayıcınız yönetilmektedir. <ph name="BEGIN_LINK" />Daha Fazla Bilgi<ph name="END_LINK" /></translation>
 <translation id="212623074644302906">Okuma Listesi'ne eklemeyi öner</translation>
@@ -189,6 +192,7 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <translation id="2421044535038393232">Düzenlemeye Devam Et</translation>
 <translation id="2434405374328098816"><ph name="WEBSITE" /> adresinde "<ph name="USERNAME" />" için zaten kayıtlı şifreniz var</translation>
 <translation id="2435457462613246316">Şifreyi göster</translation>
+<translation id="2451654228769116489">Sekmeyi Sabitle</translation>
 <translation id="2461070143328828326">Şifre Ayarları</translation>
 <translation id="2469960372084740698">Güvenli Tarama kapatılsın mı?</translation>
 <translation id="2473876017985765807"><ph name="WEBSITE" /> için zaten kayıtlı şifreniz var</translation>
@@ -286,6 +290,7 @@ Arama geçmişinizi silmek için arama motorunuzun bununla ilgili talimatların�
 <translation id="3130863904455712965">Geçmiş ve daha fazlası</translation>
 <translation id="3131206671572504478">Tümünü Engelle</translation>
 <translation id="313283613037595347">Yeni Gizli sekme oluştur.</translation>
+<translation id="3146109040683991651">Chrome'u Varsayılan Tarayıcı olarak ayarla</translation>
 <translation id="3153862085237805241">Kartı Kaydet</translation>
 <translation id="3157387275655328056">Okuma Listesine Ekle</translation>
 <translation id="3157684681743766797">Tümünü İşaretle…</translation>
@@ -672,7 +677,8 @@ Handoff'un ayrıca, Ayarlar'ın Genel bölümünde de etkinleştirilmesi ve ciha
 <translation id="605721222689873409">YY</translation>
 <translation id="6059830886158432458">Haberlerinizi ve aktivitenizi buradan yönetin</translation>
 <translation id="6064824697233747382">Kuruluşunuz, senkronizasyonu kapatmanızı zorunlu tutuyor.</translation>
-<translation id="6066301408025741299">İptal etmek için hafifçe vurun.</translation>
+<translation id="6066301408025741299">İptal etmek için dokunun.</translation>
+<translation id="6071409777669089905">Sekmenin Sabitlemesini Kaldır</translation>
 <translation id="60829778314739003">Kabul Et ve Devam Et</translation>
 <translation id="6084848228346514841">Sekme Seçin</translation>
 <translation id="6103540626693881831">Cihaz Üzerinde Şifreleme</translation>
@@ -757,7 +763,7 @@ Her site için benzersiz bir şifre kullanmaya çalışın.</translation>
 <translation id="6537746030088321027">example.com</translation>
 <translation id="6540120577248033958">Bir siteyi ziyaret edip Chrome menüsündeki Takip Et seçeneğini tıklayın</translation>
 <translation id="6561262006871132942">Yakınlaştır</translation>
-<translation id="6583087784430677195">Özelliği kapatmak için <ph name="BEGIN_LINK" />Ayarlar<ph name="END_LINK" />'ı açıp Parolaları Otomatik Doldur'a gidin.</translation>
+<translation id="6583087784430677195">Özelliği kapatmak için <ph name="BEGIN_LINK" />Ayarlar<ph name="END_LINK" />'ı açıp Şifreleri Otomatik Doldur'a gidin.</translation>
 <translation id="6585618849026997638">Önemli gördüğünüz sayfalara yer işareti koyarak geri dönebilirsiniz.</translation>
 <translation id="6596481460663245319">Resmi Google'la arayın</translation>
 <translation id="6598875554591387303">Yayıncıya göre sırala</translation>
@@ -886,7 +892,7 @@ Gizli moddayken siteler, örneğin reklamları kişiselleştirmek amacıyla fark
 <translation id="7554791636758816595">Yeni Sekme</translation>
 <translation id="7561196759112975576">Her zaman</translation>
 <translation id="7583004045319035904">Gizli sekmelerinizin kilidini açmak için <ph name="BIOMETRIC_AUTHENITCATION_TYPE" /> kullanın.</translation>
-<translation id="7600965453749440009"><ph name="LANGUAGE" /> dilini asla çevirme</translation>
+<translation id="7600965453749440009">Bu dili (<ph name="LANGUAGE" />) asla çevirme</translation>
 <translation id="7603852183842204213">Engellen Pop-up'lar (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7607521702806708809">Şifreyi Sil</translation>
 <translation id="7638584964844754484">Yanlış parola</translation>
@@ -938,7 +944,7 @@ Gizli moddayken siteler, örneğin reklamları kişiselleştirmek amacıyla fark
 Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde tarama etkinliğinizi görmek için çerezler kullanabilir.</translation>
 <translation id="7971521879845308059">Pop-up'ları Engelle</translation>
 <translation id="797413074872316787">Cihazlar arasında senkronizasyon ve kişiselleştirme yapmak için senkronizasyonu etkinleştirin.</translation>
-<translation id="7978018860671536736">3. Parolaları Otomatik Doldur seçeneğine dokunun</translation>
+<translation id="7978018860671536736">3. Şifreleri Otomatik Doldur seçeneğine dokunun</translation>
 <translation id="7981908678811807838">Fiyat takibi bu sitede kullanılamıyor.</translation>
 <translation id="7982789257301363584">Ağ</translation>
 <translation id="7987685713885608670">Ek güvenlik için, Google Şifre Yöneticisi'ne kaydedilmeden önce şifrelerinizi cihazınızda şifreleyin.</translation>
@@ -973,8 +979,9 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <translation id="8197543752516192074">Sayfayı Çevir</translation>
 <translation id="8205564605687841303">İptal</translation>
 <translation id="8206354486702514201">Bu seçenek, yöneticiniz tarafınızdan denetleniyor.</translation>
+<translation id="821809831108207540">Keşfet feed'inizi ve Chrome'u kişiselleştirmek için oturum açıp senkronizasyonu etkinleştirin.</translation>
 <translation id="8225985093977202398">Önbelleğe Alınan Resimler ve Dosyalar</translation>
-<translation id="8237382152611443140">Parolaları Otomatik Doldur ayarlarını açın</translation>
+<translation id="8237382152611443140">Şifreleri Otomatik Doldur ayarlarını açın</translation>
 <translation id="8261506727792406068">Sil</translation>
 <translation id="8271720166617117963">Kabul Et ve Oturum Aç</translation>
 <translation id="8278938988428169257">Bir kelime veya kelime öbeği girin</translation>
@@ -1016,7 +1023,7 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <translation id="8558480467877843976">Artık mesajlardaki, dokümanlardaki ve diğer uygulamalardaki bağlantılara göz attığınızda veya dokunduğunuzda Chrome'u kullanabilirsiniz.</translation>
 <translation id="8588404856427128947">Kapalı</translation>
 <translation id="8590913940444621808">Asla Sorma</translation>
-<translation id="8591976964826315682">Gizli modda üçüncü taraf çerezleri engelle</translation>
+<translation id="8591976964826315682">Gizli modda üçüncü taraf çerezlerini engelle</translation>
 <translation id="8605219856220328675">Sekmeyi kapat.</translation>
 <translation id="8620640915598389714">Düzenle</translation>
 <translation id="8626393685701737946">Varsayılan site görünümünü Ayarlar &gt; İçerik Ayarları bölümünden masaüstü olarak değiştirebilirsiniz</translation>
@@ -1100,6 +1107,7 @@ Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde ta
 <translation id="9219154867334666734">Sekmelerde Ara…</translation>
 <translation id="9223358826628549784">Kilitlenme raporu gönderildi.</translation>
 <translation id="941747855997058526">Şifreyi seçin...</translation>
+<translation id="948048872540558976">Yeni Sekme Oluştur</translation>
 <translation id="952704832371081537">İptal</translation>
 <translation id="953008885340860025">Chrome Oturumu Kapatıldı</translation>
 <translation id="959066944189734975"><ph name="CHANNEL_NAME" /> kanalını takip ediyorsunuz</translation>

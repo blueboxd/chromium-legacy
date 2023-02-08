@@ -243,6 +243,7 @@
 <translation id="5975083100439434680">Hlehlisa isithombe</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" />, <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Lawula ukufinyelela leli sayithi kudivayisi yakho</translation>
+<translation id="6018815681665454784">Sula futhi usethe kabusha?</translation>
 <translation id="6040143037577758943">Vala</translation>
 <translation id="6042308850641462728">Okuningi</translation>
 <translation id="6064125863973209585">Ukulandwa okuqediwe</translation>
@@ -322,6 +323,7 @@
 <translation id="7658239707568436148">Khansela</translation>
 <translation id="7667547420449112975">Isilekeleli Esimangalisayo sase-Oz</translation>
 <translation id="7690549345586282764">Bonisa ukusondeza</translation>
+<translation id="7695658402549134106">Okuncanyelwayo kwesayithi kwe-<ph name="SITE_NAME" /></translation>
 <translation id="7719367874908701697">Ukusondezwa kwekhasi</translation>
 <translation id="7781829728241885113">Izolo</translation>
 <translation id="7791543448312431591">Engeza</translation>
@@ -348,6 +350,7 @@
 <translation id="813082847718468539">Buka ulwazi lwesayithi</translation>
 <translation id="8131740175452115882">Qinisekisa</translation>
 <translation id="8154912474061769055">Izakhi ezikumasayithi amaningi zingase zingasebenzi</translation>
+<translation id="8168435359814927499">Okuqukethwe</translation>
 <translation id="8197286292360124385">kuvunyelwe i-<ph name="PERMISSION_1" /></translation>
 <translation id="8200772114523450471">Qala futhi</translation>
 <translation id="8206354486702514201">Lokhu kulungiselelwa kusetshenziswa umlawuli wakho.</translation>

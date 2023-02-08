@@ -61,7 +61,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="PageActionController.ActionTypeShown"
-    enum="PageActionIconType" expires_after="2023-04-09">
+    enum="PageActionIconType" expires_after="2023-06-11">
   <owner>emshack@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -81,7 +81,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageActionController.Icon.CTR" enum="PageActionCTREvent"
-    expires_after="2023-04-09">
+    expires_after="2023-06-11">
   <owner>emshack@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -97,7 +97,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageActionController.Icon.NumberActionsShownWhenClicked"
-    units="actions" expires_after="2023-04-09">
+    units="actions" expires_after="2023-06-11">
   <owner>emshack@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -107,7 +107,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageActionController.NumberActionsShown" units="actions"
-    expires_after="2023-04-09">
+    expires_after="2023-06-11">
   <owner>emshack@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -118,7 +118,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageActionController.PagesWithActionsShown"
-    enum="PageActionPageEvent" expires_after="2023-04-09">
+    enum="PageActionPageEvent" expires_after="2023-06-11">
   <owner>emshack@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -897,7 +897,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PageLoad.Clients.GoogleSearch.ParseTiming.NavigationToParseStart"
-    units="ms" expires_after="2022-12-23">
+    units="ms" expires_after="2023-04-30">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
   <summary>
@@ -992,6 +992,21 @@ chromium-metrics-reviews@google.com.
     start of activation navigation. This corresponds to the activationStart
     attribute of PerformanceNavigationTiming. Recorded when a prerendered page
     is activated.
+  </summary>
+<!-- PrerenderTriggerType variant is defined in
+  tools/metrics/histograms/metadata/navigation/histograms.xml.
+-->
+
+  <token key="PrerenderTriggerType" variants="PrerenderTriggerType"/>
+</histogram>
+
+<histogram
+    name="PageLoad.Clients.Prerender.PageEndReason{PrerenderTriggerType}"
+    enum="PageEndReason" expires_after="2023-04-27">
+  <owner>asamidoi@chromium.org</owner>
+  <owner>src/content/browser/preloading/prerender/OWNERS</owner>
+  <summary>
+    The reason how the page load ended on the prerender's activation.
   </summary>
 <!-- PrerenderTriggerType variant is defined in
   tools/metrics/histograms/metadata/navigation/histograms.xml.
@@ -2378,6 +2393,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="PageLoad.Internal.Prerender2.ObserverEvent"
+    enum="PageLoadPrerenderObserverEvent" expires_after="2023-07-26">
+  <owner>nhiroki@chromium.org</owner>
+  <owner>src/content/browser/preloading/prerender/OWNERS</owner>
+  <summary>
+    Counts page load observer events related to Prerender2, like
+    FirstContentfulPaint. Recorded when those events are observed in
+    PrerenderPageLoaderMetricsObserver.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Internal.Renderer.PresentationTime.DeltaFromSwapTime"
     units="ms" expires_after="2023-06-04">
   <owner>jonross@chromium.org</owner>
@@ -2890,7 +2916,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PageLoad.ParseTiming.ParseBlockedOnScriptExecution" units="ms"
-    expires_after="2023-04-09">
+    expires_after="2023-06-11">
   <owner>cduvall@chromium.org</owner>
   <owner>swarm-team@google.com</owner>
   <summary>

@@ -49,6 +49,7 @@ class InputDelegateHolder;
 }
 
 struct Config;
+class RequestDispatcher;
 class FieldTrialRegister;
 class ModelProviderFactory;
 class SegmentSelectorImpl;
@@ -106,6 +107,10 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
   // SegmentationPlatformService overrides.
   void GetSelectedSegment(const std::string& segmentation_key,
                           SegmentSelectionCallback callback) override;
+  void GetClassificationResult(const std::string& segmentation_key,
+                               const PredictionOptions& prediction_options,
+                               scoped_refptr<InputContext> input_context,
+                               ClassificationResultCallback callback) override;
   SegmentSelectionResult GetCachedSegmentResult(
       const std::string& segmentation_key) override;
   void GetSelectedSegmentOnDemand(const std::string& segmentation_key,
@@ -160,6 +165,9 @@ class SegmentationPlatformServiceImpl : public SegmentationPlatformService {
   // SegmentSelectorImpl and ModelExecutionSchedulerImpl.
   base::flat_map<std::string, std::unique_ptr<SegmentSelectorImpl>>
       segment_selectors_;
+
+  // For routing requests to the right handler.
+  std::unique_ptr<RequestDispatcher> request_dispatcher_;
 
   // Segment results.
   std::unique_ptr<SegmentScoreProvider> segment_score_provider_;

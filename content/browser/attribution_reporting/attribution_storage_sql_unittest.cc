@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "components/aggregation_service/aggregation_service.mojom.h"
 #include "components/attribution_reporting/filters.h"
+#include "components/attribution_reporting/suitable_origin.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_reporting.pb.h"
@@ -41,6 +42,8 @@
 namespace content {
 
 namespace {
+
+using ::attribution_reporting::SuitableOrigin;
 
 using ::testing::AllOf;
 using ::testing::ElementsAre;
@@ -614,12 +617,12 @@ TEST_F(AttributionStorageSqlTest,
       .max_attribution_reporting_origins = std::numeric_limits<int64_t>::max(),
       .max_attributions = std::numeric_limits<int64_t>::max(),
   });
-  const url::Origin source_origin =
-      url::Origin::Create(GURL("https://sub.impression.example/"));
-  const url::Origin reporting_origin =
-      url::Origin::Create(GURL("https://a.example/"));
-  const url::Origin destination_origin =
-      url::Origin::Create(GURL("https://b.example/"));
+  const auto source_origin =
+      *SuitableOrigin::Deserialize("https://sub.impression.example/");
+  const auto reporting_origin =
+      *SuitableOrigin::Deserialize("https://a.example/");
+  const auto destination_origin =
+      *SuitableOrigin::Deserialize("https://b.example/");
   storage()->StoreSource(SourceBuilder()
                              .SetExpiry(base::Days(30))
                              .SetSourceOrigin(source_origin)
@@ -665,12 +668,11 @@ TEST_F(AttributionStorageSqlTest,
       .max_attribution_reporting_origins = std::numeric_limits<int64_t>::max(),
       .max_attributions = std::numeric_limits<int64_t>::max(),
   });
-  const url::Origin source_origin =
-      url::Origin::Create(GURL("https://b.example/"));
-  const url::Origin reporting_origin =
-      url::Origin::Create(GURL("https://a.example/"));
-  const url::Origin destination_origin =
-      url::Origin::Create(GURL("https://sub.impression.example/"));
+  const auto source_origin = *SuitableOrigin::Deserialize("https://b.example/");
+  const auto reporting_origin =
+      *SuitableOrigin::Deserialize("https://a.example/");
+  const auto destination_origin =
+      *SuitableOrigin::Deserialize("https://sub.impression.example/");
   storage()->StoreSource(SourceBuilder()
                              .SetExpiry(base::Days(30))
                              .SetSourceOrigin(source_origin)
@@ -1127,50 +1129,6 @@ TEST_F(AttributionStorageSqlTest,
   ASSERT_EQ(sources.size(), 1u);
   ASSERT_THAT(sources.front().common_info().filter_data().filter_values(),
               ElementsAre(Pair("x", ElementsAre("y"))));
-}
-
-TEST_F(AttributionStorageSqlTest, GetNextReportTime_RecordsSucceededMetric) {
-  using ::base::Bucket;
-  using ::base::BucketsAre;
-
-  static constexpr char kHistogram[] =
-      "Conversions.Storage.GetNextReportTimeSucceeded";
-  {
-    OpenDatabase();
-    storage()->StoreSource(SourceBuilder().Build());
-
-    base::HistogramTester histograms;
-
-    // Internally, this runs two statements.
-    storage()->GetNextReportTime(base::Time());
-
-    EXPECT_THAT(histograms.GetAllSamples(kHistogram),
-                BucketsAre(Bucket(true, 2)));
-
-    CloseDatabase();
-  }
-
-  ASSERT_TRUE(sql::test::CorruptIndexRootPage(
-      db_path(), "event_level_reports_by_report_time"));
-
-  {
-    sql::test::ScopedErrorExpecter expecter;
-    expecter.ExpectError(SQLITE_CORRUPT);
-
-    OpenDatabase();
-
-    base::HistogramTester histograms;
-
-    // Internally, this runs two statements.
-    storage()->GetNextReportTime(base::Time());
-
-    EXPECT_THAT(histograms.GetAllSamples(kHistogram),
-                BucketsAre(Bucket(false, 2)));
-
-    EXPECT_TRUE(expecter.SawExpectedErrors());
-
-    CloseDatabase();
-  }
 }
 
 TEST_F(AttributionStorageSqlTest,

@@ -4,7 +4,6 @@
 
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 
-#include <limits.h>
 #include <stdint.h>
 
 #include <algorithm>
@@ -13,7 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
@@ -32,15 +30,16 @@
 #include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/trigger_registration.h"
+#include "content/browser/attribution_reporting/attribution_data_host_manager.h"
 #include "content/browser/attribution_reporting/attribution_observer.h"
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/rate_limit_result.h"
 #include "content/public/browser/attribution_config.h"
+#include "content/public/browser/navigation_handle.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/net_errors.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "url/gurl.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "content/browser/attribution_reporting/attribution_input_event_tracker_android.h"
@@ -124,6 +123,7 @@ void MockDataHost::SourceDataAvailable(
 }
 
 void MockDataHost::TriggerDataAvailable(
+    attribution_reporting::SuitableOrigin reporting_origin,
     attribution_reporting::TriggerRegistration data) {
   trigger_data_.push_back(std::move(data));
   if (trigger_data_.size() < min_trigger_data_count_) {
@@ -132,20 +132,12 @@ void MockDataHost::TriggerDataAvailable(
   wait_loop_.Quit();
 }
 
-MockDataHostManager::MockDataHostManager() = default;
-
-MockDataHostManager::~MockDataHostManager() = default;
-
 MockAttributionObserver::MockAttributionObserver() = default;
 
 MockAttributionObserver::~MockAttributionObserver() = default;
 
 base::GUID DefaultExternalReportID() {
   return base::GUID::ParseLowercase("21abd97f-73e8-4b88-9389-a9fee6abda5e");
-}
-
-std::vector<base::GUID> DefaultExternalReportIDs(size_t size) {
-  return std::vector<base::GUID>(size, DefaultExternalReportID());
 }
 
 ConfigurableStorageDelegate::ConfigurableStorageDelegate()
@@ -507,21 +499,9 @@ SourceBuilder& SourceBuilder::SetSourceEventId(uint64_t source_event_id) {
   return *this;
 }
 
-SourceBuilder& SourceBuilder::SetSourceOrigin(url::Origin origin) {
-  auto suitable_origin = SuitableOrigin::Create(std::move(origin));
-  CHECK(suitable_origin);
-  return SetSourceOrigin(std::move(*suitable_origin));
-}
-
 SourceBuilder& SourceBuilder::SetSourceOrigin(SuitableOrigin origin) {
   source_origin_ = std::move(origin);
   return *this;
-}
-
-SourceBuilder& SourceBuilder::SetDestinationOrigin(url::Origin origin) {
-  auto suitable_origin = SuitableOrigin::Create(std::move(origin));
-  CHECK(suitable_origin);
-  return SetDestinationOrigin(std::move(*suitable_origin));
 }
 
 SourceBuilder& SourceBuilder::SetDestinationOrigin(SuitableOrigin origin) {
@@ -533,12 +513,6 @@ SourceBuilder& SourceBuilder::SetDestinationOrigins(
   DCHECK(!origins.empty());
   destination_origins_ = std::move(origins);
   return *this;
-}
-
-SourceBuilder& SourceBuilder::SetReportingOrigin(url::Origin origin) {
-  auto suitable_origin = SuitableOrigin::Create(std::move(origin));
-  CHECK(suitable_origin);
-  return SetReportingOrigin(std::move(*suitable_origin));
 }
 
 SourceBuilder& SourceBuilder::SetReportingOrigin(SuitableOrigin origin) {
@@ -677,23 +651,9 @@ TriggerBuilder& TriggerBuilder::SetEventSourceTriggerData(
   return *this;
 }
 
-TriggerBuilder& TriggerBuilder::SetDestinationOrigin(
-    url::Origin destination_origin) {
-  auto suitable_origin = SuitableOrigin::Create(std::move(destination_origin));
-  CHECK(suitable_origin);
-  return SetDestinationOrigin(std::move(*suitable_origin));
-}
-
 TriggerBuilder& TriggerBuilder::SetDestinationOrigin(SuitableOrigin origin) {
   destination_origin_ = std::move(origin);
   return *this;
-}
-
-TriggerBuilder& TriggerBuilder::SetReportingOrigin(
-    url::Origin reporting_origin) {
-  auto suitable_origin = SuitableOrigin::Create(std::move(reporting_origin));
-  CHECK(suitable_origin);
-  return SetReportingOrigin(std::move(*suitable_origin));
 }
 
 TriggerBuilder& TriggerBuilder::SetReportingOrigin(SuitableOrigin origin) {
@@ -774,8 +734,8 @@ AttributionTrigger TriggerBuilder::Build(
   }
 
   return AttributionTrigger(
+      reporting_origin_,
       attribution_reporting::TriggerRegistration(
-          reporting_origin_,
           /*filters=*/attribution_reporting::Filters(),
           /*not_filters=*/attribution_reporting::Filters(), debug_key_,
           aggregatable_dedup_key_,
@@ -1362,7 +1322,6 @@ EventTriggerDataMatches(const EventTriggerDataMatcherConfig& cfg) {
 }
 
 TriggerRegistrationMatcherConfig::TriggerRegistrationMatcherConfig(
-    ::testing::Matcher<const SuitableOrigin&> reporting_origin,
     ::testing::Matcher<const attribution_reporting::Filters&> filters,
     ::testing::Matcher<const attribution_reporting::Filters&> not_filters,
     ::testing::Matcher<absl::optional<uint64_t>> debug_key,
@@ -1377,8 +1336,7 @@ TriggerRegistrationMatcherConfig::TriggerRegistrationMatcherConfig(
         aggregatable_values,
     ::testing::Matcher<::aggregation_service::mojom::AggregationCoordinator>
         aggregation_coordinator)
-    : reporting_origin(std::move(reporting_origin)),
-      filters(std::move(filters)),
+    : filters(std::move(filters)),
       not_filters(std::move(not_filters)),
       debug_key(std::move(debug_key)),
       event_triggers(std::move(event_triggers)),
@@ -1393,9 +1351,6 @@ TriggerRegistrationMatcherConfig::~TriggerRegistrationMatcherConfig() = default;
 ::testing::Matcher<const attribution_reporting::TriggerRegistration&>
 TriggerRegistrationMatches(const TriggerRegistrationMatcherConfig& cfg) {
   return AllOf(
-      Field("reporting_origin",
-            &attribution_reporting::TriggerRegistration::reporting_origin,
-            cfg.reporting_origin),
       Field("filters", &attribution_reporting::TriggerRegistration::filters,
             cfg.filters),
       Field("not_filters",
@@ -1426,11 +1381,13 @@ TriggerRegistrationMatches(const TriggerRegistrationMatcherConfig& cfg) {
 }
 
 AttributionTriggerMatcherConfig::AttributionTriggerMatcherConfig(
+    ::testing::Matcher<const SuitableOrigin&> reporting_origin,
     ::testing::Matcher<const attribution_reporting::TriggerRegistration&>
         registration,
     ::testing::Matcher<const SuitableOrigin&> destination_origin,
     ::testing::Matcher<bool> is_within_fenced_frame)
-    : registration(std::move(registration)),
+    : reporting_origin(std::move(reporting_origin)),
+      registration(std::move(registration)),
       destination_origin(std::move(destination_origin)),
       is_within_fenced_frame(std::move(is_within_fenced_frame)) {}
 
@@ -1439,6 +1396,8 @@ AttributionTriggerMatcherConfig::~AttributionTriggerMatcherConfig() = default;
 ::testing::Matcher<AttributionTrigger> AttributionTriggerMatches(
     const AttributionTriggerMatcherConfig& cfg) {
   return AllOf(
+      Property("reporting_origin", &AttributionTrigger::reporting_origin,
+               cfg.reporting_origin),
       Property("registration", &AttributionTrigger::registration,
                cfg.registration),
       Property("destination_origin", &AttributionTrigger::destination_origin,

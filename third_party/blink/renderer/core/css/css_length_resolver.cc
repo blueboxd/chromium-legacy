@@ -258,26 +258,26 @@ double CSSLengthResolver::ZoomedComputedPixels(
     case CSSPrimitiveValue::UnitType::kContainerMax:
       return value * ContainerMaxPercent() * Zoom();
 
-    case CSSPrimitiveValue::UnitType::kLhs:
-      return value * LineHeight() * Zoom();
-
     // Note that functions for font-relative units already account for the
     // zoom factor.
     case CSSPrimitiveValue::UnitType::kEms:
     case CSSPrimitiveValue::UnitType::kQuirkyEms:
-      return value * EmFontSize();
+      return value * EmFontSize(Zoom());
 
     case CSSPrimitiveValue::UnitType::kExs:
-      return value * ExFontSize();
+      return value * ExFontSize(Zoom());
 
     case CSSPrimitiveValue::UnitType::kRems:
-      return value * RemFontSize();
+      return value * RemFontSize(Zoom());
 
     case CSSPrimitiveValue::UnitType::kChs:
-      return value * ChFontSize();
+      return value * ChFontSize(Zoom());
 
     case CSSPrimitiveValue::UnitType::kIcs:
-      return value * IcFontSize();
+      return value * IcFontSize(Zoom());
+
+    case CSSPrimitiveValue::UnitType::kLhs:
+      return value * LineHeight(Zoom());
 
     default:
       NOTREACHED();

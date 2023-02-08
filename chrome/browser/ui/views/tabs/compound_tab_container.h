@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/tabs/tab_container_controller.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/views/view_targeter_delegate.h"
 
 class TabHoverCardController;
 class TabDragContextBase;
@@ -19,7 +20,8 @@ class TabDragContextBase;
 // and the unpinned tabs in the other.
 // Indices in the public and private API are all in overall indices, unless
 // specifically noted otherwise as being relative to a specific container.
-class CompoundTabContainer : public TabContainer {
+class CompoundTabContainer : public TabContainer,
+                             public views::ViewTargeterDelegate {
  public:
   METADATA_HEADER(CompoundTabContainer);
 
@@ -72,6 +74,10 @@ class CompoundTabContainer : public TabContainer {
       TabSlotController::HoverCardUpdateType update_type) override;
   void HandleLongTap(ui::GestureEvent* event) override;
   bool IsRectInContentArea(const gfx::Rect& rect) override;
+  absl::optional<ZOrderableTabContainerElement> GetLeadingElementForZOrdering()
+      const override;
+  absl::optional<ZOrderableTabContainerElement> GetTrailingElementForZOrdering()
+      const override;
   void OnTabSlotAnimationProgressed(TabSlotView* view) override;
   void OnTabCloseAnimationCompleted(Tab* tab) override;
   void InvalidateIdealBounds() override;
@@ -94,6 +100,10 @@ class CompoundTabContainer : public TabContainer {
   gfx::Rect GetIdealBounds(tab_groups::TabGroupId group) const override;
 
   // views::View
+  gfx::Size GetMinimumSize() const override;
+  views::SizeBounds GetAvailableSize(const View* child) const override;
+  gfx::Size CalculatePreferredSize() const override;
+  views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   void Layout() override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
   void ChildPreferredSizeChanged(views::View* child) override;
@@ -107,6 +117,9 @@ class CompoundTabContainer : public TabContainer {
   void HandleDragUpdate(
       const absl::optional<BrowserRootView::DropIndex>& index) override;
   void HandleDragExited() override;
+
+  // views::ViewTargeterDelegate:
+  views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
 
   // Notifies this CompoundTabContainer that `tab_slot_view` must be animated to
   // `target_bounds`. `pinned` indicates whether these bounds are relative to
@@ -150,8 +163,12 @@ class CompoundTabContainer : public TabContainer {
   // any running animations finish.
   int GetUnpinnedContainerIdealLeadingX() const;
 
-  int GetAvailableWidthForUnpinnedTabContainer(
-      base::RepeatingCallback<int()> available_width_callback);
+  int GetAvailableWidthForUnpinnedTabContainer() const;
+
+  // Computes the size of this compound container assuming the pinned and
+  // unpinned containers have the given sizes.
+  gfx::Size GetCombinedSizeForTabContainerSizes(gfx::Size pinned_size,
+                                                gfx::Size unpinned_size) const;
 
   // Private getter to retrieve the visible rect of the scroll container.
   absl::optional<gfx::Rect> GetVisibleContentRect();

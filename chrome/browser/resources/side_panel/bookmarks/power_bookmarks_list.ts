@@ -6,24 +6,28 @@ import '../strings.m.js';
 import './commerce/shopping_list.js';
 import './icons.html.js';
 import './power_bookmark_chip.js';
+import './power_bookmarks_context_menu.js';
 import './power_bookmark_row.js';
 import '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import '//resources/cr_elements/cr_button/cr_button.js';
 import '//resources/cr_elements/cr_icon_button/cr_icon_button.js';
+import '//resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
 import '//resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
 import '//resources/cr_elements/icons.html.js';
 
+import {getInstance as getAnnouncerInstance} from '//resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {CrActionMenuElement} from '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
-import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
-import {listenOnce} from 'chrome://resources/js/util_ts.js';
-import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {CrLazyRenderElement} from '//resources/cr_elements/cr_lazy_render/cr_lazy_render.js';
+import {loadTimeData} from '//resources/js/load_time_data.js';
+import {PluralStringProxyImpl} from '//resources/js/plural_string_proxy.js';
+import {listenOnce} from '//resources/js/util_ts.js';
+import {DomRepeatEvent, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ActionSource} from './bookmarks.mojom-webui.js';
 import {BookmarksApiProxy, BookmarksApiProxyImpl} from './bookmarks_api_proxy.js';
 import {BookmarkProductInfo} from './commerce/shopping_list.mojom-webui.js';
 import {ShoppingListApiProxy, ShoppingListApiProxyImpl} from './commerce/shopping_list_api_proxy.js';
+import {PowerBookmarksContextMenuElement} from './power_bookmarks_context_menu.js';
 import {getTemplate} from './power_bookmarks_list.html.js';
 
 function getBookmarkName(bookmark: chrome.bookmarks.BookmarkTreeNode): string {
@@ -38,6 +42,7 @@ interface Label {
 
 export interface PowerBookmarksListElement {
   $: {
+    contextMenu: CrLazyRenderElement<PowerBookmarksContextMenuElement>,
     powerBookmarksContainer: HTMLElement,
     sortMenu: CrActionMenuElement,
   };
@@ -111,6 +116,12 @@ export class PowerBookmarksListElement extends PolymerElement {
         type: Array,
         value: () => [],
       },
+
+      guestMode_: {
+        type: Boolean,
+        value: loadTimeData.getBoolean('guestMode'),
+        reflectToAttribute: true,
+      },
     };
   }
 
@@ -142,6 +153,7 @@ export class PowerBookmarksListElement extends PolymerElement {
   private currentUrl_: string|undefined;
   private editing_: boolean;
   private selectedBookmarks_: chrome.bookmarks.BookmarkTreeNode[];
+  private guestMode_: boolean;
 
   override connectedCallback() {
     super.connectedCallback();
@@ -471,9 +483,6 @@ export class PowerBookmarksListElement extends PolymerElement {
   }
 
   private canAddCurrentUrl_(): boolean {
-    if (!loadTimeData.getBoolean('canModifyBookmarks')) {
-      return false;
-    }
     const activeFolder =
         this.activeFolderPath_[this.activeFolderPath_.length - 1];
     let unfilteredShownBookmarks: chrome.bookmarks.BookmarkTreeNode[] = [];
@@ -633,6 +642,22 @@ export class PowerBookmarksListElement extends PolymerElement {
     this.searchQuery_ = e.detail.toLocaleLowerCase();
   }
 
+  private onShowContextMenuClicked_(
+      event: CustomEvent<
+          {bookmark: chrome.bookmarks.BookmarkTreeNode, event: MouseEvent}>) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (event.detail.event.button === 0) {
+      this.$.contextMenu.get().showAt(
+          event.detail.event, event.detail.bookmark,
+          this.activeFolderPath_.length);
+    } else {
+      this.$.contextMenu.get().showAtPosition(
+          event.detail.event, event.detail.bookmark,
+          this.activeFolderPath_.length);
+    }
+  }
+
   private onShowSortMenuClicked_(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
@@ -652,6 +677,17 @@ export class PowerBookmarksListElement extends PolymerElement {
     if (!this.editing_) {
       this.selectedBookmarks_ = [];
     }
+  }
+
+  private onDeleteClicked_(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.bookmarksApi_
+        .deleteBookmarks(this.selectedBookmarks_.map(bookmark => bookmark.id))
+        .then(() => {
+          this.selectedBookmarks_ = [];
+          this.editing_ = false;
+        });
   }
 
   private onSortTypeClicked_(event: DomRepeatEvent<string>) {
@@ -683,8 +719,28 @@ export class PowerBookmarksListElement extends PolymerElement {
     this.bookmarksApi_.bookmarkCurrentTabInFolder(newParent!.id);
   }
 
+  private hideAddTabButton_() {
+    return this.editing_ || this.guestMode_;
+  }
+
   private disableBackButton_(): boolean {
     return !this.activeFolderPath_.length || this.editing_;
+  }
+
+  private getEmptyTitle_(): string {
+    if (this.guestMode_) {
+      return loadTimeData.getString('emptyTitleGuest');
+    } else {
+      return loadTimeData.getString('emptyTitle');
+    }
+  }
+
+  private getEmptyBody_(): string {
+    if (this.guestMode_) {
+      return loadTimeData.getString('emptyBodyGuest');
+    } else {
+      return loadTimeData.getString('emptyBody');
+    }
   }
 
   /**

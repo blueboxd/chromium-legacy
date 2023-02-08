@@ -1539,6 +1539,9 @@
     <message name="IDS_SETTINGS_LANGUAGES_NO_LANGUAGES_ADDED" desc="Placeholder for language list settings when no languages have been added, on the Manage Languages page.">
       No languages added
     </message>
+    <message name="IDS_SETTINGS_LANGUAGES_REMOVE_ARIA_LABEL" desc="Text read by screen readers when focusing on the trash can icon for removing a language. Activating this button will remove the selected language from its current list. This text only announced by screen readers and is not visible in the UI.">
+      Remove <ph name="LANGUAGE_NAME">$1<ex>Swahili</ex></ph>
+    </message>
     <message name="IDS_SETTINGS_TRANSLATE_PAGE_TITLE" desc="Name of the settings page which displays translate preferences.">
       Google Translate
     </message>
@@ -1548,8 +1551,14 @@
     <message name="IDS_SETTINGS_LANGUAGES_AUTOMATIC_TRANSLATE" desc="Title of Translation settings that lists languages that should be automatically translated.">
       Automatically translate these languages
     </message>
+    <message name="IDS_SETTINGS_LANGUAGES_AUTOMATIC_TRANSLATE_ADD_ARIA_LABEL" desc="Text read by screen readers when focusing on the 'Add Languages' button for the automatically translate language list. When this button is activated a dialog for selecting and adding multiple languages is shown. This text is only announced by screen readers and is not visible in the UI.">
+      Add languages to automatically translate
+    </message>
     <message name="IDS_SETTINGS_LANGUAGES_NEVER_LANGUAGES" desc="Title of Translation settings that lists languages that should never be offered to translate.">
-      Don’t offer to translate these languages
+      Never offer to translate these languages
+    </message>
+    <message name="IDS_SETTINGS_LANGUAGES_NEVER_TRANSLATE_ADD_ARIA_LABEL" desc="Text read by screen readers when focusing on the 'Add Languages' button for the don't offer to translate language list. When this button is activated a dialog for selecting and adding multiple languages is shown. This text is only announced by screen readers and is not visible in the UI.">
+      Add languages to never offer translation
     </message>
     <message name="IDS_SETTINGS_LANGUAGES_SPELL_CHECK_TITLE" desc="Title for the section containing all the options for spell check settings. The options include picking between using the system's spell check or using Google's web service and a list of the enabled languages which support spell checking.">
       Spell check
@@ -1623,6 +1632,50 @@
       Keyboard apps
     </message>
   </if>
+
+  <!-- Preloading Page-->
+  <message name="IDS_SETTINGS_PRELOAD_PAGES_TITLE" desc="Title for a section in Settings that controls pages preloading and informs the user about the data shared by this feature.">
+    Preload pages
+  </message>
+  <message name="IDS_SETTINGS_PRELOAD_PAGES_SUMMARY" desc="Summary for a section in Settings that controls pages preloading and informs the user about the data shared by this feature.">
+    Choose whether to preload pages
+  </message>
+  <message name="IDS_SETTINGS_PRELOAD_PAGES_NO_PRELOADING_TITLE" desc="Name of the no preloading option for the Preload Pages settings page. This option disables preloading pages that Chrome believes the user is likely to navigate to.">
+    No preloading
+  </message>
+  <message name="IDS_SETTINGS_PRELOAD_PAGES_NO_PRELOADING_SUMMARY" desc="Short explanation of what the no preloading mode does in the Preload Pages setting.">
+    Pages load only after you open them.
+  </message>
+  <message name="IDS_SETTINGS_PRELOAD_PAGES_STANDARD_PRELOADING_TITLE" desc="Name of the standard preloading option for the Preload Pages settings page. This option enables preloading pages that Chrome believes the user is likely to navigate to.">
+    Standard preloading
+  </message>
+  <message name="IDS_SETTINGS_PRELOAD_PAGES_STANDARD_PRELOADING_SUMMARY" desc="Short explanation of what the standard preloading mode does in the Preload Pages setting.">
+    Some of the pages you visit are preloaded.
+  </message>
+  <message name="IDS_SETTINGS_PRELOAD_PAGES_STANDARD_PRELOADING_WHEN_ON_BULLET_ONE" desc="First bullet point in the standard preloading and when on column. Informs the user about what the standard preloading setting does.">
+    Browsing and searching is faster.
+  </message>
+  <message name="IDS_SETTINGS_PRELOAD_PAGES_STANDARD_PRELOADING_WHEN_ON_BULLET_TWO" desc="Second bullet point in the standard preloading and when on column. Informs the user about what the standard preloading setting does.">
+    Chrome preloads pages you're likely to visit, so that they load more quickly when you visit them.
+  </message>
+  <message name="IDS_SETTINGS_PRELOAD_PAGES_EXTENDED_PRELOADING_TITLE" desc="Name of the extended preloading option for the Preload Pages settings page. This option enables more extensive preloading of pages that Chrome believes the user is likely to navigate to.">
+    Extended preloading
+  </message>
+  <message name="IDS_SETTINGS_PRELOAD_PAGES_EXTENDED_PRELOADING_SUMMARY" desc="Subtitle for Preload Pages extended preloading mode. Informs the user about which preloading setting is being described on this page.">
+    More pages are preloaded. Pages may be preloaded through Google servers when requested by other sites.
+  </message>
+  <message name="IDS_SETTINGS_PRELOAD_PAGES_EXTENDED_PRELOADING_WHEN_ON_BULLET_ONE" desc="First bullet point in the extended preloading and when on column. Informs the user about what the extended preloading setting does.">
+    Browsing and searching is faster than standard preloading.
+  </message>
+  <message name="IDS_SETTINGS_PRELOAD_PAGES_EXTENDED_PRELOADING_WHEN_ON_BULLET_TWO" desc="Second bullet point in the extended preloading and when on column. Informs the user about what the extended preloading setting does.">
+    Chrome preloads even more pages that you're likely to visit, so that they load more quickly when you visit them.
+  </message>
+  <message name="IDS_SETTINGS_PRELOAD_PAGES_EXTENDED_PRELOADING_THINGS_TO_CONSIDER_BULLET_TWO" desc="Second bullet point in the extended preloading and things to consider column. Informs the user about what the extended preloading setting does.">
+    When a site asks to privately preload links on their page, Chrome uses Google servers. This hides your identity from the preloaded site, but Google learns what sites get preloaded.
+  </message>
+  <message name="IDS_SETTINGS_PRELOAD_PAGES_THINGS_TO_CONSIDER_BULLET_ONE" desc="First bullet point in the things to consider column. Informs the user about what the preloading setting does.">
+    If you allow cookies, Chrome may use them when preloading.
+  </message>
 
   <!-- Privacy Page -->
   <message name="IDS_SETTINGS_PRIVACY" desc="Name of the settings page which allows users to modify privacy and security settings.">
@@ -1822,6 +1875,18 @@
   </message>
   <message name="IDS_SETTINGS_TOPICS_PAGE_TOGGLE_SUB_LABEL" translateable="false" desc="Subabel for the toggle in the Topics preferences page.">
     Vivamus nibh turpis, varius quis nisi vel, porta laoreet tellus. Mauris porta imperdiet venenatis
+  </message>
+  <message name="IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_HEADING" translateable="false" desc="Section title for the current Topics list underneath toggle in the Topics preferences page.">
+    Mauris at lectus
+  </message>
+  <message name="IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_DESCRIPTION" translateable="false" desc="Section description for the current Topics list in the Topics preferences page.">
+    Nulla tincidunt iaculis nulla, sit amet viverra massa luctus nec. Integer eget pellentesque magna, et venenatis lorem. Integer a porta elit. Eget bibendum neque.
+  </message>
+  <message name="IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_DESCRIPTION_DISABLED" translateable="false" desc="Section description for the current Topics list when Topics is disabled in the Topics preferences page.">
+    Sed porta viverra lacus ut euismod. Integer a cursus metus, ac ultricies libero.
+  </message>
+  <message name="IDS_SETTINGS_TOPICS_PAGE_CURRENT_TOPICS_DESCRIPTION_EMPTY" translateable="false" desc="Section description for the current Topics list when the Topics list is empty in the Topics preferences page.">
+    Curabitur sagittis sapien ut turpis interdum, vitae porttitor sem pretium. Vestibulum sem mauris, ultrices ac massa sit amet, sodales aliquet est.
   </message>
 
   <!-- Privacy Sandbox Settings 4 - Fledge Page -->
@@ -2067,8 +2132,20 @@
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_HEADER_LABEL" desc="'Unused Site Permissions' shows the revoked permissions of unused websites. This label is the header of the module in the site settings page. The number represents the number of sites for which permissions were revoked.">
     {NUM_SITES, plural,
-     =1 {Permissions removed from <ph name="BEGIN_BOLD">&lt;b&gt;</ph>1 site<ph name="END_BOLD">&lt;/b&gt;</ph> you haven’t visited recently}
-     other {Permissions removed from <ph name="BEGIN_BOLD">&lt;b&gt;</ph>{NUM_SITES} sites<ph name="END_BOLD">&lt;/b&gt;</ph> you haven’t visited recently}}
+     =1 {Permissions removed from <ph name="BEGIN_BOLD">&lt;b&gt;</ph>1 site<ph name="END_BOLD">&lt;/b&gt;</ph> you haven’t visited in a while}
+     other {Permissions removed from <ph name="BEGIN_BOLD">&lt;b&gt;</ph>{NUM_SITES} sites<ph name="END_BOLD">&lt;/b&gt;</ph> you haven’t visited in a while}}
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_REMOVED_ONE_PERMISSION_LABEL" desc="'Unused Site Permissions' shows the revoked permissions of unused websites. This text describes which permission was removed and is shown if there is exactly one permission.">
+    Removed <ph name="PERMISSION">$1<ex>location</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_REMOVED_TWO_PERMISSIONS_LABEL" desc="'Unused Site Permissions' shows the revoked permissions of unused websites. This text describes which permissions were removed and is shown if there are exactly two permissions.">
+    Removed <ph name="PERMISSION_1">$1<ex>location</ex></ph>, <ph name="PERMISSION_2">$2<ex>notifications</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_REMOVED_THREE_PERMISSIONS_LABEL" desc="'Unused Site Permissions' shows the revoked permissions of unused websites. This text describes which permissions were removed and is shown if there are exactly three permissions.">
+    Removed <ph name="PERMISSION_1">$1<ex>location</ex></ph>, <ph name="PERMISSION_2">$2<ex>notifications</ex></ph>, <ph name="PERMISSION_3">$3<ex>camera</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_REMOVED_FOUR_OR_MORE_PERMISSIONS_LABEL" desc="'Unused Site Permissions' shows the revoked permissions of unused websites. This text describes which permissions were removed and is shown if there are four or more permissions. The number indicates the count of permisions that are not shown explicitly. The number is always two or larger.">
+    Removed <ph name="PERMISSION_1">$1<ex>location</ex></ph>, <ph name="PERMISSION_2">$2<ex>notifications</ex></ph>, and <ph name="COUNT">$3<ex>2</ex></ph> more
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_PRIMARY_LABEL" desc="'Unused Site Permissions' shows unused websites for which permissions have been revoked. This label is the header of the module in the site settings page. The number represents the number of unused sites.">
     {NUM_SITES, plural,
@@ -2077,8 +2154,13 @@
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_SECONDARY_LABEL" desc="'Unused Site Permissions' shows unused websites for which permissions have been revoked. This label is the description of the module in the site settings page.">
     {NUM_SITES, plural,
-     =1 {To protect your data, permissions were removed from this site you haven't visited in 2 months}
+     =1 {To protect your data, permissions were removed from a site you haven't visited in 2 months}
      other {To protect your data, permissions were removed from sites you haven't visited in 2 months}}
+  </message>
+  <message name="IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_TOAST_BULK_LABEL" desc="'Unused Site Permissions' shows unused websites for which permissions have been revoked. This label is shown in a toast popup message after a user has clicked a button to acknowledge all revoked permissions.">
+    {NUM_SITES, plural,
+     =1 {Review complete for 1 site}
+     other {Review complete for {NUM_SITES} sites}}
   </message>
   <message name="IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_TOAST_LABEL" desc="'Unused Site Permissions' shows unused websites for which permissions have been revoked. This label is shown after a user has taken action to allow some permissions again.">
     Permissions allowed again for <ph name="WEBSITE">$1<ex>www.example.com</ex></ph>

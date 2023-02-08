@@ -179,13 +179,13 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   bool IsInstalled(const GURL& install_url) {
-    return provider().registrar().IsInstalled(
+    return provider().registrar_unsafe().IsInstalled(
         web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, install_url));
   }
 
   void InitRegistrarWithSystemApps(
       const std::vector<SystemAppData>& system_app_data_list) {
-    DCHECK(provider().registrar().is_empty());
+    DCHECK(provider().registrar_unsafe().is_empty());
     DCHECK(!system_app_data_list.empty());
 
     for (const SystemAppData& data : system_app_data_list) {
@@ -193,7 +193,7 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
           data.url, web_app::WebAppManagement::Type::kSystem);
       const web_app::AppId app_id = web_app->app_id();
       {
-        web_app::ScopedRegistryUpdate update(&provider().sync_bridge());
+        web_app::ScopedRegistryUpdate update(&provider().sync_bridge_unsafe());
         update->CreateApp(std::move(web_app));
       }
 
@@ -223,17 +223,42 @@ class SystemWebAppManagerTest : public ChromeRenderViewHostTestHarness {
 
 class SystemWebAppManagerTest_PrefMigrationEnabled
     : public SystemWebAppManagerTest,
-      public testing::WithParamInterface<bool> {
+      public testing::WithParamInterface<
+          web_app::test::ExternalPrefMigrationTestCases> {
  public:
   SystemWebAppManagerTest_PrefMigrationEnabled() {
-    bool enable_migration = GetParam();
-    if (enable_migration) {
-      scoped_feature_list_.InitWithFeatures(
-          {::features::kUseWebAppDBInsteadOfExternalPrefs}, {});
-    } else {
-      scoped_feature_list_.InitWithFeatures(
-          {}, {::features::kUseWebAppDBInsteadOfExternalPrefs});
+    std::vector<base::test::FeatureRef> enabled_features;
+    std::vector<base::test::FeatureRef> disabled_features;
+
+    switch (GetParam()) {
+      case web_app::test::ExternalPrefMigrationTestCases::
+          kDisableMigrationReadPref:
+        disabled_features.push_back(
+            ::features::kMigrateExternalPrefsToWebAppDB);
+        disabled_features.push_back(
+            ::features::kUseWebAppDBInsteadOfExternalPrefs);
+        break;
+      case web_app::test::ExternalPrefMigrationTestCases::
+          kDisableMigrationReadDB:
+        disabled_features.push_back(
+            ::features::kMigrateExternalPrefsToWebAppDB);
+        enabled_features.push_back(
+            ::features::kUseWebAppDBInsteadOfExternalPrefs);
+        break;
+      case web_app::test::ExternalPrefMigrationTestCases::
+          kEnableMigrationReadPref:
+        enabled_features.push_back(::features::kMigrateExternalPrefsToWebAppDB);
+        disabled_features.push_back(
+            ::features::kUseWebAppDBInsteadOfExternalPrefs);
+        break;
+      case web_app::test::ExternalPrefMigrationTestCases::
+          kEnableMigrationReadDB:
+        enabled_features.push_back(::features::kMigrateExternalPrefsToWebAppDB);
+        enabled_features.push_back(
+            ::features::kUseWebAppDBInsteadOfExternalPrefs);
+        break;
     }
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
   bool IsExternalDataReadFromDBEnabled() {
@@ -301,9 +326,16 @@ TEST_P(SystemWebAppManagerTest_PrefMigrationEnabled,
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         SystemWebAppManagerTest_PrefMigrationEnabled,
-                         ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemWebAppManagerTest_PrefMigrationEnabled,
+    ::testing::Values(
+        web_app::test::ExternalPrefMigrationTestCases::
+            kDisableMigrationReadPref,
+        web_app::test::ExternalPrefMigrationTestCases::kDisableMigrationReadDB,
+        web_app::test::ExternalPrefMigrationTestCases::kEnableMigrationReadPref,
+        web_app::test::ExternalPrefMigrationTestCases::kEnableMigrationReadDB),
+    web_app::test::GetExternalPrefMigrationTestName);
 
 // Test that System Apps do install with the pref migration enabled.
 TEST_F(SystemWebAppManagerTest, Enabled) {
@@ -1559,7 +1591,7 @@ TEST_F(SystemWebAppManagerTest,
 
   // Before Apps are synchronized, WebAppRegistry should know about the App.
   const web_app::WebApp* web_app =
-      provider().registrar().GetAppById(*opt_app_id);
+      provider().registrar_unsafe().GetAppById(*opt_app_id);
   ASSERT_TRUE(web_app);
   ASSERT_TRUE(web_app->client_data().system_web_app_data.has_value());
   ASSERT_EQ(SystemWebAppType::SETTINGS,

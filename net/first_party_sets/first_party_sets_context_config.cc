@@ -4,11 +4,13 @@
 
 #include "net/first_party_sets/first_party_sets_context_config.h"
 
+#include "net/first_party_sets/first_party_set_entry_override.h"
+
 namespace net {
 
 FirstPartySetsContextConfig::FirstPartySetsContextConfig() = default;
 FirstPartySetsContextConfig::FirstPartySetsContextConfig(
-    FirstPartySetsContextConfig::OverrideSets customizations)
+    base::flat_map<SchemefulSite, FirstPartySetEntryOverride> customizations)
     : customizations_(std::move(customizations)) {}
 
 FirstPartySetsContextConfig::FirstPartySetsContextConfig(
@@ -27,7 +29,7 @@ bool FirstPartySetsContextConfig::operator==(
   return customizations_ == other.customizations_;
 }
 
-absl::optional<absl::optional<FirstPartySetEntry>>
+absl::optional<FirstPartySetEntryOverride>
 FirstPartySetsContextConfig::FindOverride(const SchemefulSite& site) const {
   if (const auto it = customizations_.find(site); it != customizations_.end()) {
     return it->second;
@@ -41,10 +43,9 @@ bool FirstPartySetsContextConfig::Contains(const SchemefulSite& site) const {
 
 bool FirstPartySetsContextConfig::ForEachCustomizationEntry(
     base::FunctionRef<bool(const SchemefulSite&,
-                           const absl::optional<FirstPartySetEntry>&)> f)
-    const {
-  for (const auto& [site, maybe_entry] : customizations_) {
-    if (!f(site, maybe_entry))
+                           const FirstPartySetEntryOverride&)> f) const {
+  for (const auto& [site, override] : customizations_) {
+    if (!f(site, override))
       return false;
   }
   return true;

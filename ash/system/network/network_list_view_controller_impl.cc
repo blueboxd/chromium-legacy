@@ -350,7 +350,7 @@ size_t NetworkListViewControllerImpl::ShowConnectionWarningIfNetworkMonitored(
     network_detailed_network_view()->network_list()->ReorderChildView(
         connection_warning_, index++);
   } else if (connected_vpn_guid_.empty() && !using_proxy) {
-    RemoveAndResetViewIfExists(&connection_warning_);
+    HideConnectionWarning();
   }
 
   return index;
@@ -398,6 +398,13 @@ void NetworkListViewControllerImpl::MaybeShowConnectionWarningManagedIcon(
 void NetworkListViewControllerImpl::OnGetManagedPropertiesResult(
     const std::string& guid,
     ManagedPropertiesPtr properties) {
+  // Bail out early if no connection warning is being shown.
+  // This could happen if the connection warning is hidden while the async
+  // GetManagedProperties step is in progress.
+  if (!connection_warning_) {
+    return;
+  }
+
   // Check if the proxy is managed.
   const NetworkStateProperties* default_network = GetDefaultNetwork();
   if (default_network && default_network->guid == guid) {
@@ -423,6 +430,11 @@ void NetworkListViewControllerImpl::OnGetManagedPropertiesResult(
 
   if (setManagedIcon) {
     SetConnectionWarningIcon(connection_warning_, /*use_managed_icon=*/true);
+    if (!is_vpn_managed_.value()) {
+      // Managed proxies are considered a lower privacy risk.
+      connection_warning_label_->SetText(l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_NETWORK_MANAGED_WARNING));
+    }
   }
 }
 
@@ -430,6 +442,16 @@ void NetworkListViewControllerImpl::SetConnectionWarningIcon(
     TriView* parent,
     bool use_managed_icon) {
   DCHECK(parent) << "The connection warning parent view should not be null";
+  int newIconId = static_cast<int>(
+      use_managed_icon
+          ? NetworkListViewControllerViewChildId::kConnectionWarningManagedIcon
+          : NetworkListViewControllerViewChildId::kConnectionWarningSystemIcon);
+
+  if (connection_warning_icon_ &&
+      connection_warning_icon_->GetID() == newIconId) {
+    // The view is already showing the correct icon.
+    return;
+  }
 
   // Remove the previous icon if set.
   RemoveAndResetViewIfExists(&connection_warning_icon_);
@@ -442,8 +464,7 @@ void NetworkListViewControllerImpl::SetConnectionWarningIcon(
       AshColorProvider::Get()->GetContentLayerColor(
           AshColorProvider::ContentLayerType::kIconColorPrimary)));
   image_view->SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
-  image_view->SetID(static_cast<int>(
-      NetworkListViewControllerViewChildId::kConnectionWarningIcon));
+  image_view->SetID(newIconId);
   connection_warning_icon_ = image_view.get();
   parent->AddView(TriView::Container::START, image_view.release());
 }
@@ -793,6 +814,7 @@ size_t NetworkListViewControllerImpl::CreateItemViewsIfMissingAndReorder(
     network_view->UpdateViewForNetwork(network);
     network_detailed_network_view()->network_list()->ReorderChildView(
         network_view, index);
+    network_view->SetEnabled(!IsNetworkDisabled(network));
 
     // Only emit ethernet metric each time we show Ethernet section
     // for the first time. We use |has_reordered_a_network| to determine
@@ -822,8 +844,9 @@ void NetworkListViewControllerImpl::ShowConnectionWarning(
   // Set message label in middle of row.
   std::unique_ptr<views::Label> label =
       base::WrapUnique(TrayPopupUtils::CreateDefaultLabel());
-  label->SetText(
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_MONITORED_WARNING));
+  label->SetText(l10n_util::GetStringUTF16(
+      show_managed_icon ? IDS_ASH_STATUS_TRAY_NETWORK_MANAGED_WARNING
+                        : IDS_ASH_STATUS_TRAY_NETWORK_MONITORED_WARNING));
   label->SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
   label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kTextColorPrimary));
@@ -831,6 +854,7 @@ void NetworkListViewControllerImpl::ShowConnectionWarning(
       label.get(), TrayPopupUtils::FontStyle::kDetailedViewLabel);
   label->SetID(static_cast<int>(
       NetworkListViewControllerViewChildId::kConnectionWarningLabel));
+  connection_warning_label_ = label.get();
 
   connection_warning->AddView(TriView::Container::CENTER, std::move(label));
   connection_warning->SetContainerBorder(
@@ -845,6 +869,13 @@ void NetworkListViewControllerImpl::ShowConnectionWarning(
   connection_warning_ =
       network_detailed_network_view()->network_list()->AddChildView(
           std::move(connection_warning));
+}
+
+void NetworkListViewControllerImpl::HideConnectionWarning() {
+  // If `connection_warning_icon_` existed, it must be cleared first because
+  // `connection_warning_` owns it.
+  RemoveAndResetViewIfExists(&connection_warning_icon_);
+  RemoveAndResetViewIfExists(&connection_warning_);
 }
 
 void NetworkListViewControllerImpl::UpdateScanningBarAndTimer() {

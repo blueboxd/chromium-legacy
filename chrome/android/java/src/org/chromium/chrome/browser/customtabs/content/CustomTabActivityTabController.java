@@ -370,8 +370,9 @@ public class CustomTabActivityTabController implements InflationObserver {
         initializeTab(tab);
 
         if (mIntentDataProvider.getTranslateLanguage() != null) {
-            TranslateBridge.setPredefinedTargetLanguage(
-                    tab, mIntentDataProvider.getTranslateLanguage());
+            TranslateBridge.setPredefinedTargetLanguage(tab,
+                    mIntentDataProvider.getTranslateLanguage(),
+                    mIntentDataProvider.shouldAutoTranslate());
         }
 
         return tab;
@@ -437,7 +438,8 @@ public class CustomTabActivityTabController implements InflationObserver {
             observer.onContentChanged(tab);
         }
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS)) {
+        if (CustomTabsConnection.getInstance().isDynamicFeatureEnabled(
+                    ChromeFeatureList.CCT_REAL_TIME_ENGAGEMENT_SIGNALS)) {
             mRealtimeEngagementSignalObserver = new RealtimeEngagementSignalObserver(
                     mTabObserverRegistrar, mConnection, mSession);
         }

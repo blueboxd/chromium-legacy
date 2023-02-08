@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash/app_list/search/test/ranking_test_util.h"
 
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/app_list/search/test/test_result.h"
 
 namespace app_list {
@@ -39,11 +38,11 @@ Results RankerTestBase::MakeResults(const std::vector<std::string>& ids,
 }
 
 LaunchData RankerTestBase::MakeLaunchData(const std::string& id,
-                                          ResultType result_type) {
+                                          Category category) {
   LaunchData launch;
   launch.launched_from = ash::AppListLaunchedFrom::kLaunchedFromSearchBox;
   launch.id = id;
-  launch.result_type = result_type;
+  launch.category = category;
   return launch;
 }
 

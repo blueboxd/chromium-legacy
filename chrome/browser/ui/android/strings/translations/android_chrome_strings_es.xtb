@@ -12,7 +12,6 @@
 <translation id="1062628064301375934">Ayúdanos a crear una Web más privada</translation>
 <translation id="107147699690128016">Si cambias la extensión del archivo, el archivo podría abrirse en una aplicación diferente y convertirse en un riesgo potencial para tu dispositivo.</translation>
 <translation id="1089606299949659462">Revisión completada</translation>
-<translation id="1091604859693995976">Actualizar para ver</translation>
 <translation id="1095761715416917775">Asegúrate de que siempre puedas acceder a tus datos sincronizados</translation>
 <translation id="1100066534610197918">Abrir en pestaña nueva en grupo</translation>
 <translation id="1103142993930332957">¿Quieres ayudar a mejorar Chrome?</translation>
@@ -227,7 +226,7 @@ Si eliminas tu historial de navegación (entero o de un sitio en concreto), tamb
 <translation id="2230777942707397948">Ventana vacía</translation>
 <translation id="223356358902285214">Actividad en la Web y en Aplicaciones</translation>
 <translation id="2239812875700136898">Controla tus historias con el botón Opciones de Discover</translation>
-<translation id="2248941474044011069">Tus contraseñas se cifran en tu dispositivo antes de guardarse en el gestor de contraseñas de Google</translation>
+<translation id="2248941474044011069">Tus contraseñas se cifran en tu dispositivo antes de guardarse en el Gestor de contraseñas de Google</translation>
 <translation id="2259659629660284697">Exportar contraseñas…</translation>
 <translation id="2276231040576210443">Siempre puedes seleccionar qué contenido quieres sincronizar en los <ph name="BEGIN_LINK1" />ajustes<ph name="END_LINK1" />. Google puede personalizar la Búsqueda y otros servicios en función de tu historial.</translation>
 <translation id="2276696007612801991">Inicia sesión en tu cuenta de Google para comprobar tus contraseñas</translation>
@@ -491,7 +490,7 @@ Los tokens de confianza mejoran la privacidad en la Web y no se pueden usar para
 <translation id="3636940436873918441">Idiomas preferidos</translation>
 <translation id="3677911431265050325">Solicitar sitio web móvil</translation>
 <translation id="3687645719033307815">Estás viendo una vista previa de esta página</translation>
-<translation id="3690369331356918524">Te avisa si tus contraseñas se ven expuestas en una quiebra de seguridad de datos</translation>
+<translation id="3690369331356918524">Te avisa si tus contraseñas se ven expuestas en una brecha de seguridad de datos</translation>
 <translation id="3692944402865947621">No se ha podido descargar <ph name="FILE_NAME" /> porque no se puede acceder a la ubicación del almacenamiento.</translation>
 <translation id="3697705478071004188">Ordenar por sitio</translation>
 <translation id="3699022356773522638">¿Descargar archivo?</translation>
@@ -519,6 +518,7 @@ Los tokens de confianza mejoran la privacidad en la Web y no se pueden usar para
 <translation id="3830886834687455630">Actualiza Servicios de Google Play para comprobar tus contraseñas</translation>
 <translation id="3845098929839618392">Abrir en pestaña de Incógnito</translation>
 <translation id="3856096718352044181">Verifica que este sea un proveedor válido o inténtalo de nuevo más tarde.</translation>
+<translation id="3858127568696903256">Consulta el contenido que sigues aquí</translation>
 <translation id="3858860766373142691">Nombre</translation>
 <translation id="3861633093716975811">Vídeos populares</translation>
 <translation id="3874520961715512166">Sitio quitado</translation>
@@ -761,6 +761,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="510275257476243843">Queda 1 hora</translation>
 <translation id="5115811374190515607">a <ph name="PRODUCT_NAME" /></translation>
 <translation id="5118713593561876160">Intereses</translation>
+<translation id="5122378528687922675">Si necesitas ayuda, pídesela a tu padre o madre (<ph name="PARENT_NAME_1" /> o <ph name="PARENT_NAME_2" />)</translation>
 <translation id="5123685120097942451">Pestaña de Incógnito</translation>
 <translation id="5126510351761255129">Verifica tu tarjeta</translation>
 <translation id="5132942445612118989">Sincroniza tus contraseñas, tu historial y más en todos tus dispositivos</translation>
@@ -952,7 +953,7 @@ Las pruebas de Privacy Sandbox aún se encuentran en desarrollo y solo están di
 <translation id="6186394685773237175">No se ha encontrado ninguna contraseña vulnerada</translation>
 <translation id="6192907950379606605">Obtener descripciones</translation>
 <translation id="6193448654517602979">Selecciona pestañas</translation>
-<translation id="6196315980958524839">Las contraseñas se guardan en el gestor de contraseñas de Google en este dispositivo</translation>
+<translation id="6196315980958524839">Las contraseñas se guardan en el Gestor de contraseñas de Google en este dispositivo</translation>
 <translation id="6202812185118613467">Vuelve a iniciar sesión para iniciar la sincronización</translation>
 <translation id="6210748933810148297">¿No eres <ph name="EMAIL" />?</translation>
 <translation id="6211386937064921208">Mostrando vista previa de esta página</translation>
@@ -1106,7 +1107,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6903907808598579934">Activar sincronización</translation>
 <translation id="6908998565271542516">Opción para aprobar o no un sitio web, abierta a altura completa</translation>
 <translation id="6909589135458168665">Precargar páginas</translation>
-<translation id="692924882724759447">Consulta los sitios que sigues aquí</translation>
 <translation id="6942665639005891494">Cambia la ubicación predeterminada de las descargas en cualquier momento con la opción del menú Configuración</translation>
 <translation id="694267552845942083">Estás personalizando tus ajustes de sincronización. Para terminar de activar la sincronización, toca el botón Confirmar, que se encuentra casi al final de la pantalla. Desplazarse hacia arriba</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
@@ -1116,7 +1116,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="6971862865055170158">No aprobar</translation>
 <translation id="6979737339423435258">Desde siempre</translation>
 <translation id="6987047470128880212">El modo Incógnito no está disponible en este dispositivo</translation>
-<translation id="6995899638241819463">Avisarte si tus contraseñas se ven expuestas en una quiebra de seguridad de datos</translation>
+<translation id="6995899638241819463">Avisarte si tus contraseñas se ven expuestas en una brecha de seguridad de datos</translation>
 <translation id="7020741890149022655">Añadir a lista de lectura <ph name="BEGIN_NEW" />Nuevo<ph name="END_NEW" /></translation>
 <translation id="7022756207310403729">Abrir en el navegador</translation>
 <translation id="7027549951530753705">Se ha restaurado <ph name="ITEM_TITLE" /></translation>
@@ -1148,6 +1148,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7177466738963138057">Puedes cambiar esta opción más tarde en Configuración</translation>
 <translation id="7177873915659574692">No se puede crear el código QR. La URL contiene más de <ph name="CHARACTER_LIMIT" /> caracteres.</translation>
 <translation id="7177959540995930968">Puedes obtener más información sobre estas funciones en la configuración de Chrome.</translation>
+<translation id="7180611975245234373">Actualizar</translation>
 <translation id="718226107353899806">Puedes añadir hasta <ph name="MAX_NUM_REACTIONS" /> reacciones</translation>
 <translation id="7183693674623539380">Grupo de pestañas: <ph name="TITLE_OF_GROUP" /></translation>
 <translation id="7187993566681480880">Te protege en Chrome y puede usarse para mejorar tu seguridad en otras aplicaciones de Google cuando has iniciado sesión.</translation>
@@ -1287,7 +1288,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7919123827536834358">Traducir estos idiomas automáticamente</translation>
 <translation id="7926975587469166629">Nombre de la tarjeta</translation>
 <translation id="7929962904089429003">Abre el menú</translation>
-<translation id="7930998711684428189">Te avisa si tus contraseñas se ven expuestas en una quiebra de seguridad de datos.</translation>
+<translation id="7930998711684428189">Te avisa si tus contraseñas se ven expuestas en una brecha de seguridad de datos.</translation>
 <translation id="7939485076072265087">Crear tarjeta estilizada con texto resaltado</translation>
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> está obsoleto.</translation>
 <translation id="7944772052836377867">Verifica tu identidad para usar la sincronización</translation>
@@ -1296,7 +1297,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7961926449547174351">Has inhabilitado el acceso al almacenamiento; ve a Ajustes para habilitarlo.</translation>
 <translation id="7963646190083259054">Proveedor:</translation>
-<translation id="7965838025086216108">Puedes usar las contraseñas guardadas en cualquier dispositivo. Se guardan en el gestor de contraseñas de Google de <ph name="ACCOUNT" />.</translation>
+<translation id="7965838025086216108">Puedes usar las contraseñas guardadas en cualquier dispositivo. Se guardan en el Gestor de contraseñas de Google de <ph name="ACCOUNT" />.</translation>
 <translation id="7968014550143838305">Añadido a la lista de lectura</translation>
 <translation id="7971136598759319605">Activo hace 1 día</translation>
 <translation id="7975379999046275268">Revisar página <ph name="BEGIN_NEW" />Nuevo<ph name="END_NEW" /></translation>
@@ -1331,6 +1332,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8084285576995584326">Controla los datos de tu cuenta de Google</translation>
 <translation id="808747664143081553">Conectado al dispositivo</translation>
 <translation id="8088176524274673045">Para compartir con personas que estén cerca de ti, pídeles que escaneen este código QR.</translation>
+<translation id="8090732854597034573">Si necesitas ayuda, pídesela a tu padre o madre</translation>
 <translation id="8100969750121413114">Inicia sesión para personalizar Chrome a tu gusto</translation>
 <translation id="8103578431304235997">Pestaña de Incógnito</translation>
 <translation id="8105613260829665809">Si continúas, aceptas los <ph name="BEGIN_TOS_LINK" />Términos del Servicio<ph name="END_TOS_LINK" />.\nPara ayudar a mejorar la aplicación, Chrome envía datos de uso y de fallos a Google. <ph name="BEGIN_UMA_LINK" />Gestionar<ph name="END_UMA_LINK" /></translation>
@@ -1339,6 +1341,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8109613176066109935">Activa la sincronización para ver tus marcadores en todos tus dispositivos</translation>
 <translation id="8110024788458304985">Ayudar a mejorar las funciones y el rendimiento de Chrome</translation>
 <translation id="8110087112193408731">¿Mostrar tu actividad de Chrome en Bienestar digital?</translation>
+<translation id="8118117428362942925">Si necesitas ayuda, pídesela a tu padre o madre (<ph name="PARENT_NAME" />)</translation>
 <translation id="8127542551745560481">Editar página principal</translation>
 <translation id="8130309322784422030">Es posible que la información de inicio de sesión almacenada esté obsoleta</translation>
 <translation id="813082847718468539">Ver información del sitio</translation>

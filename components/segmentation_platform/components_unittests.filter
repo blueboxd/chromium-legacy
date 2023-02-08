@@ -1,4 +1,5 @@
 ConfigParserTest.*
+ContextualPageActionsModelTest.*
 CrossDeviceUserModelTest.*
 CustomInputProcessorTest.*
 DatabaseMaintenanceImplTest.*
@@ -20,10 +21,12 @@ ModelExecutionSchedulerTest.*
 ModelExecutorTest.*
 ModelProviderFactoryImplTest.*
 OptimizationGuideSegmentationModelProviderTest.*
+PostProcessorTest.*
 PowerUserModelTest.*
-PriceTrackingActionModelTest.*
 PriceTrackingInputDelegateTest.*
 QueryTilesModelTest.*
+RequestDispatcherTest.*
+RequestHandlerTest.*
 ResumeHeavyUserModelTest.*
 SearchUserModelTest.*
 SegmentInfoCacheTest.*

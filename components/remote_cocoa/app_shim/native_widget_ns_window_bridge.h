@@ -146,8 +146,8 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   // Called by the NSWindowDelegate when the system control tint changes.
   void OnSystemControlTintChanged();
 
-  // Called by the NSWindowDelegate on a scale factor or color space change.
-  void OnBackingPropertiesChanged();
+  // Called by the NSWindowDelegate on screen, scale, or color space changes.
+  void OnScreenOrBackingPropertiesChanged();
 
   // Called by the NSWindowDelegate when the window becomes or resigns key.
   void OnWindowKeyStatusChangedTo(bool is_key);
@@ -304,6 +304,9 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   // Compute the window and content size, and forward them to |host_|. This will
   // update widget and compositor size.
   void UpdateWindowGeometry();
+
+  // Move `child_windows_` to `target`.
+  void MoveChildrenTo(NativeWidgetNSWindowBridge* target);
 
  private:
   friend class views::test::BridgedNativeWidgetTestApi;

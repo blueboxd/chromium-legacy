@@ -243,6 +243,7 @@
 <translation id="5975083100439434680">Zoom ut</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Kontroller dette nettstedets tilgang til enheten din</translation>
+<translation id="6018815681665454784">Vil du slette og tilbakestille?</translation>
 <translation id="6040143037577758943">Lukk</translation>
 <translation id="6042308850641462728">Mer</translation>
 <translation id="6064125863973209585">Fullførte nedlastinger</translation>
@@ -322,6 +323,7 @@
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7667547420449112975">Trollmannen fra Oz</translation>
 <translation id="7690549345586282764">Vis zoom</translation>
+<translation id="7695658402549134106">Nettstedsinnstilling for <ph name="SITE_NAME" /></translation>
 <translation id="7719367874908701697">Sidezoom</translation>
 <translation id="7781829728241885113">I går</translation>
 <translation id="7791543448312431591">Legg til</translation>
@@ -348,6 +350,7 @@
 <translation id="813082847718468539">Vis nettstedsinformasjon</translation>
 <translation id="8131740175452115882">Bekreft</translation>
 <translation id="8154912474061769055">Det kan hende at funksjoner på mange nettsteder ikke fungerer</translation>
+<translation id="8168435359814927499">Innhold</translation>
 <translation id="8197286292360124385"><ph name="PERMISSION_1" /> er tillatt</translation>
 <translation id="8200772114523450471">Fortsett</translation>
 <translation id="8206354486702514201">Denne innstillingen håndheves av administratoren din.</translation>

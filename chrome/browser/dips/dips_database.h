@@ -10,9 +10,12 @@
 #include <string>
 #include <vector>
 
+#include "base/time/clock.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/dips/dips_utils.h"
 #include "sql/database.h"
 #include "sql/init_status.h"
+#include "sql/meta_table.h"
 #include "sql/statement.h"
 
 // TODO(crbug.com/1342228): This is currently in-memory only. Add support for a
@@ -21,13 +24,6 @@
 // Encapsulates an SQL database that holds DIPS info.
 class DIPSDatabase {
  public:
-  // The length of time since last user interaction or site storage that a
-  // site's entry will not be subject to garbage collection due to expiration.
-  // However, even with interaction or storage within this period, if there are
-  // more than |max_entries_| entries, an entry can still be deleted by
-  // |GarbageCollectOldest()|.
-  static const base::TimeDelta kMaxAge;
-
   // The length of time that will be waited between emitting db health metrics.
   static const base::TimeDelta kMetricsInterval;
 
@@ -43,60 +39,88 @@ class DIPSDatabase {
   DIPSDatabase(const DIPSDatabase&) = delete;
   DIPSDatabase& operator=(const DIPSDatabase&) = delete;
 
+  // Updates `db_` to use the latest schema.
+  // Returns whether the migration was successful.
+  bool UpdateSchema();
+
+  // Migrates from v1 to v2 of the DIPS database schema.
+  bool MigrateToVersion2();
+
   // DIPS Bounce table functions -----------------------------------------------
   bool Write(const std::string& site,
              const TimestampRange& storage_times,
              const TimestampRange& interaction_times,
              const TimestampRange& stateful_bounce_times,
-             const TimestampRange& stateless_bounce_times);
+             const TimestampRange& bounce_times);
 
   absl::optional<StateValue> Read(const std::string& site);
 
-  std::vector<std::string> GetAllSitesForTesting() const;
+  // Note: this doesn't clear expired interactions from the database unlike the
+  // other database querying methods.
+  std::vector<std::string> GetAllSitesForTesting();
 
-  // Returns all sites that did a bounce after |range_start| with their last
-  // interaction happening before |last_interaction|.
+  // Returns all sites which bounced the user and aren't protected from DIPS.
   //
-  // Note: |last_interaction| must be earlier than |range_start|.
-  std::vector<std::string> GetSitesThatBounced(
-      base::Time range_start,
-      base::Time last_interaction) const;
+  // A site can be protected in several ways:
+  // - it's still in its grace period after the first bounce
+  // - it received user interaction before the first bounce
+  // - it received user interaction in the grace period after the first bounce
+  std::vector<std::string> GetSitesThatBounced();
 
-  // Returns all sites that did a stateful bounce after |range_start| with their
-  // last interaction happening before |last_interaction|.
+  // Returns all sites which used storage and aren't protected from DIPS.
   //
-  // Note: |last_interaction| must be earlier than |range_start|.
-  std::vector<std::string> GetSitesThatBouncedWithState(
-      base::Time range_start,
-      base::Time last_interaction) const;
+  // A site can be protected in several ways:
+  // - it's still in its grace period after the first storage
+  // - it received user interaction before the first storage
+  // - it received user interaction in the grace period after the first storage
+  std::vector<std::string> GetSitesThatUsedStorage();
 
-  // Returns all sites that wrote to storage after |range_start| with their last
-  // interaction happening before |last_interaction|.
+  // Returns all sites which statefully bounced the user and aren't protected
+  // from DIPS.
   //
-  // Note: |last_interaction| must be earlier than |range_start|.
-  std::vector<std::string> GetSitesThatUsedStorage(
-      base::Time range_start,
-      base::Time last_interaction) const;
+  // A site can be protected in several ways:
+  // - it's still in its grace period after the first stateful bounce
+  // - it received user interaction before the first stateful bounce
+  // - it received user interaction in the grace period after the first stateful
+  //   bounce
+  std::vector<std::string> GetSitesThatBouncedWithState();
+
+  // Deletes all rows in the database whose interactions have expired out.
+  //
+  // When an interaction happens before a DIPS-triggering action or during the
+  // following grace-period it protects that site from its data being cleared
+  // by DIPS. Further interactions will prolong that protection until the last
+  // one reaches the `interaction_ttl`.
+  //
+  // Clearing expired interactions effectively restarts the DIPS procedure for
+  // determining if a site is a tracker for sites that are cleared.
+  //
+  // Returns the number of rows that are removed.
+  size_t ClearRowsWithExpiredInteractions();
 
   // Delete the row from the bounces table for `site`. Returns true if query
   // executes successfully.
   bool RemoveRow(const std::string& site);
 
+  bool RemoveRows(const std::vector<std::string>& sites);
+
   bool RemoveEventsByTime(const base::Time& delete_begin,
                           const base::Time& delete_end,
                           const DIPSEventRemovalType type);
 
+  // Because |sites| is taken from a ClearDataFilter, this only removes
+  // storage and stateful bounce timestamps at the moment.
+  bool RemoveEventsBySite(bool preserve,
+                          const std::vector<std::string>& sites,
+                          const DIPSEventRemovalType type);
+
   // Returns the number of entries present in the database.
-  size_t GetEntryCount() const;
+  size_t GetEntryCount();
 
   // If the number of entries in the database is greater than
   // |GetMaxEntries()|, garbage collect. Returns the number of entries deleted
   // (useful for debugging).
   size_t GarbageCollect();
-
-  // Removes entries for sites without user interaction within |kMaxAge|.
-  // Returns the number of entries deleted.
-  size_t GarbageCollectExpired();
 
   // Removes the |purge_goal| entries with the oldest
   // |MAX(last_user_interaction_time,last_site_storage_time)| value. Returns the
@@ -109,13 +133,14 @@ class DIPSDatabase {
   }
 
   // Checks that the internal SQLite database is initialized.
-  bool CheckDBInit() const;
+  bool CheckDBInit();
 
   size_t GetMaxEntries() const { return max_entries_; }
   size_t GetPurgeEntries() const { return purge_entries_; }
 
   void SetMaxEntriesForTesting(size_t entries) { max_entries_ = entries; }
   void SetPurgeEntriesForTesting(size_t entries) { purge_entries_ = entries; }
+  void SetClockForTesting(base::Clock* clock) { clock_ = clock; }
 
  protected:
   // Initialization functions --------------------------------------------------
@@ -135,7 +160,12 @@ class DIPSDatabase {
                             const base::Time& delete_end,
                             const DIPSEventRemovalType type);
 
-  void ComputeDatabaseMetrics() const;
+  bool ClearTimestampsBySite(bool preserve,
+                             const std::vector<std::string>& sites,
+                             const DIPSEventRemovalType type);
+  bool RemoveEmptyRows();
+
+  void LogDatabaseMetrics();
 
  private:
   // Callback for database errors.
@@ -147,6 +177,8 @@ class DIPSDatabase {
   size_t purge_entries_ = 300;
   const base::FilePath db_path_ GUARDED_BY_CONTEXT(sequence_checker_);
   std::unique_ptr<sql::Database> db_ GUARDED_BY_CONTEXT(sequence_checker_);
+  raw_ptr<base::Clock> clock_ = base::DefaultClock::GetInstance();
+  sql::MetaTable meta_table_ GUARDED_BY_CONTEXT(sequence_checker_);
   mutable base::Time last_health_metrics_time_
       GUARDED_BY_CONTEXT(sequence_checker_) = base::Time::Min();
   SEQUENCE_CHECKER(sequence_checker_);

@@ -97,6 +97,11 @@ BASE_DECLARE_FEATURE(kPrivateNetworkAccessPreflightShortTimeout);
 
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kPreconnectInNetworkService);
 
+COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kPrefetchDNSWithURL);
+
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::FeatureParam<bool> kPrefetchDNSWithURLAllAnchorElements;
+
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kPreconnectOnRedirect);
 
 COMPONENT_EXPORT(NETWORK_CPP)
@@ -113,6 +118,12 @@ BASE_DECLARE_FEATURE(kAccessControlAllowMethodsInCORSPreflightSpecConformant);
 //   https://github.com/WICG/nav-speculation/blob/main/no-vary-search.md
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kPrefetchNoVarySearch);
+
+// Enables the `inline-speculation-rules` source support in the
+// Content-Security-Policy for Prerender2.
+// https://crbug.com/1382361
+COMPONENT_EXPORT(NETWORK_CPP)
+BASE_DECLARE_FEATURE(kPrerender2ContentSecurityPolicyExtensions);
 
 }  // namespace features
 }  // namespace network

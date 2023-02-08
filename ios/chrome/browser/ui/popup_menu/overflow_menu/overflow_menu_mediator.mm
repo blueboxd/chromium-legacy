@@ -61,6 +61,7 @@
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_swift.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_utils.h"
+#import "ios/chrome/browser/ui/tab_switcher/pinned_tabs/features.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/whats_new/whats_new_util.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
@@ -226,6 +227,9 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 @property(nonatomic, strong) OverflowMenuAction* openIncognitoTabAction;
 @property(nonatomic, strong) OverflowMenuAction* openNewWindowAction;
 
+@property(nonatomic, strong) OverflowMenuAction* pinTabAction;
+@property(nonatomic, strong) OverflowMenuAction* unpinTabAction;
+
 @property(nonatomic, strong) OverflowMenuAction* clearBrowsingDataAction;
 @property(nonatomic, strong) OverflowMenuAction* followAction;
 @property(nonatomic, strong) OverflowMenuAction* addBookmarkAction;
@@ -270,11 +274,6 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
     if (self.readingListDestination.badge != BadgeTypeNone) {
       _engagementTracker->Dismissed(
           feature_engagement::kIPHBadgedReadingListFeature);
-    }
-
-    if (self.whatsNewDestination.badge != BadgeTypeNone) {
-      _engagementTracker->Dismissed(
-          feature_engagement::kIPHBadgedWhatsNewFeature);
     }
 
     _engagementTracker = nullptr;
@@ -683,6 +682,18 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
           [weakSelf openNewWindow];
         });
 
+    self.pinTabAction = CreateOverflowMenuAction(
+        IDS_IOS_TOOLS_MENU_PIN_TAB, kPinSymbol,
+        /*systemSymbol=*/YES, /*monochromeSymbol=*/NO, kToolsMenuPinTabId, ^{
+          [weakSelf pinTab];
+        });
+
+    self.unpinTabAction = CreateOverflowMenuAction(
+        IDS_IOS_TOOLS_MENU_UNPIN_TAB, kPinSlashSymbol,
+        /*systemSymbol=*/YES, /*monochromeSymbol=*/NO, kToolsMenuUnpinTabId, ^{
+          [weakSelf unpinTab];
+        });
+
     self.clearBrowsingDataAction = CreateOverflowMenuAction(
         IDS_IOS_TOOLS_MENU_CLEAR_BROWSING_DATA, kTrashSymbol,
         /*systemSymbol=*/YES, /*monochromeSymbol=*/NO,
@@ -807,6 +818,18 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
         IDS_IOS_TOOLS_MENU_NEW_WINDOW, @"overflow_menu_action_new_window",
         kToolsMenuNewWindowId, ^{
           [weakSelf openNewWindow];
+        });
+
+    self.pinTabAction = CreateOverflowMenuAction(
+        IDS_IOS_TOOLS_MENU_PIN_TAB, @"overflow_menu_action_pin_tab",
+        kToolsMenuPinTabId, ^{
+          [weakSelf pinTab];
+        });
+
+    self.unpinTabAction = CreateOverflowMenuAction(
+        IDS_IOS_TOOLS_MENU_UNPIN_TAB, @"overflow_menu_action_unpin_tab",
+        kToolsMenuUnpinTabId, ^{
+          [weakSelf unpinTab];
         });
 
     self.clearBrowsingDataAction =
@@ -1005,23 +1028,19 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
   NSMutableArray<OverflowMenuDestination*>* newDestinations =
       [[NSMutableArray alloc] init];
 
-  if (IsWhatsNewOverflowMenuUsed()) {
+  if (WasWhatsNewUsed()) {
     // Place What's New at the bottom of the overflow menu carousel.
     [newDestinations addObjectsFromArray:destinations];
     [newDestinations addObject:self.whatsNewDestination];
     return newDestinations;
   }
 
+  // Set the new label badge.
+  self.whatsNewDestination.badge = BadgeTypeNewLabel;
+
   // Place What's New at the top of the overflow menucarousel.
   [newDestinations addObject:self.whatsNewDestination];
   [newDestinations addObjectsFromArray:destinations];
-
-  // Set the new label badge.
-  if (self.engagementTracker &&
-      self.engagementTracker->ShouldTriggerHelpUI(
-          feature_engagement::kIPHBadgedWhatsNewFeature)) {
-    self.whatsNewDestination.badge = BadgeTypeNewLabel;
-  }
 
   return newDestinations;
 }
@@ -1088,6 +1107,11 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 
   if (base::ios::IsMultipleScenesSupported()) {
     [appActions addObject:self.openNewWindowAction];
+  }
+
+  if (IsPinnedTabsEnabled()) {
+    [appActions addObject:([self isTabPinned] ? self.unpinTabAction
+                                              : self.pinTabAction)];
   }
 
   self.appActionsGroup.actions = appActions;
@@ -1171,7 +1195,11 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
     self.helpActionsGroup.footer = nil;
   }
 
-  // Enable/disable items based on page state.
+  if (IsPinnedTabsEnabled()) {
+    // Enable/disable items based on page state.
+    self.pinTabAction.enabled = [self isCurrentURLWebURL];
+    self.unpinTabAction.enabled = [self isCurrentURLWebURL];
+  }
 
   // The "Add to Reading List" functionality requires JavaScript execution,
   // which is paused while overlays are displayed over the web content area.
@@ -1341,6 +1369,26 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
                       }];
   action.enabled = NO;
   return action;
+}
+
+- (BOOL)isTabPinned {
+  DCHECK(self.webState);
+  DCHECK(self.webStateList);
+
+  int webStateIndex = self.webStateList->GetIndexOfWebState(self.webState);
+  return self.webStateList->IsWebStatePinnedAt(webStateIndex);
+}
+
+- (void)setTabPinned:(BOOL)pinned {
+  web::WebState* webState = self.webState;
+  WebStateList* webStateList = self.webStateList;
+
+  if (!webState || !webStateList) {
+    return;
+  }
+
+  int webStateIndex = webStateList->GetIndexOfWebState(webState);
+  webStateList->SetWebStatePinnedAt(webStateIndex, pinned);
 }
 
 #pragma mark - CRWWebStateObserver
@@ -1530,6 +1578,8 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 // Dismisses the menu and opens a new tab.
 - (void)openTab {
   RecordAction(UserMetricsAction("MobileMenuNewTab"));
+  RecordAction(UserMetricsAction("MobileTabNewTab"));
+
   [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   [self.dispatcher openURLInNewTab:[OpenNewTabCommand commandWithIncognito:NO]];
 }
@@ -1549,6 +1599,18 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
   [self.dispatcher
       openNewWindowWithActivity:ActivityToLoadURL(WindowActivityToolsOrigin,
                                                   GURL(kChromeUINewTabURL))];
+}
+
+// Dismisses the menu and pins the tab.
+- (void)pinTab {
+  [self setTabPinned:YES];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
+}
+
+// Dismisses the menu and unpins the tab.
+- (void)unpinTab {
+  [self setTabPinned:NO];
+  [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
 }
 
 // Dismisses the menu and opens the Clear Browsing Data screen.
@@ -1735,9 +1797,14 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 
 // Dismisses the menu and opens What's New.
 - (void)openWhatsNew {
-  SetWhatsNewOverflowMenuUsed();
-  self.engagementTracker->NotifyEvent(
-      feature_engagement::events::kViewedWhatsNew);
+  if (!WasWhatsNewUsed()) {
+    SetWhatsNewUsed();
+  }
+
+  if (self.engagementTracker) {
+    self.engagementTracker->NotifyEvent(
+        feature_engagement::events::kViewedWhatsNew);
+  }
   [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
   [self.dispatcher showWhatsNew];
 }

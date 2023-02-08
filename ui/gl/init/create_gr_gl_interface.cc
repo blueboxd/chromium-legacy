@@ -226,10 +226,12 @@ const char* kBlocklistExtensions[] = {
     "GL_ARB_multi_draw_indirect",
     "GL_ARB_sample_shading",
     "GL_ARB_texture_barrier",
+    "GL_CHROMIUM_framebuffer_mixed_samples",
     "GL_EXT_direct_state_access",
     "GL_EXT_multi_draw_indirect",
     "GL_EXT_raster_multisample",
     "GL_NV_bindless_texture",
+    "GL_NV_framebuffer_mixed_samples",
     "GL_NV_texture_barrier",
     "GL_OES_sample_shading",
     "GL_EXT_draw_instanced",
@@ -540,8 +542,6 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   BIND_EXTENSION(RenderbufferStorageMultisampleES2EXT,
                  RenderbufferStorageMultisampleEXT, NeedFlushOnMac);
   BIND(BlitFramebuffer, NeedFlushOnMac);
-
-  BIND_EXTENSION(CoverageModulation, CoverageModulationNV);
 
   BIND_EXTENSION(InsertEventMarker, InsertEventMarkerEXT);
   BIND_EXTENSION(PushGroupMarker, PushGroupMarkerEXT);

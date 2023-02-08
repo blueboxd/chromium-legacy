@@ -22,6 +22,70 @@ async function clickTrashButton(appId) {
 }
 
 /**
+ * Clicks the enabled and visible delete button and ensures the move to trash
+ * button is hidden.
+ * @param {string} appId
+ */
+async function clickDeleteButton(appId) {
+  await remoteCall.waitForElement(appId, '#move-to-trash[hidden]');
+  await remoteCall.waitAndClickElement(
+      appId, '#delete-button:not([hidden]):not([disabled])');
+}
+
+/**
+ * Confirm the deletion happens and assert the dialog has the correct text.
+ * @param {string} appId
+ */
+async function confirmPermanentDeletion(appId) {
+  // Check: the delete confirm dialog should appear.
+  await remoteCall.waitForElement(appId, '.cr-dialog-container.shown');
+
+  // Check: the dialog 'Cancel' button should be focused by default.
+  const dialogDefaultButton =
+      await remoteCall.waitForElement(appId, '.cr-dialog-cancel:focus');
+  chrome.test.assertEq('Cancel', dialogDefaultButton.text);
+
+  // Click the delete confirm dialog 'Delete' button.
+  const dialogDeleteButton =
+      await remoteCall.waitAndClickElement(appId, '.cr-dialog-ok');
+  chrome.test.assertEq('Delete forever', dialogDeleteButton.text);
+
+  // Wait for completion of file deletion.
+  await remoteCall.waitForElementLost(
+      appId, '#file-list [file-name="hello.txt"]');
+}
+
+/**
+ * Clicks the delete button and confirms the deletion.
+ * @param {string} appId
+ */
+async function clickDeleteButtonAndConfirmDeletion(appId) {
+  await clickDeleteButton(appId);
+  await confirmPermanentDeletion(appId);
+}
+
+/**
+ * Shows hidden files to facilitate tests again the .Trash directory.
+ * @param {string} appId
+ */
+async function showHiddenFiles(appId) {
+  // Open the gear menu by clicking the gear button.
+  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['#gear-button']));
+
+  // Wait for menu to not be hidden.
+  await remoteCall.waitForElement(appId, '#gear-menu:not([hidden])');
+
+  // Wait for menu item to appear.
+  await remoteCall.waitForElement(
+      appId, '#gear-menu-toggle-hidden-files:not([disabled]):not([checked])');
+
+  // Click the menu item.
+  await remoteCall.callRemoteTestUtil(
+      'fakeMouseClick', appId, ['#gear-menu-toggle-hidden-files']);
+}
+
+/**
  * Delete files in MyFiles and ensure they are moved to /.Trash.
  * Then delete items from /.Trash/files and /.Trash/info, then delete /.Trash.
  */
@@ -38,20 +102,8 @@ testcase.trashMoveToTrash = async () => {
   await remoteCall.waitForElementLost(
       appId, '#file-list [file-name="hello.txt"]');
 
-  // Open the gear menu by clicking the gear button.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeMouseClick', appId, ['#gear-button']));
-
-  // Wait for menu to not be hidden.
-  await remoteCall.waitForElement(appId, '#gear-menu:not([hidden])');
-
-  // Wait for menu item to appear.
-  await remoteCall.waitForElement(
-      appId, '#gear-menu-toggle-hidden-files:not([disabled]):not([checked])');
-
-  // Click the menu item.
-  await remoteCall.callRemoteTestUtil(
-      'fakeMouseClick', appId, ['#gear-menu-toggle-hidden-files']);
+  // Enable hidden files to be shown.
+  await showHiddenFiles(appId);
 
   // Navigate to /My files/Downloads/.Trash/files.
   await navigateWithDirectoryTree(appId, '/My files/Downloads/.Trash/files');
@@ -61,22 +113,7 @@ testcase.trashMoveToTrash = async () => {
       appId, '#file-list [file-name="hello.txt"]');
 
   // Delete selected item.
-  await remoteCall.waitAndClickElement(appId, '#delete-button');
-
-  // Check: the delete confirm dialog should appear.
-  await remoteCall.waitForElement(appId, '.cr-dialog-container.shown');
-
-  // Check: the dialog 'Cancel' button should be focused by default.
-  const dialogDefaultButton =
-      await remoteCall.waitForElement(appId, '.cr-dialog-cancel:focus');
-  chrome.test.assertEq('Cancel', dialogDefaultButton.text);
-
-  // Click the delete confirm dialog 'Delete' button.
-  let dialogDeleteButton =
-      await remoteCall.waitAndClickElement(appId, '.cr-dialog-ok');
-  chrome.test.assertEq('Delete', dialogDeleteButton.text);
-
-  // Wait for completion of file deletion.
+  await clickDeleteButtonAndConfirmDeletion(appId);
   await remoteCall.waitForElementLost(
       appId, '#file-list [file-name="hello.txt"]');
 
@@ -88,15 +125,7 @@ testcase.trashMoveToTrash = async () => {
       appId, '#file-list [file-name="hello.txt.trashinfo"]');
 
   // Delete selected item.
-  await remoteCall.waitAndClickElement(appId, '#delete-button');
-
-  // Check: the delete confirm dialog should appear.
-  await remoteCall.waitForElement(appId, '.cr-dialog-container.shown');
-
-  // Click the delete confirm dialog 'Delete' button.
-  dialogDeleteButton =
-      await remoteCall.waitAndClickElement(appId, '.cr-dialog-ok');
-  chrome.test.assertEq('Delete', dialogDeleteButton.text);
+  await clickDeleteButtonAndConfirmDeletion(appId);
 
   // Wait for completion of file deletion.
   await remoteCall.waitForElementLost(
@@ -110,15 +139,7 @@ testcase.trashMoveToTrash = async () => {
       appId, '#file-list [file-name=".Trash"]');
 
   // Delete selected item.
-  await remoteCall.waitAndClickElement(appId, '#delete-button');
-
-  // Check: the delete confirm dialog should appear.
-  await remoteCall.waitForElement(appId, '.cr-dialog-container.shown');
-
-  // Click the delete confirm dialog 'Delete' button.
-  dialogDeleteButton =
-      await remoteCall.waitAndClickElement(appId, '.cr-dialog-ok');
-  chrome.test.assertEq('Delete', dialogDeleteButton.text);
+  await clickDeleteButtonAndConfirmDeletion(appId);
 
   // Wait for completion of file deletion.
   await remoteCall.waitForElementLost(appId, '#file-list [file-name=".Trash"]');
@@ -134,7 +155,7 @@ testcase.trashMoveToTrash = async () => {
 };
 
 /**
- * Permanently delete files in MyFiles.
+ * Permanently delete files in Downloads.
  */
 testcase.trashPermanentlyDelete = async () => {
   const appId = await setupAndWaitUntilReady(
@@ -149,12 +170,49 @@ testcase.trashPermanentlyDelete = async () => {
   chrome.test.assertTrue(
       await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, shiftDeleteKey),
       'Pressing Shift+Delete failed.');
-  await remoteCall.waitAndClickElement(
-      appId, '.files-confirm-dialog .cr-dialog-ok');
 
-  // Wait for completion of file deletion.
+  // Confirm the permanent deletion of the "hello.txt" file.
+  await confirmPermanentDeletion(appId);
+};
+
+/**
+ * Files send to the Trash from ~/MyFiles should be able to be deleted once they
+ * are in Trash.
+ */
+testcase.trashDeleteFromTrashOriginallyFromMyFiles = async () => {
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+
+  // Select hello.txt.
+  await remoteCall.waitAndClickElement(
+      appId, '#file-list [file-name="hello.txt"]');
+
+  // Cut the file "hello.txt" in preparation to move to ~/MyFiles.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('execCommand', appId, ['cut']));
+
+  await navigateWithDirectoryTree(appId, '/My files');
+
+  // Paste the file.
+  chrome.test.assertTrue(
+      await remoteCall.callRemoteTestUtil('execCommand', appId, ['paste']));
+
+  // Select hello.txt.
+  await remoteCall.waitAndClickElement(
+      appId, '#file-list [file-name="hello.txt"]');
+
+  // Delete item and wait for it to be removed (no dialog).
+  await clickTrashButton(appId);
   await remoteCall.waitForElementLost(
       appId, '#file-list [file-name="hello.txt"]');
+
+  // Navigate to /Trash and ensure the file is shown.
+  await navigateWithDirectoryTree(appId, '/Trash');
+  await remoteCall.waitAndClickElement(
+      appId, '#file-list [file-name="hello.txt"]');
+
+  // Delete selected item.
+  await clickDeleteButtonAndConfirmDeletion(appId);
 };
 
 /**
@@ -358,24 +416,7 @@ testcase.trashDeleteFromTrash = async () => {
       appId, '#file-list [file-name="hello.txt"]');
 
   // Delete selected item.
-  await remoteCall.waitAndClickElement(appId, '#delete-button');
-
-  // Check: the delete confirm dialog should appear.
-  await remoteCall.waitForElement(appId, '.cr-dialog-container.shown');
-
-  // Check: the dialog 'Cancel' button should be focused by default.
-  const dialogDefaultButton =
-      await remoteCall.waitForElement(appId, '.cr-dialog-cancel:focus');
-  chrome.test.assertEq('Cancel', dialogDefaultButton.text);
-
-  // Click the delete confirm dialog 'Delete' button.
-  const dialogDeleteButton =
-      await remoteCall.waitAndClickElement(appId, '.cr-dialog-ok');
-  chrome.test.assertEq('Delete', dialogDeleteButton.text);
-
-  // Wait for completion of file deletion.
-  await remoteCall.waitForElementLost(
-      appId, '#file-list [file-name="hello.txt"]');
+  await clickDeleteButtonAndConfirmDeletion(appId);
 };
 
 /**
@@ -914,9 +955,7 @@ testcase.trashTogglingTrashEnabledPrefUpdatesDirectoryTree = async () => {
 
   // Ensure the delete button shows up instead of the move to trash button.
   await remoteCall.waitUntilSelected(appId, 'world.ogv');
-  await remoteCall.waitForElement(appId, '#move-to-trash-button[hidden]');
-  await remoteCall.waitAndClickElement(
-      appId, '#delete-button:not([hidden]):not([disabled])');
+  await clickDeleteButton(appId);
   await remoteCall.waitForElement(appId, '.cr-dialog-container.shown');
 
   // Cancel the dialog.

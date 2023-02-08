@@ -48,7 +48,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_iterator_result_value.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/properties/css_unresolved_property.h"
@@ -58,7 +57,6 @@
 #include "third_party/blink/renderer/core/dom/dom_string_list.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
-#include "third_party/blink/renderer/core/dom/iterator.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/range.h"
@@ -2017,6 +2015,32 @@ Node* Internals::touchNodeAdjustedToBestContextMenuNode(
   gfx::Point adjusted_point;
   document->GetFrame()->GetEventHandler().BestContextMenuNodeForHitTestResult(
       location, result, adjusted_point, target_node);
+  return target_node;
+}
+
+Node* Internals::touchNodeAdjustedToBestStylusWritableNode(
+    int x,
+    int y,
+    int width,
+    int height,
+    Document* document,
+    ExceptionState& exception_state) {
+  DCHECK(document);
+  if (!document->GetFrame()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "The document provided is invalid.");
+    return nullptr;
+  }
+
+  HitTestLocation location;
+  HitTestResult result;
+  HitTestRect(location, result, x, y, width, height, document);
+  Node* target_node = nullptr;
+  gfx::Point adjusted_point;
+  document->GetFrame()
+      ->GetEventHandler()
+      .BestStylusWritableNodeForHitTestResult(location, result, adjusted_point,
+                                              target_node);
   return target_node;
 }
 

@@ -205,7 +205,6 @@ DEFINE_VARIATION_PARAM(kIPHLongPressToolbarTipFeature,
 DEFINE_VARIATION_PARAM(kIPHNewTabTipFeature, "IPH_NewTabTip");
 DEFINE_VARIATION_PARAM(kIPHNewIncognitoTabTipFeature, "IPH_NewIncognitoTabTip");
 DEFINE_VARIATION_PARAM(kIPHBadgedReadingListFeature, "IPH_BadgedReadingList");
-DEFINE_VARIATION_PARAM(kIPHBadgedWhatsNewFeature, "IPH_BadgedWhatsNew");
 DEFINE_VARIATION_PARAM(kIPHWhatsNewFeature, "IPH_WhatsNew");
 DEFINE_VARIATION_PARAM(kIPHReadingListMessagesFeature,
                        "IPH_ReadingListMessages");
@@ -219,6 +218,8 @@ DEFINE_VARIATION_PARAM(kIPHPasswordSuggestionsFeature,
 DEFINE_VARIATION_PARAM(kIPHFollowWhileBrowsingFeature,
                        "IPH_FollowWhileBrowsing");
 DEFINE_VARIATION_PARAM(kIPHOverflowMenuTipFeature, "IPH_OverflowMenuTip");
+DEFINE_VARIATION_PARAM(kIPHPriceNotificationsWhileBrowsingFeature,
+                       "IPHPriceNotificationsWhileBrowsing");
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
@@ -366,7 +367,6 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHNewTabTipFeature),
         VARIATION_ENTRY(kIPHNewIncognitoTabTipFeature),
         VARIATION_ENTRY(kIPHBadgedReadingListFeature),
-        VARIATION_ENTRY(kIPHBadgedWhatsNewFeature),
         VARIATION_ENTRY(kIPHReadingListMessagesFeature),
         VARIATION_ENTRY(kIPHWhatsNewFeature),
         VARIATION_ENTRY(kIPHBadgedTranslateManualTriggerFeature),
@@ -375,6 +375,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHPasswordSuggestionsFeature),
         VARIATION_ENTRY(kIPHFollowWhileBrowsingFeature),
         VARIATION_ENTRY(kIPHOverflowMenuTipFeature),
+        VARIATION_ENTRY(kIPHPriceNotificationsWhileBrowsingFeature),
 #elif BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
         VARIATION_ENTRY(kIPHBatterySaverModeFeature),

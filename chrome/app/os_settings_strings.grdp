@@ -1245,14 +1245,23 @@ Use Ctrl + Alt + Brightness down to zoom out.
   <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_VOICE_DESCRIPTION" desc="In the Select-to-speak settings subpage, the label for the control where the user can choose a voice.">
     Voice
   </message>
+  <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_TEXT_TO_SPEECH_SETTINGS_LINK" desc="In the Select-to-speak settings subpage, the label for the link to the Text-to-Speech settings page.">
+    System voice settings
+  </message>
   <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_SYSTEM_VOICE" desc="In the Select-to-speak settings subpage, the label for the menu option for the voice name for the system default Text-to-Speech voice">
     System voice
+  </message>
+  <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_VOICE_PREVIEW" desc="In the Select-to-speak settings subpage, the label for the control where the user can listen to a preview of the selected voice.">
+    Voice preview
   </message>
   <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_DEFAULT_NETWORK_VOICE" desc="In the Select-to-speak settings subpage, the label for the natural voices option that uses a default, server-supplied Text-to-Speech voice">
     Default natural voice
   </message>
+  <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_NATURAL_VOICE_PREVIEW" desc="In the Select-to-speak settings subpage, the label for the control where the user can listen to a preview of the selected high-quality voice.">
+    Natural voice preview
+  </message>
   <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_HIGHLIGHT" desc="In the Select-to-speak settings subpage, the label for the group of options controlling highlighting.">
-    Highlighting
+    Highlight
   </message>
   <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_HIGHLIGHT_DESCRIPTION" desc="In the Select-to-speak settings subpage, the label for option to highlight spoken words rather than spoken nodes.">
     Highlight each word as it is spoken
@@ -1303,7 +1312,7 @@ Use Ctrl + Alt + Brightness down to zoom out.
     The quick brown fox jumped over the lazy dog.
   </message>
   <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_NAVIGATION_CONTROLS_DESCRIPTION" desc="In the Select-to-speak settings subpage, the label for option to show navigation controls, such as going to the previous or next paragraph, when Select-to-speak is activated.">
-    Enable navigation controls
+    Navigation controls
   </message>
   <message name="IDS_SETTINGS_ACCESSIBILITY_SELECT_TO_SPEAK_NAVIGATION_CONTROLS_SUBTITLE" desc="In the Select-to-speak settings subpage, the subtitle for option to show navigation controls, such as going to the previous or next paragraph, when Select-to-speak is activated.">
     Provides controls to speed up, slow down, and pause the reading voice
@@ -1998,7 +2007,13 @@ Press an assigned switch or key to remove assignment.
     Container name
   </message>
   <message name="IDS_SETTINGS_CROSTINI_EXTRA_CONTAINERS_CONTAINER_IP_LABEL" desc="Column heading for container IP address.">
-    IP
+    IP address
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_EXTRA_CONTAINERS_SHARE_MICROPHONE" desc="Toggle label to share host microhone with this container.">
+    Share microphone
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_EXTRA_CONTAINERS_APP_BADGE_COLOR" desc="Label for color picker to choose a badge color for this container's apps.">
+    App badge color
   </message>
   <message name="IDS_SETTINGS_CROSTINI_EXTRA_CONTAINERS_CREATE_DIALOG_TITLE" desc="Title of the dialog for entering details to create a new Linux container.">
     Create a new container
@@ -2872,6 +2887,21 @@ Press an assigned switch or key to remove assignment.
   </message>
   <message name="IDS_SETTINGS_INTERNET_HOTSPOT_SUBTITLE_WITH_LEARN_MORE_LINK" desc="Subtitle of the hotspot subpage which explains how hotspot may affect your Chromebook.">
     Uses your Chromebook’s mobile data and your carrier may charge additional fees. May increase battery usage. <ph name="BEGIN_LINK_LEARN_MORE">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK_LEARN_MORE">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_HOTSPOT_TOGGLE_A11Y_LABEL" desc="Accessibility label for Hotspot enable/disable toggle.">
+    Hotspot enable
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_HOTSPOT_SUMMARY_STATE_ON" desc="Sublabel for Hotspot summary row, when Hotspot is on.">
+    On
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_HOTSPOT_SUMMARY_STATE_OFF" desc="Sublabel for Hotspot summary row, when Hotspot is off.">
+    Off
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_HOTSPOT_ENABLED_A11Y_LABEL" desc="Accessibility announcement when Hotspot is enabled.">
+    Hotspot enabled
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_HOTSPOT_DISABLED_A11Y_LABEL" desc="Accessibility announcement when Hotspot is disabled.">
+    Hotspot disabled
   </message>
   <message name="IDS_SETTINGS_INTERNET_WIFI_NETWORKS" desc="Name of the settings page which displays a list of Wi-Fi networks which the user can choose to connect to.">
     Wi-Fi networks

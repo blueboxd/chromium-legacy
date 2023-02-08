@@ -7,21 +7,21 @@
  * Settings subpage for managing APNs.
  */
 
-import './internet_shared_css.js';
+import './internet_shared.css.js';
 import 'chrome://resources/ash/common/network/apn_list.js';
 
+import {assert} from 'chrome://resources/ash/common/assert.js';
 import {processDeviceState} from 'chrome://resources/ash/common/network/cellular_utils.js';
 import {MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
 import {NetworkListenerBehavior, NetworkListenerBehaviorInterface} from 'chrome://resources/ash/common/network/network_listener_behavior.js';
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
-import {assert} from 'chrome://resources/js/assert.js';
-import {CrosNetworkConfigRemote, ManagedCellularProperties, ManagedProperties, NetworkStateProperties} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
+import {CrosNetworkConfigRemote, ManagedCellularProperties, ManagedProperties, MAX_NUM_CUSTOM_APNS, NetworkStateProperties} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom-webui.js';
 import {NetworkType} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {Route, Router} from '../router.js';
 import {routes} from '../os_route.js';
 import {RouteObserverBehavior, RouteObserverBehaviorInterface} from '../route_observer_behavior.js';
+import {Route, Router} from '../router.js';
 
 /**
  * @constructor
@@ -37,7 +37,7 @@ const ApnSubpageElementBase = mixinBehaviors(
     PolymerElement);
 
 /** @polymer */
-class ApnSubpageElement extends ApnSubpageElementBase {
+export class ApnSubpageElement extends ApnSubpageElementBase {
   static get is() {
     return 'apn-subpage';
   }
@@ -60,6 +60,13 @@ class ApnSubpageElement extends ApnSubpageElementBase {
       deviceState_: {
         type: Object,
         value: null,
+      },
+
+      isNumCustomApnsLimitReached: {
+        type: Boolean,
+        notify: true,
+        value: false,
+        computed: 'computeIsNumCustomApnsLimitReached_(managedProperties_)',
       },
     };
   }
@@ -132,6 +139,16 @@ class ApnSubpageElement extends ApnSubpageElementBase {
     this.getDeviceState_();
   }
 
+  /**
+   * Helper method that can be used by parent elements to open the APN
+   * creation dialog.
+   */
+  openApnDetailDialogInCreateMode() {
+    assert(!!this.guid_);
+    assert(!!this.$.apnList);
+    this.$.apnList.openApnDetailDialogInCreateMode();
+  }
+
   /** @private */
   getNetworkDetails_() {
     assert(this.guid_);
@@ -201,6 +218,17 @@ class ApnSubpageElement extends ApnSubpageElementBase {
   isCellular_(managedProperties) {
     return !!managedProperties &&
         managedProperties.type === NetworkType.kCellular;
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeIsNumCustomApnsLimitReached_() {
+    return this.isCellular_(this.managedProperties_) &&
+        !!this.managedProperties_.typeProperties.cellular.customApnList &&
+        this.managedProperties_.typeProperties.cellular.customApnList.length >=
+        MAX_NUM_CUSTOM_APNS;
   }
 }
 

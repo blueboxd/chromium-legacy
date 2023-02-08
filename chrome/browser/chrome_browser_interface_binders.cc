@@ -57,6 +57,7 @@
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/feed/buildflags.h"
 #include "components/feed/feed_feature_list.h"
+#include "components/history_clusters/core/features.h"
 #include "components/history_clusters/core/history_clusters_service.h"
 #include "components/history_clusters/history_clusters_internals/webui/history_clusters_internals_ui.h"
 #include "components/live_caption/caption_util.h"
@@ -421,6 +422,17 @@ void BindCommerceHintObserver(
     return;
   }
 
+// Check if features require CommerceHint are enabled.
+#if !BUILDFLAG(IS_ANDROID)
+  if (!IsCartModuleEnabled()) {
+    return;
+  }
+#else
+  if (!base::FeatureList::IsEnabled(commerce::kCommerceHintAndroid)) {
+    return;
+  }
+#endif
+
 // On Android, commerce hint observer is enabled for all users with the feature
 // enabled since the observer is only used for collecting metrics for now, and
 // we want to maximize the user population exposed; on Desktop, ChromeCart is
@@ -687,18 +699,8 @@ void PopulateChromeFrameBinders(
   map->Add<image_annotation::mojom::Annotator>(
       base::BindRepeating(&BindImageAnnotator));
 
-  // We should not request this mojo interface's binding for the subframes in
-  // the renderer.
-#if !BUILDFLAG(IS_ANDROID)
-  if (IsCartModuleEnabled() &&
-#else
-  if (base::FeatureList::IsEnabled(commerce::kCommerceHintAndroid) &&
-#endif
-      !render_frame_host->GetParent() &&
-      !render_frame_host->IsFencedFrameRoot()) {
-    map->Add<cart::mojom::CommerceHintObserver>(
-        base::BindRepeating(&BindCommerceHintObserver));
-  }
+  map->Add<cart::mojom::CommerceHintObserver>(
+      base::BindRepeating(&BindCommerceHintObserver));
 
   map->Add<blink::mojom::AnchorElementMetricsHost>(
       base::BindRepeating(&NavigationPredictor::Create));
@@ -929,7 +931,7 @@ void PopulateChromeWebUIFrameBinders(
           render_frame_host->GetProcess()->GetBrowserContext());
   if (history_clusters_service &&
       history_clusters_service->IsJourneysEnabled()) {
-    if (base::FeatureList::IsEnabled(features::kSidePanelJourneys) &&
+    if (base::FeatureList::IsEnabled(history_clusters::kSidePanelJourneys) &&
         base::FeatureList::IsEnabled(features::kUnifiedSidePanel)) {
       RegisterWebUIControllerInterfaceBinder<
           history_clusters::mojom::PageHandler, HistoryUI,
@@ -1031,7 +1033,11 @@ void PopulateChromeWebUIFrameBinders(
                                          TabSearchUI>(map);
   if (base::FeatureList::IsEnabled(features::kTabSearchUseMetricsReporter)) {
     RegisterWebUIControllerInterfaceBinder<
-        metrics_reporter::mojom::PageMetricsHost, TabSearchUI>(map);
+        metrics_reporter::mojom::PageMetricsHost, TabSearchUI, NewTabPageUI>(
+        map);
+  } else {
+    RegisterWebUIControllerInterfaceBinder<
+        metrics_reporter::mojom::PageMetricsHost, NewTabPageUI>(map);
   }
 
   RegisterWebUIControllerInterfaceBinder<

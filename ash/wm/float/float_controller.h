@@ -54,11 +54,11 @@ class ASH_EXPORT FloatController : public TabletModeObserver,
   FloatController& operator=(const FloatController&) = delete;
   ~FloatController() override;
 
-  // Returns float window bounds in clamshell mode.
+  // Returns float window bounds in clamshell mode in root window coordinates.
   static gfx::Rect GetPreferredFloatWindowClamshellBounds(aura::Window* window);
 
   // Gets the ideal float bounds of `floated_window` in tablet mode if it were
-  // to be floated.
+  // to be floated, in root window coordinates.
   gfx::Rect GetPreferredFloatWindowTabletBounds(
       aura::Window* floated_window) const;
 
@@ -114,7 +114,7 @@ class ASH_EXPORT FloatController : public TabletModeObserver,
                                    aura::Window* target_root);
 
   // TabletModeObserver:
-  void OnTabletModeStarting() override;
+  void OnTabletModeStarted() override;
   void OnTabletModeEnding() override;
   void OnTabletControllerDestroyed() override;
 
@@ -140,6 +140,8 @@ class ASH_EXPORT FloatController : public TabletModeObserver,
   friend class TabletModeWindowState;
   friend class WindowFloatTest;
   FRIEND_TEST_ALL_PREFIXES(WindowFloatMetricsTest, FloatWindowCountPerSession);
+  FRIEND_TEST_ALL_PREFIXES(WindowFloatMetricsTest,
+                           FloatWindowMovedToAnotherDeskCountPerSession);
 
   // Calls `FloatImpl()` and additionally updates the magnetism if needed.
   void FloatForTablet(aura::Window* window,
@@ -179,6 +181,9 @@ class ASH_EXPORT FloatController : public TabletModeObserver,
   // Float window counter within a session, used for
   // `kFloatWindowCountsPerSessionHistogramName`.
   int floated_window_counter_ = 0;
+  // Counts of how many floated window are moved to another desk within a
+  // session. `kFloatWindowMoveToAnotherDeskCountsHistogramName`
+  int floated_window_move_to_another_desk_counter_ = 0;
 
   base::ScopedObservation<TabletModeController, TabletModeObserver>
       tablet_mode_observation_{this};

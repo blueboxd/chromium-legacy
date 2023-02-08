@@ -5,15 +5,15 @@
 import './webui_command_extender.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 
-import {assert} from 'chrome://resources/js/assert.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {assert} from 'chrome://resources/ash/common/assert.js';
+import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 
 import {getDlpRestrictionDetails, getHoldingSpaceState, startIOTask} from '../../common/js/api.js';
 import {DialogType, isModal} from '../../common/js/dialog_type.js';
 import {FileType} from '../../common/js/file_type.js';
 import {EntryList} from '../../common/js/files_app_entry_types.js';
 import {metrics} from '../../common/js/metrics.js';
-import {RestoreFailedType, RestoreFailedTypesUMA, RestoreFailedUMA, shouldMoveToTrash, TrashEntry} from '../../common/js/trash.js';
+import {isAllEntriesOnTrashEnabledVolumes, RestoreFailedType, RestoreFailedTypesUMA, RestoreFailedUMA, shouldMoveToTrash, TrashEntry} from '../../common/js/trash.js';
 import {str, strf, util} from '../../common/js/util.js';
 import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {NudgeType} from '../../containers/nudge_container.js';
@@ -1163,11 +1163,18 @@ CommandHandler.deleteCommand_ = new (class extends FilesCommand {
     const noEntries = entries.length === 0;
     event.command.setHidden(noEntries);
 
-    // Hide 'move-to-trash' if trash will not be used. E.g. drive or removable.
-    if (event.command.id === 'move-to-trash' &&
-        (!shouldMoveToTrash(entries, fileManager.volumeManager) ||
-         !fileManager.trashEnabled)) {
+    const isTrashDisabled =
+        !shouldMoveToTrash(entries, fileManager.volumeManager) ||
+        !fileManager.trashEnabled;
+
+    if (event.command.id === 'move-to-trash' && isTrashDisabled) {
       event.canExecute = false;
+      event.command.setHidden(true);
+    }
+
+    // If the "move-to-trash" command is enabled, don't show the Delete command
+    // but still leave it executable.
+    if (event.command.id === 'delete' && !isTrashDisabled) {
       event.command.setHidden(true);
     }
   }
@@ -1204,10 +1211,6 @@ CommandHandler.deleteCommand_ = new (class extends FilesCommand {
       return;
     }
 
-    const message = entries.length === 1 ?
-        strf('CONFIRM_DELETE_ONE', entries[0].name) :
-        strf('CONFIRM_DELETE_SOME', entries.length);
-
     if (!dialog) {
       dialog = fileManager.ui.deleteConfirmDialog;
     } else if (dialog.showModalElement) {
@@ -1230,7 +1233,30 @@ CommandHandler.deleteCommand_ = new (class extends FilesCommand {
       dialogDoneCallback();
     };
 
-    dialog.show(message, deleteAction, cancelAction, null);
+    // Files that are deleted from locations that are trash enabled should
+    // instead show copy indicating the files will be permanently deleted. For
+    // all other filesystem the permanent deletion can't necessarily be verified
+    // (e.g. a copy may be moved to the underlying filesystems version of
+    // trash).
+    if (isAllEntriesOnTrashEnabledVolumes(entries, fileManager.volumeManager)) {
+      const title = entries.length === 1 ?
+          strf('CONFIRM_PERMANENTLY_DELETE_ONE_TITLE') :
+          strf('CONFIRM_PERMANENTLY_DELETE_SOME_TITLE');
+
+      const message = entries.length === 1 ?
+          strf('CONFIRM_PERMANENTLY_DELETE_ONE_DESC', entries[0].name) :
+          strf('CONFIRM_PERMANENTLY_DELETE_SOME_DESC', entries.length);
+
+      dialog.setOkLabel(str('PERMANENTLY_DELETE_FOREVER'));
+      dialog.showWithTitle(title, message, deleteAction, cancelAction, null);
+      return;
+    }
+
+    const deleteMessage = entries.length === 1 ?
+        strf('CONFIRM_DELETE_ONE', entries[0].name) :
+        strf('CONFIRM_DELETE_SOME', entries.length);
+    dialog.setOkLabel(str('DELETE_BUTTON_LABEL'));
+    dialog.show(deleteMessage, deleteAction, cancelAction, null);
   }
 
   /**

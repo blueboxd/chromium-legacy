@@ -222,12 +222,20 @@ BASE_FEATURE(kBufferQueueImageSetPurgeable,
 // render pass, instead of SkiaOutputDeviceBufferQueue itself.
 BASE_FEATURE(kRendererAllocatesImages,
              "RendererAllocatesImages",
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_CHROMEOS)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 );
+
+#if BUILDFLAG(IS_ANDROID)
+// By default on Android, when a client is being evicted, it only evicts itself.
+// This differs from Destkop platforms which evict the entire FrameTree along
+// with the topmost viz::Surface. When this feature is enabled, Android will
+// begin also evicting the entire FrameTree.
+BASE_FEATURE(kEvictSubtree, "EvictSubtree", base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 bool IsOverlayPrioritizationEnabled() {
   return base::FeatureList::IsEnabled(kEnableOverlayPrioritization);

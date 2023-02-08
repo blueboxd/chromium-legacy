@@ -25,7 +25,6 @@
 namespace gpu {
 class GLInProcessContext;
 class GpuMemoryBufferManager;
-class ImageFactory;
 class ImplementationBase;
 }
 
@@ -47,7 +46,6 @@ class InProcessContextProvider
   // RasterInterface) and won't support GLES2 or GrContext.
   static scoped_refptr<InProcessContextProvider> CreateOffscreen(
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      gpu::ImageFactory* image_factory,
       bool is_worker);
 
   InProcessContextProvider(const InProcessContextProvider&) = delete;
@@ -69,10 +67,6 @@ class InProcessContextProvider
   void AddObserver(viz::ContextLostObserver* obs) override;
   void RemoveObserver(viz::ContextLostObserver* obs) override;
 
-  // Gives the GL internal format that should be used for calling CopyTexImage2D
-  // on the default framebuffer.
-  uint32_t GetCopyTextureInternalFormat();
-
   // Calls OnContextLost() on all observers. This doesn't modify the context.
   void SendOnContextLost();
 
@@ -82,7 +76,6 @@ class InProcessContextProvider
   InProcessContextProvider(
       const gpu::ContextCreationAttribs& attribs,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      gpu::ImageFactory* image_factory,
       bool support_locking);
   ~InProcessContextProvider() override;
 
@@ -106,7 +99,6 @@ class InProcessContextProvider
   gpu::ContextResult bind_result_;
 
   gpu::ContextCreationAttribs attribs_;
-  raw_ptr<gpu::ImageFactory> image_factory_;
 
   base::Lock context_lock_;
 

@@ -461,6 +461,9 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kMicrosoftOfficeWebAppExperiment);
 #endif
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kMigrateExternalPrefsToWebAppDB);
+
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kMoveWebApp);
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<std::string> kMoveWebAppUninstallStartUrlPrefix;
@@ -563,9 +566,6 @@ extern const base::FeatureParam<int>
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<int>
     kSafetyCheckNotificationPermissionsLowEnagementLimit;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-BASE_DECLARE_FEATURE(kSafetyCheckUnusedSitePermissions);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

@@ -243,6 +243,7 @@
 <translation id="5975083100439434680">Zoom ud</translation>
 <translation id="5976059395673079613"><ph name="PERMISSION" /> – <ph name="WARNING_MESSAGE" /></translation>
 <translation id="6015775454662021376">Styr dette websites adgang til din enhed</translation>
+<translation id="6018815681665454784">Vil du rydde og nulstille?</translation>
 <translation id="6040143037577758943">Luk</translation>
 <translation id="6042308850641462728">Mere</translation>
 <translation id="6064125863973209585">Gennemførte downloads</translation>
@@ -322,6 +323,7 @@
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7667547420449112975">Den vidunderlige troldmand fra Oz</translation>
 <translation id="7690549345586282764">Vis zoom</translation>
+<translation id="7695658402549134106">Websitepræference for <ph name="SITE_NAME" /></translation>
 <translation id="7719367874908701697">Sidezoom</translation>
 <translation id="7781829728241885113">I går</translation>
 <translation id="7791543448312431591">Tilføj</translation>
@@ -348,6 +350,7 @@
 <translation id="813082847718468539">Se websiteoplysninger</translation>
 <translation id="8131740175452115882">Bekræft</translation>
 <translation id="8154912474061769055">Funktionerne på mange websites virker muligvis ikke</translation>
+<translation id="8168435359814927499">Indhold</translation>
 <translation id="8197286292360124385"><ph name="PERMISSION_1" /> blev tilladt</translation>
 <translation id="8200772114523450471">Genoptag</translation>
 <translation id="8206354486702514201">Denne indstilling håndhæves af din administrator.</translation>
@@ -367,7 +370,7 @@
 <translation id="8423565414844018592">Tekststørrelsen er indstillet til <ph name="TEXT_SCALING" /></translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8441146129660941386">Spol tilbage</translation>
-<translation id="8444433999583714703">Aktivér også placering i <ph name="BEGIN_LINK" />Android-indstillingerne<ph name="END_LINK" /> for at give <ph name="APP_NAME" /> adgang til din lokation.</translation>
+<translation id="8444433999583714703">Aktivér også lokation i <ph name="BEGIN_LINK" />Android-indstillingerne<ph name="END_LINK" /> for at give <ph name="APP_NAME" /> adgang til din lokation.</translation>
 <translation id="8447861592752582886">Tilbagekald adgangstilladelsen til enheden</translation>
 <translation id="8451050538944905715">{NUM_SELECTED,plural, =1{1 cookie er i brug}one{# cookie er i brug}other{# cookies er i brug}}</translation>
 <translation id="8487700953926739672">Tilgængelig offline</translation>

@@ -189,6 +189,9 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(AutofillFeatures.AUTOFILL_SERVER_BEHAVIORS,
                     "When enabled, Autofill will request experimental "
                             + "predictions from the Autofill API."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_SUPPORT_POOR_MANS_PLACEHOLDER,
+                    "When enabled, Autofill will infer labels from artificial placeholders, "
+                            + "placed on top of input fields using CSS."),
             Flag.baseFeature(FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_VIRTUAL_CARD_FEATURE,
                     "When enabled, merchant bound virtual cards will be offered in the keyboard "
                             + "accessory."),
@@ -288,12 +291,6 @@ public final class ProductionSupportedFlagList {
                             + " rather than token count."),
             Flag.baseFeature(AwFeatures.WEBVIEW_HIT_TEST_IN_BLINK_ON_TOUCH_START,
                     "Hit test on touch start in blink"),
-            Flag.baseFeature(BlinkFeatures.STYLUS_WRITING_TO_INPUT,
-                    "Allows using a stylus for text input. This requires "
-                            + "either a Samsung device with Direct Writing enabled, or an "
-                            + "Android T device with stylus handwriting enabled."),
-            Flag.baseFeature(BlinkFeatures.SCROLL_UPDATE_OPTIMIZATIONS,
-                    "Enable scroll update optimizations. See https://crbug.com/1346789."),
             Flag.baseFeature(BaseFeatures.ALIGN_WAKE_UPS, "Align delayed wake ups at 125 Hz"),
             Flag.baseFeature(BlinkSchedulerFeatures.THREADED_SCROLL_PREVENT_RENDERING_STARVATION,
                     "Enable rendering starvation-prevention during threaded scrolling."
@@ -347,6 +344,7 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.THREADED_BODY_LOADER,
                     "If enabled, reads and decodes navigation body data off the main thread."),
             Flag.baseFeature("PreconnectOnRedirect"),
+            Flag.baseFeature("PreconnectInNetworkService"), Flag.baseFeature("PrefetchDNSWithURL"),
             Flag.baseFeature(BlinkFeatures.SEND_MOUSE_EVENTS_DISABLED_FORM_CONTROLS,
                     "This changes event propagation for disabled form controls."),
             Flag.baseFeature(ContentFeatures.SURFACE_SYNC_FULLSCREEN_KILLSWITCH,
@@ -360,6 +358,11 @@ public final class ProductionSupportedFlagList {
                     "If enabled, images can be dragged out from Webview"),
             Flag.baseFeature(BlinkFeatures.WEB_RTC_COMBINED_NETWORK_AND_WORKER_THREAD,
                     "Combines WebRTC's worker thread and network thread onto a single thread."),
+            Flag.baseFeature(ContentSwitches.DISABLE_DOMAIN_BLOCKING_FOR3DAP_IS,
+                    "Disable the per-domain blocking for 3D APIs after GPU reset. "
+                            + "This switch is intended only for tests."),
+            Flag.baseFeature("NavigationRequestPreconnect"),
+            Flag.baseFeature("WebViewEnableDnsPrefetchAndPreconnect"),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

@@ -105,10 +105,10 @@ bool AddSidToDefaultDacl(HANDLE token,
   if (!token)
     return false;
 
-  absl::optional<base::win::AccessToken::Dacl> dacl = query_token.DefaultDacl();
+  absl::optional<base::win::AccessControlList> dacl = query_token.DefaultDacl();
   if (!dacl)
     return false;
-  auto new_dacl = AddSidToDacl(sid, dacl->GetAcl(), access_mode, access);
+  auto new_dacl = AddSidToDacl(sid, dacl->get(), access_mode, access);
   if (!new_dacl)
     return false;
 
@@ -136,10 +136,8 @@ bool AddSidToDefaultDacl(HANDLE token,
                          base::win::WellKnownSid known_sid,
                          SecurityAccessMode access_mode,
                          ACCESS_MASK access) {
-  absl::optional<base::win::Sid> sid = base::win::Sid::FromKnownSid(known_sid);
-  if (!sid)
-    return false;
-  return AddSidToDefaultDacl(token, *sid, access_mode, access);
+  return AddSidToDefaultDacl(token, base::win::Sid(known_sid), access_mode,
+                             access);
 }
 
 bool RevokeLogonSidFromDefaultDacl(HANDLE token) {
@@ -197,10 +195,8 @@ bool AddKnownSidToObject(HANDLE object,
                          base::win::WellKnownSid known_sid,
                          SecurityAccessMode access_mode,
                          ACCESS_MASK access) {
-  absl::optional<base::win::Sid> sid = base::win::Sid::FromKnownSid(known_sid);
-  if (!sid)
-    return false;
-  return AddKnownSidToObject(object, object_type, *sid, access_mode, access);
+  return AddKnownSidToObject(object, object_type, base::win::Sid(known_sid),
+                             access_mode, access);
 }
 
 bool ReplacePackageSidInDacl(HANDLE object,
@@ -212,11 +208,9 @@ bool ReplacePackageSidInDacl(HANDLE object,
     return false;
   }
 
-  return AddKnownSidToObject(
-      object, object_type,
-      *base::win::Sid::FromKnownSid(
-          base::win::WellKnownSid::kAllApplicationPackages),
-      SecurityAccessMode::kGrant, access);
+  return AddKnownSidToObject(object, object_type,
+                             base::win::WellKnownSid::kAllApplicationPackages,
+                             SecurityAccessMode::kGrant, access);
 }
 
 absl::optional<base::win::Sid> GetIntegrityLevelSid(

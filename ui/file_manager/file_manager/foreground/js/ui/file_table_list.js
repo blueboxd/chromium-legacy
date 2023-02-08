@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {assert} from 'chrome://resources/js/assert.js';
+import {assert} from 'chrome://resources/ash/common/assert.js';
 
 import {FileType} from '../../../common/js/file_type.js';
 import {str, strf, util} from '../../../common/js/util.js';
@@ -371,8 +371,13 @@ filelist.decorateListItem = (li, entry, metadataModel, volumeManager) => {
   // Overriding the default role 'list' to 'listbox' for better
   // accessibility on ChromeOS.
   li.setAttribute('role', 'option');
-  li.toggleAttribute(
-      'disabled', filelist.isDlpBlocked(entry, metadataModel, volumeManager));
+  const disabled = filelist.isDlpBlocked(entry, metadataModel, volumeManager);
+  li.toggleAttribute('disabled', disabled);
+  if (disabled) {
+    li.setAttribute('aria-disabled', 'true');
+  } else {
+    li.removeAttribute('aria-disabled');
+  }
 
   Object.defineProperty(li, 'selected', {
     /**

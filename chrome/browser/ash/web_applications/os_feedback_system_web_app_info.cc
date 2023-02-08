@@ -98,11 +98,11 @@ bool OSFeedbackAppDelegate::ShouldAllowResize() const {
 }
 
 bool OSFeedbackAppDelegate::ShouldShowInLauncher() const {
-  return IsUserFeedbackAllowed(profile());
+  return false;
 }
 
 bool OSFeedbackAppDelegate::ShouldShowInSearch() const {
-  return ShouldShowInLauncher();
+  return IsUserFeedbackAllowed(profile());
 }
 
 gfx::Rect OSFeedbackAppDelegate::GetDefaultBounds(Browser* browser) const {

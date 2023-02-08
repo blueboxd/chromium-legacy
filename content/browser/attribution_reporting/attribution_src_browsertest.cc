@@ -14,6 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "components/aggregation_service/aggregation_service.mojom.h"
+#include "components/attribution_reporting/os_support.mojom.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/test_utils.h"
@@ -41,7 +42,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/navigation/impression.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
-#include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom.h"
 #include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom.h"
 #include "url/gurl.h"
 
@@ -853,7 +853,6 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcBasicTriggerBrowserTest,
   EXPECT_THAT(
       data_host->trigger_data(),
       ElementsAre(TriggerRegistrationMatches(TriggerRegistrationMatcherConfig(
-          /*reporting_origin=*/*SuitableOrigin::Create(register_url),
           /*filters=*/attribution_reporting::Filters(),
           /*not_filters=*/attribution_reporting::Filters(),
           /*debug_key=*/Eq(absl::nullopt),
@@ -916,7 +915,6 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   EXPECT_THAT(
       data_host->trigger_data(),
       ElementsAre(TriggerRegistrationMatches(TriggerRegistrationMatcherConfig(
-          /*reporting_origin=*/*SuitableOrigin::Create(register_url),
           /*filters=*/
           *attribution_reporting::Filters::Create(
               {{"w", {}}, {"x", {"y", "z"}}}),
@@ -979,8 +977,6 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   const auto& trigger_data = data_host->trigger_data();
 
   EXPECT_EQ(trigger_data.size(), 1u);
-  EXPECT_EQ(trigger_data.front().reporting_origin,
-            *SuitableOrigin::Create(register_url));
   EXPECT_EQ(trigger_data.front().event_triggers.vec().size(), 1u);
   EXPECT_EQ(trigger_data.front().event_triggers.vec().front().data, 7u);
 }
@@ -1012,8 +1008,6 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   const auto& trigger_data = data_host->trigger_data();
 
   EXPECT_EQ(trigger_data.size(), 2u);
-  EXPECT_EQ(trigger_data.front().reporting_origin,
-            *SuitableOrigin::Create(register_url));
 
   // Both triggers should be processed.
   EXPECT_EQ(trigger_data.front().event_triggers.vec().front().data, 5u);
@@ -1347,7 +1341,7 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(https_server->Start());
 
   AttributionManagerImpl::ScopedOsSupportForTesting scoped_os_support_setting(
-      blink::mojom::AttributionOsSupport::kEnabled);
+      attribution_reporting::mojom::OsSupport::kEnabled);
 
   GURL page_url =
       https_server->GetURL("b.test", "/page_with_impression_creator.html");
@@ -1401,7 +1395,7 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(NavigateToURL(web_contents(), page_url));
 
   AttributionManagerImpl::ScopedOsSupportForTesting scoped_os_support_setting(
-      blink::mojom::AttributionOsSupport::kEnabled);
+      attribution_reporting::mojom::OsSupport::kEnabled);
 
   GURL register_url = https_server->GetURL("d.test", "/register_source1");
   ASSERT_TRUE(ExecJs(web_contents(),

@@ -148,9 +148,9 @@ class MockPrefHashStore : public PrefHashStore {
       HashStoreContents* storage) override;
   std::string ComputeMac(const std::string& path,
                          const base::Value* new_value) override;
-  std::unique_ptr<base::DictionaryValue> ComputeSplitMacs(
+  base::Value::Dict ComputeSplitMacs(
       const std::string& path,
-      const base::DictionaryValue* split_values) override;
+      const base::Value::Dict* split_values) override;
 
  private:
   // A MockPrefHashStoreTransaction is handed to the caller on
@@ -249,15 +249,15 @@ std::string MockPrefHashStore::ComputeMac(const std::string& path,
   return "atomic mac for: " + path;
 }
 
-std::unique_ptr<base::DictionaryValue> MockPrefHashStore::ComputeSplitMacs(
+base::Value::Dict MockPrefHashStore::ComputeSplitMacs(
     const std::string& path,
-    const base::DictionaryValue* split_values) {
-  std::unique_ptr<base::DictionaryValue> macs_dict(new base::DictionaryValue);
+    const base::Value::Dict* split_values) {
+  base::Value::Dict macs_dict;
   if (!split_values)
     return macs_dict;
-  for (const auto item : split_values->GetDict()) {
-    macs_dict->SetKey(item.first,
-                      base::Value("split mac for: " + path + "/" + item.first));
+  for (const auto item : *split_values) {
+    macs_dict.Set(item.first,
+                  base::Value("split mac for: " + path + "/" + item.first));
   }
   return macs_dict;
 }
@@ -402,7 +402,7 @@ class MockHashStoreContents : public HashStoreContents {
   void SetSuperMac(const std::string& super_mac) override;
 
  private:
-  MockHashStoreContents(MockHashStoreContents* origin_mock);
+  explicit MockHashStoreContents(MockHashStoreContents* origin_mock);
 
   // Records calls to this mock's SetMac/SetSplitMac methods.
   void RecordSetMac(const std::string& path, const std::string& mac) {
@@ -447,8 +447,7 @@ std::string MockHashStoreContents::GetStoredSplitMac(
     const std::string& split_path) const {
   const base::Value* out_value = dictionary_.FindKey(path);
   if (out_value) {
-    const base::DictionaryValue* value_as_dict;
-    EXPECT_TRUE(out_value->GetAsDictionary(&value_as_dict));
+    EXPECT_TRUE(out_value->is_dict());
 
     out_value = dictionary_.FindKey(split_path);
     if (out_value) {

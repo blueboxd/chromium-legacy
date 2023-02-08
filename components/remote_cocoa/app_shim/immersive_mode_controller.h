@@ -59,6 +59,9 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ImmersiveModeController {
   void RevealUnlock();
   int reveal_lock_count() { return reveal_lock_count_; }
 
+  NSWindow* browser_window() { return browser_window_; }
+  NSWindow* overlay_window() { return overlay_window_; }
+
  private:
   // Pin or unpin the titlebar.
   void SetTitlebarPinned(bool pinned);
@@ -66,10 +69,13 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ImmersiveModeController {
   // Start observing child windows of overlay_widget_.
   void ObserveOverlayChildWindows();
 
+  // Reparent children of `source` to `target`.
+  void ReparentChildWindows(NSWindow* source, NSWindow* target);
+
   bool enabled_ = false;
 
-  NSWindow* const browser_widget_;
-  NSWindow* const overlay_widget_;
+  NSWindow* const browser_window_;
+  NSWindow* const overlay_window_;
 
   // A controller for top chrome.
   base::scoped_nsobject<ImmersiveModeTitlebarViewController>
@@ -122,13 +128,12 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ImmersiveModeController {
 //
 // This class will keep the position of the overlay window in sync with its
 // original content (top chrome).
-REMOTE_COCOA_APP_SHIM_EXPORT @interface ImmersiveModeTitlebarObserver
-    : NSObject {
-  NSWindow* _overlay_window;
-  NSView* _overlay_view;
-}
-- (instancetype)initWithOverlayWindow:(NSWindow*)overlay_window
-                          overlayView:(NSView*)overlay_view;
+REMOTE_COCOA_APP_SHIM_EXPORT @interface ImmersiveModeTitlebarObserver : NSObject
+
+- (instancetype)initWithController:
+                    (base::WeakPtr<remote_cocoa::ImmersiveModeController>)
+                        controller
+                       overlayView:(NSView*)overlay_view;
 @end
 
 #endif  // COMPONENTS_REMOTE_COCOA_APP_SHIM_IMMERSIVE_MODE_CONTROLLER_H_
